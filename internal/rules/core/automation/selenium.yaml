@@ -94,3 +94,9 @@ dependencies:
   - type: docker
     name: selenium/node-opera
     example: selenium/node-opera
+  - type: nuget
+    name: /^Selenium\..*$/
+    example: Selenium.WebDriver
+  - type: nuget
+    name: /^DotNetSeleniumExtras.*$/
+    example: DotNetSeleniumExtras.WaitHelpers

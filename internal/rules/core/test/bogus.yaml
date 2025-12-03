@@ -1,0 +1,6 @@
+tech: bogus
+name: Bogus
+dependencies:
+  - type: nuget
+    name: Bogus
+    example: Bogus
