@@ -103,7 +103,7 @@ func TestDetector_Detect_BasicCsproj(t *testing.T) {
 
 	payload := results[0]
 	assert.Equal(t, "TestApp", payload.Name) // Uses AssemblyName from .csproj
-	assert.Equal(t, "/TestApp.csproj", payload.Path[0])
+	assert.Equal(t, "TestApp.csproj", payload.Path[0])
 	assert.Contains(t, payload.Tech, "dotnet", "Should have dotnet as primary tech")
 	assert.Contains(t, payload.Techs, "dotnet", "Should detect dotnet with framework info")
 
@@ -120,23 +120,12 @@ func TestDetector_Detect_BasicCsproj(t *testing.T) {
 	assert.True(t, depNames["EntityFrameworkCore"], "Should have EntityFrameworkCore dependency")
 	assert.True(t, depNames["Newtonsoft.Json"], "Should have Newtonsoft.Json dependency")
 
-	// Check child components - note: all packages may get matched and create children
-	assert.Len(t, payload.Childs, 3, "Should have 3 child components (actual parser behavior)")
+	// Verify no child components exist (unified with Java behavior)
+	assert.Empty(t, payload.Childs, "Should have no child components (unified with Java)")
 
-	// Check that children exist for packages
-	childNames := make(map[string]*types.Payload)
-	for _, child := range payload.Childs {
-		childNames[child.Name] = child
-	}
-
-	// Verify at least one child exists
-	assert.True(t, len(payload.Childs) > 0, "Should have at least one child component")
-
-	// Each child should have the matched tech and one dependency
-	for _, child := range payload.Childs {
-		assert.NotEmpty(t, child.Tech, "Child should have some tech")
-		assert.Len(t, child.Dependencies, 1, "Child should have 1 dependency")
-	}
+	// Verify techs are added to parent component
+	assert.Contains(t, payload.Techs, "dotnet", "Parent should have dotnet tech")
+	assert.Contains(t, payload.Techs, "EntityFrameworkCore", "Parent should have EntityFrameworkCore tech")
 }
 
 func TestDetector_Detect_MultipleCsprojFiles(t *testing.T) {
@@ -191,14 +180,14 @@ func TestDetector_Detect_MultipleCsprojFiles(t *testing.T) {
 	// First project (WebApp)
 	webApp := results[0]
 	assert.Equal(t, "WebApp", webApp.Name)
-	assert.Equal(t, "/WebApp.csproj", webApp.Path[0])
+	assert.Equal(t, "WebApp.csproj", webApp.Path[0])
 	assert.Contains(t, webApp.Tech, "dotnet")
 	assert.Len(t, webApp.Dependencies, 1, "WebApp should have 1 dependency")
 
 	// Second project (ClassLib)
 	classLib := results[1]
 	assert.Equal(t, "ClassLib", classLib.Name)
-	assert.Equal(t, "/ClassLib.csproj", classLib.Path[0])
+	assert.Equal(t, "ClassLib.csproj", classLib.Path[0])
 	assert.Contains(t, classLib.Tech, "dotnet")
 	assert.Len(t, classLib.Dependencies, 1, "ClassLib should have 1 dependency")
 }
@@ -387,7 +376,7 @@ func TestDetector_Detect_RelativePathHandling(t *testing.T) {
 
 	payload := results[0]
 	assert.Equal(t, "PathTestApp", payload.Name)
-	assert.Equal(t, "/subdir/PathTestApp.csproj", payload.Path[0], "Should handle relative paths correctly")
+	assert.Equal(t, "subdir/PathTestApp.csproj", payload.Path[0], "Should handle relative paths correctly")
 	assert.Contains(t, payload.Tech, "dotnet", "Should have dotnet as primary tech")
 }
 

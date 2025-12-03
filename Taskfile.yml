@@ -70,27 +70,24 @@ tasks:
       - build
 
   run:info:techs:
-    desc: List all technologies in YAML format
+    desc: List all technologies
     cmds:
-      - ./{{.BINARY_NAME}} info techs --format yaml
-    deps:
-      - build
+      - ./{{.BINARY_NAME}} info techs {{.ARGS}}
 
-  run:info:component-types:
-    desc: List component types in YAML format
+  run:info:categories:
+    desc: List all technology categories
     cmds:
-      - ./{{.BINARY_NAME}} info component-types --format yaml
-    deps:
-      - build
+      - ./{{.BINARY_NAME}} info categories {{.ARGS}}
+
+  run:info:languages:
+    desc: List all programming languages
+    cmds:
+      - ./{{.BINARY_NAME}} info languages {{.ARGS}}
 
   run:info:rule:
-    desc: Show rule details for a technology in JSON format
-    vars:
-      TECH: "{{.CLI_ARGS}}"
+    desc: Show rule details for a technology
     cmds:
-      - ./{{.BINARY_NAME}} info rule {{.TECH}} --format json
-    deps:
-      - build
+      - ./{{.BINARY_NAME}} info rule {{.ARGS}}
 
   pre-commit:setup:
     desc: Install pre-commit tool

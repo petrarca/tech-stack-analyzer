@@ -93,37 +93,10 @@ func (d *Detector) detectDotNetProject(file types.File, currentPath, basePath st
 		// Match package name against dependency rules
 		matchedTechs := depDetector.MatchDependencies([]string{pkg.Name}, "nuget")
 
-		// Determine tech and reasons for child components
-		var childTech string
-		var reasons []string
-		for t, r := range matchedTechs {
-			childTech = t
-			reasons = r
-			break // Take first match
-		}
-
-		if childTech != "" && childTech != "dotnet" { // Only create child if different tech
-			if len(reasons) == 0 {
-				reasons = []string{"matched: " + pkg.Name}
-			}
-
-			// Create child component for matched tech
-			childPayload := types.NewPayloadWithPath(pkg.Name, relativeFilePath)
-			childPayload.AddPrimaryTech(childTech)
-			childPayload.Dependencies = []types.Dependency{dep}
-
-			// Add techs and reasons to child
+		// Add matched techs to parent payload (identical to Java detector behavior)
+		for tech, reasons := range matchedTechs {
 			for _, reason := range reasons {
-				childPayload.AddTech(childTech, reason)
-			}
-
-			// Add child to parent payload
-			payload.AddChild(childPayload)
-
-			// Add edges for non-hosting/cloud types (like database components)
-			// Check if this child component type should create edges
-			if childTech != "hosting" && childTech != "cloud" {
-				payload.AddEdges(childPayload)
+				payload.AddTech(tech, reason)
 			}
 		}
 	}
