@@ -1,0 +1,6 @@
+tech: autofac
+name: Autofac
+dependencies:
+  - type: nuget
+    name: /^Autofac.*$/
+    example: Autofac
