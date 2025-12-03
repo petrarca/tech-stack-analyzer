@@ -1,0 +1,5 @@
+tech: jodatime
+name: JodaTime
+dependencies:
+  - type: maven
+    name: joda-time:joda-time

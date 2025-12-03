@@ -72,4 +72,3 @@ dependencies:
   - type: nuget
     name: Npgsql.EntityFrameworkCore.PostgreSQL
     example: Npgsql.EntityFrameworkCore.PostgreSQL
-
