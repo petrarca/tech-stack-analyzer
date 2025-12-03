@@ -50,9 +50,7 @@ func (d *Detector) detectDotNetProject(file types.File, currentPath, basePath st
 	// Create component payload
 	relativeFilePath, _ := filepath.Rel(basePath, filepath.Join(currentPath, file.Name))
 	if relativeFilePath == "." {
-		relativeFilePath = "/"
-	} else {
-		relativeFilePath = "/" + relativeFilePath
+		relativeFilePath = file.Name
 	}
 
 	payload := types.NewPayloadWithPath(project.Name, relativeFilePath)
