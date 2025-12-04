@@ -107,6 +107,10 @@ categories:
   ai:
     is_component: false
     description: "AI libraries and frameworks (LangChain, PyTorch, PydanticAI, etc.)"
+
+  library:
+    is_component: false
+    description: "Utility libraries (JSON processing, validation, cryptography, etc.)"
   
   backend_framework:
     is_component: false
