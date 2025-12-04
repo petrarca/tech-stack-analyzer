@@ -53,7 +53,9 @@ Thumbs.db
 
 # Binary output
 stack-analyzer
-stack-analyzer-*
+stack-analyzer-*.exe
+stack-analyzer-*.tar.gz
+stack-analyzer-*.zip
 
 # Symbolic link to original source code
 stack-analyser

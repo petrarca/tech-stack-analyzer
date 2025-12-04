@@ -1,0 +1,362 @@
+{
+  "metadata": {
+    "format": "full",
+    "timestamp": "2025-12-04T14:36:01Z",
+    "scan_path": "/path/to/your/project",
+    "specVersion": "0.1",
+    "duration_ms": 2091,
+    "file_count": 137,
+    "component_count": 5,
+    "language_count": 8,
+    "tech_count": 1,
+    "techs_count": 2
+  },
+  "git": {
+    "branch": "main",
+    "commit": "997fa99",
+    "is_dirty": true,
+    "remote_url": "https://github.com/petrarca/tech-stack-analyzer.git"
+  },
+  "id": "z1WAtHLHEY2J",
+  "name": "main",
+  "path": [
+    "/"
+  ],
+  "tech": null,
+  "techs": [],
+  "languages": {},
+  "dependencies": [],
+  "childs": [
+    {
+      "git": {
+        "branch": "main",
+        "commit": "997fa99",
+        "is_dirty": true,
+        "remote_url": "https://github.com/petrarca/tech-stack-analyzer.git"
+      },
+      "id": "HOmlGmtXDWhp",
+      "name": "tech-stack-analyzer",
+      "path": [
+        "/go.mod"
+      ],
+      "tech": [
+        "golang"
+      ],
+      "techs": [
+        "git",
+        "golang"
+      ],
+      "languages": {
+        "Go": 111,
+        "Go Checksums": 1,
+        "Go Module": 1,
+        "Ignore List": 1,
+        "JSON": 4,
+        "Markdown": 10,
+        "Text": 1,
+        "YAML": 5
+      },
+      "dependencies": [
+        [
+          "golang",
+          "github.com/bmatcuk/doublestar/v4@v4.9.1",
+          ""
+        ],
+        [
+          "golang",
+          "github.com/boyter/scc/v3@v3.6.0",
+          ""
+        ],
+        [
+          "golang",
+          "github.com/go-enry/go-enry/v2@v2.9.2",
+          ""
+        ],
+        [
+          "golang",
+          "github.com/go-enry/go-license-detector/v4@v4.3.1",
+          ""
+        ],
+        [
+          "golang",
+          "github.com/hashicorp/hcl/v2@v2.24.0",
+          ""
+        ],
+        [
+          "golang",
+          "github.com/sirupsen/logrus@v1.9.3",
+          ""
+        ],
+        [
+          "golang",
+          "github.com/spf13/cobra@v1.10.1",
+          ""
+        ],
+        [
+          "golang",
+          "github.com/stretchr/testify@v1.11.1",
+          ""
+        ],
+        [
+          "golang",
+          "github.com/zclconf/go-cty@v1.16.3",
+          ""
+        ],
+        [
+          "golang",
+          "gopkg.in/yaml.v3@v3.0.1",
+          ""
+        ]
+      ],
+      "childs": [
+        {
+          "id": "W7GByJrUkZRB",
+          "name": "convert-rules",
+          "path": [
+            "/cmd/convert-rules/main.go"
+          ],
+          "tech": [
+            "golang"
+          ],
+          "techs": [
+            "golang"
+          ],
+          "languages": {
+            "Go": 1
+          },
+          "dependencies": [],
+          "childs": [],
+          "edges": [],
+          "inComponent": null,
+          "licenses": [],
+          "reason": {
+            "golang": [
+              "matched file: main.go"
+            ]
+          }
+        },
+        {
+          "id": "WYg8klJcfloe",
+          "name": "git-benchmark",
+          "path": [
+            "/cmd/git-benchmark/main.go"
+          ],
+          "tech": [
+            "golang"
+          ],
+          "techs": [
+            "golang"
+          ],
+          "languages": {
+            "Go": 1
+          },
+          "dependencies": [],
+          "childs": [],
+          "edges": [],
+          "inComponent": null,
+          "licenses": [],
+          "reason": {
+            "golang": [
+              "matched file: main.go"
+            ]
+          }
+        },
+        {
+          "id": "HZvKUTnNFMFG",
+          "name": "scanner",
+          "path": [
+            "/cmd/scanner/main.go"
+          ],
+          "tech": [
+            "golang"
+          ],
+          "techs": [
+            "golang"
+          ],
+          "languages": {
+            "Go": 1
+          },
+          "dependencies": [],
+          "childs": [],
+          "edges": [],
+          "inComponent": null,
+          "licenses": [],
+          "reason": {
+            "golang": [
+              "matched file: main.go"
+            ]
+          }
+        }
+      ],
+      "edges": [],
+      "inComponent": null,
+      "licenses": [
+        "MIT"
+      ],
+      "reason": {
+        "_": [
+          "license detected: MIT (confidence: 1.00, file: LICENSE)"
+        ],
+        "git": [
+          "matched file: .gitignore"
+        ],
+        "golang": [
+          "matched file: go.mod"
+        ]
+      }
+    }
+  ],
+  "edges": [],
+  "inComponent": null,
+  "licenses": [],
+  "reason": {},
+  "code_stats": {
+    "total": {
+      "lines": 34687,
+      "code": 27784,
+      "comments": 2178,
+      "blanks": 4725,
+      "complexity": 2193,
+      "files": 134
+    },
+    "by_type": {
+      "programming": {
+        "total": {
+          "lines": 24197,
+          "code": 18518,
+          "comments": 2141,
+          "blanks": 3538,
+          "complexity": 2193,
+          "files": 114
+        },
+        "metrics": {
+          "comment_ratio": 0.12,
+          "code_density": 0.77,
+          "avg_file_size": 212.25,
+          "complexity_per_kloc": 118.43,
+          "avg_complexity": 19.24,
+          "top_languages": [
+            {
+              "language": "Go",
+              "pct": 1
+            }
+          ]
+        },
+        "languages": [
+          "Go"
+        ]
+      },
+      "data": {
+        "total": {
+          "lines": 5540,
+          "code": 5034,
+          "comments": 37,
+          "blanks": 78,
+          "complexity": 0,
+          "files": 12
+        },
+        "languages": [
+          "JSON",
+          "YAML",
+          "Go Checksums",
+          "Go Module",
+          "Ignore List"
+        ]
+      },
+      "prose": {
+        "total": {
+          "lines": 5341,
+          "code": 4232,
+          "comments": 0,
+          "blanks": 1109,
+          "complexity": 0,
+          "files": 11
+        },
+        "languages": [
+          "Markdown",
+          "Text"
+        ]
+      }
+    },
+    "analyzed": {
+      "total": {
+        "lines": 34687,
+        "code": 27784,
+        "comments": 2178,
+        "blanks": 4725,
+        "complexity": 2193,
+        "files": 134
+      },
+      "by_language": [
+        {
+          "language": "Go",
+          "lines": 24197,
+          "code": 18518,
+          "comments": 2141,
+          "blanks": 3538,
+          "complexity": 2193,
+          "files": 114
+        },
+        {
+          "language": "Markdown",
+          "lines": 5320,
+          "code": 4215,
+          "comments": 0,
+          "blanks": 1105,
+          "complexity": 0,
+          "files": 10
+        },
+        {
+          "language": "JSON",
+          "lines": 4728,
+          "code": 4728,
+          "comments": 0,
+          "blanks": 0,
+          "complexity": 0,
+          "files": 4
+        },
+        {
+          "language": "YAML",
+          "lines": 421,
+          "code": 306,
+          "comments": 37,
+          "blanks": 78,
+          "complexity": 0,
+          "files": 5
+        },
+        {
+          "language": "Text",
+          "lines": 21,
+          "code": 17,
+          "comments": 0,
+          "blanks": 4,
+          "complexity": 0,
+          "files": 1
+        }
+      ]
+    },
+    "unanalyzed": {
+      "total": {
+        "lines": 391,
+        "files": 3
+      },
+      "by_language": [
+        {
+          "language": "Go Checksums",
+          "lines": 253,
+          "files": 1
+        },
+        {
+          "language": "Go Module",
+          "lines": 70,
+          "files": 1
+        },
+        {
+          "language": "Ignore List",
+          "lines": 68,
+          "files": 1
+        }
+      ]
+    }
+  }
+}

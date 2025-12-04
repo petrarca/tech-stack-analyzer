@@ -7,6 +7,7 @@ import (
 
 // ScanMetadata contains information about the scan execution
 type ScanMetadata struct {
+	Format         string                 `json:"format"` // Output format: "full" or "aggregated"
 	Timestamp      string                 `json:"timestamp"`
 	ScanPath       string                 `json:"scan_path"`
 	SpecVersion    string                 `json:"specVersion"` // Output format specification version
@@ -59,4 +60,9 @@ func (m *ScanMetadata) SetProperties(properties map[string]interface{}) {
 	if len(properties) > 0 {
 		m.Properties = properties
 	}
+}
+
+// SetFormat sets the output format type
+func (m *ScanMetadata) SetFormat(format string) {
+	m.Format = format
 }

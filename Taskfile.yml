@@ -89,6 +89,22 @@ tasks:
     cmds:
       - ./{{.BINARY_NAME}} info rule {{.ARGS}}
 
+  build:examples:
+    desc: Generate JSON schema examples from our actual project
+    cmds:
+      - echo "🔍 Generating schema examples from tech-stack-analyzer project..."
+      - ./{{.BINARY_NAME}} scan . --output schemas/examples/full.json
+      - ./{{.BINARY_NAME}} scan . --aggregate all --output schemas/examples/aggregated.json
+      - echo "🔧 Sanitizing user-specific paths..."
+      - sed -i '' 's|/Users/wmi/Develop/petrarca/tech-stack-analyzer|/path/to/your/project|g' schemas/examples/full.json
+      - sed -i '' 's|/Users/wmi/Develop/petrarca/tech-stack-analyzer|/path/to/your/project|g' schemas/examples/aggregated.json
+      - echo "✅ Examples generated and sanitized"
+      - echo "   - Full example - schemas/examples/full.json"
+      - echo "   - Aggregated example - schemas/examples/aggregated.json"
+      - echo "📊 Real project data with generic paths for privacy"
+    deps:
+      - build
+
   pre-commit:setup:
     desc: Install pre-commit tool
     cmds:

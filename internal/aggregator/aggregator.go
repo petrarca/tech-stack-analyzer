@@ -4,6 +4,7 @@ import (
 	"sort"
 
 	"github.com/petrarca/tech-stack-analyzer/internal/git"
+	"github.com/petrarca/tech-stack-analyzer/internal/metadata"
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
 
@@ -40,8 +41,11 @@ func NewAggregator(fields []string) *Aggregator {
 func (a *Aggregator) Aggregate(payload *types.Payload) *AggregateOutput {
 	output := &AggregateOutput{}
 
-	// Include metadata from the root payload
+	// Include metadata from the root payload and update format
 	output.Metadata = payload.Metadata
+	if meta, ok := payload.Metadata.(*metadata.ScanMetadata); ok {
+		meta.SetFormat("aggregated")
+	}
 
 	if a.fields["git"] {
 		output.Git = a.collectGit(payload)

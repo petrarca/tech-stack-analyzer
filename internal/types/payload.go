@@ -12,6 +12,8 @@ import (
 
 // Payload represents the analysis result for a directory or component
 type Payload struct {
+	Metadata     interface{}            `json:"metadata,omitempty"`
+	Git          *git.GitInfo           `json:"git,omitempty"`
 	ID           string                 `json:"id"`
 	Name         string                 `json:"name"`
 	Path         []string               `json:"path"`
@@ -26,8 +28,6 @@ type Payload struct {
 	Reason       map[string][]string    `json:"reason"` // Maps technology to detection reasons, "_" for non-tech reasons
 	Properties   map[string]interface{} `json:"properties,omitempty"`
 	CodeStats    interface{}            `json:"code_stats,omitempty"`
-	Git          *git.GitInfo           `json:"git,omitempty"`
-	Metadata     interface{}            `json:"metadata,omitempty"`
 }
 
 // Edge represents a relationship between components

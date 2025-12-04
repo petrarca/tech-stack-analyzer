@@ -111,6 +111,12 @@ func NewScannerWithOptionsAndLogger(path string, excludeDirs []string, verbose b
 			return nil, fmt.Errorf("failed to load ignore patterns: %w", err)
 		}
 		defaultIgnorePatterns = ignorePatterns
+
+		// Load config and add its exclude patterns to the global list
+		cfg, err := config.LoadConfig(path)
+		if err == nil && len(cfg.Exclude) > 0 {
+			defaultIgnorePatterns = append(defaultIgnorePatterns, cfg.Exclude...)
+		}
 	}
 
 	// Enable tracing if requested
@@ -232,6 +238,9 @@ func (s *Scanner) Scan() (*types.Payload, error) {
 
 	// Set custom properties from config
 	scanMeta.SetProperties(cfg.Properties)
+
+	// Set output format
+	scanMeta.SetFormat("full")
 
 	// Set git information directly on payload
 	payload.Git = git.GetGitInfo(basePath)
@@ -401,9 +410,19 @@ func (s *Scanner) recurse(payload *types.Payload, filePath string) error {
 		return err
 	}
 
+	// Filter files to exclude those matching ignore patterns
+	// This ensures rule matching doesn't see excluded files
+	filteredFiles := make([]types.File, 0, len(files))
+	for _, file := range files {
+		if file.Type == "file" && s.shouldExcludeFile(file.Name, filePath) {
+			continue
+		}
+		filteredFiles = append(filteredFiles, file)
+	}
+
 	// Apply rules to detect technologies (like TypeScript's ruleComponents loop)
 	// This might return a different context if a component was detected
-	ctx := s.applyRules(payload, files, filePath)
+	ctx := s.applyRules(payload, filteredFiles, filePath)
 
 	// Check if this directory is a git repository and set git info
 	// Only set git info if it's not already set (avoid overwriting parent repo info)
@@ -418,13 +437,8 @@ func (s *Scanner) recurse(payload *types.Payload, filePath string) error {
 	s.licenseDetector.AddLicensesToPayload(ctx, filePath)
 
 	// Process each file/directory (exactly like TypeScript's loop)
-	for _, file := range files {
+	for _, file := range filteredFiles {
 		if file.Type == "file" {
-			// Check if file should be excluded
-			if s.shouldExcludeFile(file.Name, filePath) {
-				continue
-			}
-
 			// Detect language from file name (like TypeScript's detectLang)
 			// Languages go into the current context (might be a component)
 			// Read content for accurate detection of ambiguous extensions
@@ -484,8 +498,8 @@ func (s *Scanner) applyRules(payload *types.Payload, files []types.File, current
 	// 4. File and extension-based detection (includes JSON schema via content matchers)
 	matchedTechs := s.detectByFilesAndExtensions(ctx, files, currentPath)
 
-	// 6. Legacy file-based detection
-	s.detectLegacyFiles(ctx, files, matchedTechs)
+	// 6. File-based rule detection
+	s.detectByRuleFiles(ctx, files, matchedTechs)
 
 	return ctx
 }
@@ -746,7 +760,8 @@ func (s *Scanner) processTechMatches(ctx *types.Payload, matches map[string][]st
 	}
 }
 
-func (s *Scanner) detectLegacyFiles(ctx *types.Payload, files []types.File, matchedTechs map[string]bool) {
+// detectByRuleFiles matches rules that have specific file requirements
+func (s *Scanner) detectByRuleFiles(ctx *types.Payload, files []types.File, matchedTechs map[string]bool) {
 	for _, rule := range s.rules {
 		if len(rule.Files) == 0 || matchedTechs[rule.Tech] {
 			continue
@@ -830,10 +845,6 @@ func (s *Scanner) addTechWithPrimaryCheck(payload *types.Payload, tech string, r
 	}
 }
 func (s *Scanner) shouldExcludeFile(fileName, currentPath string) bool {
-	if len(s.excludeDirs) == 0 {
-		return false
-	}
-
 	// Get relative path from base path
 	basePath := s.provider.GetBasePath()
 	fullPath := filepath.Join(currentPath, fileName)
@@ -842,8 +853,23 @@ func (s *Scanner) shouldExcludeFile(fileName, currentPath string) bool {
 		relPath = fileName // Fallback to just filename
 	}
 
-	// Check against exclude patterns
+	// Check against CLI exclude patterns
 	for _, pattern := range s.excludeDirs {
+		// Try glob match against relative path
+		matched, err := doublestar.Match(pattern, relPath)
+		if err == nil && matched {
+			return true
+		}
+
+		// Also try matching just the filename
+		matched, err = doublestar.Match(pattern, fileName)
+		if err == nil && matched {
+			return true
+		}
+	}
+
+	// Check against global ignore patterns (.gitignore + config excludes)
+	for _, pattern := range defaultIgnorePatterns {
 		// Try glob match against relative path
 		matched, err := doublestar.Match(pattern, relPath)
 		if err == nil && matched {
