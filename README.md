@@ -773,11 +773,10 @@ The scanner outputs a hierarchical JSON structure representing the detected tech
 - **tech**: Array of primary technologies for this component (e.g., `["nodejs", "java"]` for hybrid projects)
 - **techs**: Array of all technologies detected in this component (components + tools/libraries)
 - **languages**: Object mapping programming languages to file counts
+- **licenses**: Array of detected licenses in this component
 - **dependencies**: Array of detected dependencies with format `[type, name, version]`
 - **childs**: Array of nested components (sub-projects, services, etc.)
 - **edges**: Array of relationships between components (e.g., service → database connections); created for architectural components like databases, SaaS services, and monitoring tools, but not for hosting/cloud providers
-- **inComponent**: Reference to parent component if this is a nested component
-- **licenses**: Array of detected licenses in this component
 - **reason**: Object mapping technologies to detection reasons, with "_" key for non-tech reasons (licenses, base images, etc.)
 - **properties**: Object containing tech-specific metadata (Docker, Terraform, Kubernetes, etc.)
 - **code_stats**: Code statistics with analyzed/unanalyzed buckets (only in root payload, see [Code Statistics](#code-statistics))

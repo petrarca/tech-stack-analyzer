@@ -31,8 +31,7 @@ func (p *ConanParser) ExtractDependencies(content string) []types.Dependency {
 	matches := p.requireRegex.FindAllStringSubmatch(content, -1)
 	for _, match := range matches {
 		if len(match) > 1 {
-			dep := p.parseConanDependency(match[1])
-			dep.Type = "conan"
+			dep := p.ParseConanDependency(match[1])
 			dependencies = append(dependencies, dep)
 		}
 	}
@@ -41,8 +40,7 @@ func (p *ConanParser) ExtractDependencies(content string) []types.Dependency {
 	toolMatches := p.toolRequireRegex.FindAllStringSubmatch(content, -1)
 	for _, match := range toolMatches {
 		if len(match) > 1 {
-			dep := p.parseConanDependency(match[1])
-			dep.Type = "conan"
+			dep := p.ParseConanDependency(match[1])
 			dependencies = append(dependencies, dep)
 		}
 	}
@@ -59,6 +57,7 @@ func (p *ConanParser) ParseConanDependency(depString string) types.Dependency {
 		return types.Dependency{
 			Name:    name,
 			Example: version,
+			Type:    "conan",
 		}
 	}
 
@@ -66,12 +65,8 @@ func (p *ConanParser) ParseConanDependency(depString string) types.Dependency {
 	return types.Dependency{
 		Name:    depString,
 		Example: "",
+		Type:    "conan",
 	}
-}
-
-// parseConanDependency parses a Conan dependency string in format "name/version" or "name/version/user/channel#build"
-func (p *ConanParser) parseConanDependency(depString string) types.Dependency {
-	return p.ParseConanDependency(depString)
 }
 
 // ExtractDependenciesFromFiles extracts Conan dependencies from conanfile.py and packages*.txt files
@@ -103,7 +98,6 @@ func (p *ConanParser) ExtractDependenciesFromFiles(conanContent string, packages
 				// Parse package/version format
 				if strings.Contains(line, "/") {
 					dep := p.ParseConanDependency(line)
-					dep.Type = "conan"
 					dependencies = append(dependencies, dep)
 				}
 			}

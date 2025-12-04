@@ -134,8 +134,7 @@ occi/21.15.0
 		}
 
 		if strings.Contains(line, "/") {
-			dep := parser.parseConanDependency(line)
-			dep.Type = "conan"
+			dep := parser.ParseConanDependency(line)
 			dependencies = append(dependencies, dep)
 		}
 	}
@@ -193,7 +192,7 @@ func TestConanParser_parseConanDependency(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.input, func(t *testing.T) {
-			result := parser.parseConanDependency(tt.input)
+			result := parser.ParseConanDependency(tt.input)
 			if result.Name != tt.expected.Name {
 				t.Errorf("Expected name %s, got %s", tt.expected.Name, result.Name)
 			}

@@ -20,13 +20,12 @@ type Payload struct {
 	Tech         []string               `json:"tech"` // Changed from *string to []string to support multiple primary technologies
 	Techs        []string               `json:"techs"`
 	Languages    map[string]int         `json:"languages"`
-	Dependencies []Dependency           `json:"dependencies"`
-	Childs       []*Payload             `json:"childs"` // Changed from Children to Childs
-	Edges        []Edge                 `json:"edges"`
-	InComponent  *Payload               `json:"inComponent"`
 	Licenses     []string               `json:"licenses"`
 	Reason       map[string][]string    `json:"reason"` // Maps technology to detection reasons, "_" for non-tech reasons
+	Dependencies []Dependency           `json:"dependencies"`
 	Properties   map[string]interface{} `json:"properties,omitempty"`
+	Childs       []*Payload             `json:"childs"` // Changed from Children to Childs
+	Edges        []Edge                 `json:"edges"`
 	CodeStats    interface{}            `json:"code_stats,omitempty"`
 }
 
