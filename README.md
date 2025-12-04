@@ -39,7 +39,7 @@ See [How to Extend It](#how-to-extend-it) for complete rule documentation.
 - **800+ Technology Rules** - Comprehensive detection across 48 technology categories (databases, frameworks, APIs, tools, cloud services)
 - **Zero Dependencies** - Single binary deployment without Node.js runtime requirement
 - **Project Configuration** - `.stack-analyzer.yml` for custom metadata, exclusions, and external dependencies
-- **Scan Metadata** - Automatic tracking of scan execution (timestamp, duration, git info, file counts)
+- **Scan Metadata** - Automatic tracking of scan execution (timestamp, duration, file counts) with git information at top level
 - **Glob Pattern Exclusions** - Flexible `--exclude` flag supporting `**`, `*`, `?` patterns for files and directories
 - **Content-Based Detection** - Validates technologies through regex pattern matching in file contents for precise identification
 - **Configurable Components** - Override default component classification per rule with `is_component` field
@@ -141,6 +141,12 @@ The scanner outputs a hierarchical JSON structure showing detected technologies,
     ["npm", "react", "^18.2.0"],
     ["npm", "express", "^4.18.2"]
   ],
+  "git": {
+    "branch": "main",
+    "commit": "a1b2c3d",
+    "is_dirty": false,
+    "remote_url": "https://github.com/user/repo.git"
+  },
   "childs": [
     {
       "id": "backend",
@@ -184,7 +190,8 @@ The scanner outputs a hierarchical JSON structure showing detected technologies,
 - `childs` - Nested components (sub-projects, services)
 - `dependencies` - Package dependencies with versions
 - `code_stats` - Code statistics (lines, code, comments, blanks, complexity)
-- `metadata` - Scan execution info (timestamp, duration, git info)
+- `git` - Git repository information (branch, commit, dirty status, remote URL)
+- `metadata` - Scan execution info (timestamp, duration, file counts)
 
 See [Output Structure](#output-structure) for complete field descriptions.
 
@@ -717,6 +724,7 @@ The scanner outputs a hierarchical JSON structure representing the detected tech
 - **reason**: Array explaining why technologies were detected
 - **properties**: Object containing tech-specific metadata (Docker, Terraform, Kubernetes, etc.)
 - **code_stats**: Code statistics with analyzed/unanalyzed buckets (only in root payload, see [Code Statistics](#code-statistics))
+- **git**: Git repository information (only in root payload)
 - **metadata**: Scan execution metadata (only in root payload)
 
 #### Metadata Field
@@ -736,16 +744,16 @@ The `metadata` field (present only in the root payload) provides information abo
     "tech_count": 3,
     "techs_count": 12,
     "excluded_dirs": ["node_modules", "vendor"],
-    "git": {
-      "branch": "main",
-      "commit": "a1b2c3d",
-      "is_dirty": true,
-      "remote_url": "https://github.com/user/repo.git"
-    },
     "properties": {
       "product": "My Product",
       "team": "Engineering"
     }
+  },
+  "git": {
+    "branch": "main",
+    "commit": "a1b2c3d",
+    "is_dirty": true,
+    "remote_url": "https://github.com/user/repo.git"
   }
 }
 ```
@@ -761,12 +769,16 @@ The `metadata` field (present only in the root payload) provides information abo
 - **tech_count**: Number of primary technologies (count of `tech` array)
 - **techs_count**: Number of all detected technologies (count of `techs` array)
 - **excluded_dirs**: List of excluded patterns
-- **git**: Git repository information (if in a git repo)
-  - **branch**: Current branch name
-  - **commit**: Short commit hash (7 characters)
-  - **is_dirty**: Whether there are uncommitted changes
-  - **remote_url**: Origin remote URL
 - **properties**: Custom properties from `.stack-analyzer.yml`
+
+#### Git Field
+
+The `git` field (present only in the root payload) provides git repository information:
+
+- **branch**: Current branch name
+- **commit**: Short commit hash (7 characters)
+- **is_dirty**: Whether there are uncommitted changes
+- **remote_url**: Origin remote URL
 
 #### Properties Field
 
@@ -1002,7 +1014,8 @@ tech-stack-analyzer/
 │   ├── aggregator/        # Result aggregation logic
 │   ├── cmd/               # CLI command implementations
 │   ├── config/            # Configuration management (settings, types, ignore patterns)
-│   ├── metadata/          # Scan metadata (git info, timestamps, file counts)
+│   ├── git/               # Git repository information extraction using go-git
+│   ├── metadata/          # Scan metadata (timestamps, file counts, execution info)
 │   ├── progress/          # Verbose mode progress reporting
 │   ├── provider/          # File system abstraction layer
 │   ├── rules/             # Rule loading and validation
@@ -1056,13 +1069,23 @@ Each detector handles specific project types:
 - **Stateless design** - scanner reports events, handlers display them
 - **stderr output** to keep it separate from JSON output file
 
-#### 6. Language Detection (`github.com/go-enry/go-enry/v2`)
+#### 6. Git Integration (`github.com/go-git/go-git/v5`)
+- **Pure Go implementation** using go-git library for maximum portability
+- **No external dependencies** - doesn't require git command to be installed
+- **Repository detection** through `git.PlainOpen()` for reliable git repo identification
+- **Branch information** including detached HEAD detection
+- **Commit hash extraction** with short 7-character format
+- **Dirty status detection** using worktree status analysis
+- **Remote URL extraction** from origin remote configuration
+- **Cross-platform compatibility** works consistently across Windows, macOS, and Linux
+
+#### 7. Language Detection (`github.com/go-enry/go-enry/v2`)
 - **GitHub Linguist integration** for comprehensive language detection
 - **1500+ languages** supported through open-source language database
 - **Detection** by file extension and filename patterns
 - **Handles special files** like Makefile, Dockerfile, etc.
 
-#### 7. Parser System (`internal/scanner/parsers/`)
+#### 8. Parser System (`internal/scanner/parsers/`)
 Specialized parsers for complex file formats:
 - **HCL parser** for Terraform files
 - **XML parser** for .csproj files
@@ -1073,11 +1096,14 @@ Specialized parsers for complex file formats:
 
 ### Detection Pipeline
 
+The scanner follows a systematic pipeline to analyze projects:
+
 1. **File Discovery** - Recursive file system scanning
 2. **Language Detection** - GitHub Linguist (go-enry) identification by extension and filename
-3. **Component Detection** - Project-specific analysis
-4. **Dependency Matching** - Pattern matching against rules
-5. **Result Assembly** - Hierarchical payload construction
+3. **Git Repository Analysis** - Pure Go git integration for repository information
+4. **Component Detection** - Project-specific analysis
+5. **Dependency Matching** - Pattern matching against rules
+6. **Result Assembly** - Hierarchical payload construction
 
 ## How to Extend It
 

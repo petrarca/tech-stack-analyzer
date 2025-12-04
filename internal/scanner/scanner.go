@@ -9,6 +9,7 @@ import (
 
 	"github.com/bmatcuk/doublestar/v4"
 	"github.com/petrarca/tech-stack-analyzer/internal/config"
+	"github.com/petrarca/tech-stack-analyzer/internal/git"
 	"github.com/petrarca/tech-stack-analyzer/internal/metadata"
 	"github.com/petrarca/tech-stack-analyzer/internal/progress"
 	"github.com/petrarca/tech-stack-analyzer/internal/provider"
@@ -226,6 +227,9 @@ func (s *Scanner) Scan() (*types.Payload, error) {
 	// Set custom properties from config
 	scanMeta.SetProperties(cfg.Properties)
 
+	// Set git information directly on payload
+	payload.Git = git.GetGitInfo(basePath)
+
 	// Attach metadata to root payload
 	payload.Metadata = scanMeta
 
@@ -365,6 +369,10 @@ func (s *Scanner) ScanFile(fileName string) (*types.Payload, error) {
 	techCount, techsCount := s.countTechs(payload)
 	scanMeta.SetLanguageCount(languageCount)
 	scanMeta.SetTechCounts(techCount, techsCount)
+
+	// Set git information directly on payload
+	payload.Git = git.GetGitInfo(basePath)
+
 	payload.Metadata = scanMeta
 
 	return payload, nil

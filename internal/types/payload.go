@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/go-enry/go-enry/v2"
+	"github.com/petrarca/tech-stack-analyzer/internal/git"
 )
 
 // Payload represents the analysis result for a directory or component
@@ -25,6 +26,7 @@ type Payload struct {
 	Reason       []string               `json:"reason"`
 	Properties   map[string]interface{} `json:"properties,omitempty"` // Tech-specific metadata (Docker, Kubernetes, Terraform, etc.)
 	CodeStats    interface{}            `json:"code_stats,omitempty"` // Code statistics (LOC, comments, blanks, complexity)
+	Git          *git.GitInfo           `json:"git,omitempty"`        // Git repository information (only in root payload)
 	Metadata     interface{}            `json:"metadata,omitempty"`   // Scan metadata (only in root payload)
 }
 
