@@ -86,8 +86,8 @@ func (d *Detector) detectPomXML(file types.File, currentPath, basePath string, p
 	payload.AddPrimaryTech("java")
 
 	// Parse pom.xml for dependencies using parser
-	javaParser := parsers.NewJavaParser()
-	dependencies := javaParser.ParsePomXML(string(content))
+	mavenParser := parsers.NewMavenParser()
+	dependencies := mavenParser.ParsePomXML(string(content))
 
 	// Extract dependency names for tech matching
 	var depNames []string
@@ -138,8 +138,8 @@ func (d *Detector) detectGradle(file types.File, currentPath, basePath string, p
 	payload.AddPrimaryTech("java")
 
 	// Parse Gradle file for dependencies using parser
-	javaParser := parsers.NewJavaParser()
-	dependencies := javaParser.ParseGradle(string(content))
+	gradleParser := parsers.NewGradleParser()
+	dependencies := gradleParser.ParseGradle(string(content))
 
 	// Extract dependency names for tech matching
 	var depNames []string

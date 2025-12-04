@@ -7,14 +7,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewDockerParser(t *testing.T) {
-	parser := NewDockerParser()
-	assert.NotNil(t, parser, "Should create a new DockerParser")
-	assert.IsType(t, &DockerParser{}, parser, "Should return correct type")
+func TestNewDockerComposeParser(t *testing.T) {
+	parser := NewDockerComposeParser()
+	assert.NotNil(t, parser, "Should create a new DockerComposeParser")
+	assert.IsType(t, &DockerComposeParser{}, parser, "Should return correct type")
 }
 
 func TestParseDockerCompose(t *testing.T) {
-	parser := NewDockerParser()
+	parser := NewDockerComposeParser()
 
 	tests := []struct {
 		name             string
@@ -102,7 +102,7 @@ services:
 `,
 			expectedServices: []DockerService{
 				{Name: "app", Image: "myapp:1.0.0", ContainerName: "my-app-container"},
-				{Name: "api", Image: "myapi:2.0.0", ContainerName: ""}, // Single quotes now properly trimmed
+				{Name: "api", Image: "myapi:2.0.0", ContainerName: ""},
 			},
 		},
 		{
@@ -182,7 +182,7 @@ volumes:
 }
 
 func TestParseDockerCompose_EdgeCases(t *testing.T) {
-	parser := NewDockerParser()
+	parser := NewDockerComposeParser()
 
 	tests := []struct {
 		name             string
@@ -264,7 +264,7 @@ volumes:
 }
 
 func TestParseDockerCompose_ImageFormats(t *testing.T) {
-	parser := NewDockerParser()
+	parser := NewDockerComposeParser()
 
 	tests := []struct {
 		name             string
@@ -302,7 +302,7 @@ func TestParseDockerCompose_ImageFormats(t *testing.T) {
 `,
 			expectedServices: []DockerService{
 				{Name: "app", Image: "nginx:latest", ContainerName: "web-server"},
-				{Name: "db", Image: "postgres:13", ContainerName: "postgres-db"}, // Single quotes now properly trimmed
+				{Name: "db", Image: "postgres:13", ContainerName: "postgres-db"},
 			},
 		},
 		{
@@ -345,8 +345,8 @@ func TestParseDockerCompose_ImageFormats(t *testing.T) {
 	}
 }
 
-func TestDockerParser_Integration(t *testing.T) {
-	parser := NewDockerParser()
+func TestDockerComposeParser_Integration(t *testing.T) {
+	parser := NewDockerComposeParser()
 
 	// Test realistic docker-compose.yml
 	realisticCompose := `version: '3.8'
@@ -436,8 +436,8 @@ volumes:
 	assert.Equal(t, "db-admin", serviceMap["adminer"].ContainerName)
 }
 
-func TestDockerParser_ErrorHandling(t *testing.T) {
-	parser := NewDockerParser()
+func TestDockerComposeParser_ErrorHandling(t *testing.T) {
+	parser := NewDockerComposeParser()
 
 	// Test malformed YAML that still parses
 	malformedContent := `services:

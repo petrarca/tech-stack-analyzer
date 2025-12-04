@@ -52,8 +52,8 @@ func (d *Detector) detectDockerCompose(file types.File, currentPath, basePath st
 	}
 
 	// Parse docker-compose file using parser
-	dockerParser := parsers.NewDockerParser()
-	services := dockerParser.ParseDockerCompose(string(content))
+	composeParser := parsers.NewDockerComposeParser()
+	services := composeParser.ParseDockerCompose(string(content))
 
 	if len(services) == 0 {
 		return nil
@@ -136,8 +136,8 @@ func (d *Detector) detectDockerfile(file types.File, currentPath, basePath strin
 	}
 
 	// Parse Dockerfile using parser
-	dockerParser := parsers.NewDockerParser()
-	dockerfileInfo := dockerParser.ParseDockerfile(string(content))
+	dockerfileParser := parsers.NewDockerfileParser()
+	dockerfileInfo := dockerfileParser.ParseDockerfile(string(content))
 
 	if dockerfileInfo == nil {
 		return nil
