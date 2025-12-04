@@ -237,14 +237,14 @@ func generateOutput(payload interface{}, aggregateFields string, prettyPrint boo
 
 		// Handle "all" as special case - aggregate all available fields
 		if len(fields) == 1 && fields[0] == "all" {
-			fields = []string{"tech", "techs", "languages", "licenses", "dependencies", "git"}
+			fields = []string{"tech", "techs", "reason", "languages", "licenses", "dependencies", "git"}
 		}
 
 		// Validate fields
-		validFields := map[string]bool{"tech": true, "techs": true, "languages": true, "licenses": true, "dependencies": true, "git": true}
+		validFields := map[string]bool{"tech": true, "techs": true, "reason": true, "languages": true, "licenses": true, "dependencies": true, "git": true}
 		for _, field := range fields {
 			if !validFields[field] {
-				return nil, fmt.Errorf("invalid aggregate field: %s. Valid fields: tech, techs, languages, licenses, dependencies, git, all", field)
+				return nil, fmt.Errorf("invalid aggregate field: %s. Valid fields: tech, techs, reason, languages, licenses, dependencies, git, all", field)
 			}
 		}
 

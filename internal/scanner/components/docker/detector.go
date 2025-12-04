@@ -173,7 +173,7 @@ func (d *Detector) detectDockerfile(file types.File, currentPath, basePath strin
 	// Add reason
 	payload.AddTech("docker", "matched file: "+file.Name)
 	for _, baseImage := range dockerfileInfo.BaseImages {
-		payload.Reason = append(payload.Reason, "base image: "+baseImage)
+		payload.AddReason("base image: " + baseImage)
 	}
 
 	return payload

@@ -105,12 +105,10 @@ The analyzer uses a command-based interface powered by [Cobra](https://github.co
 ./bin/stack-analyzer scan /path/to/package.json
 ./bin/stack-analyzer scan /path/to/pyproject.toml
 
-# Aggregate output (rollup technologies, languages, licenses, dependencies, git)
-./bin/stack-analyzer scan --aggregate tech,techs,languages,licenses,dependencies,git /path/to/project
-./bin/stack-analyzer scan --aggregate techs /path/to/project
-./bin/stack-analyzer scan --aggregate dependencies /path/to/project
-./bin/stack-analyzer scan --aggregate git /path/to/project
-./bin/stack-analyzer scan --aggregate all /path/to/project  # Aggregate all fields (tech, techs, languages, licenses, dependencies, git)
+# Aggregate output (rollup technologies, languages, licenses, dependencies, git, reasons)
+./bin/stack-analyzer scan --aggregate tech,techs,languages,licenses,dependencies,git,reason /path/to/project
+./bin/stack-analyzer scan --aggregate all /path/to/project  # Aggregate all fields
+./bin/stack-analyzer scan --aggregate reason /path/to/project  # Just reasons
 
 # List all available technologies
 ./bin/stack-analyzer info techs
@@ -139,6 +137,11 @@ The scanner outputs a hierarchical JSON structure showing detected technologies,
   "tech": ["nodejs"],
   "techs": ["nodejs", "react", "postgresql", "docker"],
   "languages": {"JavaScript": 145, "TypeScript": 89},
+  "reason": {
+    "docker": ["matched file: Dockerfile"],
+    "react": ["react matched: ^react$"],
+    "_": ["base image: nginx:alpine", "license detected: MIT"]
+  },
   "dependencies": [
     ["npm", "react", "^18.2.0"],
     ["npm", "express", "^4.18.2"]
@@ -775,7 +778,7 @@ The scanner outputs a hierarchical JSON structure representing the detected tech
 - **edges**: Array of relationships between components (e.g., service → database connections); created for architectural components like databases, SaaS services, and monitoring tools, but not for hosting/cloud providers
 - **inComponent**: Reference to parent component if this is a nested component
 - **licenses**: Array of detected licenses in this component
-- **reason**: Array explaining why technologies were detected
+- **reason**: Object mapping technologies to detection reasons, with "_" key for non-tech reasons (licenses, base images, etc.)
 - **properties**: Object containing tech-specific metadata (Docker, Terraform, Kubernetes, etc.)
 - **code_stats**: Code statistics with analyzed/unanalyzed buckets (only in root payload, see [Code Statistics](#code-statistics))
 - **git**: Git repository information (available at root and component levels for multi-repo projects)

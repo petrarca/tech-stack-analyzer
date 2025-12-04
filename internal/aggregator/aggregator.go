@@ -9,14 +9,15 @@ import (
 
 // AggregateOutput represents aggregated/rolled-up data from the scan
 type AggregateOutput struct {
-	Metadata     interface{}    `json:"metadata,omitempty"`     // Scan metadata (from root payload)
-	Git          []*git.GitInfo `json:"git,omitempty"`          // Git repositories (deduplicated)
-	Tech         []string       `json:"tech,omitempty"`         // Primary/main technologies
-	Techs        []string       `json:"techs,omitempty"`        // All detected technologies
-	Languages    map[string]int `json:"languages,omitempty"`    // Language file counts
-	Licenses     []string       `json:"licenses,omitempty"`     // Detected licenses
-	Dependencies [][]string     `json:"dependencies,omitempty"` // All dependencies [type, name, version]
-	CodeStats    interface{}    `json:"code_stats,omitempty"`   // Code statistics (if enabled)
+	Metadata     interface{}         `json:"metadata,omitempty"`     // Scan metadata (from root payload)
+	Git          []*git.GitInfo      `json:"git,omitempty"`          // Git repositories (deduplicated)
+	Tech         []string            `json:"tech,omitempty"`         // Primary/main technologies
+	Techs        []string            `json:"techs,omitempty"`        // All detected technologies
+	Reason       map[string][]string `json:"reason,omitempty"`       // Technology to detection reasons mapping, "_" for non-tech reasons
+	Languages    map[string]int      `json:"languages,omitempty"`    // Language file counts
+	Licenses     []string            `json:"licenses,omitempty"`     // Detected licenses
+	Dependencies [][]string          `json:"dependencies,omitempty"` // All dependencies [type, name, version]
+	CodeStats    interface{}         `json:"code_stats,omitempty"`   // Code statistics (if enabled)
 }
 
 // Aggregator handles aggregation of scan results
@@ -52,6 +53,10 @@ func (a *Aggregator) Aggregate(payload *types.Payload) *AggregateOutput {
 
 	if a.fields["techs"] {
 		output.Techs = a.collectTechs(payload)
+	}
+
+	if a.fields["reason"] {
+		output.Reason = a.collectReasons(payload)
 	}
 
 	if a.fields["languages"] {
@@ -116,6 +121,13 @@ func (a *Aggregator) collectTechs(payload *types.Payload) []string {
 	return sortStrings(techs)
 }
 
+// collectReasons recursively collects all reasons from payload and children
+func (a *Aggregator) collectReasons(payload *types.Payload) map[string][]string {
+	reasons := make(map[string][]string)
+	a.collectReasonsRecursive(payload, reasons)
+	return reasons
+}
+
 // collectTechsRecursive helper function
 func (a *Aggregator) collectTechsRecursive(payload *types.Payload, techSet map[string]bool) {
 	// Add techs from current payload
@@ -126,6 +138,34 @@ func (a *Aggregator) collectTechsRecursive(payload *types.Payload, techSet map[s
 	// Recursively process children
 	for _, child := range payload.Childs {
 		a.collectTechsRecursive(child, techSet)
+	}
+}
+
+// collectReasonsRecursive helper function
+func (a *Aggregator) collectReasonsRecursive(payload *types.Payload, reasons map[string][]string) {
+	// Add reasons from current payload
+	for tech, techReasons := range payload.Reason {
+		if reasons[tech] == nil {
+			reasons[tech] = make([]string, 0)
+		}
+		// Add reasons with deduplication
+		for _, reason := range techReasons {
+			reasonExists := false
+			for _, existing := range reasons[tech] {
+				if existing == reason {
+					reasonExists = true
+					break
+				}
+			}
+			if !reasonExists {
+				reasons[tech] = append(reasons[tech], reason)
+			}
+		}
+	}
+
+	// Recursively process children
+	for _, child := range payload.Childs {
+		a.collectReasonsRecursive(child, reasons)
 	}
 }
 

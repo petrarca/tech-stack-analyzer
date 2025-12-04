@@ -211,18 +211,10 @@ func (d *ComponentDetector) createImplicitComponentForTech(payload *types.Payloa
 				return
 			}
 
-			// Create a new child component (like TypeScript lines 47-54)
-			// CRITICAL FIX: Use parent's path, not currentPath (like TypeScript: folderPath: pl.path)
-			component := types.NewPayload(rule.Name, payload.Path)
-
-			// NEW: Check is_primary_tech field to determine if we should add primary tech
-			if ShouldAddPrimaryTech(rule) {
-				component.AddPrimaryTech(rule.Tech)
-			} else {
-				component.AddTech(rule.Tech, fmt.Sprintf("%s matched: /^%s$/", tech, tech))
-			}
-
-			component.Reason = append(component.Reason, fmt.Sprintf("%s matched: /^%s$/", tech, tech))
+			// Create component payload
+			component := types.NewPayload(tech, []string{currentPath})
+			component.AddTech(tech, fmt.Sprintf("matched: /^%s$/", tech))
+			component.AddReason(fmt.Sprintf("%s matched: /^%s$/", tech, tech))
 
 			// Add the component as a child
 			payload.AddChild(component)

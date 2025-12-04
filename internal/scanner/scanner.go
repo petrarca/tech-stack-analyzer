@@ -571,8 +571,15 @@ func (s *Scanner) mergeComponents(components []*types.Payload) *types.Payload {
 			base.AddLicense(license)
 		}
 
-		// Merge reasons
-		base.Reason = append(base.Reason, comp.Reason...)
+		// Copy component reasons to base payload for visibility
+		if len(comp.Reason) > 0 {
+			// Only copy the "_" (non-tech) reasons, not tech-specific ones
+			if nonTechReasons, exists := comp.Reason["_"]; exists {
+				for _, reason := range nonTechReasons {
+					base.AddReason(reason)
+				}
+			}
+		}
 	}
 
 	return base
@@ -796,7 +803,7 @@ func (s *Scanner) findImplicitComponent(payload *types.Payload, rule types.Rule,
 		component.AddTech(rule.Tech, fmt.Sprintf("matched file: %s", currentPath))
 	}
 
-	component.Reason = append(component.Reason, fmt.Sprintf("matched file: %s", currentPath))
+	component.AddReason(fmt.Sprintf("matched file: %s", currentPath))
 
 	// Add the component as a child
 	payload.AddChild(component)

@@ -23,7 +23,7 @@ type Payload struct {
 	Edges        []Edge                 `json:"edges"`
 	InComponent  *Payload               `json:"inComponent"`
 	Licenses     []string               `json:"licenses"`
-	Reason       []string               `json:"reason"`
+	Reason       map[string][]string    `json:"reason"` // Maps technology to detection reasons, "_" for non-tech reasons
 	Properties   map[string]interface{} `json:"properties,omitempty"`
 	CodeStats    interface{}            `json:"code_stats,omitempty"`
 	Git          *git.GitInfo           `json:"git,omitempty"`
@@ -67,7 +67,7 @@ func NewPayload(name string, paths []string) *Payload {
 		Childs:       make([]*Payload, 0),
 		Edges:        make([]Edge, 0),
 		Licenses:     make([]string, 0),
-		Reason:       make([]string, 0),
+		Reason:       make(map[string][]string), // Initialize reason mapping
 		Properties:   make(map[string]interface{}),
 	}
 }
@@ -149,6 +149,7 @@ func (p *Payload) Combine(other *Payload) {
 	p.mergeTechField(other.Tech)
 	p.mergeDependencies(other.Dependencies)
 	p.mergeLicenses(other.Licenses)
+	p.mergeReasons(other.Reason)
 	p.mergeProperties(other.Properties)
 	p.mergeGit(other.Git)
 }
@@ -200,6 +201,24 @@ func (p *Payload) mergeLicenses(licenses []string) {
 	for _, license := range licenses {
 		if !p.containsString(p.Licenses, license) {
 			p.Licenses = append(p.Licenses, license)
+		}
+	}
+}
+
+func (p *Payload) mergeReasons(reasons map[string][]string) {
+	for tech, reasons := range reasons {
+		// Skip "_" key as it's for non-tech reasons, not actual technologies
+		if tech == "_" {
+			// Add "_" reasons directly without adding "_" as a tech
+			for _, reason := range reasons {
+				p.AddReason(reason)
+			}
+			continue
+		}
+
+		for _, reason := range reasons {
+			// Use AddTech to handle deduplication and proper merging
+			p.AddTech(tech, reason)
 		}
 	}
 }
@@ -278,19 +297,23 @@ func (p *Payload) AddTech(tech string, reason string) {
 		// The original's addTech method only adds to techs set, doesn't set this.tech
 	}
 
-	// CRITICAL FIX: Add reasons with deduplication
-	// This matches TypeScript behavior where unique extension reasons are preserved
+	// Add reason to Reason mapping for clear association
 	if reason != "" {
-		// Check if reason already exists to avoid duplicates
+		// Initialize tech reasons slice if not exists
+		if p.Reason[tech] == nil {
+			p.Reason[tech] = make([]string, 0)
+		}
+
+		// Check if reason already exists for this tech to avoid duplicates
 		reasonExists := false
-		for _, existing := range p.Reason {
+		for _, existing := range p.Reason[tech] {
 			if existing == reason {
 				reasonExists = true
 				break
 			}
 		}
 		if !reasonExists {
-			p.Reason = append(p.Reason, reason)
+			p.Reason[tech] = append(p.Reason[tech], reason)
 		}
 	}
 }
@@ -300,6 +323,28 @@ func (p *Payload) AddTechs(techs map[string][]string) {
 	for tech, reasons := range techs {
 		for _, reason := range reasons {
 			p.AddTech(tech, reason)
+		}
+	}
+}
+
+// AddReason adds a non-tech reason to the "_" key
+func (p *Payload) AddReason(reason string) {
+	if reason != "" {
+		// Initialize "_" slice if not exists
+		if p.Reason["_"] == nil {
+			p.Reason["_"] = make([]string, 0)
+		}
+
+		// Check if reason already exists to avoid duplicates
+		reasonExists := false
+		for _, existing := range p.Reason["_"] {
+			if existing == reason {
+				reasonExists = true
+				break
+			}
+		}
+		if !reasonExists {
+			p.Reason["_"] = append(p.Reason["_"], reason)
 		}
 	}
 }

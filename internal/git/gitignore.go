@@ -45,60 +45,73 @@ func (l *Loader) LoadPatterns(scanPath string) ([]string, error) {
 	var gitignoreFiles []string
 
 	// Find all .gitignore files recursively
-	err := filepath.Walk(scanPath, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(scanPath, l.processGitignoreFile(&allPatterns, &gitignoreFiles))
+	if err != nil {
+		return nil, fmt.Errorf("error walking directory tree: %w", err)
+	}
+
+	// Report gitignore loading info through progress system (consistent across verbose/debug)
+	l.reportLoadingProgress(len(allPatterns), len(gitignoreFiles))
+
+	// Detailed debug logging
+	l.logLoadingDetails(gitignoreFiles, allPatterns)
+
+	// Deduplicate patterns
+	return l.deduplicatePatterns(allPatterns), nil
+}
+
+// processGitignoreFile returns a filepath.WalkFunc that processes .gitignore files
+func (l *Loader) processGitignoreFile(allPatterns *[]string, gitignoreFiles *[]string) filepath.WalkFunc {
+	return func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err // Skip if we can't access a path
 		}
 
 		// Only process .gitignore files
 		if info.Name() == ".gitignore" && !info.IsDir() {
-			// Skip .gitignore files in cache/temp directories - these often contain "*"
-			// which would exclude everything inappropriately
-			dir := filepath.Dir(path)
-			if l.shouldSkipGitignore(dir) {
-				if l.logger != nil {
-					l.logger.Debugf("Skipping .gitignore in cache directory: %s", path)
-				}
-				return nil
+			if l.handleGitignoreFile(path, allPatterns, gitignoreFiles) {
+				return nil // File was processed successfully
 			}
-
-			gitignoreFiles = append(gitignoreFiles, path)
-			patterns, err := l.loadPatternsFromFile(path)
-			if err != nil {
-				// Log error but continue processing other files
-				if l.progress != nil {
-					l.progress.Info(fmt.Sprintf("Warning: Failed to read %s: %v", path, err))
-				}
-				if l.logger != nil {
-					l.logger.Errorf("Failed to read .gitignore file %s: %v", path, err)
-				}
-				return nil
-			}
-
-			// Debug logging for loaded patterns
-			if l.logger != nil {
-				l.logger.Debugf("Loaded %d patterns from %s: %v", len(patterns), path, patterns)
-			}
-			allPatterns = append(allPatterns, patterns...)
 		}
 
 		return nil
-	})
+	}
+}
 
-	if err != nil {
-		return nil, fmt.Errorf("error walking directory tree: %w", err)
+// handleGitignoreFile processes a single .gitignore file and returns true if successful
+func (l *Loader) handleGitignoreFile(path string, allPatterns *[]string, gitignoreFiles *[]string) bool {
+	// Skip .gitignore files in cache/temp directories
+	dir := filepath.Dir(path)
+	if l.shouldSkipGitignore(dir) {
+		l.logSkippedGitignore(path)
+		return false
 	}
 
-	// Report gitignore loading info through progress system (consistent across verbose/debug)
+	*gitignoreFiles = append(*gitignoreFiles, path)
+	patterns, err := l.loadPatternsFromFile(path)
+	if err != nil {
+		l.logGitignoreError(path, err)
+		return false
+	}
+
+	l.logLoadedPatterns(path, patterns)
+	*allPatterns = append(*allPatterns, patterns...)
+	return true
+}
+
+// reportLoadingProgress reports loading progress through the progress system
+func (l *Loader) reportLoadingProgress(patternCount, fileCount int) {
 	if l.progress != nil {
-		if len(gitignoreFiles) > 0 {
-			l.progress.Info(fmt.Sprintf("Loaded %d patterns from %d .gitignore files", len(allPatterns), len(gitignoreFiles)))
+		if fileCount > 0 {
+			l.progress.Info(fmt.Sprintf("Loaded %d patterns from %d .gitignore files", patternCount, fileCount))
 		} else {
 			l.progress.Info("No .gitignore files found")
 		}
 	}
+}
 
-	// Detailed debug logging
+// logLoadingDetails provides detailed debug logging about the loading process
+func (l *Loader) logLoadingDetails(gitignoreFiles []string, allPatterns []string) {
 	if l.logger != nil {
 		l.logger.Debugf("Gitignore loading complete:")
 		l.logger.Debugf("  - Total .gitignore files processed: %d", len(gitignoreFiles))
@@ -107,9 +120,30 @@ func (l *Loader) LoadPatterns(scanPath string) ([]string, error) {
 		}
 		l.logger.Debugf("  - Total unique patterns after deduplication: %d", len(l.deduplicatePatterns(allPatterns)))
 	}
+}
 
-	// Deduplicate patterns
-	return l.deduplicatePatterns(allPatterns), nil
+// logSkippedGitignore logs when a .gitignore file is skipped
+func (l *Loader) logSkippedGitignore(path string) {
+	if l.logger != nil {
+		l.logger.Debugf("Skipping .gitignore in cache directory: %s", path)
+	}
+}
+
+// logGitignoreError logs errors when reading .gitignore files
+func (l *Loader) logGitignoreError(path string, err error) {
+	if l.progress != nil {
+		l.progress.Info(fmt.Sprintf("Warning: Failed to read %s: %v", path, err))
+	}
+	if l.logger != nil {
+		l.logger.Errorf("Failed to read .gitignore file %s: %v", path, err)
+	}
+}
+
+// logLoadedPatterns logs successfully loaded patterns
+func (l *Loader) logLoadedPatterns(path string, patterns []string) {
+	if l.logger != nil {
+		l.logger.Debugf("Loaded %d patterns from %s: %v", len(patterns), path, patterns)
+	}
 }
 
 // shouldSkipGitignore checks if we should skip loading a .gitignore file
@@ -179,6 +213,11 @@ func (l *Loader) LoadPatternsFromFile(gitignorePath string) ([]string, error) {
 
 // deduplicatePatterns removes duplicate patterns while preserving order
 func (l *Loader) deduplicatePatterns(patterns []string) []string {
+	// Return empty slice if no patterns
+	if len(patterns) == 0 {
+		return []string{}
+	}
+
 	seen := make(map[string]bool)
 	var result []string
 

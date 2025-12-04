@@ -73,7 +73,7 @@ func (d *LicenseDetector) AddLicensesToPayload(payload *types.Payload, dirPath s
 			// Add reason with filename and confidence for traceability
 			reason := fmt.Sprintf("license detected: %s (confidence: %.2f, file: %s)",
 				match.License, match.Confidence, match.File)
-			payload.Reason = append(payload.Reason, reason)
+			payload.AddReason(reason)
 		}
 	}
 }
