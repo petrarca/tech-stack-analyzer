@@ -12,7 +12,5 @@ extensions:
   - .hpp
 files:
   - CMakeLists.txt
-  - Makefile
-  - makefile
   - configure.ac
   - Makefile.am

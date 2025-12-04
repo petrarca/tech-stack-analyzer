@@ -7,6 +7,7 @@ require (
 	github.com/boyter/scc/v3 v3.6.0
 	github.com/go-enry/go-enry/v2 v2.9.2
 	github.com/go-enry/go-license-detector/v4 v4.3.1
+	github.com/go-git/go-git/v5 v5.4.2
 	github.com/hashicorp/hcl/v2 v2.24.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.10.1
@@ -33,7 +34,6 @@ require (
 	github.com/go-enry/go-oniguruma v1.2.1 // indirect
 	github.com/go-git/gcfg v1.5.0 // indirect
 	github.com/go-git/go-billy/v5 v5.3.1 // indirect
-	github.com/go-git/go-git/v5 v5.4.2 // indirect
 	github.com/hhatto/gorst v0.0.0-20181029133204-ca9f730cac5b // indirect
 	github.com/imdario/mergo v0.3.13 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect

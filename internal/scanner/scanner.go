@@ -22,6 +22,7 @@ import (
 
 	// Import component detectors to trigger init() registration
 	_ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/cocoapods"
+	_ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/cplusplus"
 	_ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/delphi"
 	_ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/deno"
 	_ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/docker"

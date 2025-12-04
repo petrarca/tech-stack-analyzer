@@ -1310,14 +1310,16 @@ dependencies:
 - `npm`, `python`, `pip`, `cargo`, `composer`, `nuget`, `maven`, `gradle`
 - `docker`, `githubAction`, `terraform.resource`
 
-**`files`** - Specific files to match
+**`files`** - Specific files to match (glob patterns)
 ```yaml
 files:
-  - package.json
-  - requirements.txt
-  - Dockerfile
-  - config/*.yml                # Glob patterns supported
+  - package.json              # Exact filename match
+  - requirements.txt          # Exact filename match
+  - Dockerfile                # Exact filename match
+  - spfile*.ora               # Glob: matches spfile.ora, spfileORCL.ora, etc.
+  - *.config.js               # Glob: matches any .config.js file
 ```
+**Pattern syntax:** Glob patterns where `*` matches any characters and `?` matches a single character.
 
 **`extensions`** - File extensions to match
 ```yaml
@@ -1328,9 +1330,9 @@ extensions:
   - .go
 ```
 
-**`content`** - Content patterns for precise detection (independent of top-level extensions/files)
+**`content`** - Content patterns for precise detection (regex patterns)
 
-Content patterns support multiple match types for flexible detection:
+Content patterns use **regex** for matching file contents:
 
 ```yaml
 content:

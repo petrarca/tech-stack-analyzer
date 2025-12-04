@@ -101,39 +101,64 @@ func matchFileName(pattern, fileName string) bool {
 		return true
 	}
 
-	// Only check regex if pattern contains regex characters
-	if isRegexPattern(pattern) {
-		return matchRegex(pattern, fileName)
+	// Check if pattern contains glob characters
+	if isGlobPattern(pattern) {
+		return matchGlob(pattern, fileName)
 	}
 
 	return false
 }
 
-func matchRegex(pattern, fileName string) bool {
+// isGlobPattern checks if a string contains glob special characters
+func isGlobPattern(pattern string) bool {
+	return strings.Contains(pattern, "*") || strings.Contains(pattern, "?")
+}
+
+// matchGlob converts a glob pattern to regex and matches
+func matchGlob(pattern, fileName string) bool {
+	// Convert glob to regex:
+	// - Escape regex special chars (except * and ?)
+	// - Convert * to .*
+	// - Convert ? to .
+	regexPattern := globToRegex(pattern)
+
 	// Try to get from cache first
-	if cached, ok := regexCache.Load(pattern); ok {
+	if cached, ok := regexCache.Load(regexPattern); ok {
 		re := cached.(*regexp.Regexp)
 		return re.MatchString(fileName)
 	}
 
 	// Compile and cache for future use
-	re, err := regexp.Compile(pattern)
+	re, err := regexp.Compile(regexPattern)
 	if err != nil {
 		return false
 	}
-	regexCache.Store(pattern, re)
+	regexCache.Store(regexPattern, re)
 	return re.MatchString(fileName)
 }
 
-// isRegexPattern checks if a string contains regex special characters
-func isRegexPattern(pattern string) bool {
-	regexChars := []string{"*", "+", "?", "[", "]", "(", ")", "|", "^", "$", "\\", "."}
-	for _, char := range regexChars {
-		if strings.Contains(pattern, char) {
-			return true
+// globToRegex converts a glob pattern to a regex pattern
+func globToRegex(glob string) string {
+	var result strings.Builder
+	result.WriteString("^")
+
+	for _, char := range glob {
+		switch char {
+		case '*':
+			result.WriteString(".*")
+		case '?':
+			result.WriteString(".")
+		case '.', '+', '(', ')', '[', ']', '{', '}', '^', '$', '|', '\\':
+			// Escape regex special characters
+			result.WriteString("\\")
+			result.WriteRune(char)
+		default:
+			result.WriteRune(char)
 		}
 	}
-	return false
+
+	result.WriteString("$")
+	return result.String()
 }
 
 // MatchFiles runs all file matchers and returns matched techs
