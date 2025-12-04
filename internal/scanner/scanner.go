@@ -367,6 +367,11 @@ func (s *Scanner) ScanFile(fileName string) (*types.Payload, error) {
 		ctx.AddLanguage(lang)
 	}
 
+	// Collect code statistics if enabled (pass go-enry language for grouping)
+	if s.codeStats != nil {
+		s.codeStats.ProcessFile(filePath, s.langDetector.DetectLanguage(fileName, content), content)
+	}
+
 	// Add metadata for single file scan
 	scanMeta := metadata.NewScanMetadata(basePath, spec.Version, s.excludeDirs)
 	fileCount, componentCount := s.countFilesAndComponents(payload)

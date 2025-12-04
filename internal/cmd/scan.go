@@ -174,7 +174,7 @@ func runScan(cmd *cobra.Command, args []string) {
 	// Create code stats analyzer (enabled by default, disabled with --no-code-stats)
 	codeStatsAnalyzer := codestats.NewAnalyzer(!settings.NoCodeStats)
 
-	s, err := scanner.NewScannerWithOptionsAndLogger(scannerPath, settings.ExcludeDirs, settings.Verbose, settings.Debug, settings.TraceTimings, settings.TraceRules, nil, logger)
+	s, err := scanner.NewScannerWithOptionsAndLogger(scannerPath, settings.ExcludeDirs, settings.Verbose, settings.Debug, settings.TraceTimings, settings.TraceRules, codeStatsAnalyzer, logger)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to create scanner")
 	}
