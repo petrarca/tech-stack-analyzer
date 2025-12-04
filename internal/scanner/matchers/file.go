@@ -3,9 +3,13 @@ package matchers
 import (
 	"regexp"
 	"strings"
+	"sync"
 
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
+
+// regexCache holds compiled regex patterns
+var regexCache = sync.Map{}
 
 // FileMatcher is a function that matches files and returns the matched tech and file
 type FileMatcher func(files []types.File, currentPath, basePath string) (tech string, matchedFile string, matched bool)
@@ -26,6 +30,10 @@ func GetFileMatchers() []FileMatcher {
 // ClearFileMatchers clears all registered file matchers (useful for testing)
 func ClearFileMatchers() {
 	fileMatchers = nil
+	regexCache.Range(func(key, value interface{}) bool {
+		regexCache.Delete(key)
+		return true
+	})
 }
 
 // BuildFileMatchersFromRules creates file matchers from rules
@@ -88,17 +96,32 @@ func matchFilePattern(pattern string, fileList []types.File) (bool, string) {
 }
 
 func matchFileName(pattern, fileName string) bool {
+	// Fast path: exact match (most common case)
+	if pattern == fileName {
+		return true
+	}
+
+	// Only check regex if pattern contains regex characters
 	if isRegexPattern(pattern) {
 		return matchRegex(pattern, fileName)
 	}
-	return fileName == pattern
+
+	return false
 }
 
 func matchRegex(pattern, fileName string) bool {
+	// Try to get from cache first
+	if cached, ok := regexCache.Load(pattern); ok {
+		re := cached.(*regexp.Regexp)
+		return re.MatchString(fileName)
+	}
+
+	// Compile and cache for future use
 	re, err := regexp.Compile(pattern)
 	if err != nil {
 		return false
 	}
+	regexCache.Store(pattern, re)
 	return re.MatchString(fileName)
 }
 
