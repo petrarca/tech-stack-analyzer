@@ -57,7 +57,7 @@ func init() {
 
 	// Set up flags with defaults from environment variables
 	scanCmd.Flags().StringVarP(&settings.OutputFile, "output", "o", outputFile, "Output file path (default: stack-analysis.json)")
-	scanCmd.Flags().StringVar(&settings.Aggregate, "aggregate", aggregate, "Aggregate fields: tech,techs,languages,licenses,dependencies,all")
+	scanCmd.Flags().StringVar(&settings.Aggregate, "aggregate", aggregate, "Aggregate fields: tech,techs,languages,licenses,dependencies,git,all")
 	scanCmd.Flags().BoolVar(&settings.PrettyPrint, "pretty", prettyPrint, "Pretty print JSON output")
 	scanCmd.Flags().BoolVarP(&settings.Verbose, "verbose", "v", verbose, "Show progress with simple output")
 	scanCmd.Flags().BoolVarP(&settings.Debug, "debug", "d", debug, "Show progress with tree structure (cannot be used with --verbose)")
@@ -237,14 +237,14 @@ func generateOutput(payload interface{}, aggregateFields string, prettyPrint boo
 
 		// Handle "all" as special case - aggregate all available fields
 		if len(fields) == 1 && fields[0] == "all" {
-			fields = []string{"tech", "techs", "languages", "licenses", "dependencies"}
+			fields = []string{"tech", "techs", "languages", "licenses", "dependencies", "git"}
 		}
 
 		// Validate fields
-		validFields := map[string]bool{"tech": true, "techs": true, "languages": true, "licenses": true, "dependencies": true}
+		validFields := map[string]bool{"tech": true, "techs": true, "languages": true, "licenses": true, "dependencies": true, "git": true}
 		for _, field := range fields {
 			if !validFields[field] {
-				return nil, fmt.Errorf("invalid aggregate field: %s. Valid fields: tech, techs, languages, licenses, dependencies, all", field)
+				return nil, fmt.Errorf("invalid aggregate field: %s. Valid fields: tech, techs, languages, licenses, dependencies, git, all", field)
 			}
 		}
 

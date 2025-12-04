@@ -394,6 +394,14 @@ func (s *Scanner) recurse(payload *types.Payload, filePath string) error {
 	// This might return a different context if a component was detected
 	ctx := s.applyRules(payload, files, filePath)
 
+	// Check if this directory is a git repository and set git info
+	// Only set git info if it's not already set (avoid overwriting parent repo info)
+	if ctx.Git == nil {
+		if gitInfo := git.GetGitInfo(filePath); gitInfo != nil {
+			ctx.Git = gitInfo
+		}
+	}
+
 	// Detect licenses from LICENSE files in this directory
 	// This adds file-based license detection (MIT, Apache-2.0, etc.) from LICENSE files
 	s.licenseDetector.AddLicensesToPayload(ctx, filePath)
@@ -479,6 +487,14 @@ func (s *Scanner) detectComponents(payload, ctx *types.Payload, files []types.Fi
 	for _, detector := range components.GetDetectors() {
 		detectedComponents := detector.Detect(files, currentPath, s.provider.GetBasePath(), s.provider, s.depDetector)
 		for _, component := range detectedComponents {
+			// Add git information to newly created components
+			// Only set if not already present (allows detectors to override if needed)
+			if component.Git == nil {
+				if gitInfo := git.GetGitInfo(currentPath); gitInfo != nil {
+					component.Git = gitInfo
+				}
+			}
+
 			if component.Name == "virtual" {
 				virtualComponents = append(virtualComponents, component)
 			} else {

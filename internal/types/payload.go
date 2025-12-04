@@ -21,13 +21,13 @@ type Payload struct {
 	Dependencies []Dependency           `json:"dependencies"`
 	Childs       []*Payload             `json:"childs"` // Changed from Children to Childs
 	Edges        []Edge                 `json:"edges"`
-	InComponent  *Payload               `json:"inComponent"` // Added missing field
-	Licenses     []string               `json:"licenses"`    // Added missing field
+	InComponent  *Payload               `json:"inComponent"`
+	Licenses     []string               `json:"licenses"`
 	Reason       []string               `json:"reason"`
-	Properties   map[string]interface{} `json:"properties,omitempty"` // Tech-specific metadata (Docker, Kubernetes, Terraform, etc.)
-	CodeStats    interface{}            `json:"code_stats,omitempty"` // Code statistics (LOC, comments, blanks, complexity)
-	Git          *git.GitInfo           `json:"git,omitempty"`        // Git repository information (only in root payload)
-	Metadata     interface{}            `json:"metadata,omitempty"`   // Scan metadata (only in root payload)
+	Properties   map[string]interface{} `json:"properties,omitempty"`
+	CodeStats    interface{}            `json:"code_stats,omitempty"`
+	Git          *git.GitInfo           `json:"git,omitempty"`
+	Metadata     interface{}            `json:"metadata,omitempty"`
 }
 
 // Edge represents a relationship between components
@@ -150,6 +150,7 @@ func (p *Payload) Combine(other *Payload) {
 	p.mergeDependencies(other.Dependencies)
 	p.mergeLicenses(other.Licenses)
 	p.mergeProperties(other.Properties)
+	p.mergeGit(other.Git)
 }
 
 // Helper functions to reduce cognitive complexity
@@ -232,6 +233,13 @@ func (p *Payload) mergeProperties(properties map[string]interface{}) {
 			// For other properties, later values override earlier ones
 			p.Properties[key] = value
 		}
+	}
+}
+
+func (p *Payload) mergeGit(gitInfo *git.GitInfo) {
+	// Only set git info if we don't already have it (preserve first detected)
+	if p.Git == nil && gitInfo != nil {
+		p.Git = gitInfo
 	}
 }
 

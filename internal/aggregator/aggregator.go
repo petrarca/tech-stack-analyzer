@@ -3,12 +3,14 @@ package aggregator
 import (
 	"sort"
 
+	"github.com/petrarca/tech-stack-analyzer/internal/git"
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
 
 // AggregateOutput represents aggregated/rolled-up data from the scan
 type AggregateOutput struct {
 	Metadata     interface{}    `json:"metadata,omitempty"`     // Scan metadata (from root payload)
+	Git          []*git.GitInfo `json:"git,omitempty"`          // Git repositories (deduplicated)
 	Tech         []string       `json:"tech,omitempty"`         // Primary/main technologies
 	Techs        []string       `json:"techs,omitempty"`        // All detected technologies
 	Languages    map[string]int `json:"languages,omitempty"`    // Language file counts
@@ -37,6 +39,13 @@ func NewAggregator(fields []string) *Aggregator {
 func (a *Aggregator) Aggregate(payload *types.Payload) *AggregateOutput {
 	output := &AggregateOutput{}
 
+	// Include metadata from the root payload
+	output.Metadata = payload.Metadata
+
+	if a.fields["git"] {
+		output.Git = a.collectGit(payload)
+	}
+
 	if a.fields["tech"] {
 		output.Tech = a.collectPrimaryTechs(payload)
 	}
@@ -56,9 +65,6 @@ func (a *Aggregator) Aggregate(payload *types.Payload) *AggregateOutput {
 	if a.fields["dependencies"] {
 		output.Dependencies = a.collectDependencies(payload)
 	}
-
-	// Include metadata from the root payload
-	output.Metadata = payload.Metadata
 
 	// Include code stats if present
 	output.CodeStats = payload.CodeStats
@@ -209,6 +215,48 @@ func (a *Aggregator) collectDependenciesRecursive(payload *types.Payload, depMap
 	// Recursively process children
 	for _, child := range payload.Childs {
 		a.collectDependenciesRecursive(child, depMap)
+	}
+}
+
+// collectGit recursively collects all unique git repositories
+func (a *Aggregator) collectGit(payload *types.Payload) []*git.GitInfo {
+	// Use a map with string key to track unique git repositories
+	// Key format: "remote_url|branch|commit"
+	gitMap := make(map[string]*git.GitInfo)
+	a.collectGitRecursive(payload, gitMap)
+
+	// Convert to slice format for JSON output
+	gitRepos := make([]*git.GitInfo, 0, len(gitMap))
+	for _, gitInfo := range gitMap {
+		gitRepos = append(gitRepos, gitInfo)
+	}
+
+	// Sort by remote URL, then branch, then commit
+	sort.Slice(gitRepos, func(i, j int) bool {
+		if gitRepos[i].RemoteURL != gitRepos[j].RemoteURL {
+			return gitRepos[i].RemoteURL < gitRepos[j].RemoteURL
+		}
+		if gitRepos[i].Branch != gitRepos[j].Branch {
+			return gitRepos[i].Branch < gitRepos[j].Branch
+		}
+		return gitRepos[i].Commit < gitRepos[j].Commit
+	})
+
+	return gitRepos
+}
+
+// collectGitRecursive helper function
+func (a *Aggregator) collectGitRecursive(payload *types.Payload, gitMap map[string]*git.GitInfo) {
+	// Add git info from current payload
+	if payload.Git != nil {
+		// Create unique key from remote_url|branch|commit
+		key := payload.Git.RemoteURL + "|" + payload.Git.Branch + "|" + payload.Git.Commit
+		gitMap[key] = payload.Git
+	}
+
+	// Recursively process children
+	for _, child := range payload.Childs {
+		a.collectGitRecursive(child, gitMap)
 	}
 }
 

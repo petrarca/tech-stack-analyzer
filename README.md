@@ -104,11 +104,12 @@ The analyzer uses a command-based interface powered by [Cobra](https://github.co
 ./bin/stack-analyzer scan /path/to/package.json
 ./bin/stack-analyzer scan /path/to/pyproject.toml
 
-# Aggregate output (rollup technologies, languages, licenses, dependencies)
-./bin/stack-analyzer scan --aggregate tech,techs,languages,licenses,dependencies /path/to/project
+# Aggregate output (rollup technologies, languages, licenses, dependencies, git)
+./bin/stack-analyzer scan --aggregate tech,techs,languages,licenses,dependencies,git /path/to/project
 ./bin/stack-analyzer scan --aggregate techs /path/to/project
 ./bin/stack-analyzer scan --aggregate dependencies /path/to/project
-./bin/stack-analyzer scan --aggregate all /path/to/project  # Aggregate all fields (tech, techs, languages, licenses, dependencies)
+./bin/stack-analyzer scan --aggregate git /path/to/project
+./bin/stack-analyzer scan --aggregate all /path/to/project  # Aggregate all fields (tech, techs, languages, licenses, dependencies, git)
 
 # List all available technologies
 ./bin/stack-analyzer info techs
@@ -150,10 +151,16 @@ The scanner outputs a hierarchical JSON structure showing detected technologies,
   "childs": [
     {
       "id": "backend",
-      "name": "backend",
+      "name": "backend", 
       "path": "/backend",
       "tech": ["nodejs"],
-      "techs": ["nodejs", "express", "postgresql"]
+      "techs": ["nodejs", "express", "postgresql"],
+      "git": {
+        "branch": "develop",
+        "commit": "def5678",
+        "is_dirty": true,
+        "remote_url": "https://github.com/company/backend.git"
+      }
     }
   ],
   "metadata": {
@@ -164,7 +171,7 @@ The scanner outputs a hierarchical JSON structure showing detected technologies,
 }
 ```
 
-**Aggregated Output** (`--aggregate techs,languages,dependencies`):
+**Aggregated Output** (`--aggregate techs,languages,dependencies,git`):
 ```json
 {
   "metadata": {
@@ -180,6 +187,14 @@ The scanner outputs a hierarchical JSON structure showing detected technologies,
     ["npm", "react", "^18.2.0"],
     ["npm", "express", "^4.18.2"],
     ["npm", "vite", "^5.0.0"]
+  ],
+  "git": [
+    {
+      "branch": "main",
+      "commit": "abc1234",
+      "is_dirty": false,
+      "remote_url": "https://github.com/user/project.git"
+    }
   ]
 }
 ```
@@ -194,6 +209,10 @@ The scanner outputs a hierarchical JSON structure showing detected technologies,
 - `metadata` - Scan execution info (timestamp, duration, file counts)
 
 See [Output Structure](#output-structure) for complete field descriptions.
+
+### Multi-Git Repository Support
+
+The analyzer automatically detects git repositories at both root and component levels, enabling tracking of multiple repositories within a single scan. Each component shows its own git information (branch, commit, dirty status, remote URL), making it ideal for monorepos, workspace scans, and CI/CD pipelines where different sub-projects may be in different git states.
 
 ### Code Statistics
 
@@ -366,7 +385,7 @@ export STACK_ANALYZER_PRETTY=false
 
 # Scan behavior
 export STACK_ANALYZER_EXCLUDE_DIRS=vendor,node_modules,build
-export STACK_ANALYZER_AGGREGATE=tech,techs,languages
+export STACK_ANALYZER_AGGREGATE=tech,techs,languages,git
 export STACK_ANALYZER_VERBOSE=true         # Show detailed progress information
 
 # Logging
@@ -488,7 +507,7 @@ stack-analyzer scan [path] [flags]
 
 **Flags:**
 - `--output, -o` - Output file path (default: stack-analysis.json). Use `-o -` or `-o /dev/stdout` for piping
-- `--aggregate` - Aggregate fields: `tech,techs,languages,licenses,dependencies,all` (use `all` for all aggregated fields)
+- `--aggregate` - Aggregate fields: `tech,techs,languages,licenses,dependencies,git,all` (use `all` for all aggregated fields)
 - `--exclude` - Patterns to exclude (supports glob patterns like `**/__tests__/**`, `*.log`; can be specified multiple times)
 - `--no-code-stats` - Disable code statistics collection (enabled by default)
 - `--pretty` - Pretty print JSON output (default: true)
@@ -503,6 +522,7 @@ stack-analyzer scan [path] [flags]
 stack-analyzer scan .
 stack-analyzer scan /path/to/project --output results.json
 stack-analyzer scan --aggregate techs,languages,dependencies /path
+stack-analyzer scan --aggregate git /path
 stack-analyzer scan --aggregate all /path  # Aggregate all fields with metadata
 
 # Exclude patterns (glob support)
@@ -724,7 +744,7 @@ The scanner outputs a hierarchical JSON structure representing the detected tech
 - **reason**: Array explaining why technologies were detected
 - **properties**: Object containing tech-specific metadata (Docker, Terraform, Kubernetes, etc.)
 - **code_stats**: Code statistics with analyzed/unanalyzed buckets (only in root payload, see [Code Statistics](#code-statistics))
-- **git**: Git repository information (only in root payload)
+- **git**: Git repository information (available at root and component levels for multi-repo projects)
 - **metadata**: Scan execution metadata (only in root payload)
 
 #### Metadata Field
@@ -891,7 +911,8 @@ This is common in projects with:
 Use the `--aggregate` flag to get a simplified, rolled-up view of your entire codebase:
 
 ```bash
-./bin/stack-analyzer scan --aggregate tech,techs,languages,licenses,dependencies /path/to/project
+./bin/stack-analyzer scan --aggregate tech,techs,languages,licenses,dependencies,git /path/to/project
+./bin/stack-analyzer scan --aggregate git /path/to/project  # Show only git repositories
 ./bin/stack-analyzer scan --aggregate all /path/to/project  # Aggregate all fields with metadata
 ```
 
@@ -912,6 +933,20 @@ Use the `--aggregate` flag to get a simplified, rolled-up view of your entire co
     ["npm", "express", "^4.18.0"],
     ["python", "fastapi", "0.118.2"],
     ["python", "pydantic", "latest"]
+  ],
+  "git": [
+    {
+      "branch": "main",
+      "commit": "def5678",
+      "is_dirty": true,
+      "remote_url": "https://github.com/company/project.git"
+    },
+    {
+      "branch": "develop", 
+      "commit": "abc1234",
+      "is_dirty": false,
+      "remote_url": "https://github.com/company/frontend.git"
+    }
   ]
 }
 ```
@@ -922,7 +957,8 @@ Use the `--aggregate` flag to get a simplified, rolled-up view of your entire co
 - `languages` - Programming languages with file counts
 - `licenses` - Detected licenses from LICENSE files and package manifests
 - `dependencies` - All dependencies as `[type, name, version]` arrays
-- `all` - Aggregate all available fields (tech, techs, languages, licenses, dependencies) with metadata
+- `git` - Git repositories (deduplicated) with branch, commit, dirty status, and remote URL
+- `all` - Aggregate all available fields (tech, techs, languages, licenses, dependencies, git) with metadata
 
 This is useful for:
 - Quick technology stack overview
@@ -930,6 +966,7 @@ This is useful for:
 - Dependency auditing and security scanning
 - License compliance checking
 - Counting dependencies: `jq '.dependencies | length'`
+- Git repository tracking: `jq '.git | length'` for multi-repo projects
 
 ## How to Build It
 
