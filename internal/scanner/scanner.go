@@ -18,6 +18,7 @@ import (
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/matchers"
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/parsers"
 	"github.com/petrarca/tech-stack-analyzer/internal/spec"
+	"github.com/sirupsen/logrus"
 
 	// Import component detectors to trigger init() registration
 	_ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/cocoapods"
@@ -76,6 +77,11 @@ func NewScannerWithExcludes(path string, excludeDirs []string, verbose bool, use
 
 // NewScannerWithOptions creates a new scanner with all options including code stats
 func NewScannerWithOptions(path string, excludeDirs []string, verbose bool, useTreeView bool, traceTimings bool, traceRules bool, codeStats CodeStatsAnalyzer) (*Scanner, error) {
+	return NewScannerWithOptionsAndLogger(path, excludeDirs, verbose, useTreeView, traceTimings, traceRules, codeStats, nil)
+}
+
+// NewScannerWithOptionsAndLogger creates a new scanner with all options including logger
+func NewScannerWithOptionsAndLogger(path string, excludeDirs []string, verbose bool, useTreeView bool, traceTimings bool, traceRules bool, codeStats CodeStatsAnalyzer, logger *logrus.Logger) (*Scanner, error) {
 	// Create provider for the target path (like TypeScript's FSProvider)
 	provider := provider.NewFSProvider(path)
 
@@ -95,6 +101,16 @@ func NewScannerWithOptions(path string, excludeDirs []string, verbose bool, useT
 		}
 	} else {
 		prog = progress.New(false, progress.NewNullHandler())
+	}
+
+	// Load ignore patterns from .gitignore (only once) with progress reporting
+	if len(defaultIgnorePatterns) == 0 {
+		gitignoreLoader := git.NewGitignoreLoaderWithLogger(prog, logger)
+		ignorePatterns, err := gitignoreLoader.LoadPatterns(path)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load ignore patterns: %w", err)
+		}
+		defaultIgnorePatterns = ignorePatterns
 	}
 
 	// Enable tracing if requested
@@ -145,15 +161,6 @@ func initializeScannerComponents(provider types.Provider, path string) (*scanner
 	}
 	SetCategoriesConfig(categoriesConfig)
 
-	// Load ignore patterns configuration (only once)
-	if len(defaultIgnorePatterns) == 0 {
-		ignoreConfig, err := config.LoadIgnoreConfig()
-		if err != nil {
-			return nil, fmt.Errorf("failed to load ignore config: %w", err)
-		}
-		defaultIgnorePatterns = ignoreConfig.GetFlatIgnoreList()
-	}
-
 	// Initialize all detectors
 	depDetector := NewDependencyDetector(loadedRules)
 	compDetector := NewComponentDetector(depDetector, provider, loadedRules)
@@ -162,9 +169,8 @@ func initializeScannerComponents(provider types.Provider, path string) (*scanner
 
 	// Build matchers from rules (like TypeScript's loadAllRules)
 	matchers.BuildFileMatchersFromRules(loadedRules)
-	matchers.BuildExtensionMatchersFromRules(loadedRules)
 
-	// Initialize content matcher
+	// Build content matchers from rules
 	contentMatcher := matchers.NewContentMatcherRegistry()
 	if err := contentMatcher.BuildFromRules(loadedRules); err != nil {
 		return nil, fmt.Errorf("failed to build content matchers: %w", err)
@@ -862,10 +868,15 @@ func (s *Scanner) shouldIgnoreDirectory(name string) bool {
 	}
 
 	// Get all ignore patterns from configuration
-	lowerName := strings.ToLower(name)
 	for _, pattern := range defaultIgnorePatterns {
-		// Use exact match to avoid false positives (e.g., .github matching .git)
-		if lowerName == strings.ToLower(pattern) {
+		// Try glob match first (same as CLI excludes)
+		matched, err := doublestar.Match(pattern, name)
+		if err == nil && matched {
+			return true
+		}
+
+		// Fallback to simple name match for backward compatibility
+		if strings.EqualFold(name, pattern) {
 			return true
 		}
 	}

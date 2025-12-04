@@ -13,9 +13,6 @@ import (
 //go:embed categories.yaml
 var categoriesConfigData []byte
 
-//go:embed ignore.yaml
-var ignoreConfigData []byte
-
 // ScanConfig represents the .stack-analyzer.yml configuration file
 type ScanConfig struct {
 	Properties map[string]interface{} `yaml:"properties,omitempty"`
@@ -92,28 +89,4 @@ func LoadCategoriesConfig() (*types.CategoriesConfig, error) {
 	}
 
 	return &config, nil
-}
-
-// IgnoreConfig represents the ignore.yaml configuration
-type IgnoreConfig struct {
-	Patterns map[string][]string `yaml:"patterns"`
-}
-
-// LoadIgnoreConfig loads the ignore patterns from ignore.yaml
-func LoadIgnoreConfig() (*IgnoreConfig, error) {
-	var config IgnoreConfig
-	if err := yaml.Unmarshal(ignoreConfigData, &config); err != nil {
-		return nil, fmt.Errorf("failed to parse ignore.yaml: %w", err)
-	}
-
-	return &config, nil
-}
-
-// GetFlatIgnoreList returns a flattened list of all ignore patterns
-func (c *IgnoreConfig) GetFlatIgnoreList() []string {
-	var flat []string
-	for _, categoryPatterns := range c.Patterns {
-		flat = append(flat, categoryPatterns...)
-	}
-	return flat
 }
