@@ -81,7 +81,6 @@ The `metadata` field contains comprehensive scan execution information matching 
   "language_count": 3,
   "tech_count": 5,
   "techs_count": 18,
-  "excluded_dirs": ["node_modules", ".git", "dist"],
   "properties": {
     "custom_field": "custom_value"
   }
@@ -98,7 +97,6 @@ The `metadata` field contains comprehensive scan execution information matching 
 - `language_count` - Number of distinct programming languages
 - `tech_count` - Number of primary technologies (architectural)
 - `techs_count` - Number of all detected technologies
-- `excluded_dirs` - Directories excluded from scanning
 - `properties` - Additional scan-level properties (not technology-specific)
 
 ### Technology-Specific Properties

@@ -259,11 +259,11 @@ const (
 ```go
 // internal/progress/progress.go
 
-func (p *Progress) ScanInitializing(path string, excludeDirs []string) {
+func (p *Progress) ScanInitializing(path string, excludePatterns []string) {
     p.Report(Event{
         Type: EventScanInitializing,
         Path: path,
-        Info: strings.Join(excludeDirs, ", "),
+        Info: strings.Join(excludePatterns, ", "),
     })
 }
 
@@ -345,8 +345,8 @@ logger.WithFields(logrus.Fields{
 // AFTER - Split into debug log and verbose progress
 logger.Debug("Initializing scanner",
     "path", scannerPath,
-    "exclude_dirs", settings.ExcludeDirs)
-s.progress.ScanInitializing(scannerPath, settings.ExcludeDirs)
+    "exclude_patterns", settings.ExcludePatterns)
+s.progress.ScanInitializing(scannerPath, settings.ExcludePatterns)
 
 // ---
 

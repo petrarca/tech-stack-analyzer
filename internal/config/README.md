@@ -11,8 +11,8 @@ type Settings struct {
     PrettyPrint bool
 
     // Scan behavior
-    ExcludeDirs []string
-    Aggregate   string
+    ExcludePatterns []string
+    Aggregate       string
 
     // Logging
     LogLevel logrus.Level

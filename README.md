@@ -800,7 +800,6 @@ The `metadata` field (present only in the root payload) provides information abo
     "language_count": 15,
     "tech_count": 3,
     "techs_count": 12,
-    "excluded_dirs": ["node_modules", "vendor"],
     "properties": {
       "product": "My Product",
       "team": "Engineering"
@@ -825,7 +824,6 @@ The `metadata` field (present only in the root payload) provides information abo
 - **language_count**: Number of distinct programming languages detected
 - **tech_count**: Number of primary technologies (count of `tech` array)
 - **techs_count**: Number of all detected technologies (count of `techs` array)
-- **excluded_dirs**: List of excluded patterns
 - **properties**: Custom properties from `.stack-analyzer.yml`
 
 #### Git Field

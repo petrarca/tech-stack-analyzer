@@ -173,11 +173,11 @@ func (p *Progress) ProgressUpdate(files, dirs int) {
 	})
 }
 
-func (p *Progress) ScanInitializing(path string, excludeDirs []string) {
+func (p *Progress) ScanInitializing(path string, excludePatterns []string) {
 	p.Report(Event{
 		Type: EventScanInitializing,
 		Path: path,
-		Info: strings.Join(excludeDirs, ", "),
+		Info: strings.Join(excludePatterns, ", "),
 	})
 }
 

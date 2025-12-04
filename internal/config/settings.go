@@ -15,14 +15,14 @@ type Settings struct {
 	PrettyPrint bool
 
 	// Scan behavior
-	ExcludeDirs  []string
-	Aggregate    string
-	Verbose      bool
-	Debug        bool
-	TraceTimings bool
-	TraceRules   bool
-	FilterRules  []string // Only use these rules (for debugging)
-	NoCodeStats  bool     // Disable code statistics (enabled by default)
+	ExcludePatterns []string
+	Aggregate       string
+	Verbose         bool
+	Debug           bool
+	TraceTimings    bool
+	TraceRules      bool
+	FilterRules     []string // Only use these rules (for debugging)
+	NoCodeStats     bool     // Disable code statistics (enabled by default)
 
 	// Logging
 	LogLevel  logrus.Level
@@ -33,19 +33,19 @@ type Settings struct {
 // DefaultSettings returns default configuration
 func DefaultSettings() *Settings {
 	return &Settings{
-		OutputFile:   "stack-analysis.json",
-		PrettyPrint:  true,
-		ExcludeDirs:  []string{},
-		Aggregate:    "",
-		Verbose:      false,
-		Debug:        false,
-		TraceTimings: false,
-		TraceRules:   false,
-		FilterRules:  []string{},
-		NoCodeStats:  false,             // Code stats enabled by default
-		LogLevel:     logrus.ErrorLevel, // Changed from InfoLevel - only errors by default
-		LogFormat:    "text",
-		LogFile:      "", // Empty = stderr
+		OutputFile:      "stack-analysis.json",
+		PrettyPrint:     true,
+		ExcludePatterns: []string{},
+		Aggregate:       "",
+		Verbose:         false,
+		Debug:           false,
+		TraceTimings:    false,
+		TraceRules:      false,
+		FilterRules:     []string{},
+		NoCodeStats:     false,             // Code stats enabled by default
+		LogLevel:        logrus.ErrorLevel, // Changed from InfoLevel - only errors by default
+		LogFormat:       "text",
+		LogFile:         "", // Empty = stderr
 	}
 }
 
@@ -58,10 +58,10 @@ func LoadSettings() *Settings {
 		settings.OutputFile = outputFile
 	}
 
-	if excludeDirs := os.Getenv("STACK_ANALYZER_EXCLUDE_DIRS"); excludeDirs != "" {
-		settings.ExcludeDirs = strings.Split(excludeDirs, ",")
-		for i, dir := range settings.ExcludeDirs {
-			settings.ExcludeDirs[i] = strings.TrimSpace(dir)
+	if excludePatterns := os.Getenv("STACK_ANALYZER_EXCLUDE_DIRS"); excludePatterns != "" {
+		settings.ExcludePatterns = strings.Split(excludePatterns, ",")
+		for i, pattern := range settings.ExcludePatterns {
+			settings.ExcludePatterns[i] = strings.TrimSpace(pattern)
 		}
 	}
 

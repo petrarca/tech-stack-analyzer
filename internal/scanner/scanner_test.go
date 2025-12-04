@@ -35,15 +35,15 @@ func TestNewScannerWithExcludes(t *testing.T) {
 	require.NoError(t, err)
 	defer os.RemoveAll(tempDir)
 
-	excludeDirs := []string{"vendor", "node_modules"}
+	excludePatterns := []string{"vendor", "node_modules"}
 
 	// Test creating scanner with excludes
-	scanner, err := NewScannerWithExcludes(tempDir, excludeDirs, false, false, false, false)
+	scanner, err := NewScannerWithExcludes(tempDir, excludePatterns, false, false, false, false)
 	require.NoError(t, err)
 	require.NotNil(t, scanner)
 
-	// Check that exclude dirs are set
-	assert.Equal(t, excludeDirs, scanner.excludeDirs)
+	// Check that exclude patterns are set
+	assert.Equal(t, excludePatterns, scanner.excludePatterns)
 }
 
 func TestNewScanner_InvalidPath(t *testing.T) {
@@ -198,8 +198,8 @@ func TestScanner_Scan_WithExcludes(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, scannerWithExcludes)
 
-	// Verify exclude dirs are set
-	assert.Equal(t, []string{"vendor"}, scannerWithExcludes.excludeDirs)
+	// Verify exclude patterns are set
+	assert.Equal(t, []string{"vendor"}, scannerWithExcludes.excludePatterns)
 
 	// Scan should complete without errors
 	result, err := scannerWithExcludes.Scan()

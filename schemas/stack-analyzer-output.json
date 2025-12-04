@@ -198,13 +198,6 @@
                             "minimum": 0,
                             "description": "Number of all detected technologies"
                         },
-                        "excluded_dirs": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            },
-                            "description": "Directories excluded from scan"
-                        },
                         "properties": {
                             "$ref": "#/definitions/properties"
                         }
@@ -274,13 +267,6 @@
                             "type": "integer",
                             "minimum": 0,
                             "description": "Number of all detected technologies"
-                        },
-                        "excluded_dirs": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            },
-                            "description": "Directories excluded from scan"
                         },
                         "properties": {
                             "$ref": "#/definitions/properties"

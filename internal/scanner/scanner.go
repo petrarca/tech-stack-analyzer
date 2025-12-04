@@ -47,7 +47,7 @@ type Scanner struct {
 	licenseDetector *LicenseDetector
 	langDetector    *LanguageDetector
 	contentMatcher  *matchers.ContentMatcherRegistry
-	excludeDirs     []string
+	excludePatterns []string
 	progress        *progress.Progress
 	codeStats       CodeStatsAnalyzer
 }
@@ -70,18 +70,18 @@ func NewScanner(path string) (*Scanner, error) {
 	return NewScannerWithOptions(path, nil, false, false, false, false, nil)
 }
 
-// NewScannerWithExcludes creates a new scanner with directory exclusions
-func NewScannerWithExcludes(path string, excludeDirs []string, verbose bool, useTreeView bool, traceTimings bool, traceRules bool) (*Scanner, error) {
-	return NewScannerWithOptions(path, excludeDirs, verbose, useTreeView, traceTimings, traceRules, nil)
+// NewScannerWithExcludes creates a new scanner with exclusion patterns
+func NewScannerWithExcludes(path string, excludePatterns []string, verbose bool, useTreeView bool, traceTimings bool, traceRules bool) (*Scanner, error) {
+	return NewScannerWithOptions(path, excludePatterns, verbose, useTreeView, traceTimings, traceRules, nil)
 }
 
 // NewScannerWithOptions creates a new scanner with all options including code stats
-func NewScannerWithOptions(path string, excludeDirs []string, verbose bool, useTreeView bool, traceTimings bool, traceRules bool, codeStats CodeStatsAnalyzer) (*Scanner, error) {
-	return NewScannerWithOptionsAndLogger(path, excludeDirs, verbose, useTreeView, traceTimings, traceRules, codeStats, nil)
+func NewScannerWithOptions(path string, excludePatterns []string, verbose bool, useTreeView bool, traceTimings bool, traceRules bool, codeStats CodeStatsAnalyzer) (*Scanner, error) {
+	return NewScannerWithOptionsAndLogger(path, excludePatterns, verbose, useTreeView, traceTimings, traceRules, codeStats, nil)
 }
 
 // NewScannerWithOptionsAndLogger creates a new scanner with all options including logger
-func NewScannerWithOptionsAndLogger(path string, excludeDirs []string, verbose bool, useTreeView bool, traceTimings bool, traceRules bool, codeStats CodeStatsAnalyzer, logger *logrus.Logger) (*Scanner, error) {
+func NewScannerWithOptionsAndLogger(path string, excludePatterns []string, verbose bool, useTreeView bool, traceTimings bool, traceRules bool, codeStats CodeStatsAnalyzer, logger *logrus.Logger) (*Scanner, error) {
 	// Create provider for the target path (like TypeScript's FSProvider)
 	provider := provider.NewFSProvider(path)
 
@@ -136,7 +136,7 @@ func NewScannerWithOptionsAndLogger(path string, excludeDirs []string, verbose b
 		licenseDetector: components.licenseDetector,
 		langDetector:    NewLanguageDetector(),
 		contentMatcher:  components.contentMatcher,
-		excludeDirs:     excludeDirs,
+		excludePatterns: excludePatterns,
 		progress:        prog,
 		codeStats:       codeStats,
 	}, nil
@@ -197,7 +197,7 @@ func (s *Scanner) Scan() (*types.Payload, error) {
 	basePath := s.provider.GetBasePath()
 
 	// Report scan start
-	s.progress.ScanStart(basePath, s.excludeDirs)
+	s.progress.ScanStart(basePath, s.excludePatterns)
 
 	// Load configuration from .stack-analyzer.yml if it exists
 	cfg, err := config.LoadConfig(basePath)
@@ -206,7 +206,7 @@ func (s *Scanner) Scan() (*types.Payload, error) {
 	}
 
 	// Create scan metadata
-	scanMeta := metadata.NewScanMetadata(basePath, spec.Version, s.excludeDirs)
+	scanMeta := metadata.NewScanMetadata(basePath, spec.Version)
 	startTime := time.Now()
 
 	// Create main payload like in TypeScript: new Payload({ name: 'main', folderPath: '/' })
@@ -382,7 +382,7 @@ func (s *Scanner) ScanFile(fileName string) (*types.Payload, error) {
 	}
 
 	// Add metadata for single file scan
-	scanMeta := metadata.NewScanMetadata(basePath, spec.Version, s.excludeDirs)
+	scanMeta := metadata.NewScanMetadata(basePath, spec.Version)
 	fileCount, componentCount := s.countFilesAndComponents(payload)
 	scanMeta.SetFileCounts(fileCount, componentCount)
 	languageCount := s.countLanguages(payload)
@@ -854,7 +854,7 @@ func (s *Scanner) shouldExcludeFile(fileName, currentPath string) bool {
 	}
 
 	// Check against CLI exclude patterns
-	for _, pattern := range s.excludeDirs {
+	for _, pattern := range s.excludePatterns {
 		// Try glob match against relative path
 		matched, err := doublestar.Match(pattern, relPath)
 		if err == nil && matched {
@@ -890,8 +890,8 @@ func (s *Scanner) shouldExcludeFile(fileName, currentPath string) bool {
 // Uses modular ignore patterns defined in ignore_patterns.go
 func (s *Scanner) shouldIgnoreDirectory(name string) bool {
 	// Check user-specified exclude patterns first (supports glob patterns)
-	if len(s.excludeDirs) > 0 {
-		for _, pattern := range s.excludeDirs {
+	if len(s.excludePatterns) > 0 {
+		for _, pattern := range s.excludePatterns {
 			// Try glob match first
 			matched, err := doublestar.Match(pattern, name)
 			if err == nil && matched {

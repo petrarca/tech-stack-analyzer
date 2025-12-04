@@ -17,19 +17,17 @@ type ScanMetadata struct {
 	LanguageCount  int                    `json:"language_count,omitempty"` // Number of distinct programming languages
 	TechCount      int                    `json:"tech_count,omitempty"`     // Number of primary technologies
 	TechsCount     int                    `json:"techs_count,omitempty"`    // Number of all detected technologies
-	ExcludedDirs   []string               `json:"excluded_dirs,omitempty"`
 	Properties     map[string]interface{} `json:"properties,omitempty"`
 }
 
 // NewScanMetadata creates a new scan metadata instance
-func NewScanMetadata(scanPath string, version string, excludedDirs []string) *ScanMetadata {
+func NewScanMetadata(scanPath string, version string) *ScanMetadata {
 	absPath, _ := filepath.Abs(scanPath)
 
 	return &ScanMetadata{
-		Timestamp:    time.Now().UTC().Format(time.RFC3339),
-		ScanPath:     absPath,
-		SpecVersion:  version,
-		ExcludedDirs: excludedDirs,
+		Timestamp:   time.Now().UTC().Format(time.RFC3339),
+		ScanPath:    absPath,
+		SpecVersion: version,
 	}
 }
 

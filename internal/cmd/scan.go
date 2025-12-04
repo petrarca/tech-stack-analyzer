@@ -65,7 +65,7 @@ func init() {
 	scanCmd.Flags().BoolVar(&settings.TraceRules, "trace-rules", traceRules, "Show detailed rule matching information (requires --verbose or --debug)")
 
 	// Exclude patterns - support multiple flags or comma-separated values
-	scanCmd.Flags().StringSliceVar(&settings.ExcludeDirs, "exclude", settings.ExcludeDirs, "Patterns to exclude (supports glob patterns, can be specified multiple times)")
+	scanCmd.Flags().StringSliceVar(&settings.ExcludePatterns, "exclude", settings.ExcludePatterns, "Patterns to exclude (supports glob patterns, can be specified multiple times)")
 
 	// Rule filtering for debugging
 	scanCmd.Flags().StringSliceVar(&settings.FilterRules, "rules", settings.FilterRules, "Only use these rules (comma-separated tech names, e.g., c,cplusplus,nodejs - for debugging)")
@@ -124,7 +124,7 @@ func runScan(cmd *cobra.Command, args []string) {
 	}
 
 	// Update settings with actual flag values
-	settings.ExcludeDirs = excludeList
+	settings.ExcludePatterns = excludeList
 
 	// Handle special case: -o - means stdout
 	if settings.OutputFile == "-" {
@@ -166,15 +166,15 @@ func runScan(cmd *cobra.Command, args []string) {
 	}
 
 	logger.WithFields(logrus.Fields{
-		"path":         scannerPath,
-		"exclude_dirs": settings.ExcludeDirs,
-		"code_stats":   !settings.NoCodeStats,
+		"path":             scannerPath,
+		"exclude_patterns": settings.ExcludePatterns,
+		"code_stats":       !settings.NoCodeStats,
 	}).Debug("Initializing scanner")
 
 	// Create code stats analyzer (enabled by default, disabled with --no-code-stats)
 	codeStatsAnalyzer := codestats.NewAnalyzer(!settings.NoCodeStats)
 
-	s, err := scanner.NewScannerWithOptionsAndLogger(scannerPath, settings.ExcludeDirs, settings.Verbose, settings.Debug, settings.TraceTimings, settings.TraceRules, codeStatsAnalyzer, logger)
+	s, err := scanner.NewScannerWithOptionsAndLogger(scannerPath, settings.ExcludePatterns, settings.Verbose, settings.Debug, settings.TraceTimings, settings.TraceRules, codeStatsAnalyzer, logger)
 	if err != nil {
 		logger.WithError(err).Fatal("Failed to create scanner")
 	}

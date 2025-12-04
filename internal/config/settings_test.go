@@ -13,7 +13,7 @@ func TestDefaultSettings(t *testing.T) {
 
 	assert.Equal(t, "stack-analysis.json", settings.OutputFile, "OutputFile should be stack-analysis.json by default")
 	assert.True(t, settings.PrettyPrint, "PrettyPrint should be true by default")
-	assert.Empty(t, settings.ExcludeDirs, "ExcludeDirs should be empty by default")
+	assert.Empty(t, settings.ExcludePatterns, "ExcludePatterns should be empty by default")
 	assert.Equal(t, "", settings.Aggregate, "Aggregate should be empty by default")
 	assert.Equal(t, logrus.ErrorLevel, settings.LogLevel, "LogLevel should be Error by default")
 	assert.Equal(t, "text", settings.LogFormat, "LogFormat should be text by default")
@@ -29,7 +29,7 @@ func TestLoadSettings_WithDefaults(t *testing.T) {
 	defaultSettings := DefaultSettings()
 	assert.Equal(t, defaultSettings.OutputFile, settings.OutputFile)
 	assert.Equal(t, defaultSettings.PrettyPrint, settings.PrettyPrint)
-	assert.Equal(t, defaultSettings.ExcludeDirs, settings.ExcludeDirs)
+	assert.Equal(t, defaultSettings.ExcludePatterns, settings.ExcludePatterns)
 	assert.Equal(t, defaultSettings.Aggregate, settings.Aggregate)
 	assert.Equal(t, defaultSettings.LogLevel, settings.LogLevel)
 	assert.Equal(t, defaultSettings.LogFormat, settings.LogFormat)
@@ -53,7 +53,7 @@ func TestLoadSettings_WithEnvironmentVariables(t *testing.T) {
 
 	assert.Equal(t, "/tmp/test.json", settings.OutputFile)
 	assert.False(t, settings.PrettyPrint)
-	assert.Equal(t, []string{"vendor", "node_modules", "build"}, settings.ExcludeDirs)
+	assert.Equal(t, []string{"vendor", "node_modules", "build"}, settings.ExcludePatterns)
 	assert.Equal(t, "tech,techs", settings.Aggregate)
 	assert.Equal(t, logrus.DebugLevel, settings.LogLevel)
 	assert.Equal(t, "json", settings.LogFormat)
@@ -74,7 +74,7 @@ func TestLoadSettings_WithPartialEnvironmentVariables(t *testing.T) {
 	// Should have defaults for unset variables
 	assert.Equal(t, "stack-analysis.json", settings.OutputFile)
 	assert.False(t, settings.PrettyPrint) // From environment
-	assert.Empty(t, settings.ExcludeDirs)
+	assert.Empty(t, settings.ExcludePatterns)
 	assert.Equal(t, "", settings.Aggregate)
 	assert.Equal(t, logrus.ErrorLevel, settings.LogLevel) // From environment
 	assert.Equal(t, "text", settings.LogFormat)
@@ -179,8 +179,8 @@ func clearEnvVars() {
 	}
 }
 
-// Test table for exclude dirs parsing
-func TestLoadSettings_ExcludeDirsParsing(t *testing.T) {
+// Test table for exclude patterns parsing
+func TestLoadSettings_ExcludePatternsParsing(t *testing.T) {
 	tests := []struct {
 		name     string
 		envValue string
@@ -200,7 +200,7 @@ func TestLoadSettings_ExcludeDirsParsing(t *testing.T) {
 			defer clearEnvVars()
 
 			settings := LoadSettings()
-			assert.Equal(t, tt.expected, settings.ExcludeDirs)
+			assert.Equal(t, tt.expected, settings.ExcludePatterns)
 		})
 	}
 }
