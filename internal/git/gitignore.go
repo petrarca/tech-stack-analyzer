@@ -13,6 +13,64 @@ import (
 	"github.com/petrarca/tech-stack-analyzer/internal/progress"
 )
 
+// loadPatternsFromGitignore loads patterns from a specific .gitignore file
+func loadPatternsFromGitignore(gitignorePath string) ([]string, error) {
+	file, err := os.Open(gitignorePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read .gitignore: %w", err)
+	}
+	defer file.Close()
+
+	var patterns []string
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+
+		// Skip empty lines and comments
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+
+		// Remove trailing slashes for consistency (dir/ -> dir)
+		pattern := strings.TrimSuffix(line, "/")
+
+		// Skip negation patterns for now (they start with !)
+		// These are complex to handle properly in a glob matcher
+		if strings.HasPrefix(pattern, "!") {
+			continue
+		}
+
+		patterns = append(patterns, pattern)
+	}
+
+	if err := scanner.Err(); err != nil {
+		return nil, fmt.Errorf("error reading .gitignore: %w", err)
+	}
+
+	return patterns, nil
+}
+
+// gitignoreLogger provides common logging functionality for gitignore operations
+type gitignoreLogger struct {
+	progress *progress.Progress
+	logger   *slog.Logger
+}
+
+func (gl *gitignoreLogger) logError(path string, err error) {
+	if gl.progress != nil {
+		gl.progress.Info(fmt.Sprintf("Warning: Failed to read %s: %v", path, err))
+	}
+	if gl.logger != nil {
+		gl.logger.Error("Failed to read .gitignore file", "path", path, "error", err)
+	}
+}
+
+func (gl *gitignoreLogger) logLoaded(path string, patterns []string) {
+	if gl.logger != nil {
+		gl.logger.Debug("Loaded patterns from file", "path", path, "patterns", patterns, "count", len(patterns))
+	}
+}
+
 // GitignoreStack represents a stack of .gitignore pattern sets
 type GitignoreStack struct {
 	stack []*PatternSet
@@ -151,23 +209,22 @@ func (l *StackBasedLoader) LoadAndPushGitignore(directory string) bool {
 		return false // No .gitignore in this directory
 	}
 
-	// Skip .gitignore files in cache/temp directories
-	if l.shouldSkipGitignore(directory) {
-		l.logSkippedGitignore(gitignorePath)
-		return false
-	}
-
 	// Load patterns from .gitignore
-	patterns, err := l.loadPatternsFromFile(gitignorePath)
+	patterns, err := loadPatternsFromGitignore(gitignorePath)
 	if err != nil {
-		l.logGitignoreError(gitignorePath, err)
+		l.log().logError(gitignorePath, err)
 		return false
 	}
 
 	// Push to stack and log success
 	l.stack.Push(directory, patterns)
-	l.logLoadedPatterns(gitignorePath, patterns)
+	l.log().logLoaded(gitignorePath, patterns)
 	return true
+}
+
+// log returns a gitignoreLogger for this loader
+func (l *StackBasedLoader) log() *gitignoreLogger {
+	return &gitignoreLogger{progress: l.progress, logger: l.logger}
 }
 
 // PopGitignore removes patterns from stack when leaving directory
@@ -256,23 +313,21 @@ func (l *Loader) processGitignoreFile(allPatterns *[]string, gitignoreFiles *[]s
 
 // handleGitignoreFile processes a single .gitignore file and returns true if successful
 func (l *Loader) handleGitignoreFile(path string, allPatterns *[]string, gitignoreFiles *[]string) bool {
-	// Skip .gitignore files in cache/temp directories
-	dir := filepath.Dir(path)
-	if l.shouldSkipGitignore(dir) {
-		l.logSkippedGitignore(path)
-		return false
-	}
-
 	*gitignoreFiles = append(*gitignoreFiles, path)
-	patterns, err := l.loadPatternsFromFile(path)
+	patterns, err := loadPatternsFromGitignore(path)
 	if err != nil {
-		l.logGitignoreError(path, err)
+		l.log().logError(path, err)
 		return false
 	}
 
-	l.logLoadedPatterns(path, patterns)
+	l.log().logLoaded(path, patterns)
 	*allPatterns = append(*allPatterns, patterns...)
 	return true
+}
+
+// log returns a gitignoreLogger for this loader
+func (l *Loader) log() *gitignoreLogger {
+	return &gitignoreLogger{progress: l.progress, logger: l.logger}
 }
 
 // reportLoadingProgress reports loading progress through the progress system
@@ -298,177 +353,10 @@ func (l *Loader) logLoadingDetails(gitignoreFiles []string, allPatterns []string
 	}
 }
 
-// logSkippedGitignore logs when a .gitignore file is skipped
-func (l *Loader) logSkippedGitignore(path string) {
-	if l.logger != nil {
-		l.logger.Debug("Skipping .gitignore in cache directory", "path", path)
-	}
-}
-
-// logGitignoreError logs errors when reading .gitignore files
-func (l *Loader) logGitignoreError(path string, err error) {
-	if l.progress != nil {
-		l.progress.Info(fmt.Sprintf("Warning: Failed to read %s: %v", path, err))
-	}
-	if l.logger != nil {
-		l.logger.Error("Failed to read .gitignore file", "path", path, "error", err)
-	}
-}
-
-// logLoadedPatterns logs successfully loaded patterns
-func (l *Loader) logLoadedPatterns(path string, patterns []string) {
-	if l.logger != nil {
-		l.logger.Debug("Loaded patterns from file", "path", path, "patterns", patterns, "count", len(patterns))
-	}
-}
-
-// Helper methods for StackBasedLoader (reuse existing Loader methods)
-
-// shouldSkipGitignore checks if we should skip loading a .gitignore file
-func (l *StackBasedLoader) shouldSkipGitignore(dir string) bool {
-	basename := filepath.Base(dir)
-
-	// Skip cache, temp, and build directories that typically contain "*" in their .gitignore
-	skipDirs := []string{
-		".pytest_cache", ".ruff_cache", ".tox", ".coverage", ".mypy_cache",
-		".venv", "venv", "env", "__pycache__", ".git", ".svn", ".hg",
-		"node_modules", ".npm", ".yarn", ".pnpm", "dist", "build",
-		".next", ".nuxt", ".target", "site",
-	}
-
-	for _, skip := range skipDirs {
-		if basename == skip {
-			return true
-		}
-	}
-
-	return false
-}
-
-// loadPatternsFromFile loads patterns from a specific .gitignore file
-func (l *StackBasedLoader) loadPatternsFromFile(gitignorePath string) ([]string, error) {
-	file, err := os.Open(gitignorePath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read .gitignore: %w", err)
-	}
-	defer file.Close()
-
-	var patterns []string
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
-
-		// Skip empty lines and comments
-		if line == "" || strings.HasPrefix(line, "#") {
-			continue
-		}
-
-		// Remove trailing slashes for consistency (dir/ -> dir)
-		pattern := strings.TrimSuffix(line, "/")
-
-		// Skip negation patterns for now (they start with !)
-		// These are complex to handle properly in a glob matcher
-		if strings.HasPrefix(pattern, "!") {
-			continue
-		}
-
-		patterns = append(patterns, pattern)
-	}
-
-	if err := scanner.Err(); err != nil {
-		return nil, fmt.Errorf("error reading .gitignore: %w", err)
-	}
-
-	return patterns, nil
-}
-
-// logSkippedGitignore logs when a .gitignore file is skipped
-func (l *StackBasedLoader) logSkippedGitignore(path string) {
-	if l.logger != nil {
-		l.logger.Debug("Skipping .gitignore in cache directory", "path", path)
-	}
-}
-
-// logGitignoreError logs errors when reading .gitignore files
-func (l *StackBasedLoader) logGitignoreError(path string, err error) {
-	if l.progress != nil {
-		l.progress.Info(fmt.Sprintf("Warning: Failed to read %s: %v", path, err))
-	}
-	if l.logger != nil {
-		l.logger.Error("Failed to read .gitignore file", "path", path, "error", err)
-	}
-}
-
-// logLoadedPatterns logs successfully loaded patterns
-func (l *StackBasedLoader) logLoadedPatterns(path string, patterns []string) {
-	if l.logger != nil {
-		l.logger.Debug("Loaded patterns from file", "path", path, "patterns", patterns, "count", len(patterns))
-	}
-}
-
-// shouldSkipGitignore checks if we should skip loading a .gitignore file
-// based on its directory location
-func (l *Loader) shouldSkipGitignore(dir string) bool {
-	basename := filepath.Base(dir)
-
-	// Skip cache, temp, and build directories that typically contain "*" in their .gitignore
-	skipDirs := []string{
-		".pytest_cache", ".ruff_cache", ".tox", ".coverage", ".mypy_cache",
-		".venv", "venv", "env", "__pycache__", ".git", ".svn", ".hg",
-		"node_modules", ".npm", ".yarn", ".pnpm", "dist", "build",
-		".next", ".nuxt", ".target", "site",
-	}
-
-	for _, skip := range skipDirs {
-		if basename == skip {
-			return true
-		}
-	}
-
-	return false
-}
-
-// loadPatternsFromFile loads patterns from a specific .gitignore file
-func (l *Loader) loadPatternsFromFile(gitignorePath string) ([]string, error) {
-	file, err := os.Open(gitignorePath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read .gitignore: %w", err)
-	}
-	defer file.Close()
-
-	var patterns []string
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
-
-		// Skip empty lines and comments
-		if line == "" || strings.HasPrefix(line, "#") {
-			continue
-		}
-
-		// Remove trailing slashes for consistency (dir/ -> dir)
-		pattern := strings.TrimSuffix(line, "/")
-
-		// Skip negation patterns for now (they start with !)
-		// These are complex to handle properly in a glob matcher
-		if strings.HasPrefix(pattern, "!") {
-			continue
-		}
-
-		patterns = append(patterns, pattern)
-	}
-
-	if err := scanner.Err(); err != nil {
-		return nil, fmt.Errorf("error reading .gitignore: %w", err)
-	}
-
-	return patterns, nil
-}
-
 // LoadPatternsFromFile loads patterns from a specific .gitignore file path
 // Useful for testing or custom paths
 func (l *Loader) LoadPatternsFromFile(gitignorePath string) ([]string, error) {
-	return l.loadPatternsFromFile(gitignorePath)
+	return loadPatternsFromGitignore(gitignorePath)
 }
 
 // deduplicatePatterns removes duplicate patterns while preserving order
