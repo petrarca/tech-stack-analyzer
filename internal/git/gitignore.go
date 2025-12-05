@@ -7,14 +7,15 @@ import (
 	"path/filepath"
 	"strings"
 
+	"log/slog"
+
 	"github.com/petrarca/tech-stack-analyzer/internal/progress"
-	"github.com/sirupsen/logrus"
 )
 
 // Loader handles loading ignore patterns from .gitignore files
 type Loader struct {
 	progress *progress.Progress
-	logger   *logrus.Logger
+	logger   *slog.Logger
 }
 
 // NewGitignoreLoader creates a new gitignore loader
@@ -30,7 +31,7 @@ func NewGitignoreLoaderWithProgress(prog *progress.Progress) *Loader {
 }
 
 // NewGitignoreLoaderWithLogger creates a new gitignore loader with logging
-func NewGitignoreLoaderWithLogger(prog *progress.Progress, logger *logrus.Logger) *Loader {
+func NewGitignoreLoaderWithLogger(prog *progress.Progress, logger *slog.Logger) *Loader {
 	return &Loader{
 		progress: prog,
 		logger:   logger,
@@ -113,19 +114,19 @@ func (l *Loader) reportLoadingProgress(patternCount, fileCount int) {
 // logLoadingDetails provides detailed debug logging about the loading process
 func (l *Loader) logLoadingDetails(gitignoreFiles []string, allPatterns []string) {
 	if l.logger != nil {
-		l.logger.Debugf("Gitignore loading complete:")
-		l.logger.Debugf("  - Total .gitignore files processed: %d", len(gitignoreFiles))
+		l.logger.Debug("Gitignore loading complete:")
+		l.logger.Debug("  - Total .gitignore files processed", "count", len(gitignoreFiles))
 		for _, file := range gitignoreFiles {
-			l.logger.Debugf("    - %s", file)
+			l.logger.Debug("    - " + file)
 		}
-		l.logger.Debugf("  - Total unique patterns after deduplication: %d", len(l.deduplicatePatterns(allPatterns)))
+		l.logger.Debug("  - Total unique patterns after deduplication", "count", len(l.deduplicatePatterns(allPatterns)))
 	}
 }
 
 // logSkippedGitignore logs when a .gitignore file is skipped
 func (l *Loader) logSkippedGitignore(path string) {
 	if l.logger != nil {
-		l.logger.Debugf("Skipping .gitignore in cache directory: %s", path)
+		l.logger.Debug("Skipping .gitignore in cache directory", "path", path)
 	}
 }
 
@@ -135,14 +136,14 @@ func (l *Loader) logGitignoreError(path string, err error) {
 		l.progress.Info(fmt.Sprintf("Warning: Failed to read %s: %v", path, err))
 	}
 	if l.logger != nil {
-		l.logger.Errorf("Failed to read .gitignore file %s: %v", path, err)
+		l.logger.Error("Failed to read .gitignore file", "path", path, "error", err)
 	}
 }
 
 // logLoadedPatterns logs successfully loaded patterns
 func (l *Loader) logLoadedPatterns(path string, patterns []string) {
 	if l.logger != nil {
-		l.logger.Debugf("Loaded %d patterns from %s: %v", len(patterns), path, patterns)
+		l.logger.Debug("Loaded patterns from file", "path", path, "patterns", patterns, "count", len(patterns))
 	}
 }
 

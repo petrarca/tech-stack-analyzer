@@ -7,14 +7,33 @@ import (
 	"path/filepath"
 	"strings"
 
+	"log/slog"
+
 	"github.com/petrarca/tech-stack-analyzer/internal/aggregator"
 	"github.com/petrarca/tech-stack-analyzer/internal/codestats"
 	"github.com/petrarca/tech-stack-analyzer/internal/config"
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner"
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
+
+// parseLogLevel converts string log level to slog.Level
+func parseLogLevel(level string) (slog.Level, error) {
+	switch strings.ToLower(level) {
+	case "debug":
+		return slog.LevelDebug, nil
+	case "info":
+		return slog.LevelInfo, nil
+	case "warn", "warning":
+		return slog.LevelWarn, nil
+	case "error":
+		return slog.LevelError, nil
+	case "fatal":
+		return slog.LevelError, nil // slog doesn't have fatal, use error
+	default:
+		return slog.LevelInfo, fmt.Errorf("invalid log level: %s", level)
+	}
+}
 
 var (
 	settings *config.Settings
@@ -86,7 +105,7 @@ func runScan(cmd *cobra.Command, args []string) {
 	logFile, _ := cmd.Flags().GetString("log-file")
 
 	// Update settings with flag values
-	if level, err := logrus.ParseLevel(logLevel); err == nil {
+	if level, err := parseLogLevel(logLevel); err == nil {
 		settings.LogLevel = level
 	}
 	settings.LogFormat = logFormat
@@ -105,13 +124,15 @@ func runScan(cmd *cobra.Command, args []string) {
 	path = strings.TrimSpace(path)
 	absPath, err := filepath.Abs(path)
 	if err != nil {
-		logger.WithError(err).Fatal("Invalid path")
+		logger.Error("Invalid path", "error", err)
+		os.Exit(1)
 	}
 
 	// Check if path exists and determine if it's a file or directory
 	fileInfo, err := os.Stat(absPath)
 	if os.IsNotExist(err) {
-		logger.WithField("path", absPath).Fatal("Path does not exist")
+		logger.Error("Path does not exist", "path", absPath)
+		os.Exit(1)
 	}
 	isFile := !fileInfo.IsDir()
 
@@ -133,7 +154,8 @@ func runScan(cmd *cobra.Command, args []string) {
 
 	// Check for mutually exclusive flags
 	if settings.Verbose && settings.Debug {
-		logger.Fatal("Cannot use --verbose and --debug together. Choose one.")
+		logger.Error("Cannot use --verbose and --debug together. Choose one.")
+		os.Exit(1)
 	}
 
 	// Auto-enable debug mode when trace flags are used without explicit output mode
@@ -144,7 +166,8 @@ func runScan(cmd *cobra.Command, args []string) {
 
 	// Validate settings
 	if err := settings.Validate(); err != nil {
-		logger.WithError(err).Fatal("Invalid settings")
+		logger.Error("Invalid settings", "error", err)
+		os.Exit(1)
 	}
 
 	// Initialize scanner
@@ -165,32 +188,33 @@ func runScan(cmd *cobra.Command, args []string) {
 		fmt.Fprintf(os.Stderr, "Active rules: %s\n", strings.Join(settings.FilterRules, ", "))
 	}
 
-	logger.WithFields(logrus.Fields{
-		"path":             scannerPath,
-		"exclude_patterns": settings.ExcludePatterns,
-		"code_stats":       !settings.NoCodeStats,
-	}).Debug("Initializing scanner")
+	logger.Debug("Initializing scanner",
+		"path", scannerPath,
+		"exclude_patterns", settings.ExcludePatterns,
+		"code_stats", !settings.NoCodeStats)
 
 	// Create code stats analyzer (enabled by default, disabled with --no-code-stats)
 	codeStatsAnalyzer := codestats.NewAnalyzer(!settings.NoCodeStats)
 
 	s, err := scanner.NewScannerWithOptionsAndLogger(scannerPath, settings.ExcludePatterns, settings.Verbose, settings.Debug, settings.TraceTimings, settings.TraceRules, codeStatsAnalyzer, logger)
 	if err != nil {
-		logger.WithError(err).Fatal("Failed to create scanner")
+		logger.Error("Failed to create scanner", "error", err)
+		os.Exit(1)
 	}
 
 	// Scan project or file
 	var payload interface{}
 	if isFile {
-		logger.WithField("file", absPath).Debug("Scanning file")
+		logger.Debug("Scanning file", "file", absPath)
 		payload, err = s.ScanFile(filepath.Base(absPath))
 	} else {
-		logger.WithField("directory", absPath).Debug("Scanning directory")
+		logger.Debug("Scanning directory", "directory", absPath)
 		payload, err = s.Scan()
 	}
 
 	if err != nil {
-		logger.WithError(err).Fatal("Failed to scan")
+		logger.Error("Failed to scan", "error", err)
+		os.Exit(1)
 	}
 
 	// Attach code stats to payload if enabled
@@ -201,21 +225,22 @@ func runScan(cmd *cobra.Command, args []string) {
 	}
 
 	// Generate output (aggregated or full payload)
-	logger.WithFields(logrus.Fields{
-		"aggregate":    settings.Aggregate,
-		"pretty_print": settings.PrettyPrint,
-	}).Debug("Generating output")
+	logger.Debug("Generating output",
+		"aggregate", settings.Aggregate,
+		"pretty_print", settings.PrettyPrint)
 
 	jsonData, err := generateOutput(payload, settings.Aggregate, settings.PrettyPrint)
 	if err != nil {
-		logger.WithError(err).Fatal("Failed to marshal JSON")
+		logger.Error("Failed to marshal JSON", "error", err)
+		os.Exit(1)
 	}
 
 	// Write output
 	if settings.OutputFile != "" {
 		err = os.WriteFile(settings.OutputFile, jsonData, 0644)
 		if err != nil {
-			logger.WithError(err).Fatal("Failed to write output file")
+			logger.Error("Failed to write output file", "error", err)
+			os.Exit(1)
 		}
 		// Always show confirmation to user (like curl -o)
 		fmt.Fprintf(os.Stderr, "Results written to %s\n", settings.OutputFile)

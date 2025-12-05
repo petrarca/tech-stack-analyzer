@@ -2,10 +2,11 @@ package config
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
-	"github.com/sirupsen/logrus"
+	"log/slog"
 )
 
 // Settings holds all scanner configuration
@@ -25,7 +26,7 @@ type Settings struct {
 	NoCodeStats     bool     // Disable code statistics (enabled by default)
 
 	// Logging
-	LogLevel  logrus.Level
+	LogLevel  slog.Level
 	LogFormat string // "text" or "json"
 	LogFile   string // Optional: write logs to file instead of stderr
 }
@@ -42,8 +43,8 @@ func DefaultSettings() *Settings {
 		TraceTimings:    false,
 		TraceRules:      false,
 		FilterRules:     []string{},
-		NoCodeStats:     false,             // Code stats enabled by default
-		LogLevel:        logrus.ErrorLevel, // Changed from InfoLevel - only errors by default
+		NoCodeStats:     false,           // Code stats enabled by default
+		LogLevel:        slog.LevelError, // Changed from InfoLevel - only errors by default
 		LogFormat:       "text",
 		LogFile:         "", // Empty = stderr
 	}
@@ -75,7 +76,7 @@ func LoadSettings() *Settings {
 
 	// Logging settings
 	if logLevel := os.Getenv("STACK_ANALYZER_LOG_LEVEL"); logLevel != "" {
-		if level, err := logrus.ParseLevel(logLevel); err == nil {
+		if level, err := parseLogLevel(logLevel); err == nil {
 			settings.LogLevel = level
 		}
 	}
@@ -114,39 +115,53 @@ func LoadSettings() *Settings {
 	return settings
 }
 
-// ConfigureLogger sets up the global logger based on settings
-func (s *Settings) ConfigureLogger() *logrus.Logger {
-	logger := logrus.New()
-	logger.SetLevel(s.LogLevel)
-
-	// Set log format
-	if s.LogFormat == "json" {
-		logger.SetFormatter(&logrus.JSONFormatter{
-			TimestampFormat: "2006-01-02 15:04:05",
-		})
-	} else {
-		logger.SetFormatter(&logrus.TextFormatter{
-			FullTimestamp:   true,
-			TimestampFormat: "2006-01-02 15:04:05",
-		})
+// parseLogLevel converts string log level to slog.Level
+func parseLogLevel(level string) (slog.Level, error) {
+	switch strings.ToLower(level) {
+	case "debug":
+		return slog.LevelDebug, nil
+	case "info":
+		return slog.LevelInfo, nil
+	case "warn", "warning":
+		return slog.LevelWarn, nil
+	case "error":
+		return slog.LevelError, nil
+	case "fatal":
+		return slog.LevelError, nil // slog doesn't have fatal, use error
+	default:
+		return slog.LevelInfo, fmt.Errorf("invalid log level: %s", level)
 	}
+}
+
+// ConfigureLogger sets up the global logger based on settings
+func (s *Settings) ConfigureLogger() *slog.Logger {
+	var handler slog.Handler
 
 	// Set output destination
+	var output io.Writer = os.Stderr
 	if s.LogFile != "" {
 		file, err := os.OpenFile(s.LogFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 		if err != nil {
 			// Fallback to stderr if file can't be opened
 			fmt.Fprintf(os.Stderr, "Warning: Cannot open log file %s: %v\n", s.LogFile, err)
-			logger.SetOutput(os.Stderr)
+			output = os.Stderr
 		} else {
-			logger.SetOutput(file)
+			output = file
 		}
-	} else {
-		// Default to stderr
-		logger.SetOutput(os.Stderr)
 	}
 
-	return logger
+	// Set log format and level
+	opts := &slog.HandlerOptions{
+		Level: s.LogLevel,
+	}
+
+	if s.LogFormat == "json" {
+		handler = slog.NewJSONHandler(output, opts)
+	} else {
+		handler = slog.NewTextHandler(output, opts)
+	}
+
+	return slog.New(handler)
 }
 
 // Validate checks if settings are valid

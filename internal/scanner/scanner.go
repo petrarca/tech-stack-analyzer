@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"log/slog"
+
 	"github.com/bmatcuk/doublestar/v4"
 	"github.com/petrarca/tech-stack-analyzer/internal/config"
 	"github.com/petrarca/tech-stack-analyzer/internal/git"
@@ -18,7 +20,6 @@ import (
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/matchers"
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/parsers"
 	"github.com/petrarca/tech-stack-analyzer/internal/spec"
-	"github.com/sirupsen/logrus"
 
 	// Import component detectors to trigger init() registration
 	_ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/cocoapods"
@@ -82,7 +83,7 @@ func NewScannerWithOptions(path string, excludePatterns []string, verbose bool, 
 }
 
 // NewScannerWithOptionsAndLogger creates a new scanner with all options including logger
-func NewScannerWithOptionsAndLogger(path string, excludePatterns []string, verbose bool, useTreeView bool, traceTimings bool, traceRules bool, codeStats CodeStatsAnalyzer, logger *logrus.Logger) (*Scanner, error) {
+func NewScannerWithOptionsAndLogger(path string, excludePatterns []string, verbose bool, useTreeView bool, traceTimings bool, traceRules bool, codeStats CodeStatsAnalyzer, logger *slog.Logger) (*Scanner, error) {
 	// Create provider for the target path (like TypeScript's FSProvider)
 	provider := provider.NewFSProvider(path)
 
