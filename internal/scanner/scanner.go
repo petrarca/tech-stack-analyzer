@@ -20,6 +20,7 @@ import (
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/matchers"
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/parsers"
 	"github.com/petrarca/tech-stack-analyzer/internal/spec"
+	"github.com/petrarca/tech-stack-analyzer/internal/types"
 
 	// Import component detectors to trigger init() registration
 	_ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/cocoapods"
@@ -36,7 +37,6 @@ import (
 	_ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/ruby"
 	_ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/rust"
 	_ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/terraform"
-	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
 
 // Scanner handles the scanning logic (like TypeScript's Payload.recurse)
@@ -52,6 +52,7 @@ type Scanner struct {
 	excludePatterns []string
 	progress        *progress.Progress
 	codeStats       CodeStatsAnalyzer
+	gitignoreStack  *git.StackBasedLoader
 }
 
 // CodeStatsAnalyzer interface for code statistics collection
@@ -63,9 +64,6 @@ type CodeStatsAnalyzer interface {
 	IsEnabled() bool
 	GetStats() interface{} // Returns the aggregated stats
 }
-
-// defaultIgnorePatterns holds the loaded ignore patterns from ignore.yaml
-var defaultIgnorePatterns []string
 
 // NewScanner creates a new scanner (mirroring TypeScript's analyser function)
 func NewScanner(path string) (*Scanner, error) {
@@ -105,20 +103,19 @@ func NewScannerWithOptionsAndLogger(path string, excludePatterns []string, verbo
 		prog = progress.New(false, progress.NewNullHandler())
 	}
 
-	// Load ignore patterns from .gitignore (only once) with progress reporting
-	if len(defaultIgnorePatterns) == 0 {
-		gitignoreLoader := git.NewGitignoreLoaderWithLogger(prog, logger)
-		ignorePatterns, err := gitignoreLoader.LoadPatterns(path)
-		if err != nil {
-			return nil, fmt.Errorf("failed to load ignore patterns: %w", err)
-		}
-		defaultIgnorePatterns = ignorePatterns
+	// Initialize stack-based gitignore loader
+	gitignoreStack := git.NewStackBasedLoaderWithLogger(prog, logger)
 
-		// Load config and add its exclude patterns to the global list
-		cfg, err := config.LoadConfig(path)
-		if err == nil && len(cfg.Exclude) > 0 {
-			defaultIgnorePatterns = append(defaultIgnorePatterns, cfg.Exclude...)
-		}
+	// Load config excludes to pass to gitignore stack
+	var configExcludes []string
+	cfg, err := config.LoadConfig(path)
+	if err == nil && len(cfg.Exclude) > 0 {
+		configExcludes = cfg.Exclude
+	}
+
+	// Initialize with top-level excludes (config and CLI patterns)
+	if err := gitignoreStack.InitializeWithTopLevelExcludes(path, excludePatterns, configExcludes); err != nil {
+		return nil, fmt.Errorf("failed to initialize top-level excludes: %w", err)
 	}
 
 	// Enable tracing if requested
@@ -141,6 +138,7 @@ func NewScannerWithOptionsAndLogger(path string, excludePatterns []string, verbo
 		excludePatterns: excludePatterns,
 		progress:        prog,
 		codeStats:       codeStats,
+		gitignoreStack:  gitignoreStack,
 	}, nil
 }
 
@@ -406,6 +404,23 @@ func (s *Scanner) recurse(payload *types.Payload, filePath string) error {
 	s.progress.EnterDirectory(filePath)
 	defer s.progress.LeaveDirectory(filePath)
 
+	// Load .gitignore patterns for this directory and push to stack
+	// This implements proper gitignore hierarchy: patterns only apply to current dir and subdirs
+	hasGitignore := s.gitignoreStack.LoadAndPushGitignore(filePath)
+
+	// Report gitignore context for debugging
+	if hasGitignore {
+		s.progress.GitIgnoreEnter(filePath)
+	}
+
+	// Pop patterns when leaving this directory (only if we had a .gitignore)
+	if hasGitignore {
+		defer func() {
+			s.progress.GitIgnoreLeave(filePath)
+			s.gitignoreStack.PopGitignore()
+		}()
+	}
+
 	// Get files in current directory (like TypeScript's provider.listDir)
 	files, err := s.provider.ListDir(filePath)
 	if err != nil {
@@ -416,7 +431,7 @@ func (s *Scanner) recurse(payload *types.Payload, filePath string) error {
 	// This ensures rule matching doesn't see excluded files
 	filteredFiles := make([]types.File, 0, len(files))
 	for _, file := range files {
-		if file.Type == "file" && s.shouldExcludeFile(file.Name, filePath) {
+		if file.Type == "file" && s.shouldExcludeFileStackBased(file.Name, filePath) {
 			continue
 		}
 		filteredFiles = append(filteredFiles, file)
@@ -462,7 +477,8 @@ func (s *Scanner) recurse(payload *types.Payload, filePath string) error {
 		}
 
 		// Skip ignored directories (like TypeScript's IGNORED_DIVE_PATHS)
-		if s.shouldIgnoreDirectory(file.Name) {
+		// Use stack-based gitignore checking for proper hierarchy
+		if s.shouldIgnoreDirectoryStackBased(file.Name, filePath) {
 			s.progress.Skipped(filepath.Join(filePath, file.Name), "excluded")
 			continue
 		}
@@ -846,7 +862,10 @@ func (s *Scanner) addTechWithPrimaryCheck(payload *types.Payload, tech string, r
 		}
 	}
 }
-func (s *Scanner) shouldExcludeFile(fileName, currentPath string) bool {
+
+// shouldExcludeFileStackBased checks if a file should be excluded using stack-based gitignore approach
+// This implements proper gitignore hierarchy where patterns only apply to their directory and subdirectories
+func (s *Scanner) shouldExcludeFileStackBased(fileName, currentPath string) bool {
 	// Get relative path from base path
 	basePath := s.provider.GetBasePath()
 	fullPath := filepath.Join(currentPath, fileName)
@@ -855,7 +874,7 @@ func (s *Scanner) shouldExcludeFile(fileName, currentPath string) bool {
 		relPath = fileName // Fallback to just filename
 	}
 
-	// Check against CLI exclude patterns
+	// Check against CLI exclude patterns first (these apply globally)
 	for _, pattern := range s.excludePatterns {
 		// Try glob match against relative path
 		matched, err := doublestar.Match(pattern, relPath)
@@ -870,27 +889,16 @@ func (s *Scanner) shouldExcludeFile(fileName, currentPath string) bool {
 		}
 	}
 
-	// Check against global ignore patterns (.gitignore + config excludes)
-	for _, pattern := range defaultIgnorePatterns {
-		// Try glob match against relative path
-		matched, err := doublestar.Match(pattern, relPath)
-		if err == nil && matched {
-			return true
-		}
-
-		// Also try matching just the filename
-		matched, err = doublestar.Match(pattern, fileName)
-		if err == nil && matched {
-			return true
-		}
+	// Check against stack-based gitignore patterns (proper hierarchy)
+	if s.gitignoreStack.ShouldExclude(fileName, relPath) {
+		return true
 	}
 
 	return false
 }
 
-// shouldIgnoreDirectory checks if a directory should be ignored during scanning
-// Uses modular ignore patterns defined in ignore_patterns.go
-func (s *Scanner) shouldIgnoreDirectory(name string) bool {
+// shouldIgnoreDirectoryStackBased checks if a directory should be ignored using stack-based gitignore approach
+func (s *Scanner) shouldIgnoreDirectoryStackBased(name, parentPath string) bool {
 	// Check user-specified exclude patterns first (supports glob patterns)
 	if len(s.excludePatterns) > 0 {
 		for _, pattern := range s.excludePatterns {
@@ -907,18 +915,16 @@ func (s *Scanner) shouldIgnoreDirectory(name string) bool {
 		}
 	}
 
-	// Get all ignore patterns from configuration
-	for _, pattern := range defaultIgnorePatterns {
-		// Try glob match first (same as CLI excludes)
-		matched, err := doublestar.Match(pattern, name)
-		if err == nil && matched {
-			return true
-		}
+	// Check against stack-based gitignore patterns
+	fullDirPath := filepath.Join(parentPath, name)
+	basePath := s.provider.GetBasePath()
+	relPath, err := filepath.Rel(basePath, fullDirPath)
+	if err != nil {
+		relPath = name // Fallback to just directory name
+	}
 
-		// Fallback to simple name match for backward compatibility
-		if strings.EqualFold(name, pattern) {
-			return true
-		}
+	if s.gitignoreStack.ShouldExclude(name, relPath) {
+		return true
 	}
 
 	return false

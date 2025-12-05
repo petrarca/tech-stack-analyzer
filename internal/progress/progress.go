@@ -26,6 +26,8 @@ const (
 	EventInfo
 	EventRuleCheck
 	EventRuleResult
+	EventGitIgnoreEnter
+	EventGitIgnoreLeave
 )
 
 // Event represents something that happened during scanning
@@ -202,6 +204,22 @@ func (p *Progress) Info(message string) {
 	})
 }
 
+func (p *Progress) GitIgnoreEnter(path string) {
+	p.Report(Event{
+		Type: EventGitIgnoreEnter,
+		Path: path,
+		Info: fmt.Sprintf("📁 GitIgnore context: %s (patterns active)", path),
+	})
+}
+
+func (p *Progress) GitIgnoreLeave(path string) {
+	p.Report(Event{
+		Type: EventGitIgnoreLeave,
+		Path: path,
+		Info: fmt.Sprintf("📤 GitIgnore context: %s (patterns removed)", path),
+	})
+}
+
 func (p *Progress) RuleCheck(tech string, details []string) {
 	if !p.traceRules {
 		return
@@ -305,6 +323,12 @@ func (h *SimpleHandler) Handle(event Event) {
 	case EventInfo:
 		fmt.Fprintf(h.writer, "[INFO] %s\n", event.Info)
 
+	case EventGitIgnoreEnter:
+		fmt.Fprintf(h.writer, "[GIT]  %s\n", event.Info)
+
+	case EventGitIgnoreLeave:
+		fmt.Fprintf(h.writer, "[GIT]  %s\n", event.Info)
+
 	case EventRuleCheck:
 		fmt.Fprintf(h.writer, "[RULE] Checking: %s\n", event.Tech)
 		for _, detail := range event.Details {
@@ -397,6 +421,12 @@ func (h *TreeHandler) Handle(event Event) {
 		fmt.Fprintf(h.writer, "%s%sResults written: %s\n", indent, prefix, event.Path)
 
 	case EventInfo:
+		fmt.Fprintf(h.writer, "%s%s%s\n", indent, prefix, event.Info)
+
+	case EventGitIgnoreEnter:
+		fmt.Fprintf(h.writer, "%s%s%s\n", indent, prefix, event.Info)
+
+	case EventGitIgnoreLeave:
 		fmt.Fprintf(h.writer, "%s%s%s\n", indent, prefix, event.Info)
 
 	case EventRuleCheck:
