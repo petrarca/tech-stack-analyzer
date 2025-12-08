@@ -1,0 +1,8 @@
+tech: readthedocs
+name: Read The Docs
+dependencies:
+  - type: docker
+    name: readthedocs/build
+    example: readthedocs/build
+files:
+  - .readthedocs.yml

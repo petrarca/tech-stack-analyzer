@@ -1,0 +1,15 @@
+tech: ansible
+name: Ansible
+dependencies:
+  - type: githubAction
+    name: ansible/ansible-lint
+    example: ansible/ansible-lint
+  - type: githubAction
+    name: ansible-community/ansible-test-gh-action
+    example: ansible-community/ansible-test-gh-action
+  - type: docker
+    name: pipelinecomponents/ansible-lint
+    example: pipelinecomponents/ansible-lint
+  - type: docker
+    name: alpinelinux/ansible
+    example: alpinelinux/ansible

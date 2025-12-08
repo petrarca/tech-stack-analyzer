@@ -1,0 +1,6 @@
+tech: upstash.qstash
+name: Upstash QStash
+dependencies:
+  - type: npm
+    name: "@upstash/qstash"
+    example: "@upstash/qstash"

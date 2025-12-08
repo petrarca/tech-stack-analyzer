@@ -1,0 +1,18 @@
+tech: aws.glue
+name: AWS Glue
+dependencies:
+  - type: npm
+    name: "@aws-sdk/client-glue"
+    example: "@aws-sdk/client-glue"
+  - type: npm
+    name: "@aws-cdk/aws-glue"
+    example: "@aws-cdk/aws-glue"
+  - type: rust
+    name: aws-sdk-glue
+    example: aws-sdk-glue
+  - type: ruby
+    name: aws-sdk-glue
+    example: aws-sdk-glue
+  - type: golang
+    name: github.com/aws/aws-sdk-go-v2/service/glue
+    example: github.com/aws/aws-sdk-go-v2/service/glue

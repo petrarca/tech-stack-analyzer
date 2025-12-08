@@ -1,0 +1,6 @@
+tech: cratedb
+name: CrateDB
+dependencies:
+  - type: docker
+    name: cratedb
+    example: cratedb

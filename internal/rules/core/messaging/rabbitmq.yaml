@@ -1,0 +1,26 @@
+tech: rabbitmq
+name: RabbitMQ
+dotenv:
+  - RABBITMQ_
+dependencies:
+  - type: npm
+    name: amqplib
+    example: amqplib
+  - type: npm
+    name: "@opentelemetry/instrumentation-amqplib"
+    example: "@opentelemetry/instrumentation-amqplib"
+  - type: rust
+    name: rabbitmq-stream-client
+    example: rabbitmq-stream-client
+  - type: ruby
+    name: bunny
+    example: bunny
+  - type: php
+    name: php-amqplib/php-amqplib
+    example: php-amqplib/php-amqplib
+  - type: npm
+    name: "@pulumi/rabbitmq"
+    example: "@pulumi/rabbitmq"
+  - type: python
+    name: amqp
+    example: amqp

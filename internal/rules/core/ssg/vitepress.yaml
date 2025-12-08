@@ -1,0 +1,8 @@
+tech: vitepress
+name: VitePress
+dependencies:
+  - type: npm
+    name: vitepress
+    example: vitepress
+files:
+  - .vitepress

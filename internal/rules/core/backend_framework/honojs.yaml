@@ -1,0 +1,6 @@
+tech: honojs
+name: HonoJS
+dependencies:
+  - type: npm
+    name: hono
+    example: hono

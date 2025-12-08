@@ -1,0 +1,5 @@
+tech: cirrusci
+name: CirrusCI
+files:
+  - .cirrus.yml
+  - .cirrus.yaml

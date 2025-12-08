@@ -1,0 +1,6 @@
+tech: symfony
+name: Symfony
+dependencies:
+  - type: php
+    name: symfony/symfony
+    example: symfony/symfony

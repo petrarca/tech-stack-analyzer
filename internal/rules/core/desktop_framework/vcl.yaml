@@ -1,0 +1,7 @@
+tech: vcl
+name: VCL
+dependencies:
+  - type: delphi
+    name: vcl
+  - type: delphi
+    name: /^vcl\./

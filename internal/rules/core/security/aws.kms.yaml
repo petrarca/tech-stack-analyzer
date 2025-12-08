@@ -1,0 +1,18 @@
+tech: aws.kms
+name: AWS Kms
+dependencies:
+  - type: npm
+    name: "@aws-sdk/client-kms"
+    example: "@aws-sdk/client-kms"
+  - type: npm
+    name: "@aws-cdk/aws-kms"
+    example: "@aws-cdk/aws-kms"
+  - type: rust
+    name: aws-sdk-kms
+    example: aws-sdk-kms
+  - type: ruby
+    name: aws-sdk-kms
+    example: aws-sdk-kms
+  - type: golang
+    name: github.com/aws/aws-sdk-go-v2/service/kms
+    example: github.com/aws/aws-sdk-go-v2/service/kms

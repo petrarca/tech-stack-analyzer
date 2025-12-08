@@ -1,0 +1,9 @@
+tech: scaleway.function
+name: Scaleway Function
+dependencies:
+  - type: terraform.resource
+    name: scaleway_function
+    example: scaleway_function
+  - type: terraform.resource
+    name: scaleway_function_cron
+    example: scaleway_function_cron

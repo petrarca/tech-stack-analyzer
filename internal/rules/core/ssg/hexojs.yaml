@@ -1,0 +1,6 @@
+tech: hexojs
+name: HexoJS
+dependencies:
+  - type: npm
+    name: hexo
+    example: hexo

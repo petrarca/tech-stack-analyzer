@@ -1,0 +1,24 @@
+tech: sendgrid
+name: Sendgrid
+dependencies:
+  - type: npm
+    name: nodemailer-sendgrid
+    example: nodemailer-sendgrid
+  - type: npm
+    name: nodemailer-sendgrid-transport
+    example: nodemailer-sendgrid-transport
+  - type: php
+    name: sendgrid/sendgrid
+    example: sendgrid/sendgrid
+  - type: ruby
+    name: sendgrid-ruby
+    example: sendgrid-ruby
+  - type: ruby
+    name: sendgrid-rails
+    example: sendgrid-rails
+  - type: ruby
+    name: sendgrid
+    example: sendgrid
+  - type: golang
+    name: github.com/sendgrid/sendgrid-go
+    example: github.com/sendgrid/sendgrid-go

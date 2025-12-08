@@ -1,0 +1,6 @@
+tech: knex
+name: Knex
+dependencies:
+  - type: npm
+    name: knex
+    example: knex

@@ -1,0 +1,20 @@
+tech: amplitude
+name: Amplitude Analytics
+dotenv:
+  - AMPLITUDE_
+dependencies:
+  - type: npm
+    name: amplitude-js
+    example: amplitude-js
+  - type: npm
+    name: "@amplitude/analytics-browser"
+    example: "@amplitude/analytics-browser"
+  - type: npm
+    name: "@analytics/amplitude"
+    example: "@analytics/amplitude"
+  - type: php
+    name: zumba/amplitude-php
+    example: zumba/amplitude-php
+  - type: terraform.resource
+    name: airbyte_source_amplitude
+    example: airbyte_source_amplitude

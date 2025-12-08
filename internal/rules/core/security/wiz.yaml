@@ -1,0 +1,8 @@
+tech: wiz
+name: Wiz
+dotenv:
+  - WIZ_
+dependencies:
+  - type: terraform
+    name: registry.terraform.io/AxtonGrams/wiz
+    example: registry.terraform.io/AxtonGrams/wiz

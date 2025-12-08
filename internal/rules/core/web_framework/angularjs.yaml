@@ -1,0 +1,7 @@
+tech: angularjs
+name: AngularJS
+dependencies:
+  - type: npm
+    name: angular
+  - type: npm
+    name: /^@angularjs/

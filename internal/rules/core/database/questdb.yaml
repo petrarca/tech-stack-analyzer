@@ -1,0 +1,15 @@
+tech: questdb
+name: QuestDB
+dependencies:
+  - type: docker
+    name: questdb/questdb
+    example: questdb/questdb
+  - type: npm
+    name: "@questdb/nodejs-client"
+    example: "@questdb/nodejs-client"
+  - type: golang
+    name: github.com/questdb/go-questdb-client
+    example: github.com/questdb/go-questdb-client
+  - type: rust
+    name: questdb-rs
+    example: questdb-rs

@@ -1,0 +1,6 @@
+tech: kysely
+name: Kysely
+dependencies:
+  - type: npm
+    name: kysely
+    example: kysely

@@ -1,0 +1,10 @@
+tech: deno
+name: Deno
+dependencies:
+  - type: githubAction
+    name: denoland/setup-deno
+    example: denoland/setup-deno
+files:
+  - deno.jsonc
+  - deno.json
+  - deno.lock

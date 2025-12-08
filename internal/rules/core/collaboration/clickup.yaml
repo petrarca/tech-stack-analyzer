@@ -1,0 +1,4 @@
+tech: clickup
+name: ClickUp
+dotenv:
+  - CLICKUP_

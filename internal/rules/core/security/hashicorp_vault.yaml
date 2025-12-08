@@ -1,0 +1,24 @@
+tech: hashicorp_vault
+name: Vault
+dependencies:
+  - type: npm
+    name: "@pulumi/vault"
+    example: "@pulumi/vault"
+  - type: docker
+    name: vault
+    example: vault
+  - type: terraform
+    name: registry.terraform.io/hashicorp/vault
+    example: registry.terraform.io/hashicorp/vault
+  - type: rust
+    name: hashicorp_vault
+    example: hashicorp_vault
+  - type: ruby
+    name: vault
+    example: vault
+  - type: php
+    name: csharpru/vault-php
+    example: csharpru/vault-php
+  - type: githubAction
+    name: hashicorp/vault-action
+    example: hashicorp/vault-action

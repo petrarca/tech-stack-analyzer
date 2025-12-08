@@ -1,0 +1,6 @@
+tech: bouncycastle
+name: BouncyCastle
+dependencies:
+  - type: maven
+    name: /^org\.bouncycastle:.*$/
+    example: org.bouncycastle:bcprov-jdk15on

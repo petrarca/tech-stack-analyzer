@@ -1,0 +1,5 @@
+tech: npm
+name: npm
+files:
+  - package.json
+  - package-lock.json

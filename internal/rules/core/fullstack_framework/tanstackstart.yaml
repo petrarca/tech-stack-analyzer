@@ -1,0 +1,6 @@
+tech: tanstackstart
+name: Tanstack Start
+dependencies:
+  - type: npm
+    name: "@tanstack/react-start"
+    example: "@tanstack/react-start"

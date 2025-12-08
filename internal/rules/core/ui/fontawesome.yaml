@@ -1,0 +1,21 @@
+tech: fontawesome
+name: Font Awesome
+dependencies:
+  - type: npm
+    name: "@fortawesome/react-fontawesome"
+    example: "@fortawesome/react-fontawesome"
+  - type: npm
+    name: "@fortawesome/vue-fontawesome"
+    example: "@fortawesome/vue-fontawesome"
+  - type: npm
+    name: "@iconify-json/fa6-brands"
+    example: "@iconify-json/fa6-brands"
+  - type: npm
+    name: "@iconify-json/fa6-regular"
+    example: "@iconify-json/fa6-regular"
+  - type: npm
+    name: "@iconify-json/fa6-solid"
+    example: "@iconify-json/fa6-solid"
+  - type: npm
+    name: "@iconify-json/fa"
+    example: "@iconify-json/fa"

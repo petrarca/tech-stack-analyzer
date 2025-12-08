@@ -1,0 +1,6 @@
+tech: cmake
+name: CMake
+files:
+  - CMakeLists.txt
+extensions:
+  - .cmake

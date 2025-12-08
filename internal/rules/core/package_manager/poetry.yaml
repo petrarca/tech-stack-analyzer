@@ -1,0 +1,4 @@
+tech: poetry
+name: Poetry
+files:
+  - poetry.lock

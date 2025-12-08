@@ -1,0 +1,14 @@
+tech: eslint
+name: Eslint
+dependencies:
+  - type: npm
+    name: eslint
+    example: eslint
+files:
+  - .eslintrc
+  - .eslintrc.cjs
+  - .eslintrc.json
+  - .eslintrc.js
+  - eslint.config.js
+  - eslint.config.cjs
+  - eslint.config.mjs

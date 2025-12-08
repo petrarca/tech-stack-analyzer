@@ -1,0 +1,9 @@
+tech: log4j
+name: Log4j
+dependencies:
+  - type: maven
+    name: /^org\.apache\.logging\.log4j:.*/
+    example: org.apache.logging.log4j:log4j-api
+  - type: maven
+    name: log4j:log4j
+    example: log4j:log4j

@@ -1,0 +1,18 @@
+tech: liquibase
+name: Liquibase
+dependencies:
+  - type: docker
+    name: liquibase/liquibase
+    example: liquibase/liquibase
+  - type: docker
+    name: webdevops/liquibase
+    example: webdevops/liquibase
+  - type: githubAction
+    name: liquibase/liquibase-github-action
+    example: liquibase/liquibase-github-action
+  - type: githubAction
+    name: liquibase-github-actions/init-start-h2
+    example: liquibase-github-actions/init-start-h2
+  - type: githubAction
+    name: liquibase-github-actions/update
+    example: liquibase-github-actions/update

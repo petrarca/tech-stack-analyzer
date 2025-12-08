@@ -1,0 +1,4 @@
+tech: ifttt
+name: ifttt
+dotenv:
+  - IFTTT

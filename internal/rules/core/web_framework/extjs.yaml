@@ -1,0 +1,7 @@
+tech: extjs
+name: Ext JS
+dependencies:
+  - type: npm
+    name: extjs
+  - type: npm
+    name: /^@extjs/

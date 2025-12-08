@@ -1,0 +1,8 @@
+tech: wolframalpha
+name: Wolfram Alpha
+dotenv:
+  - WOLFRAM_
+dependencies:
+  - type: python
+    name: wolframalpha
+    example: wolframalpha

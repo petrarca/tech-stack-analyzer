@@ -1,0 +1,42 @@
+###############################
+# pre-commit configuration
+#
+# Strategy:
+# - Use only "local" hooks so we can orchestrate workflows via Taskfile tasks.
+# - Split fast feedback (pre-commit) from deeper validation (pre-push).
+# - Keep pass_filenames: false because tasks already know what to operate on (full project scope).
+# - Each hook calls a consolidated Taskfile target (fct = format + check + test).
+#
+# Conventions:
+# - pre-commit hooks are optimized for speed (format + basic checks + quick tests).
+# - pre-push hooks run fuller test suites with race detection.
+#
+# Tips:
+# - Skip all hooks:   git commit -m "msg" --no-verify
+# - Run hooks manually: task fct
+# - Update hooks: task pre-commit:update
+###############################
+repos:
+  - repo: local
+    hooks:
+      # -------------------------------
+      # Pre-commit (fast) hooks
+      # -------------------------------
+      - id: go-pre-commit
+        name: "go: format+check+test (quick)"
+        entry: bash -c 'task fct'
+        language: system
+        pass_filenames: false
+        files: \.go$
+        always_run: false
+
+      # -------------------------------
+      # Pre-push (deeper) hooks
+      # -------------------------------
+      - id: go-pre-push
+        name: "go (pre-push): format+check+test+race"
+        entry: bash -c 'task fct && go test -race ./...'
+        language: system
+        pass_filenames: false
+        files: \.go$
+        stages: [pre-push]

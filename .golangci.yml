@@ -1,0 +1,29 @@
+version: 2
+
+run:
+  timeout: 5m
+  tests: true
+
+linters:
+  enable:
+    - gocyclo        # Cyclomatic complexity (like Python's C90)
+    - gocognit       # Cognitive complexity
+    - govet          # Go vet
+    - staticcheck    # Advanced static analysis
+    - ineffassign    # Ineffectual assignments
+    - misspell       # Spelling mistakes
+  disable:
+    - errcheck       # Disabled: only affects tool code, exclude-rules don't work
+
+linters-settings:
+  gocyclo:
+    # Maximum cyclomatic complexity
+    min-complexity: 10
+
+  gocognit:
+    # Maximum cognitive complexity
+    min-complexity: 10
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0

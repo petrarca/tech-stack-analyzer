@@ -1,0 +1,12 @@
+tech: gcp.spanner
+name: Cloud Spanner
+dependencies:
+  - type: npm
+    name: "@google-cloud/spanner"
+    example: "@google-cloud/spanner"
+  - type: golang
+    name: cloud.google.com/go/spanner
+    example: cloud.google.com/go/spanner
+  - type: php
+    name: google/cloud-spanner
+    example: google/cloud-spanner

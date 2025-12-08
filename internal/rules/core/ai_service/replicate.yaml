@@ -1,0 +1,11 @@
+tech: replicate
+name: Replicate
+dotenv:
+  - REPLICATE_
+dependencies:
+  - type: npm
+    name: replicate
+    example: replicate
+  - type: python
+    name: replicate
+    example: replicate

@@ -1,0 +1,12 @@
+tech: gcp.memorystore
+name: Cloud Memorystore
+dependencies:
+  - type: npm
+    name: "@google-cloud/redis"
+    example: "@google-cloud/redis"
+  - type: golang
+    name: cloud.google.com/go/redis
+    example: cloud.google.com/go/redis
+  - type: php
+    name: google/cloud-redis
+    example: google/cloud-redis

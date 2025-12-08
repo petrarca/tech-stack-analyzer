@@ -1,0 +1,9 @@
+tech: orysh
+name: Ory
+dependencies:
+  - type: golang
+    name: github.com/ory/client-go
+    example: github.com/ory/client-go
+  - type: php
+    name: ory/client
+    example: ory/client

@@ -1,0 +1,29 @@
+tech: workos
+name: WorkOS
+dotenv:
+  - WORKOS_
+dependencies:
+  - type: npm
+    name: "@workos-inc/node"
+    example: "@workos-inc/node"
+  - type: golang
+    name: github.com/workos/workos-go
+    example: github.com/workos/workos-go
+  - type: ruby
+    name: workos
+    example: workos
+  - type: ruby
+    name: omniauth-workos
+    example: omniauth-workos
+  - type: ruby
+    name: ueberauth_workos
+    example: ueberauth_workos
+  - type: python
+    name: workos
+    example: workos
+  - type: php
+    name: workos/workos-php
+    example: workos/workos-php
+  - type: python
+    name: django-workos
+    example: django-workos

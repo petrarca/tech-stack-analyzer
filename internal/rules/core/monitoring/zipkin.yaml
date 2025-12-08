@@ -1,0 +1,39 @@
+tech: zipkin
+name: Zipkin
+dependencies:
+  - type: docker
+    name: openzipkin/zipkin
+    example: openzipkin/zipkin
+  - type: golang
+    name: github.com/openzipkin/zipkin-go
+    example: github.com/openzipkin/zipkin-go
+  - type: golang
+    name: github.com/openzipkin-contrib/zipkin-go-opentracing
+    example: github.com/openzipkin-contrib/zipkin-go-opentracing
+  - type: golang
+    name: github.com/go-kit/kit/tracing/zipkin
+    example: github.com/go-kit/kit/tracing/zipkin
+  - type: golang
+    name: go.opentelemetry.io/otel/exporters/zipkin
+    example: go.opentelemetry.io/otel/exporters/zipkin
+  - type: golang
+    name: contrib.go.opencensus.io/exporter/zipkin
+    example: contrib.go.opencensus.io/exporter/zipkin
+  - type: npm
+    name: zipkin
+    example: zipkin
+  - type: npm
+    name: zipkin-context-cls
+    example: zipkin-context-cls
+  - type: npm
+    name: zipkin-transport-http
+    example: zipkin-transport-http
+  - type: npm
+    name: "@opentelemetry/exporter-zipkin"
+    example: "@opentelemetry/exporter-zipkin"
+  - type: ruby
+    name: zipkin-tracer
+    example: zipkin-tracer
+  - type: php
+    name: openzipkin/zipkin
+    example: openzipkin/zipkin

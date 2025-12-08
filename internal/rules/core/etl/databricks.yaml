@@ -1,0 +1,14 @@
+tech: databricks
+name: Databricks
+dotenv:
+  - DATABRICKS_
+dependencies:
+  - type: terraform
+    name: registry.terraform.io/databricks/databricks
+    example: registry.terraform.io/databricks/databricks
+  - type: githubAction
+    name: databricks/run-notebook
+    example: databricks/run-notebook
+  - type: terraform.resource
+    name: airbyte_destination_databricks
+    example: airbyte_destination_databricks

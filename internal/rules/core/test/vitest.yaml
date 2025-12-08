@@ -1,0 +1,9 @@
+tech: vitest
+name: Vitest
+dependencies:
+  - type: npm
+    name: vitest
+    example: vitest
+files:
+  - vitest.config.js
+  - vitest.config.ts

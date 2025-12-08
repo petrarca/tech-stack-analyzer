@@ -1,0 +1,86 @@
+tech: oracle
+name: Oracle Database
+dotenv:
+  - ORACLE_
+  - ORACLE_SID
+  - ORACLE_HOME
+  - ORACLE_HOST
+  - ORACLE_PORT
+  - ORACLE_SERVICE
+  - ORACLE_DB
+dependencies:
+  - type: npm
+    name: oracledb
+    example: oracledb
+  - type: npm
+    name: "@opentelemetry/instrumentation-oracledb"
+    example: "@opentelemetry/instrumentation-oracledb"
+  - type: python
+    name: cx_Oracle
+    example: cx_Oracle
+  - type: python
+    name: oracledb
+    example: oracledb
+  - type: python
+    name: python-oracledb
+    example: python-oracledb
+  - type: python
+    name: django-oracle
+    example: django-oracle
+  - type: maven
+    name: ojdbc8
+    example: ojdbc8
+  - type: maven
+    name: oracle.jdbc
+    example: oracle.jdbc
+  - type: maven
+    name: oracle.jdbc.driver
+    example: oracle.jdbc.driver
+  - type: ruby
+    name: ruby-oci8
+    example: ruby-oci8
+  - type: ruby
+    name: ruby-oci8
+    example: ruby-oci8
+  - type: go
+    name: godror
+    example: godror
+  - type: go
+    name: github.com/sijms/go-ora
+    example: github.com/sijms/go-ora
+  - type: php
+    name: oci8
+    example: oci8
+  - type: php
+    name: oracle-instantclient
+    example: oracle-instantclient
+  - type: docker
+    name: oracle/database
+    example: oracle/database
+  - type: docker
+    name: container-registry.oracle.com/database/express
+    example: container-registry.oracle.com/database/express
+  - type: docker
+    name: container-registry.oracle.com/database/enterprise
+    example: container-registry.oracle.com/database/enterprise
+  - type: docker
+    name: gvenzl/oracle-xe
+    example: gvenzl/oracle-xe
+  - type: terraform
+    name: registry.terraform.io/oracle-terraform-modules/oci/database
+    example: registry.terraform.io/oracle-terraform-modules/oci/database
+  - type: terraform
+    name: registry.terraform.io/oracle/oci/database
+    example: registry.terraform.io/oracle/oci/database
+  - type: terraform.resource
+    name: oci_database_autonomous_database
+    example: oci_database_autonomous_database
+  - type: terraform.resource
+    name: oci_database_db_system
+    example: oci_database_db_system
+files:
+  - tnsnames.ora
+  - sqlnet.ora
+  - listener.ora
+  - init.ora
+  - spfile*.ora

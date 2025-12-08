@@ -1,0 +1,38 @@
+tech: optimizely
+name: Optimizely
+dotenv:
+  - OPTIMIZELY_
+dependencies:
+  - type: npm
+    name: "@optimizely/optimizely-sdk"
+    example: "@optimizely/optimizely-sdk"
+  - type: npm
+    name: "@optimizely/react-sdk"
+    example: "@optimizely/react-sdk"
+  - type: npm
+    name: "@optimizely/js-sdk-utils"
+    example: "@optimizely/js-sdk-utils"
+  - type: npm
+    name: "@optimizely/js-sdk-logging"
+    example: "@optimizely/js-sdk-logging"
+  - type: npm
+    name: "@optimizely/js-sdk-event-processor"
+    example: "@optimizely/js-sdk-event-processor"
+  - type: ruby
+    name: optimizely-sdk
+    example: optimizely-sdk
+  - type: ruby
+    name: optimizely
+    example: optimizely
+  - type: ruby
+    name: optimizely_server_side
+    example: optimizely_server_side
+  - type: php
+    name: optimizely/optimizely-sdk
+    example: optimizely/optimizely-sdk
+  - type: githubAction
+    name: optimizely/upload-custom-code-action
+    example: optimizely/upload-custom-code-action
+  - type: golang
+    name: github.com/optimizely/go-sdk
+    example: github.com/optimizely/go-sdk

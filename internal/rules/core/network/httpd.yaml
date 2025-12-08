@@ -1,0 +1,4 @@
+tech: httpd
+name: HTTPD
+files:
+  - httpd.conf

@@ -1,0 +1,12 @@
+tech: aws.transcribe
+name: AWS Transcribe
+dependencies:
+  - type: npm
+    name: "@aws-sdk/middleware-sdk-transcribe-streaming"
+    example: "@aws-sdk/middleware-sdk-transcribe-streaming"
+  - type: npm
+    name: "@aws-sdk/client-transcribe-streaming"
+    example: "@aws-sdk/client-transcribe-streaming"
+  - type: npm
+    name: "@aws-sdk/client-transcribe"
+    example: "@aws-sdk/client-transcribe"

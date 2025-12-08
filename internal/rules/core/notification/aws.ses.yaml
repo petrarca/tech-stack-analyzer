@@ -1,0 +1,33 @@
+tech: aws.ses
+name: AWS Simple Email Service
+dependencies:
+  - type: npm
+    name: "@aws-cdk/aws-ses"
+    example: "@aws-cdk/aws-ses"
+  - type: npm
+    name: aws-ses-v2-local
+    example: aws-ses-v2-local
+  - type: npm
+    name: nodemailer-ses-transport
+    example: nodemailer-ses-transport
+  - type: npm
+    name: "@aws-sdk/client-ses"
+    example: "@aws-sdk/client-ses"
+  - type: rust
+    name: aws-sdk-ses
+    example: aws-sdk-ses
+  - type: rust
+    name: aws-sdk-sesv2
+    example: aws-sdk-sesv2
+  - type: ruby
+    name: aws-ses
+    example: aws-ses
+  - type: ruby
+    name: aws-sdk-ses
+    example: aws-sdk-ses
+  - type: golang
+    name: github.com/aws/aws-sdk-go-v2/service/ses
+    example: github.com/aws/aws-sdk-go-v2/service/ses
+  - type: php
+    name: async-aws/ses
+    example: async-aws/ses

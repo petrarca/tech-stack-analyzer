@@ -1,0 +1,11 @@
+tech: vale
+name: Vale
+dependencies:
+  - type: docker
+    name: jdkato/vale
+    example: jdkato/vale
+  - type: githubAction
+    name: errata-ai/vale-action
+    example: errata-ai/vale-action
+files:
+  - .vale.ini

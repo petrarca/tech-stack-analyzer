@@ -1,0 +1,15 @@
+tech: openssl
+name: OpenSSL
+dependencies:
+  - type: npm
+    name: openssl
+  - type: golang
+    name: github.com/spacemonkeygo/openssl
+  - type: python
+    name: pyopenssl
+  - type: ruby
+    name: openssl
+  - type: php
+    name: ext-openssl
+  - type: cocoapods
+    name: OpenSSL-Universal

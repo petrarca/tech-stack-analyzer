@@ -1,0 +1,20 @@
+tech: notion
+name: Notion
+dotenv:
+  - NOTION_
+dependencies:
+  - type: npm
+    name: "@notionhq/client"
+    example: "@notionhq/client"
+  - type: npm
+    name: notion-to-md
+    example: notion-to-md
+  - type: php
+    name: fiveam-code/laravel-notion-api
+    example: fiveam-code/laravel-notion-api
+  - type: ruby
+    name: notion-ruby-client
+    example: notion-ruby-client
+  - type: rust
+    name: notion
+    example: notion

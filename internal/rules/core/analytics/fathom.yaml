@@ -1,0 +1,8 @@
+tech: fathom
+name: Fathom
+dotenv:
+  - FATHOM_
+dependencies:
+  - type: npm
+    name: fathom-client
+    example: fathom-client

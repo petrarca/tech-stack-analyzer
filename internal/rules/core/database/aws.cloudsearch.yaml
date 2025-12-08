@@ -1,0 +1,18 @@
+tech: aws.cloudsearch
+name: AWS Cloudsearch
+dependencies:
+  - type: npm
+    name: "@aws-cdk/aws-cloudsearch"
+    example: "@aws-cdk/aws-cloudsearch"
+  - type: npm
+    name: "@aws-sdk/client-cloudsearch"
+    example: "@aws-sdk/client-cloudsearch"
+  - type: rust
+    name: aws-sdk-cloudsearch
+    example: aws-sdk-cloudsearch
+  - type: ruby
+    name: aws-sdk-cloudsearch
+    example: aws-sdk-cloudsearch
+  - type: golang
+    name: github.com/aws/aws-sdk-go-v2/service/cloudsearch
+    example: github.com/aws/aws-sdk-go-v2/service/cloudsearch

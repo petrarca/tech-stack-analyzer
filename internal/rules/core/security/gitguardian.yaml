@@ -1,0 +1,12 @@
+tech: gitguardian
+name: GitGuardian
+dependencies:
+  - type: githubAction
+    name: GitGuardian/ggshield-action
+    example: GitGuardian/ggshield-action
+  - type: golang
+    name: github.com/Gaardsholt/go-gitguardian
+    example: github.com/Gaardsholt/go-gitguardian
+  - type: docker
+    name: gitguardian/ggshield
+    example: gitguardian/ggshield

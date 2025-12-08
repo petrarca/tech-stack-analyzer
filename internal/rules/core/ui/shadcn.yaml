@@ -1,0 +1,26 @@
+tech: shadcn
+name: Shadcn
+content:
+  - type: json-path
+    path: $.$schema
+    value: https://ui.shadcn.com/schema.json
+    files: [components.json]
+dependencies:
+  - type: npm
+    name: shadcn-ui
+    example: shadcn-ui
+  - type: npm
+    name: "@shadcn/ui"
+    example: "@shadcn/ui"
+  - type: npm
+    name: shadcn
+    example: shadcn
+  - type: npm
+    name: shadcn-nuxt
+    example: shadcn-nuxt
+  - type: npm
+    name: shadcn-svelte
+    example: shadcn-svelte
+  - type: npm
+    name: shadcn-vue
+    example: shadcn-vue

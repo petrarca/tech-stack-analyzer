@@ -1,0 +1,20 @@
+tech: cloudflare
+name: Cloudflare
+dotenv:
+  - CLOUDFLARE_
+dependencies:
+  - type: npm
+    name: "@pulumi/cloudflare"
+    example: "@pulumi/cloudflare"
+  - type: terraform
+    name: registry.terraform.io/cloudflare/cloudflare
+    example: registry.terraform.io/cloudflare/cloudflare
+  - type: rust
+    name: cloudflare
+    example: cloudflare
+  - type: ruby
+    name: cloudflare-rails
+    example: cloudflare-rails
+  - type: php
+    name: cloudflare/sdk
+    example: cloudflare/sdk

@@ -1,0 +1,17 @@
+tech: deepseek
+name: Deepseek
+dotenv:
+  - DEEPSEEK_
+dependencies:
+  - type: npm
+    name: "@ai-sdk/deepsek"
+    example: "@ai-sdk/deepsek"
+  - type: npm
+    name: "@langchain/deepsek"
+    example: "@langchain/deepsek"
+  - type: npm
+    name: n8n-nodes-deepseek
+    example: n8n-nodes-deepseek
+  - type: python
+    name: langchain-deepseek
+    example: langchain-deepseek

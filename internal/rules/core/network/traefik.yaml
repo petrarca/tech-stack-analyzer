@@ -1,0 +1,10 @@
+tech: traefik
+name: Traefik
+dependencies:
+  - type: docker
+    name: traefik
+    example: traefik
+files:
+  - traefik.yml
+  - traefik.yaml
+  - traefik.toml

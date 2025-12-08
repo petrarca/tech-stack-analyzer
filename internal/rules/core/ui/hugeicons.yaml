@@ -1,0 +1,24 @@
+tech: hugeicons
+name: HugeIcons
+dependencies:
+  - type: npm
+    name: "@hugeicons/react"
+    example: "@hugeicons/react"
+  - type: npm
+    name: "@hugeicons/vue"
+    example: "@hugeicons/vue"
+  - type: npm
+    name: "@hugeicons/svelte"
+    example: "@hugeicons/svelte"
+  - type: npm
+    name: "@hugeicons/angular"
+    example: "@hugeicons/angular"
+  - type: npm
+    name: "@hugeicons/react-native"
+    example: "@hugeicons/react-native"
+  - type: npm
+    name: "@hugeicons/core-free-icons"
+    example: "@hugeicons/core-free-icons"
+  - type: npm
+    name: "@iconify-json/hugeicons"
+    example: "@iconify-json/hugeicons"

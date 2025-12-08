@@ -1,0 +1,8 @@
+tech: mintlify
+name: Mintlify
+dependencies:
+  - type: npm
+    name: mintlify
+    example: mintlify
+files:
+  - mint.json

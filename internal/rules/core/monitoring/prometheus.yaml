@@ -1,0 +1,72 @@
+tech: prometheus
+name: Prometheus
+dependencies:
+  - type: npm
+    name: prom-client
+    example: prom-client
+  - type: npm
+    name: prometheus-gc-stats
+    example: prometheus-gc-stats
+  - type: docker
+    name: prom/prometheus
+    example: prom/prometheus
+  - type: docker
+    name: bitnami/prometheus
+    example: bitnami/prometheus
+  - type: docker
+    name: bitnami/prometheus-operator
+    example: bitnami/prometheus-operator
+  - type: docker
+    name: rancher/prometheus-auth
+    example: rancher/prometheus-auth
+  - type: docker
+    name: ubuntu/prometheus
+    example: ubuntu/prometheus
+  - type: docker
+    name: newrelic/newrelic-prometheus-configurator
+    example: newrelic/newrelic-prometheus-configurator
+  - type: docker
+    name: nginx/nginx-prometheus-exporter
+    example: nginx/nginx-prometheus-exporter
+  - type: docker
+    name: newrelic/nri-prometheus
+    example: newrelic/nri-prometheus
+  - type: docker
+    name: grafana/mimir
+    example: grafana/mimir
+  - type: docker
+    name: bitnami/nginx-exporter
+    example: bitnami/nginx-exporter
+  - type: rust
+    name: prometheus
+    example: prometheus
+  - type: php
+    name: promphp/prometheus_client_php
+    example: promphp/prometheus_client_php
+  - type: php
+    name: artprima/prometheus-metrics-bundle
+    example: artprima/prometheus-metrics-bundle
+  - type: ruby
+    name: prometheus-client
+    example: prometheus-client
+  - type: ruby
+    name: prometheus
+    example: prometheus
+  - type: ruby
+    name: prometheus_exporter
+    example: prometheus_exporter
+  - type: ruby
+    name: prometheus-client-mmap
+    example: prometheus-client-mmap
+  - type: ruby
+    name: fluent-plugin-prometheus
+    example: fluent-plugin-prometheus
+  - type: golang
+    name: github.com/prometheus/client_golang/prometheus
+    example: github.com/prometheus/client_golang/prometheus
+  - type: golang
+    name: github.com/go-kit/kit/metrics/prometheus
+    example: github.com/go-kit/kit/metrics/prometheus
+  - type: golang
+    name: github.com/grpc-ecosystem/go-grpc-prometheus
+    example: github.com/grpc-ecosystem/go-grpc-prometheus

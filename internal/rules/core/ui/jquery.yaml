@@ -1,0 +1,11 @@
+tech: jquery
+name: jQuery
+dependencies:
+  - type: npm
+    name: jquery
+  - type: nuget
+    name: jQuery
+  - type: maven
+    name: org.webjars:jquery
+  - type: maven
+    name: org.webjars.npm:jquery

@@ -1,0 +1,5 @@
+tech: styleci
+name: StyleCI
+files:
+  - .styleci.yml
+  - .styleci.yaml

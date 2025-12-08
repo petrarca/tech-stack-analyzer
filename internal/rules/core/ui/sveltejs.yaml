@@ -1,0 +1,8 @@
+tech: svelte
+name: Svelte
+dependencies:
+  - type: npm
+    name: svelte
+    example: svelte
+files:
+  - svelte.config.js

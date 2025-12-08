@@ -1,0 +1,8 @@
+tech: zig
+name: Zig
+dependencies:
+  - type: githubAction
+    name: goto-bus-stop/setup-zig
+    example: goto-bus-stop/setup-zig
+extensions:
+  - .zig

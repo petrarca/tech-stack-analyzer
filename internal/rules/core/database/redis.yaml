@@ -1,0 +1,56 @@
+tech: redis
+name: Redis
+dotenv:
+  - REDIS_
+dependencies:
+  - type: npm
+    name: redis
+    example: redis
+  - type: npm
+    name: "@opentelemetry/instrumentation-redis"
+    example: "@opentelemetry/instrumentation-redis"
+  - type: npm
+    name: "@opentelemetry/instrumentation-redis-4"
+    example: "@opentelemetry/instrumentation-redis-4"
+  - type: npm
+    name: "@opentelemetry/instrumentation-ioredis"
+    example: "@opentelemetry/instrumentation-ioredis"
+  - type: npm
+    name: ioredis
+    example: ioredis
+  - type: rust
+    name: redis
+    example: redis
+  - type: rust
+    name: redis-async
+    example: redis-async
+  - type: ruby
+    name: redis
+    example: redis
+  - type: ruby
+    name: redis-client
+    example: redis-client
+  - type: php
+    name: predis/predis
+    example: predis/predis
+  - type: php
+    name: snc/redis-bundle
+    example: snc/redis-bundle
+  - type: php
+    name: colinmollenhour/cache-backend-redis
+    example: colinmollenhour/cache-backend-redis
+  - type: terraform
+    name: registry.terraform.io/RedisLabs/rediscloud
+    example: registry.terraform.io/RedisLabs/rediscloud
+  - type: terraform.resource
+    name: airbyte_destination_redis
+    example: airbyte_destination_redis
+  - type: nuget
+    name: StackExchange.Redis
+    example: StackExchange.Redis
+  - type: nuget
+    name: Microsoft.Extensions.Caching.StackExchangeRedis
+    example: Microsoft.Extensions.Caching.StackExchangeRedis
+  - type: nuget
+    name: ServiceStack.Redis
+    example: ServiceStack.Redis

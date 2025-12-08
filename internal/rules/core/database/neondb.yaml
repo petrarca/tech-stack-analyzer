@@ -1,0 +1,18 @@
+tech: neondb
+name: NeonDB
+dependencies:
+  - type: npm
+    name: "@neondatabase/serverless"
+    example: "@neondatabase/serverless"
+  - type: npm
+    name: "@neondatabase/api-client"
+    example: "@neondatabase/api-client"
+  - type: npm
+    name: "@prisma/adapter-neon"
+    example: "@prisma/adapter-neon"
+  - type: docker
+    name: neondatabase/neon
+    example: neondatabase/neon
+  - type: python
+    name: neon-api
+    example: neon-api

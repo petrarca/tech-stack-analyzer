@@ -1,0 +1,24 @@
+tech: lucideicons
+name: Lucide Icons
+dependencies:
+  - type: npm
+    name: lucide-react
+    example: lucide-react
+  - type: npm
+    name: lucide-svelte
+    example: lucide-svelte
+  - type: npm
+    name: lucide-vue-next
+    example: lucide-vue-next
+  - type: npm
+    name: lucide-react-native
+    example: lucide-react-native
+  - type: npm
+    name: "@iconify-json/lucide"
+    example: "@iconify-json/lucide"
+  - type: npm
+    name: "@lucide/svelte"
+    example: "@lucide/svelte"
+  - type: npm
+    name: lucide-angular
+    example: lucide-angular

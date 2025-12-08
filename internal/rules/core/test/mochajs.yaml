@@ -1,0 +1,6 @@
+tech: mochajs
+name: Mocha
+dependencies:
+  - type: npm
+    name: mocha
+    example: mocha

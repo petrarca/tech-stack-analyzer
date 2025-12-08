@@ -1,0 +1,6 @@
+tech: uptimekuma
+name: Uptime Kuma
+dependencies:
+  - type: docker
+    name: louislam/uptime-kuma
+    example: louislam/uptime-kuma

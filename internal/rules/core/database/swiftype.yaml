@@ -1,0 +1,15 @@
+tech: swiftype
+name: Swiftype
+dependencies:
+  - type: ruby
+    name: site-search-ruby
+    example: site-search-ruby
+  - type: npm
+    name: "@elastic/site-search-node"
+    example: "@elastic/site-search-node"
+  - type: python
+    name: elastic-site-search
+    example: elastic-site-search
+  - type: php
+    name: elastic/site-search
+    example: elastic/site-search

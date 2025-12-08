@@ -1,0 +1,9 @@
+tech: splitio
+name: Split
+dependencies:
+  - type: golang
+    name: github.com/splitio/go-client/v6
+    example: github.com/splitio/go-client/v6
+  - type: ruby
+    name: splitclient-rb
+    example: splitclient-rb

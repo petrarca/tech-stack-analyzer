@@ -1,0 +1,20 @@
+tech: mailjet
+name: Mailjet
+dotenv:
+  - MAILJET_
+dependencies:
+  - type: npm
+    name: node-mailjet
+    example: node-mailjet
+  - type: rust
+    name: mailjet-rs
+    example: mailjet-rs
+  - type: ruby
+    name: mailjet
+    example: mailjet
+  - type: php
+    name: mailjet/mailjet-apiv3-php
+    example: mailjet/mailjet-apiv3-php
+  - type: php
+    name: mailjet/laravel-mailjet
+    example: mailjet/laravel-mailjet

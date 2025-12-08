@@ -1,0 +1,18 @@
+tech: lighthouse
+name: Lighthouse
+dependencies:
+  - type: npm
+    name: lighthouse
+    example: lighthouse
+  - type: githubAction
+    name: jakejarvis/lighthouse-action
+    example: jakejarvis/lighthouse-action
+  - type: githubAction
+    name: foo-software/lighthouse-check-action
+    example: foo-software/lighthouse-check-action
+  - type: githubAction
+    name: treosh/lighthouse-ci-action
+    example: treosh/lighthouse-ci-action
+  - type: docker
+    name: femtopixel/google-lighthouse
+    example: femtopixel/google-lighthouse

@@ -1,0 +1,6 @@
+tech: postgrest
+name: Postgrest
+dependencies:
+  - type: docker
+    name: postgrest/postgrest
+    example: postgrest/postgrest

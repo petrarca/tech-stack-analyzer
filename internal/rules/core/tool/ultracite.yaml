@@ -1,0 +1,6 @@
+tech: ultracite
+name: Ultracite
+dependencies:
+  - type: npm
+    name: ultracite
+    example: ultracite

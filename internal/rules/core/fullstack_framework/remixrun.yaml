@@ -1,0 +1,9 @@
+tech: remixrun
+name: Remix
+dependencies:
+  - type: npm
+    name: "@remix-run/node"
+    example: "@remix-run/node"
+  - type: npm
+    name: "@remix-run/serve"
+    example: "@remix-run/serve"

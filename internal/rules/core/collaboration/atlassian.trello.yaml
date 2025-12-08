@@ -1,0 +1,21 @@
+tech: atlassian.trello
+name: Atlassian Trello
+dependencies:
+  - type: npm
+    name: trello
+    example: trello
+  - type: npm
+    name: react-trello
+    example: react-trello
+  - type: npm
+    name: node-trello
+    example: node-trello
+  - type: ruby
+    name: ruby-trello
+    example: ruby-trello
+  - type: php
+    name: cdaguerre/php-trello-api
+    example: cdaguerre/php-trello-api
+  - type: githubAction
+    name: jessicazu/trello-github-actions
+    example: jessicazu/trello-github-actions

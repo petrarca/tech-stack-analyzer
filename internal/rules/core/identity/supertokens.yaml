@@ -1,0 +1,18 @@
+tech: supertokens
+name: SuperTokens
+dependencies:
+  - type: npm
+    name: supertokens-web-js
+    example: supertokens-web-js
+  - type: npm
+    name: supertokens-node
+    example: supertokens-node
+  - type: golang
+    name: github.com/supertokens/supertokens-golang
+    example: github.com/supertokens/supertokens-golang
+  - type: python
+    name: supertokens_python
+    example: supertokens_python
+  - type: npm
+    name: supertokens-auth-react
+    example: supertokens-auth-react

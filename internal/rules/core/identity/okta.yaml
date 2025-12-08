@@ -1,0 +1,20 @@
+tech: okta
+name: Okta
+dotenv:
+  - OKTA_
+dependencies:
+  - type: terraform
+    name: registry.terraform.io/okta/okta
+    example: registry.terraform.io/okta/okta
+  - type: rust
+    name: okta
+    example: okta
+  - type: ruby
+    name: oktakit
+    example: oktakit
+  - type: php
+    name: socialiteproviders/okta
+    example: socialiteproviders/okta
+  - type: npm
+    name: "@pulumi/okta"
+    example: "@pulumi/okta"

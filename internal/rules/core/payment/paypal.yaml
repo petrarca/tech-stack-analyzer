@@ -1,0 +1,44 @@
+tech: paypal
+name: Paypal
+dotenv:
+  - PAYPAL_
+dependencies:
+  - type: npm
+    name: "@paypal/paypal-js"
+    example: "@paypal/paypal-js"
+  - type: npm
+    name: paypal-rest-sdk
+    example: paypal-rest-sdk
+  - type: php
+    name: paypal/rest-api-sdk-php
+    example: paypal/rest-api-sdk-php
+  - type: php
+    name: srmklive/paypal
+    example: srmklive/paypal
+  - type: php
+    name: omnipay/paypal
+    example: omnipay/paypal
+  - type: ruby
+    name: paypal
+    example: paypal
+  - type: ruby
+    name: paypal-sdk-rest
+    example: paypal-sdk-rest
+  - type: ruby
+    name: paypal-express
+    example: paypal-express
+  - type: ruby
+    name: paypal-sdk-core
+    example: paypal-sdk-core
+  - type: ruby
+    name: paypal-sdk-merchant
+    example: paypal-sdk-merchant
+  - type: ruby
+    name: paypal-checkout-sdk
+    example: paypal-checkout-sdk
+  - type: rust
+    name: paypal-rs
+    example: paypal-rs
+  - type: golang
+    name: github.com/markbates/goth/providers/paypal
+    example: github.com/markbates/goth/providers/paypal

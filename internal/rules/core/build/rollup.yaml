@@ -1,0 +1,6 @@
+tech: rollup
+name: Rollup
+dependencies:
+  - type: npm
+    name: rollup
+    example: rollup

@@ -1,0 +1,35 @@
+tech: elasticsearch
+name: Elasticsearch
+dotenv:
+  - ELASTICSEARCH_
+dependencies:
+  - type: npm
+    name: "@elastic/elasticsearch"
+    example: "@elastic/elasticsearch"
+  - type: terraform
+    name: registry.terraform.io/phillbaker/elasticsearch
+    example: registry.terraform.io/phillbaker/elasticsearch
+  - type: rust
+    name: elasticsearch
+    example: elasticsearch
+  - type: ruby
+    name: elasticsearch
+    example: elasticsearch
+  - type: php
+    name: elasticsearch/elasticsearch
+    example: elasticsearch/elasticsearch
+  - type: php
+    name: ruflin/Elastica
+    example: ruflin/Elastica
+  - type: golang
+    name: github.com/elastic/go-elasticsearch
+    example: github.com/elastic/go-elasticsearch
+  - type: githubAction
+    name: elastic/elastic-github-actions/elasticsearch
+    example: elastic/elastic-github-actions/elasticsearch
+  - type: python
+    name: elasticsearch
+    example: elasticsearch
+  - type: terraform.resource
+    name: airbyte_destination_elasticsearch
+    example: airbyte_destination_elasticsearch

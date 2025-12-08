@@ -1,0 +1,6 @@
+tech: solidjs
+name: Solid js
+dependencies:
+  - type: npm
+    name: solid-js
+    example: solid-js

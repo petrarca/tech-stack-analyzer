@@ -1,0 +1,6 @@
+tech: slatedocs
+name: Slate
+dependencies:
+  - type: docker
+    name: slatedocs/slate
+    example: slatedocs/slate

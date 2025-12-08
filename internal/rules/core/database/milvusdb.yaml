@@ -1,0 +1,38 @@
+tech: milvusdb
+name: MilvusDB
+dotenv:
+  - MILVUS_
+dependencies:
+  - type: docker
+    name: milvusdb/milvus
+    example: milvusdb/milvus
+  - type: docker
+    name: milvusdb/milvus-dev
+    example: milvusdb/milvus-dev
+  - type: docker
+    name: bitnami/milvus
+    example: bitnami/milvus
+  - type: docker
+    name: bitnamicharts/milvus
+    example: bitnamicharts/milvus
+  - type: npm
+    name: "@zilliz/milvus2-sdk-node"
+    example: "@zilliz/milvus2-sdk-node"
+  - type: golang
+    name: github.com/milvus-io/milvus-sdk-go/v2
+    example: github.com/milvus-io/milvus-sdk-go/v2
+  - type: python
+    name: pymilvus
+    example: pymilvus
+  - type: python
+    name: langchain-milvus
+    example: langchain-milvus
+  - type: npm
+    name: genkitx-milvus
+    example: genkitx-milvus
+  - type: npm
+    name: "@llamaindex/milvus"
+    example: "@llamaindex/milvus"
+  - type: terraform.resource
+    name: airbyte_destination_milvus
+    example: airbyte_destination_milvus

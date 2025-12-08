@@ -1,0 +1,12 @@
+tech: hostinger
+name: Hostinger
+dependencies:
+  - type: php
+    name: hostinger/api-php-sdk
+    example: hostinger/api-php-sdk
+  - type: python
+    name: hostinger_api
+    example: hostinger_api
+  - type: npm
+    name: hostinger-api-sdk
+    example: hostinger-api-sdk

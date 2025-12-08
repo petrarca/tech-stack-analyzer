@@ -1,0 +1,47 @@
+tech: telegram
+name: Telegram
+dotenv:
+  - TELEGRAM_
+dependencies:
+  - type: docker
+    name: kasmweb/telegram
+    example: kasmweb/telegram
+  - type: golang
+    name: github.com/go-telegram-bot-api/telegram-bot-api/v5
+    example: github.com/go-telegram-bot-api/telegram-bot-api/v5
+  - type: githubAction
+    name: appleboy/telegram-action
+    example: appleboy/telegram-action
+  - type: npm
+    name: telegram
+    example: telegram
+  - type: npm
+    name: telegraf
+    example: telegraf
+  - type: npm
+    name: node-telegram-bot-api
+    example: node-telegram-bot-api
+  - type: npm
+    name: grammy
+    example: grammy
+  - type: php
+    name: longman/telegram-bot
+    example: longman/telegram-bot
+  - type: php
+    name: laravel-notification-channels/telegram
+    example: laravel-notification-channels/telegram
+  - type: php
+    name: irazasyed/telegram-bot-sdk
+    example: irazasyed/telegram-bot-sdk
+  - type: php
+    name: telegram-bot/api
+    example: telegram-bot/api
+  - type: ruby
+    name: telegram-bot
+    example: telegram-bot
+  - type: ruby
+    name: telegram-bot-ruby
+    example: telegram-bot-ruby
+  - type: rust
+    name: teloxide
+    example: teloxide

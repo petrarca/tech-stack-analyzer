@@ -1,0 +1,6 @@
+tech: delphi
+name: Delphi
+extensions:
+  - .dproj
+  - .dpr
+  - .dpk

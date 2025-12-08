@@ -1,0 +1,128 @@
+tech: opentelemetry
+name: OpenTelemetry
+dotenv:
+  - OTEL_
+dependencies:
+  - type: npm
+    name: "@opentelemetry/core"
+    example: "@opentelemetry/core"
+  - type: npm
+    name: "@opentelemetry/api"
+    example: "@opentelemetry/api"
+  - type: npm
+    name: "@opentelemetry/sdk-node"
+    example: "@opentelemetry/sdk-node"
+  - type: npm
+    name: "@opentelemetry/semantic-conventions"
+    example: "@opentelemetry/semantic-conventions"
+  - type: npm
+    name: "@sentry/opentelemetry-node"
+    example: "@sentry/opentelemetry-node"
+  - type: docker
+    name: otel/opentelemetry-collector-contrib
+    example: otel/opentelemetry-collector-contrib
+  - type: docker
+    name: otel/opentelemetry-collector
+    example: otel/opentelemetry-collector
+  - type: docker
+    name: otel/opentelemetry-operator
+    example: otel/opentelemetry-operator
+  - type: golang
+    name: go.opentelemetry.io/otel
+    example: go.opentelemetry.io/otel
+  - type: php
+    name: open-telemetry/sdk
+    example: open-telemetry/sdk
+  - type: python
+    name: opentelemetry-distro
+    example: opentelemetry-distro
+  - type: python
+    name: opentelemetry-api
+    example: opentelemetry-api
+  - type: python
+    name: opentelemetry-sdk
+    example: opentelemetry-sdk
+  - type: python
+    name: opentelemetry-exporter-otlp
+    example: opentelemetry-exporter-otlp
+  - type: python
+    name: opentelemetry-exporter-jaeger
+    example: opentelemetry-exporter-jaeger
+  - type: python
+    name: opentelemetry-exporter-prometheus
+    example: opentelemetry-exporter-prometheus
+  - type: python
+    name: opentelemetry-instrumentation
+    example: opentelemetry-instrumentation
+  - type: python
+    name: opentelemetry-instrumentation-flask
+    example: opentelemetry-instrumentation-flask
+  - type: python
+    name: opentelemetry-instrumentation-django
+    example: opentelemetry-instrumentation-django
+  - type: python
+    name: opentelemetry-instrumentation-fastapi
+    example: opentelemetry-instrumentation-fastapi
+  - type: python
+    name: opentelemetry-instrumentation-requests
+    example: opentelemetry-instrumentation-requests
+  - type: python
+    name: opentelemetry-instrumentation-sqlalchemy
+    example: opentelemetry-instrumentation-sqlalchemy
+  - type: python
+    name: opentelemetry-instrumentation-celery
+    example: opentelemetry-instrumentation-celery
+  - type: python
+    name: opentelemetry-instrumentation-psycopg2
+    example: opentelemetry-instrumentation-psycopg2
+  - type: java
+    name: io.opentelemetry.instrumentation/opentelemetry-instrumentation-bom
+    example: io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom
+  - type: java
+    name: io.opentelemetry/opentelemetry-api
+    example: io.opentelemetry:opentelemetry-api
+  - type: java
+    name: io.opentelemetry/opentelemetry-sdk
+    example: io.opentelemetry:opentelemetry-sdk
+  - type: java
+    name: io.opentelemetry/opentelemetry-exporter-otlp
+    example: io.opentelemetry:opentelemetry-exporter-otlp
+  - type: java
+    name: io.opentelemetry.semconv/opentelemetry-semconv
+    example: io.opentelemetry.semconv:opentelemetry-semconv
+  - type: java
+    name: io.opentelemetry/opentelemetry-javaagent
+    example: io.opentelemetry:opentelemetry-javaagent
+  - type: ruby
+    name: opentelemetry-sdk
+    example: opentelemetry-sdk
+  - type: ruby
+    name: sentry-opentelemetry
+    example: sentry-opentelemetry
+  - type: rust
+    name: opentelemetry
+    example: opentelemetry
+  - type: githubAction
+    name: plengauer/Thoth
+    example: plengauer/Thoth
+  - type: golang
+    name: github.com/getsentry/sentry-go/otel
+    example: github.com/getsentry/sentry-go/otel
+  - type: nuget
+    name: OpenTelemetry.Exporter.OpenTelemetryProtocol
+    example: OpenTelemetry.Exporter.OpenTelemetryProtocol
+  - type: nuget
+    name: OpenTelemetry.Extensions.Hosting
+    example: OpenTelemetry.Extensions.Hosting
+  - type: nuget
+    name: OpenTelemetry.Instrumentation.AspNetCore
+    example: OpenTelemetry.Instrumentation.AspNetCore
+  - type: nuget
+    name: OpenTelemetry.Instrumentation.GrpcNetClient
+    example: OpenTelemetry.Instrumentation.GrpcNetClient
+  - type: nuget
+    name: OpenTelemetry.Instrumentation.Http
+    example: OpenTelemetry.Instrumentation.Http
+  - type: nuget
+    name: OpenTelemetry.Instrumentation.Runtime
+    example: OpenTelemetry.Instrumentation.Runtime

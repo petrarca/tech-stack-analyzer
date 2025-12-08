@@ -1,0 +1,12 @@
+tech: k6
+name: Grafana K6
+dependencies:
+  - type: npm
+    name: k6
+    example: k6
+  - type: golang
+    name: go.k6.io/xk6/cmd/xk6ver
+    example: go.k6.io/xk6/cmd/xk6ver
+  - type: docker
+    name: grafana/k6
+    example: grafana/k6

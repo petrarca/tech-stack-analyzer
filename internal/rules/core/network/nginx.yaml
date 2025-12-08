@@ -1,0 +1,53 @@
+tech: nginx
+name: Nginx
+dependencies:
+  - type: docker
+    name: nginx
+    example: nginx
+  - type: docker
+    name: unit
+    example: unit
+  - type: docker
+    name: nginxinc/nginx-unprivileged
+    example: nginxinc/nginx-unprivileged
+  - type: docker
+    name: nginx/nginx-ingress
+    example: nginx/nginx-ingress
+  - type: docker
+    name: nginxinc/nginx-s3-gateway
+    example: nginxinc/nginx-s3-gateway
+  - type: docker
+    name: nginx/unit
+    example: nginx/unit
+  - type: docker
+    name: nginxproxy/nginx-proxy
+    example: nginxproxy/nginx-proxy
+  - type: docker
+    name: bitnami/nginx
+    example: bitnami/nginx
+  - type: docker
+    name: bitnami/nginx-ingress-controller
+    example: bitnami/nginx-ingress-controller
+  - type: docker
+    name: ubuntu/nginx
+    example: ubuntu/nginx
+  - type: docker
+    name: kasmweb/nginx
+    example: kasmweb/nginx
+  - type: docker
+    name: rancher/nginx-ingress-controller
+    example: rancher/nginx-ingress-controller
+  - type: docker
+    name: rancher/nginx
+    example: rancher/nginx
+  - type: docker
+    name: linuxserver/nginx
+    example: linuxserver/nginx
+  - type: docker
+    name: privatebin/nginx-fpm-alpine
+    example: privatebin/nginx-fpm-alpine
+  - type: docker
+    name: wodby/nginx
+    example: wodby/nginx
+files:
+  - nginx.conf

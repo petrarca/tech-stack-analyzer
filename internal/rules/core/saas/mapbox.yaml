@@ -1,0 +1,32 @@
+tech: mapbox
+name: Mapbox
+dotenv:
+  - MAPBOX_
+dependencies:
+  - type: npm
+    name: mapbox-gl
+    example: mapbox-gl
+  - type: npm
+    name: "@mapbox/mapbox-sdk"
+    example: "@mapbox/mapbox-sdk"
+  - type: npm
+    name: "@mapbox/mapbox-gl-geocoder"
+    example: "@mapbox/mapbox-gl-geocoder"
+  - type: rust
+    name: mapboxgl
+    example: mapboxgl
+  - type: ruby
+    name: mapbox-sdk
+    example: mapbox-sdk
+  - type: ruby
+    name: mapbox-rails
+    example: mapbox-rails
+  - type: ruby
+    name: mapbox-gl-rails
+    example: mapbox-gl-rails
+  - type: python
+    name: mapbox-tilesets
+    example: mapbox-tilesets
+  - type: php
+    name: geocoder-php/mapbox-provider
+    example: geocoder-php/mapbox-provider

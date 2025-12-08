@@ -1,0 +1,13 @@
+tech: c
+name: C
+is_component: true
+extensions:
+  - .c
+  - .h
+  - .idc
+files:
+  - CMakeLists.txt
+  - Makefile
+  - makefile
+  - configure.ac
+  - Makefile.am

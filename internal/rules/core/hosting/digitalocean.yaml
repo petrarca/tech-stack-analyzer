@@ -1,0 +1,15 @@
+tech: digitalocean
+name: DigitalOcean
+dependencies:
+  - type: terraform
+    name: registry.terraform.io/digitalocean/digitalocean
+    example: registry.terraform.io/digitalocean/digitalocean
+  - type: githubAction
+    name: digitalocean/app_action
+    example: digitalocean/app_action
+  - type: githubAction
+    name: digitalocean/action-doctl
+    example: digitalocean/action-doctl
+  - type: npm
+    name: "@pulumi/digitalocean"
+    example: "@pulumi/digitalocean"

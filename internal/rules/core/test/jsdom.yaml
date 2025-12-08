@@ -1,0 +1,9 @@
+tech: jsdom
+name: jsdom
+dependencies:
+  - type: npm
+    name: jsdom
+    example: jsdom
+  - type: npm
+    name: "@types/jsdom"
+    example: "@types/jsdom"

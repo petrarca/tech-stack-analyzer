@@ -1,0 +1,4 @@
+tech: pnpm
+name: pnpm
+files:
+  - pnpm-lock.yaml

@@ -1,0 +1,32 @@
+tech: fhir
+name: FHIR
+files:
+  - fhir-resources.json
+  - fhir-structures.json
+content:
+  # FHIR profiles and structure definitions
+  - type: regex
+    pattern: '"resourceType"\s*:\s*"[A-Z]"|fhir\.hl7\.org|hl7\.org/fhir'
+    files: [fhir-resources.json, fhir-structures.json, capabilitystatement.json, structuredefinition.json, valueset.json, codesystem.json]
+dependencies:
+  # Java FHIR implementations
+  - type: maven
+    name: ca.uhn.hapi.fhir:hapi-fhir-base
+  - type: maven
+    name: ca.uhn.hapi.fhir:hapi-fhir-structures-r4
+  - type: maven
+    name: ca.uhn.hapi.fhir:hapi-fhir-structures-dstu3
+  # Python FHIR libraries
+  - type: python
+    name: fhir.resources
+  - type: python
+    name: fhirclient
+  - type: python
+    name: pyfhir
+  # JavaScript/TypeScript FHIR libraries
+  - type: npm
+    name: fhir
+  - type: npm
+    name: "@types/fhir"
+  - type: npm
+    name: fhir-kit-client

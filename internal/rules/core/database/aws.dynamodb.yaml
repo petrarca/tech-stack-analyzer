@@ -1,0 +1,21 @@
+tech: aws.dynamodb
+name: AWS DynamoDB
+dependencies:
+  - type: npm
+    name: "@aws-cdk/aws-dynamodb"
+    example: "@aws-cdk/aws-dynamodb"
+  - type: rust
+    name: aws-sdk-dynamodb
+    example: aws-sdk-dynamodb
+  - type: golang
+    name: github.com/aws/aws-sdk-go-v2/service/dynamodb
+    example: github.com/aws/aws-sdk-go-v2/service/dynamodb
+  - type: php
+    name: baopham/dynamodb
+    example: baopham/dynamodb
+  - type: php
+    name: async-aws/dynamo-db
+    example: async-aws/dynamo-db
+  - type: terraform.resource
+    name: airbyte_destination_dynamodb
+    example: airbyte_destination_dynamodb

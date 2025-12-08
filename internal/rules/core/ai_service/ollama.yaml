@@ -1,0 +1,23 @@
+tech: ollama
+name: Ollama
+dotenv:
+  - OLLAMA_
+dependencies:
+  - type: npm
+    name: "@langchain/ollama"
+    example: "@langchain/ollama"
+  - type: npm
+    name: ollama-ai-provider
+    example: ollama-ai-provider
+  - type: npm
+    name: genkitx-ollama
+    example: genkitx-ollama
+  - type: npm
+    name: ollama
+    example: ollama
+  - type: python
+    name: langchain-ollama
+    example: langchain-ollama
+  - type: python
+    name: ollama
+    example: ollama

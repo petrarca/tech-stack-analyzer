@@ -1,0 +1,11 @@
+tech: csharp
+name: C#
+extensions:
+  - .cs
+  - .cake
+  - .csx
+  - .linq
+dependencies:
+  - type: nuget
+    name: Microsoft.CSharp
+    example: Microsoft.CSharp

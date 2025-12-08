@@ -1,0 +1,6 @@
+tech: tanstackrouter
+name: TanStack Router
+dependencies:
+  - type: npm
+    name: "@tanstack/react-router"
+    example: "@tanstack/react-router"

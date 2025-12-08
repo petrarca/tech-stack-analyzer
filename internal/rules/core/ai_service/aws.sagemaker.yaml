@@ -1,0 +1,18 @@
+tech: aws.sagemaker
+name: AWS SageMaker
+dependencies:
+  - type: npm
+    name: "@aws-sdk/client-sagemaker"
+    example: "@aws-sdk/client-sagemaker"
+  - type: npm
+    name: "@aws-cdk/aws-sagemaker"
+    example: "@aws-cdk/aws-sagemaker"
+  - type: rust
+    name: aws-sdk-sagemaker
+    example: aws-sdk-sagemaker
+  - type: ruby
+    name: aws-sdk-sagemaker
+    example: aws-sdk-sagemaker
+  - type: golang
+    name: github.com/aws/aws-sdk-go-v2/service/sagemaker
+    example: github.com/aws/aws-sdk-go-v2/service/sagemaker

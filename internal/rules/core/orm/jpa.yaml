@@ -1,0 +1,11 @@
+tech: jpa
+name: JPA
+dependencies:
+  - type: maven
+    name: /^javax\.persistence:/
+  - type: maven
+    name: /^jakarta\.persistence:/
+  - type: gradle
+    name: /^javax\.persistence:/
+  - type: gradle
+    name: /^jakarta\.persistence:/

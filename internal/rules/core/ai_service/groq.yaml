@@ -1,0 +1,23 @@
+tech: groq
+name: Groq
+dotenv:
+  - GROQ_
+dependencies:
+  - type: npm
+    name: "@langchain/groq"
+    example: "@langchain/groq"
+  - type: npm
+    name: "@ai-sdk/groq"
+    example: "@ai-sdk/groq"
+  - type: npm
+    name: groq-sdk
+    example: groq-sdk
+  - type: npm
+    name: genkitx-groq
+    example: genkitx-groq
+  - type: python
+    name: langchain-groq
+    example: langchain-groq
+  - type: python
+    name: groq
+    example: groq

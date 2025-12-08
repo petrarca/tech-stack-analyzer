@@ -1,0 +1,11 @@
+tech: zoom
+name: Zoom
+dotenv:
+  - ZOOM_
+dependencies:
+  - type: npm
+    name: "@zoom/meetingsdk"
+    example: "@zoom/meetingsdk"
+  - type: terraform.resource
+    name: airbyte_source_zoom
+    example: airbyte_source_zoom

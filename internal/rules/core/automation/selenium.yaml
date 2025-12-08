@@ -1,0 +1,102 @@
+tech: selenium
+name: Selenium
+dependencies:
+  - type: npm
+    name: selenium
+    example: selenium
+  - type: npm
+    name: selenium-webdriver
+    example: selenium-webdriver
+  - type: npm
+    name: webdriver-js-extender
+    example: webdriver-js-extender
+  - type: npm
+    name: "@wdio/selenium-standalone-service"
+    example: "@wdio/selenium-standalone-service"
+  - type: php
+    name: php-webdriver/webdriver
+    example: php-webdriver/webdriver
+  - type: php
+    name: behat/mink-selenium2-driver
+    example: behat/mink-selenium2-driver
+  - type: php
+    name: symfony/panther
+    example: symfony/panther
+  - type: php
+    name: instaclick/php-webdriver
+    example: instaclick/php-webdriver
+  - type: php
+    name: phpunit/phpunit-selenium
+    example: phpunit/phpunit-selenium
+  - type: php
+    name: se/selenium-server-standalone
+    example: se/selenium-server-standalone
+  - type: ruby
+    name: selenium-webdriver
+    example: selenium-webdriver
+  - type: ruby
+    name: selenium
+    example: selenium
+  - type: ruby
+    name: selenium-client
+    example: selenium-client
+  - type: ruby
+    name: capybara-selenium
+    example: capybara-selenium
+  - type: rust
+    name: thirtyfour
+    example: thirtyfour
+  - type: rust
+    name: selenium-rs
+    example: selenium-rs
+  - type: githubAction
+    name: Xotabu4/selenoid-github-action
+    example: Xotabu4/selenoid-github-action
+  - type: golang
+    name: github.com/tebeka/selenium
+    example: github.com/tebeka/selenium
+  - type: python
+    name: selenium
+    example: selenium
+  - type: docker
+    name: selenium/standalone-chrome
+    example: selenium/standalone-chrome
+  - type: docker
+    name: selenium/node-chrome
+    example: selenium/node-chrome
+  - type: docker
+    name: selenium/hub
+    example: selenium/hub
+  - type: docker
+    name: selenium/node-firefox
+    example: selenium/node-firefox
+  - type: docker
+    name: selenium/standalone-firefox
+    example: selenium/standalone-firefox
+  - type: docker
+    name: selenium/standalone-chrome-debug
+    example: selenium/standalone-chrome-debug
+  - type: docker
+    name: selenium/node-chrome-debug
+    example: selenium/node-chrome-debug
+  - type: docker
+    name: selenium/base
+    example: selenium/base
+  - type: docker
+    name: selenium/node-edge
+    example: selenium/node-edge
+  - type: docker
+    name: selenium/node-firefox-debug
+    example: selenium/node-firefox-debug
+  - type: docker
+    name: selenium/standalone-firefox-debug
+    example: selenium/standalone-firefox-debug
+  - type: docker
+    name: selenium/node-opera
+    example: selenium/node-opera
+  - type: nuget
+    name: /^Selenium\..*$/
+    example: Selenium.WebDriver
+  - type: nuget
+    name: /^DotNetSeleniumExtras.*$/
+    example: DotNetSeleniumExtras.WaitHelpers

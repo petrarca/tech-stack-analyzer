@@ -1,0 +1,12 @@
+tech: gcp.tasks
+name: Cloud Tasks
+dependencies:
+  - type: npm
+    name: "@google-cloud/tasks"
+    example: "@google-cloud/tasks"
+  - type: golang
+    name: cloud.google.com/go/tasks
+    example: cloud.google.com/go/tasks
+  - type: php
+    name: google/cloud-tasks
+    example: google/cloud-tasks

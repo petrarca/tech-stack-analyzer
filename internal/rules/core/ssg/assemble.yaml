@@ -1,0 +1,6 @@
+tech: assemble
+name: Assemble
+dependencies:
+  - type: npm
+    name: assemble
+    example: assemble

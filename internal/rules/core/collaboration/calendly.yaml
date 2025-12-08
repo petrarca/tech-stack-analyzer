@@ -1,0 +1,8 @@
+tech: calendly
+name: Calendly
+dotenv:
+  - CALENDLY_
+dependencies:
+  - type: npm
+    name: react-calendly
+    example: react-calendly

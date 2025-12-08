@@ -1,0 +1,8 @@
+tech: reddit
+name: Reddit
+dotenv:
+  - REDDIT_
+dependencies:
+  - type: npm
+    name: snoowrap
+    example: snoowrap

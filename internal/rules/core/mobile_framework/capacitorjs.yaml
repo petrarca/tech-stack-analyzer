@@ -1,0 +1,8 @@
+tech: capacitorjs
+name: Capacitor
+dependencies:
+  - type: npm
+    name: "@capacitor/app"
+    example: "@capacitor/app"
+files:
+  - capacitor.config.ts

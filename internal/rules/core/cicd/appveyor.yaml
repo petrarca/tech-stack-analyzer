@@ -1,0 +1,5 @@
+tech: appveyor
+name: AppVeyor
+files:
+  - .appveyor.yml
+  - .appveyor.yaml

@@ -1,0 +1,6 @@
+tech: adminer
+name: Adminer
+dependencies:
+  - type: docker
+    name: adminer
+    example: adminer

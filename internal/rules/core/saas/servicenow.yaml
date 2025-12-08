@@ -1,0 +1,6 @@
+tech: servicenow
+name: ServiceNow
+dependencies:
+  - type: ruby
+    name: servicenow-api
+    example: servicenow-api

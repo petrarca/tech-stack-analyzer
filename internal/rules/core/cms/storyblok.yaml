@@ -1,0 +1,18 @@
+tech: storyblok
+name: Storyblok
+dependencies:
+  - type: npm
+    name: storyblok
+    example: storyblok
+  - type: php
+    name: storyblok/php-content-api-client
+    example: storyblok/php-content-api-client
+  - type: php
+    name: storyblok/php-client
+    example: storyblok/php-client
+  - type: python
+    name: storyblok
+    example: storyblok
+  - type: ruby
+    name: storyblok
+    example: storyblok

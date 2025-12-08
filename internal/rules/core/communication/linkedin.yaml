@@ -1,0 +1,4 @@
+tech: linkedin
+name: Linkedin
+dotenv:
+  - LINKEDIN_

@@ -1,0 +1,4 @@
+tech: tinybird
+name: Tinybird
+dotenv:
+  - TINYBIRD

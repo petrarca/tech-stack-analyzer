@@ -1,0 +1,23 @@
+tech: nodejs
+name: NodeJS
+dependencies:
+  - type: docker
+    name: node
+    example: node
+  - type: docker
+    name: circleci/node
+    example: circleci/node
+  - type: docker
+    name: cimg/node
+    example: cimg/node
+  - type: docker
+    name: bitnami/node
+    example: bitnami/node
+  - type: docker
+    name: okteto/node
+    example: okteto/node
+  - type: npm
+    name: /^@types\/node$/
+    example: '@types/node'
+files:
+  - package.json

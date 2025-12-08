@@ -1,0 +1,17 @@
+tech: contentful
+name: Contentful
+dotenv:
+  - CONTENTFUL_
+dependencies:
+  - type: php
+    name: contentful/contentful
+    example: contentful/contentful
+  - type: php
+    name: contentful/contentful-management
+    example: contentful/contentful-management
+  - type: npm
+    name: contentful
+    example: contentful
+  - type: npm
+    name: contentful-management
+    example: contentful-management

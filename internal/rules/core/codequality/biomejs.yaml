@@ -1,0 +1,9 @@
+tech: biomejs
+name: Biome JS
+dependencies:
+  - type: npm
+    name: "@biomejs/biome"
+    example: "@biomejs/biome"
+files:
+  - biome.json
+  - biome.jsonc

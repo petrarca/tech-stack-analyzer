@@ -1,0 +1,12 @@
+tech: nunit
+name: NUnit
+dependencies:
+  - type: nuget
+    name: nunit
+    example: nunit
+  - type: nuget
+    name: NUnit3TestAdapter
+    example: NUnit3TestAdapter
+  - type: nuget
+    name: Microsoft.NET.Test.Sdk
+    example: Microsoft.NET.Test.Sdk

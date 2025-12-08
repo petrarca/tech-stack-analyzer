@@ -1,0 +1,35 @@
+tech: clerk
+name: Clerk
+dotenv:
+  - CLERK_
+dependencies:
+  - type: npm
+    name: "@clerk/types"
+    example: "@clerk/types"
+  - type: npm
+    name: "@clerk/nextjs"
+    example: "@clerk/nextjs"
+  - type: npm
+    name: "@clerk/clerk-react"
+    example: "@clerk/clerk-react"
+  - type: npm
+    name: "@clerk/clerk-js"
+    example: "@clerk/clerk-js"
+  - type: npm
+    name: "@clerk/express"
+    example: "@clerk/express"
+  - type: npm
+    name: "@clerk/fastify"
+    example: "@clerk/fastify"
+  - type: npm
+    name: "@clerk/tanstack-start"
+    example: "@clerk/tanstack-start"
+  - type: ruby
+    name: clerk-sdk-ruby
+    example: clerk-sdk-ruby
+  - type: python
+    name: clerk-backend-api
+    example: clerk-backend-api
+  - type: golang
+    name: github.com/clerk/clerk-sdk-go/v2
+    example: github.com/clerk/clerk-sdk-go/v2

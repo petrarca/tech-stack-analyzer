@@ -1,0 +1,6 @@
+tech: celery
+name: Celery
+dependencies:
+  - type: python
+    name: celery
+    example: celery

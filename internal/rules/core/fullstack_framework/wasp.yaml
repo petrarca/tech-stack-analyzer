@@ -1,0 +1,5 @@
+tech: wasp
+name: Wasp
+files:
+  - main.wasp
+  - main.wasp.ts

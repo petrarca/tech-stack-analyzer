@@ -1,0 +1,6 @@
+tech: rest-assured
+name: Rest Assured
+dependencies:
+  - type: maven
+    name: /^io\.rest-assured:rest-assured.*/
+    example: io.rest-assured:rest-assured

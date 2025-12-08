@@ -1,0 +1,4 @@
+tech: glsl
+name: GLSL
+extensions:
+  - .glsl

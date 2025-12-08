@@ -1,0 +1,12 @@
+tech: tencentcloud
+name: Tencent Cloud
+dependencies:
+  - type: terraform
+    name: registry.terraform.io/tencentcloudstack/tencentcloud
+    example: registry.terraform.io/tencentcloudstack/tencentcloud
+  - type: php
+    name: encentcloud/tencentcloud-sdk-php
+    example: encentcloud/tencentcloud-sdk-php
+  - type: python
+    name: tencentcloud-sdk-python
+    example: tencentcloud-sdk-python

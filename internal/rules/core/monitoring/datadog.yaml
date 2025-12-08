@@ -1,0 +1,47 @@
+tech: datadog
+name: Datadog
+dotenv:
+  - DD_
+dependencies:
+  - type: npm
+    name: dd-trace
+    example: dd-trace
+  - type: npm
+    name: datadog-metrics
+    example: datadog-metrics
+  - type: npm
+    name: "@datadog/datadog-api-client"
+    example: "@datadog/datadog-api-client"
+  - type: npm
+    name: "@pulumi/datadog"
+    example: "@pulumi/datadog"
+  - type: terraform
+    name: registry.terraform.io/datadog/datadog
+    example: registry.terraform.io/datadog/datadog
+  - type: rust
+    name: ddtrace
+    example: ddtrace
+  - type: rust
+    name: datadog-apm
+    example: datadog-apm
+  - type: ruby
+    name: ddtrace
+    example: ddtrace
+  - type: php
+    name: datadog/php-datadogstatsd
+    example: datadog/php-datadogstatsd
+  - type: php
+    name: datadog/dd-trace
+    example: datadog/dd-trace
+  - type: githubAction
+    name: DataDog/synthetics-ci-github-action
+    example: DataDog/synthetics-ci-github-action
+  - type: githubAction
+    name: datadog/agent-github-action
+    example: datadog/agent-github-action
+  - type: python
+    name: datadog
+    example: datadog
+  - type: docker
+    name: datadog/agent
+    example: datadog/agent

@@ -1,0 +1,12 @@
+tech: apache_cassandra
+name: Apache Cassandra
+dependencies:
+  - type: rust
+    name: discord-cassandra-cpp
+    example: discord-cassandra-cpp
+  - type: rust
+    name: cassandra-cpp
+    example: cassandra-cpp
+  - type: npm
+    name: "@opentelemetry/instrumentation-cassandra-driver"
+    example: "@opentelemetry/instrumentation-cassandra-driver"

@@ -1,0 +1,6 @@
+tech: ovh.database
+name: OVH Database
+dependencies:
+  - type: terraform.resource
+    name: ovh_cloud_project_database
+    example: ovh_cloud_project_database

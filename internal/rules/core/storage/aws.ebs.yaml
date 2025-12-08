@@ -1,0 +1,18 @@
+tech: aws.ebs
+name: AWS Block Storage
+dependencies:
+  - type: npm
+    name: "@aws-cdk/aws-ebs"
+    example: "@aws-cdk/aws-ebs"
+  - type: npm
+    name: "@aws-sdk/client-ebs"
+    example: "@aws-sdk/client-ebs"
+  - type: rust
+    name: aws-sdk-ebs
+    example: aws-sdk-ebs
+  - type: ruby
+    name: aws-sdk-ebs
+    example: aws-sdk-ebs
+  - type: golang
+    name: github.com/aws/aws-sdk-go-v2/service/ebs
+    example: github.com/aws/aws-sdk-go-v2/service/ebs

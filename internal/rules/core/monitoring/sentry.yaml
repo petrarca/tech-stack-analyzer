@@ -1,0 +1,113 @@
+tech: sentry
+name: Sentry
+dotenv:
+  - SENTRY_
+dependencies:
+  - type: docker
+    name: sentry
+    example: sentry
+  - type: docker
+    name: getsentry/sentry
+    example: getsentry/sentry
+  - type: docker
+    name: getsentry/sentry-cli
+    example: getsentry/sentry-cli
+  - type: docker
+    name: sentryintegrations/sentry-github-action-release
+    example: sentryintegrations/sentry-github-action-release
+  - type: docker
+    name: daprio/sentry
+    example: daprio/sentry
+  - type: docker
+    name: us.gcr.io/sentryio/sentry
+    example: us.gcr.io/sentryio/sentry
+  - type: npm
+    name: "@sentry/browser"
+    example: "@sentry/browser"
+  - type: npm
+    name: "@sentry/nextjs"
+    example: "@sentry/nextjs"
+  - type: npm
+    name: "@sentry/core"
+    example: "@sentry/core"
+  - type: npm
+    name: "@sentry/node"
+    example: "@sentry/node"
+  - type: npm
+    name: "@sentry/react"
+    example: "@sentry/react"
+  - type: npm
+    name: "@sentry/react-native"
+    example: "@sentry/react-native"
+  - type: npm
+    name: "@sentry/replay"
+    example: "@sentry/replay"
+  - type: npm
+    name: "@sentry/vercel-edge"
+    example: "@sentry/vercel-edge"
+  - type: npm
+    name: "@sentry/minimal"
+    example: "@sentry/minimal"
+  - type: npm
+    name: "@sentry/integrations"
+    example: "@sentry/integrations"
+  - type: npm
+    name: "@sentry/nestjs"
+    example: "@sentry/nestjs"
+  - type: npm
+    name: "@sentry/vue"
+    example: "@sentry/vue"
+  - type: npm
+    name: "@sentry/serveless"
+    example: "@sentry/serveless"
+  - type: npm
+    name: "@sentry/electron"
+    example: "@sentry/electron"
+  - type: npm
+    name: "@sentry/aws-serverless"
+    example: "@sentry/aws-serverless"
+  - type: npm
+    name: "@sentry/remix"
+    example: "@sentry/remix"
+  - type: npm
+    name: "@sentry/svelte"
+    example: "@sentry/svelte"
+  - type: npm
+    name: "@sentry/cloudflare"
+    example: "@sentry/cloudflare"
+  - type: npm
+    name: "@sentry/nuxt"
+    example: "@sentry/nuxt"
+  - type: npm
+    name: "@sentry/bun"
+    example: "@sentry/bun"
+  - type: rust
+    name: sentry
+    example: sentry
+  - type: ruby
+    name: sentry-ruby
+    example: sentry-ruby
+  - type: ruby
+    name: sentry-rails
+    example: sentry-rails
+  - type: php
+    name: sentry/sentry
+    example: sentry/sentry
+  - type: php
+    name: sentry/sentry-symfony
+    example: sentry/sentry-symfony
+  - type: php
+    name: sentry/sentry-laravel
+    example: sentry/sentry-laravel
+  - type: php
+    name: sentry/sdk
+    example: sentry/sdk
+  - type: githubAction
+    name: getsentry/action-release
+    example: getsentry/action-release
+  - type: golang
+    name: github.com/getsentry/sentry-go
+    example: github.com/getsentry/sentry-go
+  - type: python
+    name: sentry_sdk
+    example: sentry_sdk

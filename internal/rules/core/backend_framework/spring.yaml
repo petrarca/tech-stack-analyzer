@@ -1,0 +1,12 @@
+tech: spring
+name: Spring Framework
+dependencies:
+  - type: maven
+    name: /^org\.springframework:.*/
+    example: org.springframework:spring-core
+  - type: docker
+    name: spring
+    example: spring
+files:
+  - spring.xml
+  - applicationContext.xml

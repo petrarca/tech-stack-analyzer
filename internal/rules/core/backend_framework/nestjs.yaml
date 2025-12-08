@@ -1,0 +1,8 @@
+tech: nestjs
+name: NestJS
+dependencies:
+  - type: npm
+    name: "@nestjs/cli"
+    example: "@nestjs/cli"
+files:
+  - nest-cli.json

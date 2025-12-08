@@ -1,0 +1,18 @@
+tech: google.chat
+name: Google Chat
+dependencies:
+  - type: npm
+    name: "@googleapis/chat"
+    example: "@googleapis/chat"
+  - type: terraform.resource
+    name: airbyte_source_google_calendar
+    example: airbyte_source_google_calendar
+  - type: ruby
+    name: google-apis-chat_v1
+    example: google-apis-chat_v1
+  - type: ruby
+    name: google-apps-chat-v1
+    example: google-apps-chat-v1
+  - type: ruby
+    name: google-apps-chat
+    example: google-apps-chat

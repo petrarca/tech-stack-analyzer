@@ -1,0 +1,11 @@
+tech: linear
+name: Linear
+dotenv:
+  - LINEAR_
+dependencies:
+  - type: npm
+    name: "@linear/sdk"
+    example: "@linear/sdk"
+  - type: python
+    name: linear-cli
+    example: linear-cli

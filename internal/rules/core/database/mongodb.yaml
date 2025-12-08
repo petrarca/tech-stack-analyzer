@@ -1,0 +1,59 @@
+tech: mongodb
+name: MongoDB
+dotenv:
+  - MONGODB_
+dependencies:
+  - type: npm
+    name: mongodb
+    example: mongodb
+  - type: npm
+    name: "@mikro-orm/mongodb"
+    example: "@mikro-orm/mongodb"
+  - type: npm
+    name: "@opentelemetry/instrumentation-mongodb"
+    example: "@opentelemetry/instrumentation-mongodb"
+  - type: npm
+    name: "@opentelemetry/instrumentation-mongoose"
+    example: "@opentelemetry/instrumentation-mongoose"
+  - type: docker
+    name: mongo
+    example: mongo
+  - type: docker
+    name: mongodb/mongodb-community-server
+    example: mongodb/mongodb-community-server
+  - type: docker
+    name: mongodb/mongodb-enterprise-server
+    example: mongodb/mongodb-enterprise-server
+  - type: docker
+    name: bitnami/mongodb
+    example: bitnami/mongodb
+  - type: docker
+    name: mongodb/atlas
+    example: mongodb/atlas
+  - type: docker
+    name: bitnami/mongodb-sharded
+    example: bitnami/mongodb-sharded
+  - type: docker
+    name: rapidfort/mongodb
+    example: rapidfort/mongodb
+  - type: docker
+    name: circleci/mongo
+    example: circleci/mongo
+  - type: rust
+    name: mongodb
+    example: mongodb
+  - type: ruby
+    name: mongo
+    example: mongo
+  - type: php
+    name: mongodb/mongodb
+    example: mongodb/mongodb
+  - type: python
+    name: pymongo
+    example: pymongo
+  - type: terraform.resource
+    name: airbyte_destination_mongodb
+    example: airbyte_destination_mongodb
+  - type: python
+    name: langchain-mongodb
+    example: langchain-mongodb

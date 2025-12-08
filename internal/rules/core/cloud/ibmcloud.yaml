@@ -1,0 +1,6 @@
+tech: ibmcloud
+name: IBM Cloud
+dependencies:
+  - type: terraform
+    name: registry.terraform.io/IBM-Cloud/ibm
+    example: registry.terraform.io/IBM-Cloud/ibm

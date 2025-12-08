@@ -1,0 +1,8 @@
+tech: tauri
+name: Tauri
+dependencies:
+  - type: rust
+    name: tauri
+    example: tauri
+files:
+  - tauri.conf.js

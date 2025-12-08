@@ -1,0 +1,62 @@
+tech: algolia
+name: Algolia
+dotenv:
+  - ALGOLIA_
+dependencies:
+  - type: npm
+    name: algoliasearch
+    example: algoliasearch
+  - type: npm
+    name: instantsearch.js
+    example: instantsearch.js
+  - type: npm
+    name: vue-instantsearch
+    example: vue-instantsearch
+  - type: npm
+    name: create-instantsearch-app
+    example: create-instantsearch-app
+  - type: npm
+    name: react-instantsearch
+    example: react-instantsearch
+  - type: npm
+    name: "@nuxtjs/algolia"
+    example: "@nuxtjs/algolia"
+  - type: npm
+    name: gatsby-plugin-algolia
+    example: gatsby-plugin-algolia
+  - type: npm
+    name: docsearch.js
+    example: docsearch.js
+  - type: npm
+    name: "@vuepress/plugin-docsearch"
+    example: "@vuepress/plugin-docsearch"
+  - type: rust
+    name: algoliasearch
+    example: algoliasearch
+  - type: ruby
+    name: algolia
+    example: algolia
+  - type: ruby
+    name: algoliasearch-rails
+    example: algoliasearch-rails
+  - type: php
+    name: algolia/algoliasearch-client-php
+    example: algolia/algoliasearch-client-php
+  - type: php
+    name: algolia/scout-extended
+    example: algolia/scout-extended
+  - type: githubAction
+    name: algolia/setup-algolia-cli
+    example: algolia/setup-algolia-cli
+  - type: githubAction
+    name: algolia/algoliasearch-crawler-github-actions
+    example: algolia/algoliasearch-crawler-github-actions
+  - type: python
+    name: algoliasearch
+    example: algoliasearch
+  - type: python
+    name: algoliasearch-django
+    example: algoliasearch-django
+  - type: terraform.resource
+    name: airbyte_source_algolia
+    example: airbyte_source_algolia

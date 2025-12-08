@@ -1,0 +1,8 @@
+tech: gridsome
+name: Gridsome
+dependencies:
+  - type: npm
+    name: gridsome
+    example: gridsome
+files:
+  - gridsome.config.js

@@ -1,0 +1,11 @@
+tech: woocommerce
+name: WooCommerce
+dotenv:
+  - WOOCOMMERCE_
+dependencies:
+  - type: php
+    name: automattic/woocommerce
+    example: automattic/woocommerce
+  - type: terraform.resource
+    name: airbyte_source_woocommerce
+    example: airbyte_source_woocommerce

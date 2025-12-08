@@ -1,0 +1,33 @@
+tech: jsonschema
+name: JSON Schema
+dependencies:
+  - type: npm
+    name: "@types/json-schema"
+    example: "@types/json-schema"
+  - type: npm
+    name: json-schema
+    example: json-schema
+  - type: npm
+    name: jsonschema
+    example: jsonschema
+  - type: npm
+    name: ajv
+    example: ajv
+  - type: php
+    name: justinrainbow/json-schema
+    example: justinrainbow/json-schema
+  - type: php
+    name: opis/json-schema
+    example: opis/json-schema
+  - type: golang
+    name: github.com/invopop/jsonschema
+    example: github.com/invopop/jsonschema
+  - type: python
+    name: jsonschema
+    example: jsonschema
+  - type: ruby
+    name: json-schema
+    example: json-schema
+  - type: rust
+    name: jsonschema
+    example: jsonschema

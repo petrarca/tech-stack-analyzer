@@ -1,0 +1,15 @@
+tech: d3js
+name: D3.js
+dependencies:
+  - type: npm
+    name: d3
+    example: d3
+  - type: npm
+    name: d3-shape
+    example: d3-shape
+  - type: npm
+    name: "@types/d3"
+    example: "@types/d3"
+  - type: npm
+    name: "@types/d3-shape"
+    example: "@types/d3-shape"

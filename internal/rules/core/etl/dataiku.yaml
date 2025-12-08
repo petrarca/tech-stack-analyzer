@@ -1,0 +1,6 @@
+tech: dataiku
+name: Dataiku
+dependencies:
+  - type: python
+    name: dataiku
+    example: dataiku

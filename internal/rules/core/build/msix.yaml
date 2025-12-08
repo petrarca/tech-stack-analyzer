@@ -1,0 +1,32 @@
+tech: msix
+name: MSIX
+files:
+  - appxmanifest.xml
+  - appxblockmap.xml
+  - PackagingLayout.xml
+extensions:
+  - .msix
+  - .msixbundle
+content:
+  # MSIX manifest detection
+  - type: xml-path
+    path: $.Package
+    files: [appxmanifest.xml]
+  # MSIX packaging layout
+  - type: xml-path
+    path: $.PackagingLayout
+    files: [PackagingLayout.xml]
+dependencies:
+  # MSIX build tools and packages
+  - type: nuget
+    name: Microsoft.Windows.SDK.BuildTools
+  - type: nuget
+    name: Microsoft.WindowsAppSDK
+  - type: nuget
+    name: Microsoft.PackageManifest.MSIX
+  # Windows Application Packaging Project
+  - type: nuget
+    name: Microsoft.WindowsDesktop.App
+  # Package Support Framework
+  - type: nuget
+    name: Microsoft.PackageSupportFramework

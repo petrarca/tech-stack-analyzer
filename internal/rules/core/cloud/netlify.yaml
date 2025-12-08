@@ -1,0 +1,32 @@
+tech: netlify
+name: Netlify
+dependencies:
+  - type: npm
+    name: netlify
+    example: netlify
+  - type: npm
+    name: netlify-cli
+    example: netlify-cli
+  - type: npm
+    name: "@netlify/build"
+    example: "@netlify/build"
+  - type: npm
+    name: "@netlify/plugin-emails"
+    example: "@netlify/plugin-emails"
+  - type: npm
+    name: "@netlify/config"
+    example: "@netlify/config"
+  - type: npm
+    name: "@netlify/functions-utils"
+    example: "@netlify/functions-utils"
+  - type: npm
+    name: "@netlify/cache-utils"
+    example: "@netlify/cache-utils"
+  - type: npm
+    name: "@netlify/run-utils"
+    example: "@netlify/run-utils"
+  - type: githubAction
+    name: nwtgck/actions-netlify
+    example: nwtgck/actions-netlify
+files:
+  - netlify.toml

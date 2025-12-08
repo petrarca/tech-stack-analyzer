@@ -1,0 +1,6 @@
+tech: antdicons
+name: Ant Design Icons
+dependencies:
+  - type: npm
+    name: "@ant-design/icons"
+    example: "@ant-design/icons"

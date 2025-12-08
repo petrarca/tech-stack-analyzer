@@ -1,0 +1,8 @@
+tech: coffeescript
+name: CoffeeScript
+extensions:
+  - .coffee
+  - ._coffee
+  - .cake
+  - .cjsx
+  - .iced

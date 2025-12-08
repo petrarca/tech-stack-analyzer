@@ -1,0 +1,9 @@
+tech: atlassian.opsgenie
+name: Atlassian OpsGenie
+dependencies:
+  - type: npm
+    name: opsgenie-sdk
+    example: opsgenie-sdk
+  - type: npm
+    name: "@pulumi/opsgenie"
+    example: "@pulumi/opsgenie"

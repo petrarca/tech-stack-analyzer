@@ -1,0 +1,13 @@
+tech: tomcat
+name: Apache Tomcat
+files:
+  - context.xml
+  - server.xml
+  - catalina.properties
+dependencies:
+  - type: maven
+    name: /^org\.apache\.tomcat/
+  - type: maven
+    name: tomcat-embed-core
+  - type: docker
+    name: /tomcat/

@@ -1,0 +1,205 @@
+# Technology Category Definitions
+# Determines default component behavior for each technology category
+# Individual rules can override with is_component field
+
+categories:
+  # Infrastructure & Data - CREATE components
+  database:
+    is_component: true
+    description: "Database systems (PostgreSQL, MongoDB, Redis, etc.)"
+  
+  storage:
+    is_component: true
+    description: "Storage services (S3, Cloudinary, etc.)"
+  
+  messaging:
+    is_component: true
+    description: "Message brokers and queues (Kafka, RabbitMQ, SQS, etc.)"
+  
+  containerization:
+    is_component: true
+    description: "Container tools (Docker, Podman, containerd)"
+  
+  orchestration:
+    is_component: true
+    description: "Container orchestration (Kubernetes, Docker Swarm, Nomad)"
+  
+  package_manager:
+    is_component: false
+    description: "Package managers (npm, pip, cargo, maven)"
+  
+  # Hosting & Cloud - CREATE components
+  hosting:
+    is_component: true
+    description: "Hosting platforms (Vercel, Netlify, AWS, etc.)"
+  
+  cloud:
+    is_component: true
+    description: "Cloud providers (AWS, GCP, Azure, etc.)"
+  
+  # Services - CREATE components
+  saas:
+    is_component: true
+    description: "SaaS platforms"
+  
+  cms:
+    is_component: true
+    description: "Content management systems"
+  
+  monitoring:
+    is_component: true
+    description: "Monitoring services (Datadog, Sentry, etc.)"
+  
+  analytics:
+    is_component: true
+    description: "Analytics platforms (Google Analytics, Mixpanel, etc.)"
+  
+  identity:
+    is_component: true
+    description: "Identity & access management (Auth0, Okta, Keycloak, etc.)"
+  
+  payment:
+    is_component: true
+    description: "Payment processors (Stripe, PayPal, etc.)"
+  
+  notification:
+    is_component: true
+    description: "Notification services (SendGrid, Twilio, etc.)"
+  
+  communication:
+    is_component: true
+    description: "Communication tools (Slack, Discord, etc.)"
+  
+  collaboration:
+    is_component: true
+    description: "Collaboration platforms"
+  
+  # Applications & Tools - CREATE components
+  etl:
+    is_component: true
+    description: "ETL tools"
+  
+  automation:
+    is_component: true
+    description: "Automation tools"
+  
+  security:
+    is_component: true
+    description: "Security services"
+  
+  crm:
+    is_component: true
+    description: "CRM systems"
+  
+  network:
+    is_component: true
+    description: "Network services"
+  
+  ssg:
+    is_component: true
+    description: "Static site generators (when used as main tech)"
+  
+  ai_service:
+    is_component: true
+    description: "AI cloud services and APIs (OpenAI, Anthropic, AWS Bedrock, etc.)"
+  
+  # Development Tools - DO NOT create components
+  ai:
+    is_component: false
+    description: "AI libraries and frameworks (LangChain, PyTorch, PydanticAI, etc.)"
+
+  library:
+    is_component: false
+    description: "Utility libraries (JSON processing, validation, cryptography, etc.)"
+  
+  backend_framework:
+    is_component: false
+    description: "Backend frameworks (Django, Spring, Express, NestJS, etc.)"
+  
+  mobile_framework:
+    is_component: false
+    description: "Mobile frameworks (React Native, Flutter, Swift, Kotlin, etc.)"
+  
+  desktop_framework:
+    is_component: false
+    description: "Desktop frameworks (Qt, MFC, Win32, Electron, etc.)"
+  
+  web_framework:
+    is_component: false
+    description: "Web frameworks (React, Vue, Angular, Svelte, etc.)"
+  
+  fullstack_framework:
+    is_component: false
+    description: "Full-stack frameworks (Next.js, Nuxt, Remix, etc.)"
+
+  api:
+    is_component: false
+    description: "API protocols and specifications (GraphQL, REST, gRPC, etc.)"
+  
+  cicd:
+    is_component: false
+    description: "CI/CD tools (GitHub Actions, Jenkins, CircleCI, etc.)"
+  
+  vcs:
+    is_component: false
+    description: "Version control systems (Git, SVN, Mercurial, etc.)"
+  
+  language:
+    is_component: false
+    description: "Programming languages (Python, JavaScript, etc.)"
+  
+  runtime:
+    is_component: false
+    description: "Runtime environments (Node.js runtime, Python runtime, etc.)"
+  
+  tool:
+    is_component: false
+    description: "General development tools"
+  
+  dbmigration:
+    is_component: false
+    description: "Database migration tools (Flyway, Liquibase, etc.)"
+  
+  codequality:
+    is_component: false
+    description: "Code quality and static analysis tools (ESLint, Prettier, Sonarlint, RuboCop, etc.)"
+  
+  validation:
+    is_component: false
+    description: "Validation libraries"
+  
+  test:
+    is_component: false
+    description: "Testing frameworks (Jest, Pytest, JUnit, Mocha, etc.)"
+  
+  orm:
+    is_component: false
+    description: "Object-relational mappers (SQLAlchemy, Prisma, etc.)"
+  
+  ui:
+    is_component: false
+    description: "UI components and frameworks (MUI, shadcn, Qt, MFC)"
+  
+  iac:
+    is_component: false
+    description: "Infrastructure as Code tools (Terraform, Pulumi, etc.)"
+  
+  build:
+    is_component: false
+    description: "Build tools (Maven, Gradle, etc.)"
+  
+  logging:
+    is_component: false
+    description: "Logging libraries (Log4j, Logback, SLF4J, etc.)"
+  
+  appserver:
+    is_component: true
+    description: "Application servers (JBoss, Tomcat, WebLogic, etc.)"
+  
+  healthcare:
+    is_component: false
+    description: "Healthcare standards and systems (FHIR, HL7, DICOM, etc.)"
+  
+  platform:
+    is_component: false
+    description: "Low-code platforms, operating systems (Uniface, Windows, Linux)"

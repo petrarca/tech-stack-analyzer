@@ -1,0 +1,6 @@
+tech: preactjs
+name: Preact
+dependencies:
+  - type: npm
+    name: preact
+    example: preact

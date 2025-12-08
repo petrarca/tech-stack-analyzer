@@ -1,0 +1,4 @@
+tech: concourseci
+name: Concourse CI
+files:
+  - concourse-ci

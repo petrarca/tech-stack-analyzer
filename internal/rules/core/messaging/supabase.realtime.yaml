@@ -1,0 +1,12 @@
+tech: supabase.realtime
+name: Supabase Realtime
+dependencies:
+  - type: npm
+    name: "@supabase/realtime-js"
+    example: "@supabase/realtime-js"
+  - type: docker
+    name: bitnami/supabase-realtime
+    example: bitnami/supabase-realtime
+  - type: docker
+    name: supabase/realtime
+    example: supabase/realtime

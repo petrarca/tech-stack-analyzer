@@ -1,0 +1,8 @@
+tech: cef4delphi
+name: CEF4Delphi
+dependencies:
+  # Delphi package dependencies
+  - type: delphi
+    name: DCPCrypt
+  - type: delphi
+    name: CEF4Delphi

@@ -1,0 +1,21 @@
+tech: aws.eks
+name: AWS Kubernetes
+dependencies:
+  - type: npm
+    name: "@aws-cdk/aws-eks"
+    example: "@aws-cdk/aws-eks"
+  - type: npm
+    name: "@aws-sdk/client-eks"
+    example: "@aws-sdk/client-eks"
+  - type: npm
+    name: "@pulumi/eks"
+    example: "@pulumi/eks"
+  - type: rust
+    name: aws-sdk-eks
+    example: aws-sdk-eks
+  - type: ruby
+    name: aws-sdk-eks
+    example: aws-sdk-eks
+  - type: golang
+    name: github.com/aws/aws-sdk-go-v2/service/eks
+    example: github.com/aws/aws-sdk-go-v2/service/eks

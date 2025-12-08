@@ -1,0 +1,12 @@
+tech: gcp.dialogflow
+name: Cloud Dialogflow
+dependencies:
+  - type: npm
+    name: "@google-cloud/dialogflow"
+    example: "@google-cloud/dialogflow"
+  - type: golang
+    name: cloud.google.com/go/dialogflow
+    example: cloud.google.com/go/dialogflow
+  - type: php
+    name: google/cloud-dialogflow
+    example: google/cloud-dialogflow

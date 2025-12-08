@@ -1,0 +1,23 @@
+tech: newrelic
+name: New Relic
+dotenv:
+  - NEW_RELIC_
+dependencies:
+  - type: npm
+    name: newrelic
+    example: newrelic
+  - type: terraform
+    name: registry.terraform.io/newrelic/newrelic
+    example: registry.terraform.io/newrelic/newrelic
+  - type: ruby
+    name: newrelic_rpm
+    example: newrelic_rpm
+  - type: php
+    name: ekino/newrelic-bundle
+    example: ekino/newrelic-bundle
+  - type: php
+    name: intouch/newrelic
+    example: intouch/newrelic
+  - type: npm
+    name: "@pulumi/newrelic"
+    example: "@pulumi/newrelic"

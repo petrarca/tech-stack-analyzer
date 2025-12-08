@@ -1,0 +1,6 @@
+tech: scaleway.redis
+name: Scaleway Redis
+dependencies:
+  - type: terraform.resource
+    name: scaleway_redis_cluster
+    example: scaleway_redis_cluster

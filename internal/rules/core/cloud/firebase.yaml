@@ -1,0 +1,22 @@
+tech: firebase
+name: Firebase
+dotenv:
+  - FIREBASE_
+dependencies:
+  - type: ruby
+    name: fastlane-plugin-firebase_app_distribution
+    example: fastlane-plugin-firebase_app_distribution
+  - type: rust
+    name: firebase-rs
+    example: firebase-rs
+  - type: npm
+    name: firebase
+    example: firebase
+  - type: githubAction
+    name: w9jds/firebase-action
+    example: w9jds/firebase-action
+  - type: githubAction
+    name: wzieba/Firebase-Distribution-Github-Action
+    example: wzieba/Firebase-Distribution-Github-Action
+files:
+  - .firebaserc

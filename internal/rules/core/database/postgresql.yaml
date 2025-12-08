@@ -1,0 +1,74 @@
+tech: postgresql
+name: Postgres
+dotenv:
+  - POSTGRES_
+dependencies:
+  - type: npm
+    name: pg
+    example: pg
+  - type: npm
+    name: postgres
+    example: postgres
+  - type: npm
+    name: postgres-interval
+    example: postgres-interval
+  - type: npm
+    name: "@opentelemetry/instrumentation-pg"
+    example: "@opentelemetry/instrumentation-pg"
+  - type: npm
+    name: "@mikro-orm/postgresql"
+    example: "@mikro-orm/postgresql"
+  - type: npm
+    name: pg-connection-string
+    example: pg-connection-string
+  - type: npm
+    name: "@pulumi/postgresql"
+    example: "@pulumi/postgresql"
+  - type: docker
+    name: postgres
+    example: postgres
+  - type: docker
+    name: bitnami/postgresql
+    example: bitnami/postgresql
+  - type: docker
+    name: circleci/postgres
+    example: circleci/postgres
+  - type: docker
+    name: cimg/postgres
+    example: cimg/postgres
+  - type: docker
+    name: ubuntu/postgres
+    example: ubuntu/postgres
+  - type: docker
+    name: bitnamicharts/postgresql
+    example: bitnamicharts/postgresql
+  - type: rust
+    name: postgres
+    example: postgres
+  - type: ruby
+    name: pg
+    example: pg
+  - type: php
+    name: martin-georgiev/postgresql-for-doctrine
+    example: martin-georgiev/postgresql-for-doctrine
+  - type: terraform.resource
+    name: airbyte_destination_postgres
+    example: airbyte_destination_postgres
+  - type: maven
+    name: io.quarkus:quarkus-jdbc-postgresql
+    example: io.quarkus:quarkus-jdbc-postgresql
+  - type: maven
+    name: org.postgresql:postgresql
+    example: org.postgresql:postgresql
+  - type: python
+    name: pgvector
+    example: pgvector
+  - type: docker
+    name: pgvector/pgvector
+    example: pgvector/pgvector
+  - type: nuget
+    name: Npgsql
+    example: Npgsql
+  - type: nuget
+    name: Npgsql.EntityFrameworkCore.PostgreSQL
+    example: Npgsql.EntityFrameworkCore.PostgreSQL

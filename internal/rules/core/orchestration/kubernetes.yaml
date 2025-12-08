@@ -1,0 +1,38 @@
+tech: kubernetes
+name: Kubernetes
+dependencies:
+  - type: terraform
+    name: registry.terraform.io/hashicorp/kubernetes
+    example: registry.terraform.io/hashicorp/kubernetes
+  - type: rust
+    name: k8s-openapi
+    example: k8s-openapi
+  - type: ruby
+    name: kubeclient
+    example: kubeclient
+  - type: npm
+    name: "@kubernetes/client-node"
+    example: "@kubernetes/client-node"
+  - type: php
+    name: kubernetes/php-client
+    example: kubernetes/php-client
+  - type: githubAction
+    name: azure/setup-kubectl
+    example: azure/setup-kubectl
+  - type: githubAction
+    name: azure/k8s-set-context
+    example: azure/k8s-set-context
+  - type: githubAction
+    name: azure/k8s-deploy
+    example: azure/k8s-deploy
+  - type: githubAction
+    name: azure/k8s-create-secret
+    example: azure/k8s-create-secret
+  - type: npm
+    name: "@pulumi/kubernetes"
+    example: "@pulumi/kubernetes"
+  - type: python
+    name: kubernetes
+    example: kubernetes
+files:
+  - kustomization.yaml

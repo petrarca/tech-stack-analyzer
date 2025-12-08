@@ -1,0 +1,10 @@
+tech: pgvector
+name: PgVector
+type: database
+dependencies:
+  - type: nuget
+    name: Pgvector
+    example: Pgvector
+  - type: nuget
+    name: Pgvector.EntityFrameworkCore
+    example: Pgvector.EntityFrameworkCore

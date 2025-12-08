@@ -1,0 +1,12 @@
+tech: quarkus
+name: Quarkus
+dependencies:
+  - type: maven
+    name: /^io\.quarkus:.*/
+    example: io.quarkus:quarkus-resteasy
+  - type: docker
+    name: quarkus
+    example: quarkus/ubi-quarkus-native-image
+  - type: docker
+    name: /^quay\.io\/quarkus\/.*/
+    example: quay.io/quarkus/ubi-quarkus-native-image

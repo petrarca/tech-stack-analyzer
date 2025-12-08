@@ -1,0 +1,8 @@
+tech: hotjar
+name: Hotjar
+dotenv:
+  - HOTJAR_
+dependencies:
+  - type: npm
+    name: "@hotjar/browser"
+    example: "@hotjar/browser"

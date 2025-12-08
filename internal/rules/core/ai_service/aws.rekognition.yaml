@@ -1,0 +1,18 @@
+tech: aws.rekognition
+name: AWS Rekognition
+dependencies:
+  - type: npm
+    name: "@aws-sdk/client-rekognition"
+    example: "@aws-sdk/client-rekognition"
+  - type: npm
+    name: "@aws-cdk/aws-rekognition"
+    example: "@aws-cdk/aws-rekognition"
+  - type: rust
+    name: aws-sdk-rekognition
+    example: aws-sdk-rekognition
+  - type: ruby
+    name: aws-sdk-rekognition
+    example: aws-sdk-rekognition
+  - type: golang
+    name: github.com/aws/aws-sdk-go-v2/service/rekognition
+    example: github.com/aws/aws-sdk-go-v2/service/rekognition

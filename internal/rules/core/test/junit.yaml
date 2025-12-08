@@ -1,0 +1,9 @@
+tech: junit
+name: JUnit
+dependencies:
+  - type: maven
+    name: junit:junit
+    example: junit:junit
+  - type: gradle
+    name: junit:junit
+    example: junit:junit

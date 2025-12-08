@@ -1,0 +1,6 @@
+tech: loguru
+name: Loguru
+dependencies:
+  - type: python
+    name: loguru
+    example: loguru

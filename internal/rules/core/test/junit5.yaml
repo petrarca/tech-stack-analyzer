@@ -1,0 +1,12 @@
+tech: junit5
+name: JUnit 5
+dependencies:
+  - type: maven
+    name: org.junit.jupiter:junit-jupiter-api
+    example: org.junit.jupiter:junit-jupiter-api
+  - type: maven
+    name: org.junit.jupiter:junit-jupiter-engine
+    example: org.junit.jupiter:junit-jupiter-engine
+  - type: maven
+    name: /^io\.quarkus:quarkus-junit5.*/
+    example: io.quarkus:quarkus-junit5

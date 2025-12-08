@@ -1,0 +1,6 @@
+tech: yousign
+name: Yousign
+dependencies:
+  - type: php
+    name: androk/yousign-api
+    example: androk/yousign-api

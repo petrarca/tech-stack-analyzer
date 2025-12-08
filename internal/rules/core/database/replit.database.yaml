@@ -1,0 +1,6 @@
+tech: replit.database
+name: Replit Database
+dependencies:
+  - type: npm
+    name: "@replit/database"
+    example: "@replit/database"

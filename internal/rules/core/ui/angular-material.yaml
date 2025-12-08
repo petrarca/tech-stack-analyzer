@@ -1,0 +1,7 @@
+tech: angular-material
+name: Angular Material
+dependencies:
+  - type: npm
+    name: "@angular/material"
+  - type: npm
+    name: "@angular/cdk"

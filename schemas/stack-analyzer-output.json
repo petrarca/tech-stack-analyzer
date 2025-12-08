@@ -1,0 +1,405 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Tech Stack Analyzer Output",
+    "type": "object",
+    "anyOf": [
+        {
+            "$ref": "#/definitions/full"
+        },
+        {
+            "$ref": "#/definitions/aggregated"
+        }
+    ],
+    "definitions": {
+        "properties": {
+            "type": "object",
+            "description": "Arbitrary properties map",
+            "additionalProperties": true
+        },
+        "full": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "tech": {
+                    "anyOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ]
+                },
+                "techs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "languages": {
+                    "type": "object",
+                    "patternProperties": {
+                        "^[A-Za-z0-9_\\-]+$": {
+                            "type": "integer"
+                        }
+                    }
+                },
+                "dependencies": {
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "minItems": 2,
+                        "maxItems": 3
+                    }
+                },
+                "childs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/full"
+                    }
+                },
+                "edges": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "target": {
+                                "type": "string"
+                            },
+                            "read": {
+                                "type": "boolean"
+                            },
+                            "write": {
+                                "type": "boolean"
+                            }
+                        },
+                        "required": [
+                            "target"
+                        ]
+                    }
+                },
+                "licenses": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "reason": {
+                    "type": "object",
+                    "patternProperties": {
+                        "^[_a-z0-9\\-]+$": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "properties": {
+                    "$ref": "#/definitions/properties"
+                },
+                "code_stats": {
+                    "type": "object"
+                },
+                "git": {
+                    "type": "object",
+                    "properties": {
+                        "branch": {
+                            "type": "string"
+                        },
+                        "commit": {
+                            "type": "string"
+                        },
+                        "is_dirty": {
+                            "type": "boolean"
+                        },
+                        "remote_url": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "metadata": {
+                    "type": "object",
+                    "description": "Scan execution metadata matching ScanMetadata struct",
+                    "properties": {
+                        "format": {
+                            "type": "string",
+                            "enum": ["full", "aggregated"],
+                            "description": "Output format type"
+                        },
+                        "timestamp": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "ISO 8601 timestamp of when the scan was performed (RFC3339 format)"
+                        },
+                        "scan_path": {
+                            "type": "string",
+                            "description": "Absolute path that was scanned"
+                        },
+                        "specVersion": {
+                            "type": "string",
+                            "pattern": "^\\d+\\.\\d+$",
+                            "description": "Output format specification version"
+                        },
+                        "duration_ms": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Scan duration in milliseconds"
+                        },
+                        "file_count": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Total number of files processed"
+                        },
+                        "component_count": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Number of components detected"
+                        },
+                        "language_count": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Number of distinct programming languages detected"
+                        },
+                        "tech_count": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Number of primary technologies detected"
+                        },
+                        "techs_count": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Number of all detected technologies"
+                        },
+                        "properties": {
+                            "$ref": "#/definitions/properties"
+                        }
+                    },
+                    "required": [
+                        "format",
+                        "timestamp",
+                        "scan_path",
+                        "specVersion"
+                    ],
+                    "additionalProperties": false
+                }
+            }
+        },
+        "aggregated": {
+            "type": "object",
+            "properties": {
+                "metadata": {
+                    "type": "object",
+                    "description": "Scan execution metadata matching ScanMetadata struct",
+                    "properties": {
+                        "format": {
+                            "type": "string",
+                            "enum": ["full", "aggregated"],
+                            "description": "Output format type"
+                        },
+                        "timestamp": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "ISO 8601 timestamp of when the scan was performed (RFC3339 format)"
+                        },
+                        "scan_path": {
+                            "type": "string",
+                            "description": "Absolute path that was scanned"
+                        },
+                        "specVersion": {
+                            "type": "string",
+                            "pattern": "^\\d+\\.\\d+$",
+                            "description": "Output format specification version"
+                        },
+                        "duration_ms": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Scan duration in milliseconds"
+                        },
+                        "file_count": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Total number of files processed"
+                        },
+                        "component_count": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Number of components detected"
+                        },
+                        "language_count": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Number of distinct programming languages detected"
+                        },
+                        "tech_count": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Number of primary technologies detected"
+                        },
+                        "techs_count": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Number of all detected technologies"
+                        },
+                        "properties": {
+                            "$ref": "#/definitions/properties"
+                        }
+                    },
+                    "required": [
+                        "format",
+                        "timestamp",
+                        "scan_path",
+                        "specVersion"
+                    ],
+                    "additionalProperties": false
+                },
+                "git": {
+                    "type": "array",
+                    "items": {
+                        "type": "object"
+                    }
+                },
+                "tech": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "techs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "reason": {
+                    "type": "object"
+                },
+                "languages": {
+                    "type": "object"
+                },
+                "licenses": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "dependencies": {
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "code_stats": {
+                    "type": "object"
+                },
+                "properties": {
+                    "type": "object",
+                    "description": "Technology-specific properties extracted during scanning",
+                    "patternProperties": {
+                        "^[a-z0-9_\\-]+$": {
+                            "type": "array",
+                            "items": {
+                                "oneOf": [
+                                    {
+                                        "type": "object",
+                                        "title": "Docker Properties",
+                                        "description": "Dockerfile analysis results - matches DockerfileInfo struct",
+                                        "properties": {
+                                            "file": {
+                                                "type": "string",
+                                                "description": "Dockerfile path"
+                                            },
+                                            "base_images": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                },
+                                                "description": "Base Docker images"
+                                            },
+                                            "exposed_ports": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "integer"
+                                                },
+                                                "description": "Exposed ports"
+                                            },
+                                            "multi_stage": {
+                                                "type": "boolean",
+                                                "description": "Multi-stage build detected"
+                                            },
+                                            "stages": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                },
+                                                "description": "Build stage names"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "object",
+                                        "title": "Terraform Properties",
+                                        "description": "Terraform configuration analysis - matches TerraformInfo struct",
+                                        "properties": {
+                                            "file": {
+                                                "type": "string",
+                                                "description": "Terraform file path"
+                                            },
+                                            "providers": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                },
+                                                "description": "Cloud providers used"
+                                            },
+                                            "resources_by_provider": {
+                                                "type": "object",
+                                                "description": "Resource count by provider"
+                                            },
+                                            "resources_by_category": {
+                                                "type": "object",
+                                                "description": "Resource count by category"
+                                            },
+                                            "total_resources": {
+                                                "type": "integer",
+                                                "description": "Total number of resources"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "object",
+                                        "title": "Generic Properties",
+                                        "description": "Other technology-specific properties",
+                                        "additionalProperties": true
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

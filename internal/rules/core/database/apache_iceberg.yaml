@@ -1,0 +1,6 @@
+tech: apache_iceberg
+name: Apache Iceberg
+dependencies:
+  - type: docker
+    name: apache/spark-iceberg
+    example: apache/spark-iceberg

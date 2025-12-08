@@ -1,0 +1,14 @@
+tech: ruby
+name: Ruby
+dependencies:
+  - type: githubAction
+    name: ruby/setup-ruby
+    example: ruby/setup-ruby
+files:
+  - Gemfile
+  - Rakefile
+extensions:
+  - .rb
+  - .rbx
+  - .ru
+  - .ruby

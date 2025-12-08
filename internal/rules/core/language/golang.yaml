@@ -1,0 +1,17 @@
+tech: golang
+name: Golang
+dependencies:
+  - type: docker
+    name: golang
+    example: golang
+  - type: docker
+    name: circleci/golang
+    example: circleci/golang
+  - type: docker
+    name: bitnami/golang
+    example: bitnami/golang
+files:
+  - go.mod
+  - main.go
+extensions:
+  - .go

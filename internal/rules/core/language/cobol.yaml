@@ -1,0 +1,8 @@
+tech: cobol
+name: COBOL
+extensions:
+  - .cob
+  - .cbl
+  - .ccp
+  - .cobol
+  - .cpy

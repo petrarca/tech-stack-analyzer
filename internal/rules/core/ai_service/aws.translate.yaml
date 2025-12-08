@@ -1,0 +1,18 @@
+tech: aws.translate
+name: AWS Translate
+dependencies:
+  - type: npm
+    name: "@aws-sdk/client-translate"
+    example: "@aws-sdk/client-translate"
+  - type: npm
+    name: "@aws-cdk/aws-translate"
+    example: "@aws-cdk/aws-translate"
+  - type: rust
+    name: aws-sdk-translate
+    example: aws-sdk-translate
+  - type: ruby
+    name: aws-sdk-translate
+    example: aws-sdk-translate
+  - type: golang
+    name: github.com/aws/aws-sdk-go-v2/service/translate
+    example: github.com/aws/aws-sdk-go-v2/service/translate

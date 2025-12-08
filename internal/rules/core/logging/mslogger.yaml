@@ -1,0 +1,6 @@
+tech: mslogger
+name: Microsoft Logger
+dependencies:
+  - type: nuget
+    name: /^Microsoft\.Extensions\.Logging.*$/
+    example: Microsoft.Extensions.Logging

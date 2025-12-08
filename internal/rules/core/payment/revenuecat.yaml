@@ -1,0 +1,4 @@
+tech: revenuecat
+name: RevenueCat
+dotenv:
+  - REVENUECAT_

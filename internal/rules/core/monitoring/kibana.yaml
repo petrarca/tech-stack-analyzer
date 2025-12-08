@@ -1,0 +1,4 @@
+tech: kibana
+name: Kibana
+dotenv:
+  - KIBANA_

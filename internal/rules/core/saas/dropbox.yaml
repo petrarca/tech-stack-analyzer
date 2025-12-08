@@ -1,0 +1,8 @@
+tech: dropbox
+name: Dropbox
+dotenv:
+  - DROPBOX_
+dependencies:
+  - type: php
+    name: spatie/dropbox-api
+    example: spatie/dropbox-api

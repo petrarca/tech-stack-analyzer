@@ -1,0 +1,6 @@
+tech: serde
+name: Serde
+dependencies:
+  - type: rust
+    name: /^serde.*/
+    example: serde

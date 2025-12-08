@@ -1,0 +1,6 @@
+tech: objectivec
+name: Objective-C
+extensions:
+  - .m
+  - .mm
+  - .h

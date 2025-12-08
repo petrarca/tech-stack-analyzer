@@ -1,0 +1,11 @@
+tech: webflow
+name: Webflow
+dotenv:
+  - WEBFLOW_
+dependencies:
+  - type: npm
+    name: webflow-api
+    example: webflow-api
+  - type: terraform.resource
+    name: airbyte_source_webflow
+    example: airbyte_source_webflow

@@ -1,0 +1,9 @@
+tech: win32
+name: Win32 API
+dependencies:
+  - type: nuget
+    name: /^Microsoft\.Windows\.Desktop\.Win32/
+  - type: nuget
+    name: /^Microsoft\.Windows\.CSharpWin32/
+  - type: nuget
+    name: /^PInvoke/

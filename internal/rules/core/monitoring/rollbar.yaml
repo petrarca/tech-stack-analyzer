@@ -1,0 +1,41 @@
+tech: rollbar
+name: Rollbar
+dotenv:
+  - ROOLBAR_
+dependencies:
+  - type: golang
+    name: github.com/rollbar/rollbar-go
+    example: github.com/rollbar/rollbar-go
+  - type: npm
+    name: rollbar
+    example: rollbar
+  - type: npm
+    name: "@rollbar/react"
+    example: "@rollbar/react"
+  - type: npm
+    name: rollbar-react-native
+    example: rollbar-react-native
+  - type: php
+    name: rollbar/rollbar
+    example: rollbar/rollbar
+  - type: php
+    name: rollbar/rollbar-laravel
+    example: rollbar/rollbar-laravel
+  - type: php
+    name: rollbar/rollbar-magento2
+    example: rollbar/rollbar-magento2
+  - type: php
+    name: rollbar/rollbar-php-symfony-bundle
+    example: rollbar/rollbar-php-symfony-bundle
+  - type: php
+    name: wpackagist-plugin/rollbar
+    example: wpackagist-plugin/rollbar
+  - type: ruby
+    name: rollbar
+    example: rollbar
+  - type: githubAction
+    name: rollbar/github-deploy-action
+    example: rollbar/github-deploy-action
+  - type: terraform
+    name: registry.terraform.io/rollbar/rollbar
+    example: registry.terraform.io/rollbar/rollbar

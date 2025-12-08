@@ -1,0 +1,25 @@
+tech: qt
+name: Qt Framework
+content:
+  # Qt project files (.pro)
+  - pattern: '^QT\s*[+:]='
+    extensions: [.pro, .pri]
+  # Qt UI files (.ui)
+  - pattern: '<ui\s+version='
+    extensions: [.ui]
+  # CMake Qt patterns
+  - pattern: 'Qt[0-9]::'
+    files: [CMakeLists.txt]
+  - pattern: 'QT_VERSION'
+    files: [CMakeLists.txt]
+  - pattern: 'find_package\s*\(\s*Qt[0-9]'
+    files: [CMakeLists.txt]
+  # C++ source patterns
+  - pattern: 'Q_OBJECT'
+    extensions: [.cpp, .h, .hpp, .c]
+  - pattern: '#include\s+<Qt[A-Z][a-zA-Z]+>'
+    extensions: [.cpp, .h, .hpp, .c]
+  - pattern: '#include\s+<q(string|widget|dialog|object|label|button|pixmap|application|mainwindow|groupbox|3[a-z]+)\.h>'
+    extensions: [.cpp, .h, .hpp, .c]
+  - pattern: '\b(QApplication|QWidget|QMainWindow|QString|QLabel|QPushButton|QObject|QDialog)\b'
+    extensions: [.cpp, .h, .hpp, .c]

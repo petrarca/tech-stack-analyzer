@@ -1,0 +1,6 @@
+tech: react
+name: React
+dependencies:
+  - type: npm
+    name: react
+    example: react

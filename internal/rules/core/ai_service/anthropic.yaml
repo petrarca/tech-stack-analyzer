@@ -1,0 +1,26 @@
+tech: anthropic
+name: Anthropic
+dotenv:
+  - ANTHROPIC_
+dependencies:
+  - type: npm
+    name: "@anthropic-ai/sdk"
+    example: "@anthropic-ai/sdk"
+  - type: npm
+    name: "@ai-sdk/anthropic"
+    example: "@ai-sdk/anthropic"
+  - type: npm
+    name: "@langchain/anthropic"
+    example: "@langchain/anthropic"
+  - type: python
+    name: anthropic
+    example: anthropic
+  - type: golang
+    name: github.com/anthropics/anthropic-sdk-go
+    example: github.com/anthropics/anthropic-sdk-go
+  - type: npm
+    name: genkitx-anthropic
+    example: genkitx-anthropic
+  - type: python
+    name: langchain-anthropic
+    example: langchain-anthropic

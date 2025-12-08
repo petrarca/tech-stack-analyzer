@@ -1,0 +1,20 @@
+tech: signoz
+name: Signoz
+dotenv:
+  - SIGNOZ_
+dependencies:
+  - type: docker
+    name: signoz/frontend
+    example: signoz/frontend
+  - type: docker
+    name: signoz/alertmanager
+    example: signoz/alertmanager
+  - type: docker
+    name: signoz/query-service
+    example: signoz/query-service
+  - type: docker
+    name: signoz/signoz-otel-collector
+    example: signoz/signoz-otel-collector
+  - type: docker
+    name: signoz/locust
+    example: signoz/locust

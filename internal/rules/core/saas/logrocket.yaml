@@ -1,0 +1,6 @@
+tech: logrocket
+name: LogRocket
+dependencies:
+  - type: npm
+    name: logrocket
+    example: logrocket

@@ -1,0 +1,6 @@
+tech: hypertune
+name: Hypertune
+dependencies:
+  - type: npm
+    name: hypertune
+    example: hypertune

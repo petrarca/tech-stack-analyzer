@@ -1,0 +1,8 @@
+tech: miro
+name: Miro
+dotenv:
+  - MIRO_
+dependencies:
+  - type: npm
+    name: "@mirohq/miro-api"
+    example: "@mirohq/miro-api"

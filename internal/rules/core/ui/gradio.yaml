@@ -1,0 +1,6 @@
+tech: gradio
+name: Gradio
+dependencies:
+  - type: python
+    name: gradio
+    example: gradio

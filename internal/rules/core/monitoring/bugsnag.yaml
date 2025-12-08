@@ -1,0 +1,32 @@
+tech: bugsnag
+name: Bugsnag
+dotenv:
+  - BUGSNAG_
+dependencies:
+  - type: npm
+    name: "@bugsnag/js"
+    example: "@bugsnag/js"
+  - type: npm
+    name: "@bugsnag/node"
+    example: "@bugsnag/node"
+  - type: npm
+    name: "@bugsnag/react-native"
+    example: "@bugsnag/react-native"
+  - type: python
+    name: bugsnag
+    example: bugsnag
+  - type: php
+    name: bugsnag/bugsnag
+    example: bugsnag/bugsnag
+  - type: php
+    name: bugsnag/bugsnag-laravel
+    example: bugsnag/bugsnag-laravel
+  - type: ruby
+    name: bugsnag
+    example: bugsnag
+  - type: golang
+    name: github.com/bugsnag/bugsnag-go
+    example: github.com/bugsnag/bugsnag-go
+  - type: npm
+    name: "@bugsnag/expo"
+    example: "@bugsnag/expo"

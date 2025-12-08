@@ -1,0 +1,7 @@
+tech: groovy
+name: Groovy
+extensions:
+  - .groovy
+  - .gvy
+  - .gy
+  - .gsh

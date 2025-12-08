@@ -1,0 +1,42 @@
+tech: novu
+name: Novy
+dependencies:
+  - type: npm
+    name: "@novu/notification-center-vue"
+    example: "@novu/notification-center-vue"
+  - type: npm
+    name: "@novu/notification-center"
+    example: "@novu/notification-center"
+  - type: npm
+    name: "@novu/notification-center-angular"
+    example: "@novu/notification-center-angular"
+  - type: npm
+    name: "@novu/node"
+    example: "@novu/node"
+  - type: php
+    name: unicodeveloper/novu
+    example: unicodeveloper/novu
+  - type: php
+    name: novu/novu-laravel
+    example: novu/novu-laravel
+  - type: python
+    name: novu
+    example: novu
+  - type: ruby
+    name: novu
+    example: novu
+  - type: golang
+    name: github.com/novuhq/go-novu
+    example: github.com/novuhq/go-novu
+  - type: docker
+    name: ghcr.io/novuhq/novu/api
+    example: ghcr.io/novuhq/novu/api
+  - type: docker
+    name: ghcr.io/novuhq/novu/ws
+    example: ghcr.io/novuhq/novu/ws
+  - type: docker
+    name: ghcr.io/novuhq/novu/widget
+    example: ghcr.io/novuhq/novu/widget
+  - type: docker
+    name: ghcr.io/novuhq/novu/web
+    example: ghcr.io/novuhq/novu/web

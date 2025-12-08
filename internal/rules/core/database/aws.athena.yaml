@@ -1,0 +1,21 @@
+tech: aws.athena
+name: AWS Athena
+dependencies:
+  - type: npm
+    name: "@aws-cdk/aws-athena"
+    example: "@aws-cdk/aws-athena"
+  - type: npm
+    name: "@aws-sdk/client-athena"
+    example: "@aws-sdk/client-athena"
+  - type: rust
+    name: aws-sdk-athena
+    example: aws-sdk-athena
+  - type: ruby
+    name: aws-sdk-athena
+    example: aws-sdk-athena
+  - type: golang
+    name: github.com/aws/aws-sdk-go-v2/service/athena
+    example: github.com/aws/aws-sdk-go-v2/service/athena
+  - type: terraform.resource
+    name: airbyte_destination_aws_athena
+    example: airbyte_destination_aws_athena

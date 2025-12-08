@@ -1,0 +1,18 @@
+tech: aws.bedrock
+name: AWS Bedrock
+dependencies:
+  - type: npm
+    name: "@aws-sdk/client-bedrock"
+    example: "@aws-sdk/client-bedrock"
+  - type: npm
+    name: "@aws-sdk/client-bedrock-runtime"
+    example: "@aws-sdk/client-bedrock-runtime"
+  - type: npm
+    name: "@aws-sdk/client-bedrock-agent-runtime"
+    example: "@aws-sdk/client-bedrock-agent-runtime"
+  - type: npm
+    name: "@ai-sdk/amazon-bedrock"
+    example: "@ai-sdk/amazon-bedrock"
+  - type: npm
+    name: "@anthropic-ai/bedrock-sdk"
+    example: "@anthropic-ai/bedrock-sdk"

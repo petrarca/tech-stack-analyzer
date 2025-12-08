@@ -1,0 +1,24 @@
+tech: mssql
+name: MS SQL
+dependencies:
+  - type: ruby
+    name: jdbc-mssql
+    example: jdbc-mssql
+  - type: npm
+    name: mssql
+    example: mssql
+  - type: npm
+    name: "@opentelemetry/instrumentation-tedious"
+    example: "@opentelemetry/instrumentation-tedious"
+  - type: nuget
+    name: Microsoft.EntityFrameworkCore.SqlServer
+    example: Microsoft.EntityFrameworkCore.SqlServer
+  - type: nuget
+    name: System.Data.SqlClient
+    example: System.Data.SqlClient
+  - type: nuget
+    name: Microsoft.Data.SqlClient
+    example: Microsoft.Data.SqlClient
+  - type: nuget
+    name: Hangfire.SqlServer
+    example: Hangfire.SqlServer

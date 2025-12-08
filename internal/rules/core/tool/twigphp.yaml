@@ -1,0 +1,6 @@
+tech: twigphp
+name: Twig
+dependencies:
+  - type: php
+    name: twig/twig
+    example: twig/twig

@@ -1,0 +1,11 @@
+tech: typescript
+name: Typescript
+dependencies:
+  - type: npm
+    name: typescript
+    example: typescript
+extensions:
+  - .ts
+  - .tsx
+files:
+  - tsconfig.json

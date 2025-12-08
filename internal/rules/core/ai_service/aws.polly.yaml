@@ -1,0 +1,18 @@
+tech: aws.polly
+name: AWS Polly
+dependencies:
+  - type: npm
+    name: "@aws-sdk/client-polly"
+    example: "@aws-sdk/client-polly"
+  - type: npm
+    name: "@aws-cdk/aws-polly"
+    example: "@aws-cdk/aws-polly"
+  - type: rust
+    name: aws-sdk-polly
+    example: aws-sdk-polly
+  - type: ruby
+    name: aws-sdk-polly
+    example: aws-sdk-polly
+  - type: golang
+    name: github.com/aws/aws-sdk-go-v2/service/polly
+    example: github.com/aws/aws-sdk-go-v2/service/polly

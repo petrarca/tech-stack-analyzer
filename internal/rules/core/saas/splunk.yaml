@@ -1,0 +1,11 @@
+tech: splunk
+name: Splunk
+dotenv:
+  - SPLUNK_
+dependencies:
+  - type: terraform
+    name: registry.terraform.io/splunk/splunk
+    example: registry.terraform.io/splunk/splunk
+  - type: terraform
+    name: registry.terraform.io/splunk/splunkconfig
+    example: registry.terraform.io/splunk/splunkconfig

@@ -1,0 +1,4 @@
+tech: rubyenv
+name: rubyenv
+files:
+  - .ruby-version

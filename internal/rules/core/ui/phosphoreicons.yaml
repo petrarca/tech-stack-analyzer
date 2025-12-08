@@ -1,0 +1,18 @@
+tech: phosphoreicons
+name: Phosphor Icons
+dependencies:
+  - type: npm
+    name: "@phosphor-icons/react"
+    example: "@phosphor-icons/react"
+  - type: npm
+    name: "@phosphor-icons/vue"
+    example: "@phosphor-icons/vue"
+  - type: npm
+    name: "@phosphor-icons/webcomponents"
+    example: "@phosphor-icons/webcomponents"
+  - type: npm
+    name: "@phosphor-icons/web"
+    example: "@phosphor-icons/web"
+  - type: npm
+    name: "@iconify-json/ph"
+    example: "@iconify-json/ph"

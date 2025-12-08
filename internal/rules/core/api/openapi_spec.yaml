@@ -1,0 +1,43 @@
+tech: openapi_spec
+name: OpenAPI/Swagger
+files:
+  - openapi.json
+  - openapi.yaml
+  - openapi.yml
+  - swagger.json
+  - swagger.yaml
+  - swagger.yml
+content:
+  - pattern: '"openapi":\s*"3\.\d+\.\d+"'
+  - pattern: '"swagger":\s*"2\.\d+"'
+  - pattern: '"openapi":\s*3\.\d+\.\d+'
+  - pattern: '"swagger":\s*2\.\d+'
+  - pattern: 'info:\s*\n\s*title:'
+  - pattern: 'paths:\s*\n\s*/'
+  - pattern: 'components:\s*\n\s*schemas:'
+  - pattern: 'definitions:\s*\n\s*\w+:'
+dependencies:
+  - type: npm
+    name: "swagger-ui"
+    example: "swagger-ui"
+  - type: npm
+    name: "swagger-jsdoc"
+    example: "swagger-jsdoc"
+  - type: npm
+    name: "@apidevtools/swagger-parser"
+    example: "@apidevtools/swagger-parser"
+  - type: npm
+    name: "openapi-typescript"
+    example: "openapi-typescript"
+  - type: python
+    name: "pydantic-openapi"
+    example: "pydantic-openapi"
+  - type: nuget
+    name: "Swashbuckle.AspNetCore"
+    example: "Swashbuckle.AspNetCore"
+  - type: maven
+    name: "io.swagger.core.v3:swagger-jaxrs2"
+    example: "io.swagger.core.v3:swagger-jaxrs2"
+  - type: maven
+    name: "org.springdoc:springdoc-openapi-ui"
+    example: "org.springdoc:springdoc-openapi-ui"

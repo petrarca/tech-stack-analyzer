@@ -1,0 +1,32 @@
+tech: openai
+name: Openai
+dotenv:
+  - OPENAI_
+dependencies:
+  - type: npm
+    name: openai
+    example: openai
+  - type: npm
+    name: "@ai-sdk/openai"
+    example: "@ai-sdk/openai"
+  - type: php
+    name: openai-php/client
+    example: openai-php/client
+  - type: php
+    name: openai-php/laravel
+    example: openai-php/laravel
+  - type: npm
+    name: gpt3-tokenizer
+    example: gpt3-tokenizer
+  - type: npm
+    name: chatgpt
+    example: chatgpt
+  - type: npm
+    name: genkitx-openai
+    example: genkitx-openai
+  - type: python
+    name: langchain-openai
+    example: langchain-openai
+  - type: python
+    name: openai
+    example: openai

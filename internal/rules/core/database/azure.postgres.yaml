@@ -1,0 +1,18 @@
+tech: azure.postgres
+name: Azure Postgres
+dependencies:
+  - type: ruby
+    name: azure_mgmt_postgresql
+    example: azure_mgmt_postgresql
+  - type: rust
+    name: azure_mgmt_postgresql
+    example: azure_mgmt_postgresql
+  - type: npm
+    name: "@azure/arm-postgresql"
+    example: "@azure/arm-postgresql"
+  - type: githubAction
+    name: azure/postgresql
+    example: azure/postgresql
+  - type: golang
+    name: github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/postgresql/armpostgresql
+    example: github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/postgresql/armpostgresql

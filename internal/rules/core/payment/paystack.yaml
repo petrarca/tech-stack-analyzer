@@ -1,0 +1,4 @@
+tech: paystack
+name: Paystack
+dotenv:
+  - PAYSTACK_

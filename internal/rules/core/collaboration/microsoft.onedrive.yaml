@@ -1,0 +1,15 @@
+tech: microsoft.onedrive
+name: OneDrive
+dependencies:
+  - type: rust
+    name: onedrive-api
+    example: onedrive-api
+  - type: php
+    name: krizalys/onedrive-php-sdk
+    example: krizalys/onedrive-php-sdk
+  - type: npm
+    name: "@uppy/onedrive"
+    example: "@uppy/onedrive"
+  - type: terraform.resource
+    name: airbyte_source_microsoft_onedrive
+    example: airbyte_source_microsoft_onedrive

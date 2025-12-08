@@ -1,0 +1,24 @@
+tech: vercel
+name: Vercel
+dependencies:
+  - type: npm
+    name: vercel
+    example: vercel
+  - type: npm
+    name: "@vercel/client"
+    example: "@vercel/client"
+  - type: terraform
+    name: registry.terraform.io/vercel/vercel
+    example: registry.terraform.io/vercel/vercel
+  - type: githubAction
+    name: snaplet/vercel-action
+    example: snaplet/vercel-action
+  - type: githubAction
+    name: amondnet/vercel-action
+    example: amondnet/vercel-action
+  - type: terraform.resource
+    name: airbyte_source_vercel
+    example: airbyte_source_vercel
+files:
+  - .vercel
+  - vercel.json

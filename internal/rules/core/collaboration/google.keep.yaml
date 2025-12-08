@@ -1,0 +1,6 @@
+tech: google.keep
+name: Google Keep
+dependencies:
+  - type: ruby
+    name: google-apis-keep_v1
+    example: google-apis-keep_v1

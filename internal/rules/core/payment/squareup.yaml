@@ -1,0 +1,8 @@
+tech: squareup
+name: Square
+dotenv:
+  - SQUARE_
+dependencies:
+  - type: php
+    name: square/square
+    example: square/square

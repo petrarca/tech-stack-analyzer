@@ -1,0 +1,6 @@
+tech: sandpackeditor
+name: Sandpack
+dependencies:
+  - type: npm
+    name: "@codesandbox/sandpack-react"
+    example: "@codesandbox/sandpack-react"

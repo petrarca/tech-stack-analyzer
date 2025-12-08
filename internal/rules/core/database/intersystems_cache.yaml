@@ -1,0 +1,25 @@
+tech: intersystems_cache
+name: InterSystems Cache
+files:
+  - package.xml
+content:
+  # Detect Cache/IRIS in package.xml files
+  - type: xml-path
+    path: $.Generator
+    value: /Cache|/IRIS
+    files: [package.xml]
+  # Detect ObjectScript classes with Cache storage
+  - type: regex
+    pattern: '%Storage\.SQL|CONNECTION\s*=|EXTERNALTABLENAME\s*=|%Library\.SQLCatalog|%SYSTEM\.SQL'
+    extensions: [.cls]
+dependencies:
+  # JDBC drivers
+  - type: maven
+    name: com.intersystems:cache
+  - type: maven
+    name: com.intersystems:iris
+  # Python drivers
+  - type: python
+    name: intersys-odbpy
+  - type: python
+    name: irispython

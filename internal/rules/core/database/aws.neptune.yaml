@@ -1,0 +1,18 @@
+tech: aws.neptune
+name: AWS Neptune
+dependencies:
+  - type: npm
+    name: "@aws-cdk/aws-neptune"
+    example: "@aws-cdk/aws-neptune"
+  - type: npm
+    name: "@aws-sdk/client-neptune"
+    example: "@aws-sdk/client-neptune"
+  - type: rust
+    name: aws-sdk-neptune
+    example: aws-sdk-neptune
+  - type: ruby
+    name: aws-sdk-neptune
+    example: aws-sdk-neptune
+  - type: golang
+    name: github.com/aws/aws-sdk-go-v2/service/neptune
+    example: github.com/aws/aws-sdk-go-v2/service/neptune

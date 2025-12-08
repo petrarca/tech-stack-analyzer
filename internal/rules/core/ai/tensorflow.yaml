@@ -1,0 +1,21 @@
+tech: tensorflow
+name: Tensorflow
+dependencies:
+  - type: docker
+    name: tensorflow/tensorflow
+    example: tensorflow/tensorflow
+  - type: npm
+    name: "@tensorflow/tfjs-core"
+    example: "@tensorflow/tfjs-core"
+  - type: npm
+    name: "@tensorflow/tfjs"
+    example: "@tensorflow/tfjs"
+  - type: npm
+    name: face-api.js
+    example: face-api.js
+  - type: golang
+    name: github.com/wamuir/graft/tensorflow
+    example: github.com/wamuir/graft/tensorflow
+  - type: python
+    name: tensorflow
+    example: tensorflow

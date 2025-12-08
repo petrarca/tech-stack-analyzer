@@ -1,0 +1,6 @@
+tech: stenciljs
+name: Stencil
+dependencies:
+  - type: npm
+    name: "@stencil/core"
+    example: "@stencil/core"

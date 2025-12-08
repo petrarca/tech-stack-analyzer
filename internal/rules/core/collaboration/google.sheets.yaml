@@ -1,0 +1,21 @@
+tech: google.sheets
+name: Google Sheets
+dependencies:
+  - type: npm
+    name: "@googleapis/sheets"
+    example: "@googleapis/sheets"
+  - type: npm
+    name: google-spreadsheet
+    example: google-spreadsheet
+  - type: php
+    name: revolution/laravel-google-sheets
+    example: revolution/laravel-google-sheets
+  - type: ruby
+    name: google-apis-sheets_v4
+    example: google-apis-sheets_v4
+  - type: rust
+    name: sheets
+    example: sheets
+  - type: terraform.resource
+    name: airbyte_destination_google_sheets
+    example: airbyte_destination_google_sheets

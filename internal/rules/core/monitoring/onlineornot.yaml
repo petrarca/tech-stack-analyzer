@@ -1,0 +1,6 @@
+tech: onlineornot
+name: OnlineOrNot
+dependencies:
+  - type: npm
+    name: onlineornot
+    example: onlineornot

@@ -1,0 +1,16 @@
+tech: cplusplus
+name: C++
+is_component: true
+extensions:
+  - .cpp
+  - .c++
+  - .cc
+  - .cp
+  - .cppm
+  - .h++
+  - .hh
+  - .hpp
+files:
+  - CMakeLists.txt
+  - configure.ac
+  - Makefile.am

@@ -1,0 +1,12 @@
+tech: heroicons
+name: Heroicons
+dependencies:
+  - type: npm
+    name: "@heroicons/react"
+    example: "@heroicons/react"
+  - type: npm
+    name: "@heroicons/vue"
+    example: "@heroicons/vue"
+  - type: npm
+    name: "@iconify-json/heroicons"
+    example: "@iconify-json/heroicons"

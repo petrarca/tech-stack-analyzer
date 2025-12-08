@@ -1,0 +1,6 @@
+tech: ovh.storage
+name: OVH Storage
+dependencies:
+  - type: terraform.resource
+    name: ovh_cloud_project_region_storage_presign
+    example: ovh_cloud_project_region_storage_presign

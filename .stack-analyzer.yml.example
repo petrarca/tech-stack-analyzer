@@ -1,0 +1,41 @@
+# .stack-analyzer.yml - Tech Stack Analyzer Configuration
+# Place this file in the root of your project to customize the scan behavior
+
+# Custom properties added to metadata.properties in scan output
+# Use this to document project context, ownership, or deployment information
+properties:
+  product: "My Product Name"
+  team: "Platform Engineering"
+  owner: "engineering@company.com"
+  # Add any custom key-value pairs relevant to your project
+
+# Files and directories to exclude from scanning
+# Supports glob patterns (**, *, ?)
+exclude:
+  # Directories
+  - "node_modules"
+  - "vendor"
+  - "dist"
+  - "build"
+  - ".git"
+  
+  # File patterns
+  - "*.log"
+  - "*.tmp"
+  
+  # Glob patterns (relative to project root)
+  - "**/__tests__/**"
+  - "**/*.test.js"
+  - "**/test/**"
+
+# Technologies to add to the scan results (even if not auto-detected)
+# Useful for documenting external dependencies, deployment targets, or SaaS services
+techs:
+  - tech: "aws"
+    reason: "Deployed on AWS ECS"
+  - tech: "datadog"
+    reason: "Monitoring via Datadog"
+  - tech: "auth0"
+    reason: "Authentication provider"
+  - tech: "stripe"
+    reason: "Payment processing"

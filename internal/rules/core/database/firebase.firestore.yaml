@@ -1,0 +1,9 @@
+tech: firebase.firestore
+name: Firebase Firestore
+dependencies:
+  - type: php
+    name: google/cloud-firestore
+    example: google/cloud-firestore
+  - type: terraform.resource
+    name: airbyte_destination_firestore
+    example: airbyte_destination_firestore

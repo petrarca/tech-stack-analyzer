@@ -1,0 +1,11 @@
+tech: renovate
+name: Renovate
+dependencies:
+  - type: npm
+    name: renovate
+    example: renovate
+files:
+  - .renovaterc.json
+  - .renovaterc
+  - renovate.json
+  - renovate.json5

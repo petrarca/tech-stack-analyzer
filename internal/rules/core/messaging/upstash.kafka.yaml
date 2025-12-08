@@ -1,0 +1,8 @@
+tech: upstash.kafka
+name: Upstash Kafka
+dotenv:
+  - UPSTASH_KAFKA_
+dependencies:
+  - type: npm
+    name: "@upstash/kafka"
+    example: "@upstash/kafka"

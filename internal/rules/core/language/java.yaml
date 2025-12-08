@@ -1,0 +1,6 @@
+tech: java
+name: Java
+extensions:
+  - .java
+  - .jav
+  - .jsh

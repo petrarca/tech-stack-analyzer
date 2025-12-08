@@ -1,0 +1,45 @@
+package parsers
+
+import (
+	"encoding/json"
+
+	"github.com/petrarca/tech-stack-analyzer/internal/types"
+)
+
+// DenoParser handles Deno-specific file parsing (deno.lock)
+type DenoParser struct{}
+
+// NewDenoParser creates a new Deno parser
+func NewDenoParser() *DenoParser {
+	return &DenoParser{}
+}
+
+// DenoLock represents the structure of deno.lock
+type DenoLock struct {
+	Version string            `json:"version"`
+	Remote  map[string]string `json:"remote"`
+}
+
+// ParseDenoLock parses deno.lock and extracts version and dependencies
+func (p *DenoParser) ParseDenoLock(content string) (string, []types.Dependency) {
+	var denoLock DenoLock
+	if err := json.Unmarshal([]byte(content), &denoLock); err != nil {
+		return "", nil
+	}
+
+	// Extract version
+	version := denoLock.Version
+
+	// Extract dependencies from remote URLs
+	var dependencies []types.Dependency
+
+	for url, hash := range denoLock.Remote {
+		dependencies = append(dependencies, types.Dependency{
+			Type:    "deno",
+			Name:    url,
+			Example: hash,
+		})
+	}
+
+	return version, dependencies
+}

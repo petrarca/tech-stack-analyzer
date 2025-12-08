@@ -1,0 +1,18 @@
+tech: atlassian.confluence
+name: Confluence
+dependencies:
+  - type: githubAction
+    name: Bhacaz/docs-as-code-confluence
+    example: Bhacaz/docs-as-code-confluence
+  - type: docker
+    name: atlassian/confluence-server
+    example: atlassian/confluence-server
+  - type: docker
+    name: atlassian/confluence
+    example: atlassian/confluence
+  - type: npm
+    name: confluence.js
+    example: confluence.js
+  - type: npm
+    name: confluence-api
+    example: confluence-api

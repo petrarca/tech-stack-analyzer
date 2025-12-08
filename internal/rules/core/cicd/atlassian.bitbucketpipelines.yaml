@@ -1,0 +1,4 @@
+tech: atlassian.bitbucketpipelines
+name: Bitbucket Pipelines
+files:
+  - bitbucket-pipeline.yml

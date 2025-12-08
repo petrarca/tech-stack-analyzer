@@ -1,0 +1,27 @@
+tech: shopify
+name: Shopify
+dependencies:
+  - type: npm
+    name: "@shopify/shopify-api"
+    example: "@shopify/shopify-api"
+  - type: npm
+    name: "@shopify/cli"
+    example: "@shopify/cli"
+  - type: npm
+    name: shopify-api-node
+    example: shopify-api-node
+  - type: php
+    name: shopify/shopify-api
+    example: shopify/shopify-api
+  - type: php
+    name: phpclassic/php-shopify
+    example: phpclassic/php-shopify
+  - type: ruby
+    name: shopify_api
+    example: shopify_api
+  - type: ruby
+    name: shopify_app
+    example: shopify_app
+  - type: ruby
+    name: shopify-cli
+    example: shopify-cli

@@ -1,0 +1,9 @@
+tech: jacoco
+name: JaCoCo
+dependencies:
+  - type: maven
+    name: io.quarkus:quarkus-jacoco
+    example: io.quarkus:quarkus-jacoco
+  - type: maven
+    name: /^org\.jacoco:.*$/
+    example: org.jacoco:jacoco-maven-plugin

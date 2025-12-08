@@ -1,0 +1,13 @@
+tech: perl
+name: Perl
+extensions:
+  - .pl
+  - .al
+  - .cgi
+  - .fcgi
+  - .perl
+  - .ph
+  - .plx
+  - .pm
+  - .psgi
+  - .t

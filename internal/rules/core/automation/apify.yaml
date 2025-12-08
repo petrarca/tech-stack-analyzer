@@ -1,0 +1,17 @@
+tech: apify
+name: Apify
+dotenv:
+  - APIFY_
+dependencies:
+  - type: npm
+    name: apify
+    example: apify
+  - type: npm
+    name: apify-client
+    example: apify-client
+  - type: python
+    name: apify
+    example: apify
+  - type: terraform.resource
+    name: airbyte_source_apify_dataset
+    example: airbyte_source_apify_dataset

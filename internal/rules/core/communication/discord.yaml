@@ -1,0 +1,14 @@
+tech: discord
+name: Discord
+dotenv:
+  - DISCORD_
+dependencies:
+  - type: npm
+    name: discord.js
+    example: discord.js
+  - type: npm
+    name: discord-interactions
+    example: discord-interactions
+  - type: githubAction
+    name: Ilshidur/action-discord
+    example: Ilshidur/action-discord

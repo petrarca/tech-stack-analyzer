@@ -1,0 +1,11 @@
+tech: youtube
+name: Youtube
+dotenv:
+  - YOUTUBE_
+dependencies:
+  - type: python
+    name: youtube-transcript-api
+    example: youtube-transcript-api
+  - type: python
+    name: pytube
+    example: pytube

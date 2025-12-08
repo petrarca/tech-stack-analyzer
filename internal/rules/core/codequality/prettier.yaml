@@ -1,0 +1,9 @@
+tech: prettier
+name: Prettier
+dependencies:
+  - type: npm
+    name: prettier
+    example: prettier
+files:
+  - .prettierrc
+  - .prettierignore

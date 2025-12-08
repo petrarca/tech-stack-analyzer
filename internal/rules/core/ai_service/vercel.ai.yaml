@@ -1,0 +1,6 @@
+tech: vercel.ai
+name: Vercel AI
+dependencies:
+  - type: npm
+    name: "@vercel/ai"
+    example: "@vercel/ai"

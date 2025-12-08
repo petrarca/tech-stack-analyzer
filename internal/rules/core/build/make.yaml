@@ -1,0 +1,7 @@
+tech: make
+name: Make
+files:
+  - Makefile
+  - makefile
+  - configure.ac
+  - Makefile.am

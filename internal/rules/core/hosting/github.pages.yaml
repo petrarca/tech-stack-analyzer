@@ -1,0 +1,18 @@
+tech: github.pages
+name: Github Pages
+dependencies:
+  - type: githubAction
+    name: actions/upload-pages-artifact
+    example: actions/upload-pages-artifact
+  - type: githubAction
+    name: actions/deploy-pages
+    example: actions/deploy-pages
+  - type: githubAction
+    name: peaceiris/actions-gh-pages
+    example: peaceiris/actions-gh-pages
+  - type: githubAction
+    name: JamesIves/github-pages-deploy-action
+    example: JamesIves/github-pages-deploy-action
+files:
+  - _config.yml
+  - _config.yaml

@@ -1,0 +1,27 @@
+tech: azure.functions
+name: Azure Functions
+dependencies:
+  - type: npm
+    name: "@azure/functions"
+    example: "@azure/functions"
+  - type: npm
+    name: durable-functions
+    example: durable-functions
+  - type: npm
+    name: azure-functions-core-tools
+    example: azure-functions-core-tools
+  - type: ruby
+    name: fluent-plugin-azurefunctions
+    example: fluent-plugin-azurefunctions
+  - type: rust
+    name: azure-functions
+    example: azure-functions
+  - type: rust
+    name: azure-functions-shared
+    example: azure-functions-shared
+  - type: githubAction
+    name: Azure/functions-container-action
+    example: Azure/functions-container-action
+  - type: githubAction
+    name: Azure/functions-action
+    example: Azure/functions-action

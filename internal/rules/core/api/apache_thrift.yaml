@@ -1,0 +1,18 @@
+tech: apache_thrift
+name: Apache Thrift
+dependencies:
+  - type: docker
+    name: apache/thrift
+    example: apache/thrift
+  - type: npm
+    name: thrift
+    example: thrift
+  - type: golang
+    name: github.com/apache/thrift
+    example: github.com/apache/thrift
+  - type: rust
+    name: thrift
+    example: thrift
+  - type: ruby
+    name: thrift
+    example: thrift

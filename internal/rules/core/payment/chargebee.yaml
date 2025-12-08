@@ -1,0 +1,23 @@
+tech: chargebee
+name: Chargebee
+dotenv:
+  - CHARGEBEE_
+dependencies:
+  - type: npm
+    name: chargebee
+    example: chargebee
+  - type: npm
+    name: chargebee-typescript
+    example: chargebee-typescript
+  - type: python
+    name: chargebee
+    example: chargebee
+  - type: ruby
+    name: chargebee-ruby
+    example: chargebee-ruby
+  - type: php
+    name: chargebee/chargebee-php
+    example: chargebee/chargebee-php
+  - type: golang
+    name: github.com/chargebee/chargebee-go
+    example: github.com/chargebee/chargebee-go

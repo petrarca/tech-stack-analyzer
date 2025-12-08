@@ -1,0 +1,20 @@
+tech: cloudinary
+name: Cloudinary
+dotenv:
+  - CLOUDINARY_
+dependencies:
+  - type: npm
+    name: cloudinary
+    example: cloudinary
+  - type: python
+    name: cloudinary
+    example: cloudinary
+  - type: php
+    name: cloudinary/cloudinary_php
+    example: cloudinary/cloudinary_php
+  - type: ruby
+    name: cloudinary
+    example: cloudinary
+  - type: golang
+    name: github.com/cloudinary/cloudinary-go/v2
+    example: github.com/cloudinary/cloudinary-go/v2

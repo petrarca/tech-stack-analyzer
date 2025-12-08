@@ -1,0 +1,5 @@
+tech: newtonsoftjson
+name: Newtonsoft.Json
+dependencies:
+  - type: nuget
+    name: Newtonsoft.Json.Schema

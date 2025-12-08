@@ -1,0 +1,138 @@
+version: '3'
+
+vars:
+  BINARY_TARGET: ./bin
+  BINARY_NAME: '{{.BINARY_TARGET}}/stack-analyzer'
+
+tasks:
+  build:
+    desc: Compile the stack-analyzer binary
+    cmds:
+      - go build -o {{.BINARY_NAME}} ./cmd/scanner
+
+  build:all:
+    desc: Build for all supported platforms
+    deps: [check]
+    cmds:
+      - GOOS=darwin GOARCH=amd64 go build -o {{.BINARY_NAME}}-darwin-amd64 ./cmd/scanner
+      - GOOS=darwin GOARCH=arm64 go build -o {{.BINARY_NAME}}-darwin-arm64 ./cmd/scanner
+      - GOOS=linux GOARCH=amd64 go build -o {{.BINARY_NAME}}-linux-amd64 ./cmd/scanner
+      - GOOS=windows GOARCH=amd64 go build -o {{.BINARY_NAME}}-windows-amd64.exe ./cmd/scanner
+
+  format:
+    desc: Format Go code using gofmt
+    cmds:
+      - gofmt -w -s .
+
+  check:
+    desc: Run go vet and golangci-lint
+    cmds:
+      - go vet ./...
+      - golangci-lint run
+
+  test:
+    desc: Run tests
+    cmds:
+      - go test -v ./...
+
+  fct:
+    desc: Run format, check, and test in sequence
+    cmds:
+      - task: format
+      - task: check
+      - task: test
+
+  clean:
+    desc: Clean up build artifacts and caches
+    cmds:
+      - rm -rf {{.BINARY_TARGET}}/
+      - go clean -cache -testcache -modcache
+
+  run:
+    desc: Run stack-analyzer on a directory
+    cmds:
+      - ./{{.BINARY_NAME}} {{.CLI_ARGS}}
+    deps:
+      - build
+
+  run:scan:
+    desc: Run stack-analyzer on a directory
+    cmds:
+      - ./{{.BINARY_NAME}} scan {{.CLI_ARGS}}
+    deps:
+      - build
+
+  run:help:
+    desc: Show stack-analyzer help message
+    cmds:
+      - ./{{.BINARY_NAME}} --help
+    deps:
+      - build
+
+  run:info:techs:
+    desc: List all technologies
+    cmds:
+      - ./{{.BINARY_NAME}} info techs {{.ARGS}}
+
+  run:info:categories:
+    desc: List all technology categories
+    cmds:
+      - ./{{.BINARY_NAME}} info categories {{.ARGS}}
+
+  run:info:languages:
+    desc: List all programming languages
+    cmds:
+      - ./{{.BINARY_NAME}} info languages {{.ARGS}}
+
+  run:info:rule:
+    desc: Show rule details for a technology
+    cmds:
+      - ./{{.BINARY_NAME}} info rule {{.ARGS}}
+
+  build:examples:
+    desc: Generate JSON schema examples from our actual project
+    cmds:
+      - echo "🔍 Generating schema examples from tech-stack-analyzer project..."
+      - ./{{.BINARY_NAME}} scan . --output schemas/examples/full.json
+      - ./{{.BINARY_NAME}} scan . --aggregate all --output schemas/examples/aggregated.json
+      - echo "🔧 Sanitizing user-specific paths..."
+      - sed -i '' 's|/Users/wmi/Develop/petrarca/tech-stack-analyzer|/path/to/your/project|g' schemas/examples/full.json
+      - sed -i '' 's|/Users/wmi/Develop/petrarca/tech-stack-analyzer|/path/to/your/project|g' schemas/examples/aggregated.json
+      - echo "✅ Examples generated and sanitized"
+      - echo "   - Full example - schemas/examples/full.json"
+      - echo "   - Aggregated example - schemas/examples/aggregated.json"
+      - echo "📊 Real project data with generic paths for privacy"
+    deps:
+      - build
+
+  pre-commit:setup:
+    desc: Install pre-commit tool
+    cmds:
+      - uv tool install pre-commit
+
+  pre-commit:install:
+    desc: Install pre-commit git hooks
+    cmds:
+      - pre-commit install --install-hooks
+      - pre-commit install --hook-type pre-push
+
+  pre-commit:uninstall:
+    desc: Uninstall pre-commit hooks
+    cmds:
+      - pre-commit uninstall
+      - pre-commit uninstall --hook-type pre-push
+
+  pre-commit:update:
+    desc: Update pre-commit hooks
+    cmds:
+      - pre-commit autoupdate
+
+  pre-commit:run:
+    desc: Run pre-commit hooks on all files
+    cmds:
+      - pre-commit run --all-files
+
+  pre-commit:validate:
+    desc: Validate pre-commit configuration
+    cmds:
+      - pre-commit validate-config

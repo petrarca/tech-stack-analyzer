@@ -1,0 +1,6 @@
+tech: litjs
+name: Lit
+dependencies:
+  - type: npm
+    name: lit
+    example: lit

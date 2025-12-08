@@ -1,0 +1,6 @@
+tech: vercel.blob
+name: Vercel Blob
+dependencies:
+  - type: npm
+    name: "@vercel/blob"
+    example: "@vercel/blob"

@@ -1,0 +1,6 @@
+tech: nxcloud
+name: NX Cloud
+dependencies:
+  - type: npm
+    name: nx-cloud
+    example: nx-cloud

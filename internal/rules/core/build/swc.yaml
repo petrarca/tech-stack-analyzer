@@ -1,0 +1,6 @@
+tech: swc
+name: SWC
+dependencies:
+  - type: npm
+    name: "@swc/core"
+    example: "@swc/core"

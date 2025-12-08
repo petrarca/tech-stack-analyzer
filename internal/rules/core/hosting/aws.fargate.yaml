@@ -1,0 +1,6 @@
+tech: aws.fargate
+name: AWS Fargate
+dependencies:
+  - type: githubAction
+    name: aws-actions/amazon-eks-fargate
+    example: aws-actions/amazon-eks-fargate

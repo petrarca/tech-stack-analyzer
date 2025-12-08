@@ -1,0 +1,6 @@
+tech: teamspeak
+name: Teamspeak
+dependencies:
+  - type: docker
+    name: teamspeak
+    example: teamspeak

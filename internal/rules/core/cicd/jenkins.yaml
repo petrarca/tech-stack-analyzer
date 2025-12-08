@@ -1,0 +1,8 @@
+tech: jenkins
+name: Jenkins
+dependencies:
+  - type: ruby
+    name: jenkins_api_client
+    example: jenkins_api_client
+files:
+  - .jenkins

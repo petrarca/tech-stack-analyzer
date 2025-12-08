@@ -1,0 +1,11 @@
+tech: n8n
+name: n8n
+dotenv:
+  - N8N_
+dependencies:
+  - type: docker
+    name: n8nio/n8n
+    example: n8nio/n8n
+  - type: npm
+    name: n8n
+    example: n8n

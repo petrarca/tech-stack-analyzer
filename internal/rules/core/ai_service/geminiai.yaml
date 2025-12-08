@@ -1,0 +1,20 @@
+tech: geminiai
+name: Gemini AI
+dotenv:
+  - GEMINI_
+dependencies:
+  - type: python
+    name: genai
+    example: genai
+  - type: npm
+    name: "@google/genai"
+    example: "@google/genai"
+  - type: npm
+    name: gemini-ai
+    example: gemini-ai
+  - type: python
+    name: langchain-google-genai
+    example: langchain-google-genai
+  - type: python
+    name: google-generativeai
+    example: google-generativeai

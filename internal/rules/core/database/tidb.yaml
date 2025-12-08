@@ -1,0 +1,6 @@
+tech: tidb
+name: TiDB
+dependencies:
+  - type: docker
+    name: pingcap/tidb
+    example: pingcap/tidb

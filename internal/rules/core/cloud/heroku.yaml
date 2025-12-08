@@ -1,0 +1,15 @@
+tech: heroku
+name: Heroku
+dependencies:
+  - type: terraform
+    name: registry.terraform.io/heroku/heroku
+    example: registry.terraform.io/heroku/heroku
+  - type: ruby
+    name: platform-api
+    example: platform-api
+  - type: php
+    name: heroku/heroku-buildpack-php
+    example: heroku/heroku-buildpack-php
+  - type: githubAction
+    name: akhileshns/heroku-deploy
+    example: akhileshns/heroku-deploy

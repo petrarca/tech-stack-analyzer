@@ -1,0 +1,6 @@
+tech: valibot
+name: Valibot
+dependencies:
+  - type: npm
+    name: valibot
+    example: valibot

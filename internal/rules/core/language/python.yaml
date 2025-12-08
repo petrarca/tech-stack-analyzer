@@ -1,0 +1,30 @@
+tech: python
+name: Python
+dependencies:
+  - type: githubAction
+    name: actions/setup-python
+    example: actions/setup-python
+  - type: docker
+    name: python
+    example: python
+  - type: docker
+    name: circleci/python
+    example: circleci/python
+  - type: docker
+    name: cimg/python
+    example: cimg/python
+  - type: docker
+    name: bitnami/python
+    example: bitnami/python
+files:
+  - requirements.txt
+extensions:
+  - .py
+  - .gyp
+  - .py3
+  - .pyde
+  - .pyi
+  - .pyp
+  - .pyt
+  - .pyw
+  - .rpy

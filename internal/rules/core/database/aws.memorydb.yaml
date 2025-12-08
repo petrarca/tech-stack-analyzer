@@ -1,0 +1,18 @@
+tech: aws.memorydb
+name: AWS MemoryDB
+dependencies:
+  - type: npm
+    name: "@aws-cdk/aws-memorydb"
+    example: "@aws-cdk/aws-memorydb"
+  - type: npm
+    name: "@aws-sdk/client-memorydb"
+    example: "@aws-sdk/client-memorydb"
+  - type: rust
+    name: aws-sdk-memorydb
+    example: aws-sdk-memorydb
+  - type: ruby
+    name: aws-sdk-memorydb
+    example: aws-sdk-memorydb
+  - type: golang
+    name: github.com/aws/aws-sdk-go-v2/service/memorydb
+    example: github.com/aws/aws-sdk-go-v2/service/memorydb

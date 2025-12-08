@@ -1,0 +1,15 @@
+tech: mergedev
+name: Merge.dev
+dependencies:
+  - type: python
+    name: MergePythonClient
+    example: MergePythonClient
+  - type: python
+    name: MergePythonSDK
+    example: MergePythonSDK
+  - type: golang
+    name: github.com/merge-api/merge-go-client
+    example: github.com/merge-api/merge-go-client
+  - type: ruby
+    name: merge_ruby_client
+    example: merge_ruby_client

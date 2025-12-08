@@ -1,0 +1,6 @@
+tech: mongoexpress
+name: Mongo Express
+dependencies:
+  - type: docker
+    name: mongo-express
+    example: mongo-express

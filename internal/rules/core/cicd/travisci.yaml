@@ -1,0 +1,9 @@
+tech: travisci
+name: TravisCI
+dependencies:
+  - type: ruby
+    name: travis
+    example: travis
+files:
+  - .travis.yml
+  - .travis.yaml

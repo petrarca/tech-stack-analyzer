@@ -1,0 +1,45 @@
+tech: apache_kafka
+name: Apache Kafka
+dependencies:
+  - type: docker
+    name: bitnami/kafka
+    example: bitnami/kafka
+  - type: docker
+    name: ubuntu/kafka
+    example: ubuntu/kafka
+  - type: docker
+    name: bitnamicharts/kafka
+    example: bitnamicharts/kafka
+  - type: terraform
+    name: registry.terraform.io/confluentinc/confluent
+    example: registry.terraform.io/confluentinc/confluent
+  - type: php
+    name: nmred/kafka-php
+    example: nmred/kafka-php
+  - type: php
+    name: longlang/phpkafka
+    example: longlang/phpkafka
+  - type: npm
+    name: kafkajs
+    example: kafkajs
+  - type: npm
+    name: kafka-node
+    example: kafka-node
+  - type: npm
+    name: kafkajs-snappy
+    example: kafkajs-snappy
+  - type: npm
+    name: "@opentelemetry/instrumentation-kafkajs"
+    example: "@opentelemetry/instrumentation-kafkajs"
+  - type: ruby
+    name: ruby-kafka
+    example: ruby-kafka
+  - type: ruby
+    name: fluent-plugin-kafka
+    example: fluent-plugin-kafka
+  - type: ruby
+    name: logstash-output-kafka
+    example: logstash-output-kafka
+  - type: ruby
+    name: logstash-input-kafka
+    example: logstash-input-kafka

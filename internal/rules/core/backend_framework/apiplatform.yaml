@@ -1,0 +1,9 @@
+tech: apiplatform
+name: Api Platform
+dependencies:
+  - type: php
+    name: api-platform/core
+    example: api-platform/core
+  - type: npm
+    name: "@api-platform/client"
+    example: "@api-platform/client"

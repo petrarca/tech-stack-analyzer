@@ -1,0 +1,18 @@
+tech: tdengine
+name: TDengine
+dependencies:
+  - type: docker
+    name: tdengine/tdengine
+    example: tdengine/tdengine
+  - type: npm
+    name: "@tdengine/rest"
+    example: "@tdengine/rest"
+  - type: npm
+    name: "@tdengine/client"
+    example: "@tdengine/client"
+  - type: golang
+    name: github.com/taosdata/driver-go/v3/taosSql
+    example: github.com/taosdata/driver-go/v3/taosSql
+  - type: rust
+    name: taos
+    example: taos

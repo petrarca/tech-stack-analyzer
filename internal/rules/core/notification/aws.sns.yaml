@@ -1,0 +1,24 @@
+tech: aws.sns
+name: AWS Notification Service
+dependencies:
+  - type: npm
+    name: "@aws-cdk/aws-sns"
+    example: "@aws-cdk/aws-sns"
+  - type: npm
+    name: "@aws-sdk/client-sns"
+    example: "@aws-sdk/client-sns"
+  - type: rust
+    name: aws-sdk-sns
+    example: aws-sdk-sns
+  - type: ruby
+    name: aws-sdk-sns
+    example: aws-sdk-sns
+  - type: golang
+    name: github.com/aws/aws-sdk-go-v2/service/sns
+    example: github.com/aws/aws-sdk-go-v2/service/sns
+  - type: php
+    name: aws/aws-php-sns-message-validator
+    example: aws/aws-php-sns-message-validator
+  - type: php
+    name: async-aws/sns
+    example: async-aws/sns

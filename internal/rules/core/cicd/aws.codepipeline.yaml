@@ -1,0 +1,6 @@
+tech: aws.codepipeline
+name: AWS Code Pipeline
+dependencies:
+  - type: githubAction
+    name: zulhfreelancer/aws-codepipeline-action
+    example: zulhfreelancer/aws-codepipeline-action

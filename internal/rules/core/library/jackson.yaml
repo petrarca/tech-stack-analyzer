@@ -1,0 +1,9 @@
+tech: jackson
+name: Jackson
+dependencies:
+  - type: maven
+    name: /^com\.fasterxml\.jackson.*/
+    example: com.fasterxml.jackson.core:jackson-databind
+  - type: maven
+    name: io.quarkus:quarkus-rest-jackson
+    example: io.quarkus:quarkus-rest-jackson

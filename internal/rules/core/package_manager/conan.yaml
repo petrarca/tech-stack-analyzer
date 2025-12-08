@@ -1,0 +1,4 @@
+tech: conan
+name: Conan
+files:
+  - conanfile.py

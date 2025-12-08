@@ -1,0 +1,8 @@
+tech: simpleanalytics
+name: Simple Analytics
+dotenv:
+  - SIMPLEANALYTICS_
+dependencies:
+  - type: npm
+    name: "@analytics/simple-analytics"
+    example: "@analytics/simple-analytics"

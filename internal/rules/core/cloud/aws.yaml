@@ -1,0 +1,33 @@
+tech: aws
+name: AWS
+dependencies:
+  - type: npm
+    name: aws-sdk
+    example: aws-sdk
+  - type: npm
+    name: aws4fetch
+    example: aws4fetch
+  - type: npm
+    name: "@pulumi/aws"
+    example: "@pulumi/aws"
+  - type: npm
+    name: "@pulumi/awsx"
+    example: "@pulumi/awsx"
+  - type: terraform
+    name: registry.terraform.io/hashicorp/aws
+    example: registry.terraform.io/hashicorp/aws
+  - type: golang
+    name: github.com/aws/aws-sdk-go
+    example: github.com/aws/aws-sdk-go
+  - type: golang
+    name: github.com/aws/aws-sdk-go-v2
+    example: github.com/aws/aws-sdk-go-v2
+  - type: docker
+    name: amazon/aws-cli
+    example: amazon/aws-cli
+  - type: php
+    name: aws/aws-sdk-php
+    example: aws/aws-sdk-php
+  - type: githubAction
+    name: aws-actions/configure-aws-credentials
+    example: aws-actions/configure-aws-credentials

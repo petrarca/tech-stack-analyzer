@@ -1,0 +1,47 @@
+tech: php
+name: PHP
+dependencies:
+  - type: docker
+    name: php
+    example: php
+  - type: docker
+    name: circleci/php
+    example: circleci/php
+  - type: docker
+    name: cimg/php
+    example: cimg/php
+  - type: docker
+    name: bitnami/php
+    example: bitnami/php
+  - type: docker
+    name: bitnami/php-fpm
+    example: bitnami/php-fpm
+  - type: docker
+    name: okteto/php
+    example: okteto/php
+  - type: docker
+    name: composer
+    example: composer
+  - type: docker
+    name: php-zendserver
+    example: php-zendserver
+  - type: docker
+    name: webdevops/php-apache
+    example: webdevops/php-apache
+  - type: docker
+    name: webdevops/php-nginx
+    example: webdevops/php-nginx
+  - type: githubAction
+    name: shivammathur/setup-php
+    example: shivammathur/setup-php
+  - type: githubAction
+    name: ramsey/composer-install
+    example: ramsey/composer-install
+files:
+  - composer.json
+  - composer.lock
+extensions:
+  - .php
+  - .php3
+  - .php4
+  - .php5

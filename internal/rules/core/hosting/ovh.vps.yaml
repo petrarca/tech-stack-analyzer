@@ -1,0 +1,6 @@
+tech: ovh.vps
+name: OVH VPS
+dependencies:
+  - type: terraform.resource
+    name: ovh_vps
+    example: ovh_vps

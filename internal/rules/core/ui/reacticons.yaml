@@ -1,0 +1,6 @@
+tech: reacticons
+name: React Icons
+dependencies:
+  - type: npm
+    name: react-icons
+    example: react-icons

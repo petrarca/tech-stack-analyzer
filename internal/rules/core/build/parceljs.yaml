@@ -1,0 +1,9 @@
+tech: parceljs
+name: Parcel
+dependencies:
+  - type: npm
+    name: parcel
+    example: parcel
+  - type: npm
+    name: "@parcel/core"
+    example: "@parcel/core"

@@ -1,0 +1,15 @@
+tech: remixicons
+name: Remix Icons
+dependencies:
+  - type: npm
+    name: remixicon
+    example: remixicon
+  - type: npm
+    name: "@remixicon/react"
+    example: "@remixicon/react"
+  - type: npm
+    name: "@remixicon/vue"
+    example: "@remixicon/vue"
+  - type: npm
+    name: "@iconify-json/ri"
+    example: "@iconify-json/ri"

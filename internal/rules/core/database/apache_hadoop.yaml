@@ -1,0 +1,9 @@
+tech: apache_hadoop
+name: Apache Hadoop
+dependencies:
+  - type: docker
+    name: apache/hadoop
+    example: apache/hadoop
+  - type: ruby
+    name: hadoop-metrics2
+    example: hadoop-metrics2

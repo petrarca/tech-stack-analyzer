@@ -1,0 +1,18 @@
+tech: tablericons
+name: Tabler
+dependencies:
+  - type: npm
+    name: "@tabler/icons-react"
+    example: "@tabler/icons-react"
+  - type: npm
+    name: "@tabler/icons"
+    example: "@tabler/icons"
+  - type: npm
+    name: "@tabler/icons-vue"
+    example: "@tabler/icons-vue"
+  - type: npm
+    name: "@steeze-ui/tabler-icons"
+    example: "@steeze-ui/tabler-icons"
+  - type: npm
+    name: "@iconify-json/tabler"
+    example: "@iconify-json/tabler"

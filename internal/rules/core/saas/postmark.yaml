@@ -1,0 +1,18 @@
+tech: postmark
+name: Postmark
+dependencies:
+  - type: npm
+    name: postmark
+    example: postmark
+  - type: npm
+    name: postman-cli
+    example: postman-cli
+  - type: ruby
+    name: postmark-rails
+    example: postmark-rails
+  - type: ruby
+    name: postmark
+    example: postmark
+  - type: php
+    name: wildbit/postmark-php
+    example: wildbit/postmark-php

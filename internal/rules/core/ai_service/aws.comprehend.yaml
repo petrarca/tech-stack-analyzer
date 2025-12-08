@@ -1,0 +1,9 @@
+tech: aws.comprehend
+name: AWS Comprehend
+dependencies:
+  - type: npm
+    name: "@aws-sdk/client-comprehend"
+    example: "@aws-sdk/client-comprehend"
+  - type: npm
+    name: "@aws-sdk/client-comprehendmedical"
+    example: "@aws-sdk/client-comprehendmedical"

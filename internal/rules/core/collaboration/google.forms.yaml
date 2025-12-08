@@ -1,0 +1,12 @@
+tech: google.forms
+name: Google Forms
+dependencies:
+  - type: npm
+    name: "@googleapis/forms"
+    example: "@googleapis/forms"
+  - type: terraform.resource
+    name: airbyte_source_google_forms
+    example: airbyte_source_google_forms
+  - type: ruby
+    name: google-apis-forms_v1
+    example: google-apis-forms_v1

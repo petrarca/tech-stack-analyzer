@@ -1,0 +1,21 @@
+tech: hyperdx
+name: HyperDX
+dependencies:
+  - type: npm
+    name: "@hyperdx/browser"
+    example: "@hyperdx/browser"
+  - type: npm
+    name: "@hyperdx/node-logger"
+    example: "@hyperdx/node-logger"
+  - type: npm
+    name: "@hyperdx/node-opentelemetry"
+    example: "@hyperdx/node-opentelemetry"
+  - type: npm
+    name: "@hyperdx/deno"
+    example: "@hyperdx/deno"
+  - type: npm
+    name: "@hyperdx/otel-react-native"
+    example: "@hyperdx/otel-react-native"
+  - type: golang
+    name: github.com/hyperdxio/hyperdx-go
+    example: github.com/hyperdxio/hyperdx-go

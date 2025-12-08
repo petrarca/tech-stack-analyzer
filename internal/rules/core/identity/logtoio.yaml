@@ -1,0 +1,17 @@
+tech: logtoio
+name: Logto
+dotenv:
+  - LOGTO_
+dependencies:
+  - type: golang
+    name: github.com/logto-io/go
+    example: github.com/logto-io/go
+  - type: php
+    name: logto/sdk
+    example: logto/sdk
+  - type: python
+    name: logto
+    example: logto
+  - type: ruby
+    name: logto
+    example: logto

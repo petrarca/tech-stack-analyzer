@@ -1,0 +1,8 @@
+tech: phpstan
+name: PHPStan
+dependencies:
+  - type: php
+    name: phpstan/phpstan
+    example: phpstan/phpstan
+files:
+  - phpstan.neon

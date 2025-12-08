@@ -1,0 +1,29 @@
+tech: openehr
+name: OpenEHR
+content:
+  # OpenEHR archetype identifiers
+  - type: regex
+    pattern: openEHR-EHR-(OBSERVATION|EVALUATION|ENTRY|ACTION|INSTRUCTION)
+    extensions: [.adl]
+  # OpenEHR archetype metadata
+  - type: regex
+    pattern: archetype_id|archetype_details|rm_type|concept_name
+    extensions: [.adl]
+dependencies:
+  # Java OpenEHR implementations
+  - type: maven
+    name: org.openehr:openehr-rm
+  - type: maven
+    name: org.openehr:openehr-am
+  - type: maven
+    name: org.openehr:openehr-knowledge
+  # ADL parsers
+  - type: maven
+    name: org.openehr.adl:adl-parser
+  - type: maven
+    name: org.openehr.adl:adl-serializer
+  # Python OpenEHR libraries
+  - type: python
+    name: pyehr
+  - type: python
+    name: openehr

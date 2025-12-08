@@ -1,0 +1,18 @@
+tech: aws.ecs
+name: AWS Container
+dependencies:
+  - type: npm
+    name: "@aws-cdk/aws-ecs"
+    example: "@aws-cdk/aws-ecs"
+  - type: npm
+    name: "@aws-sdk/client-ecs"
+    example: "@aws-sdk/client-ecs"
+  - type: rust
+    name: aws-sdk-ecs
+    example: aws-sdk-ecs
+  - type: ruby
+    name: aws-sdk-ecs
+    example: aws-sdk-ecs
+  - type: golang
+    name: github.com/aws/aws-sdk-go-v2/service/ecs
+    example: github.com/aws/aws-sdk-go-v2/service/ecs

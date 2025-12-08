@@ -1,0 +1,29 @@
+tech: mixpanel
+name: Mixpanel
+dotenv:
+  - MIXPANEL_
+dependencies:
+  - type: php
+    name: mixpanel/mixpanel-php
+    example: mixpanel/mixpanel-php
+  - type: npm
+    name: mixpanel-browser
+    example: mixpanel-browser
+  - type: python
+    name: mixpanel
+    example: mixpanel
+  - type: npm
+    name: mixpanel
+    example: mixpanel
+  - type: ruby
+    name: mixpanel-ruby
+    example: mixpanel-ruby
+  - type: golang
+    name: github.com/mixpanel/mixpanel-go
+    example: github.com/mixpanel/mixpanel-go
+  - type: terraform.resource
+    name: airbyte_source_mixpanel
+    example: airbyte_source_mixpanel
+  - type: npm
+    name: "@analytics/mixpanel"
+    example: "@analytics/mixpanel"

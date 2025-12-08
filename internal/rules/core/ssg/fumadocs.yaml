@@ -1,0 +1,12 @@
+tech: fumadocs
+name: FumaDocs
+dependencies:
+  - type: npm
+    name: fumadocs-ui
+    example: fumadocs-ui
+  - type: npm
+    name: fumadocs-code
+    example: fumadocs-code
+  - type: npm
+    name: fumadocs-mdx
+    example: fumadocs-mdx

@@ -1,0 +1,5 @@
+tech: asdf
+name: asdf
+files:
+  - .tool-versions
+  - .asdfrc

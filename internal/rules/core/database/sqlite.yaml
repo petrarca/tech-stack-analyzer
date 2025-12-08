@@ -1,0 +1,29 @@
+tech: sqlite
+name: SQLite
+dependencies:
+  - type: npm
+    name: sqlite
+    example: sqlite
+  - type: npm
+    name: better-sqlite3
+    example: better-sqlite3
+  - type: npm
+    name: sqlite3
+    example: sqlite3
+  - type: rust
+    name: sqlite
+    example: sqlite
+  - type: rust
+    name: rusqlite
+    example: rusqlite
+  - type: rust
+    name: libsqlite3-sys
+    example: libsqlite3-sys
+  - type: rust
+    name: rusqlite
+    example: rusqlite
+  - type: ruby
+    name: sqlite3
+    example: sqlite3
+files:
+  - schema.sqlite

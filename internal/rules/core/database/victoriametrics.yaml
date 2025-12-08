@@ -1,0 +1,18 @@
+tech: victoriametrics
+name: VictoriaMetrics
+dependencies:
+  - type: docker
+    name: victoriametrics/victoria-metrics
+    example: victoriametrics/victoria-metrics
+  - type: docker
+    name: victoriametrics/vmagent
+    example: victoriametrics/vmagent
+  - type: docker
+    name: victoriametrics/operator
+    example: victoriametrics/operator
+  - type: docker
+    name: victoriametrics/vminsert
+    example: victoriametrics/vminsert
+  - type: docker
+    name: victoriametrics/vmstorage
+    example: victoriametrics/vmstorage

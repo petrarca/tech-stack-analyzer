@@ -1,0 +1,18 @@
+tech: haproxy
+name: HAProxy
+dependencies:
+  - type: docker
+    name: haproxy
+    example: haproxy
+  - type: docker
+    name: haproxytech/haproxy-debian
+    example: haproxytech/haproxy-debian
+  - type: docker
+    name: haproxytech/haproxy-alpine
+    example: haproxytech/haproxy-alpine
+  - type: docker
+    name: haproxytech/haproxy-ubuntu
+    example: haproxytech/haproxy-ubuntu
+  - type: docker
+    name: haproxytech/kubernetes-ingress
+    example: haproxytech/kubernetes-ingress

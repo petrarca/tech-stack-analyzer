@@ -1,0 +1,32 @@
+tech: adyen
+name: Adyen
+dotenv:
+  - ADYEN_
+dependencies:
+  - type: npm
+    name: "@adyen/adyen-web"
+    example: "@adyen/adyen-web"
+  - type: npm
+    name: "@adyen/api-library"
+    example: "@adyen/api-library"
+  - type: npm
+    name: "@adyen/react-native"
+    example: "@adyen/react-native"
+  - type: php
+    name: adyen/php-api-library
+    example: adyen/php-api-library
+  - type: php
+    name: adyen/module-payment
+    example: adyen/module-payment
+  - type: php
+    name: adyen/php-webhook-module
+    example: adyen/php-webhook-module
+  - type: ruby
+    name: adyen
+    example: adyen
+  - type: ruby
+    name: adyen-ruby-api-library
+    example: adyen-ruby-api-library
+  - type: ruby
+    name: adyen-cse-ruby
+    example: adyen-cse-ruby

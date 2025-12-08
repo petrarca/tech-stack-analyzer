@@ -1,0 +1,31 @@
+tech: snyk
+name: Snyk
+dotenv:
+  - SNYK_
+dependencies:
+  - type: npm
+    name: snyk
+    example: snyk
+  - type: terraform
+    name: registry.terraform.io/snyk-terraform-assets/snyk
+    example: registry.terraform.io/snyk-terraform-assets/snyk
+  - type: docker
+    name: snyk/snyk-cli
+    example: snyk/snyk-cli
+  - type: docker
+    name: snyk/broker
+    example: snyk/broker
+  - type: docker
+    name: snyk/kubernetes-monitor
+    example: snyk/kubernetes-monitor
+  - type: docker
+    name: snyk/kubernetes-operator
+    example: snyk/kubernetes-operator
+  - type: docker
+    name: snyk/code-agent
+    example: snyk/code-agent
+  - type: docker
+    name: snyk/driftctl
+    example: snyk/driftctl
+files:
+  - .snyk

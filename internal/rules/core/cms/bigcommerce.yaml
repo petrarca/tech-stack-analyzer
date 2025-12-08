@@ -1,0 +1,12 @@
+tech: bigcommerce
+name: BigCommerce
+dependencies:
+  - type: php
+    name: bigcommerce/api
+    example: bigcommerce/api
+  - type: npm
+    name: "@bigcommerce/checkout-sdk"
+    example: "@bigcommerce/checkout-sdk"
+  - type: terraform.resource
+    name: airbyte_source_bigcommerce
+    example: airbyte_source_bigcommerce

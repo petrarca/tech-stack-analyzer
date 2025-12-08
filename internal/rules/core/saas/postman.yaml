@@ -1,0 +1,12 @@
+tech: postman
+name: Postman
+dependencies:
+  - type: npm
+    name: postman-collection
+    example: postman-collection
+  - type: npm
+    name: postman-request
+    example: postman-request
+  - type: npm
+    name: newman
+    example: newman

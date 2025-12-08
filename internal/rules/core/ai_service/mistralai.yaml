@@ -1,0 +1,23 @@
+tech: mistralai
+name: Mistral AI
+dotenv:
+  - MISTRAL
+dependencies:
+  - type: npm
+    name: "@ai-sdk/mistral"
+    example: "@ai-sdk/mistral"
+  - type: npm
+    name: genkitx-mistral
+    example: genkitx-mistral
+  - type: python
+    name: mistralai
+    example: mistralai
+  - type: npm
+    name: "@mistralai/mistralai"
+    example: "@mistralai/mistralai"
+  - type: golang
+    name: github.com/gage-technologies/mistral-go
+    example: github.com/gage-technologies/mistral-go
+  - type: python
+    name: langchain-mistralai
+    example: langchain-mistralai

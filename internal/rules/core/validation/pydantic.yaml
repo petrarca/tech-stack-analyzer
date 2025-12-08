@@ -1,0 +1,7 @@
+tech: pydantic
+name: Pydantic
+dependencies:
+  - type: python
+    name: pydantic
+  - type: python
+    name: pydantic-settings

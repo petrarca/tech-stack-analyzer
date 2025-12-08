@@ -1,0 +1,15 @@
+tech: puppeteer
+name: Puppeteer
+dependencies:
+  - type: npm
+    name: puppeteer
+    example: puppeteer
+  - type: npm
+    name: puppeteer-core
+    example: puppeteer-core
+  - type: npm
+    name: "@puppeteer/browser"
+    example: "@puppeteer/browser"
+  - type: docker
+    name: itisfoundation/puppeteer
+    example: itisfoundation/puppeteer

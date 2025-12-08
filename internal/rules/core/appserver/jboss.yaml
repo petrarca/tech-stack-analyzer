@@ -1,0 +1,16 @@
+tech: jboss
+name: JBoss / WildFly
+files:
+  - jboss-web.xml
+  - jboss-app.xml
+  - jboss-ejb3.xml
+  - jboss-deployment-structure.xml
+dependencies:
+  - type: maven
+    name: /^org\.jboss\./
+  - type: maven
+    name: /^org\.wildfly\./
+  - type: docker
+    name: /jboss/
+  - type: docker
+    name: /wildfly/

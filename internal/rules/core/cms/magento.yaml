@@ -1,0 +1,15 @@
+tech: magento
+name: Magento
+dependencies:
+  - type: php
+    name: magento/composer
+    example: magento/composer
+  - type: php
+    name: fastly/magento2
+    example: fastly/magento2
+  - type: php
+    name: smile/elasticsuite
+    example: smile/elasticsuite
+  - type: npm
+    name: "@adobe/magento-storefront-events-sdk"
+    example: "@adobe/magento-storefront-events-sdk"
