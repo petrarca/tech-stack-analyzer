@@ -12,14 +12,14 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-//go:embed all:core
+//go:embed all:techs
 var coreRulesFS embed.FS
 
 // LoadEmbeddedRules loads all rules from the embedded filesystem
 func LoadEmbeddedRules() ([]types.Rule, error) {
 	var rules []types.Rule
 
-	err := fs.WalkDir(coreRulesFS, "core", func(path string, d fs.DirEntry, err error) error {
+	err := fs.WalkDir(coreRulesFS, "techs", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -119,7 +119,7 @@ func LoadExternalRules(rulesDir string) ([]types.Rule, error) {
 }
 
 // deriveTypeFromPath extracts the type from the folder name in the path
-// e.g., "core/database/postgres.yaml" -> "database"
+// e.g., "techs/database/postgres.yaml" -> "database"
 func deriveTypeFromPath(path string) string {
 	dir := filepath.Dir(path)
 	return filepath.Base(dir)
