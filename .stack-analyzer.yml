@@ -3,5 +3,5 @@
 # Files and directories to exclude from scanning
 exclude:
   # Exclude all rule YAML files to avoid detecting them as project technologies
-  - "internal/rules/core/**/*.yaml"
-  - "internal/rules/core/**/*.yml"
+  - "internal/rules/techs/**/*.yaml"
+  - "internal/rules/techs/**/*.yml"
