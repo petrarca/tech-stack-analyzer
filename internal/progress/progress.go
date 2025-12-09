@@ -208,7 +208,7 @@ func (p *Progress) GitIgnoreEnter(path string) {
 	p.Report(Event{
 		Type: EventGitIgnoreEnter,
 		Path: path,
-		Info: fmt.Sprintf("📁 GitIgnore context: %s (patterns active)", path),
+		Info: fmt.Sprintf("GitIgnore context: %s (patterns active)", path),
 	})
 }
 
@@ -216,7 +216,7 @@ func (p *Progress) GitIgnoreLeave(path string) {
 	p.Report(Event{
 		Type: EventGitIgnoreLeave,
 		Path: path,
-		Info: fmt.Sprintf("📤 GitIgnore context: %s (patterns removed)", path),
+		Info: fmt.Sprintf("GitIgnore context: %s (patterns removed)", path),
 	})
 }
 
