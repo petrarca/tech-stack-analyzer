@@ -72,22 +72,40 @@ tasks:
   run:info:techs:
     desc: List all technologies
     cmds:
-      - ./{{.BINARY_NAME}} info techs {{.ARGS}}
+      - ./{{.BINARY_NAME}} info techs {{.CLI_ARGS}}
 
   run:info:categories:
     desc: List all technology categories
     cmds:
-      - ./{{.BINARY_NAME}} info categories {{.ARGS}}
+      - ./{{.BINARY_NAME}} info categories {{.CLI_ARGS}}
 
   run:info:languages:
     desc: List all programming languages
     cmds:
-      - ./{{.BINARY_NAME}} info languages {{.ARGS}}
+      - ./{{.BINARY_NAME}} info languages {{.CLI_ARGS}}
 
   run:info:rule:
     desc: Show rule details for a technology
     cmds:
-      - ./{{.BINARY_NAME}} info rule {{.ARGS}}
+      - ./{{.BINARY_NAME}} info rule {{.CLI_ARGS}}
+
+  run:info:tech-taxonomy:
+    desc: Show technology taxonomy grouped by categories
+    cmds:
+      - ./{{.BINARY_NAME}} info tech-taxonomy {{.CLI_ARGS}}
+
+  build:taxonomies:
+    desc: Build taxonomy files in both JSON and YAML formats
+    cmds:
+      - mkdir -p taxonomies
+      - echo "Generating technology taxonomy files..."
+      - ./{{.BINARY_NAME}} info tech-taxonomy --format json --output taxonomies/tech-taxonomy.json
+      - ./{{.BINARY_NAME}} info tech-taxonomy --format yaml --output taxonomies/tech-taxonomy.yaml
+      - ./{{.BINARY_NAME}} info languages --format json --output taxonomies/languages.json
+      - ./{{.BINARY_NAME}} info languages --format yaml --output taxonomies/languages.yaml
+      - echo "Taxonomy files generated in taxonomies/ directory"
+    deps:
+      - build
 
   build:examples:
     desc: Generate JSON schema examples from our actual project
@@ -98,10 +116,10 @@ tasks:
       - echo "🔧 Sanitizing user-specific paths..."
       - sed -i '' 's|/Users/wmi/Develop/petrarca/tech-stack-analyzer|/path/to/your/project|g' schemas/examples/full.json
       - sed -i '' 's|/Users/wmi/Develop/petrarca/tech-stack-analyzer|/path/to/your/project|g' schemas/examples/aggregated.json
-      - echo "✅ Examples generated and sanitized"
+      - echo "Examples generated and sanitized"
       - echo "   - Full example - schemas/examples/full.json"
       - echo "   - Aggregated example - schemas/examples/aggregated.json"
-      - echo "📊 Real project data with generic paths for privacy"
+      - echo "Real project data with generic paths for privacy"
     deps:
       - build
 

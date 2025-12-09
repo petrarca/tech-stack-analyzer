@@ -12,6 +12,7 @@ import (
 )
 
 var ruleFormat string
+var ruleOutput string
 
 var ruleCmd = &cobra.Command{
 	Use:   "rule [tech-name]",
@@ -22,7 +23,7 @@ var ruleCmd = &cobra.Command{
 }
 
 func init() {
-	setupFormatFlag(ruleCmd, &ruleFormat)
+	setupOutputFlags(ruleCmd, &ruleFormat, &ruleOutput)
 }
 
 // RuleOutput represents the output format for rule info
@@ -89,5 +90,5 @@ func runRule(cmd *cobra.Command, args []string) {
 	}
 
 	result := &RuleResult{Rule: foundRule}
-	Output(result, ruleFormat)
+	OutputToFile(result, ruleFormat, ruleOutput)
 }

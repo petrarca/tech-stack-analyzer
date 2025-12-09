@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -22,21 +23,46 @@ type Outputter interface {
 
 // Output handles unified output for any Outputter
 func Output(o Outputter, format string) {
+	OutputToFile(o, format, "")
+}
+
+// OutputToFile handles unified output for any Outputter with optional file output
+func OutputToFile(o Outputter, format string, outputFile string) {
+	var data []byte
+	var err error
+
 	switch util.NormalizeFormat(format) {
 	case "json":
-		data, err := json.MarshalIndent(o.ToJSON(), "", "  ")
+		data, err = json.MarshalIndent(o.ToJSON(), "", "  ")
 		if err != nil {
 			log.Fatalf("Failed to marshal JSON: %v", err)
 		}
-		fmt.Println(string(data))
 	case "yaml":
-		data, err := yaml.Marshal(o.ToJSON())
+		data, err = yaml.Marshal(o.ToJSON())
 		if err != nil {
 			log.Fatalf("Failed to marshal YAML: %v", err)
 		}
-		fmt.Print(string(data))
 	default: // text
-		o.ToText(os.Stdout)
+		if outputFile != "" {
+			// For text format to file, we need to capture the text output
+			var buf bytes.Buffer
+			o.ToText(&buf)
+			data = buf.Bytes()
+		} else {
+			o.ToText(os.Stdout)
+			return
+		}
+	}
+
+	// Write to file or stdout
+	if outputFile != "" {
+		err = os.WriteFile(outputFile, data, 0644)
+		if err != nil {
+			log.Fatalf("Failed to write output file: %v", err)
+		}
+		fmt.Fprintf(os.Stderr, "Results written to %s\n", outputFile)
+	} else {
+		fmt.Print(string(data))
 	}
 }
 
@@ -47,4 +73,10 @@ func setupFormatFlag(cmd *cobra.Command, formatPtr *string) {
 		*formatPtr = util.NormalizeFormat(*formatPtr)
 		return util.ValidateOutputFormat(*formatPtr)
 	}
+}
+
+// setupOutputFlags configures both format and output flags for a command
+func setupOutputFlags(cmd *cobra.Command, formatPtr *string, outputPtr *string) {
+	setupFormatFlag(cmd, formatPtr)
+	cmd.Flags().StringVarP(outputPtr, "output", "o", "", "Output file path (default: stdout)")
 }

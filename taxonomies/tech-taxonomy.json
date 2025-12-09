@@ -1,0 +1,4518 @@
+{
+  "categories": [
+    {
+      "name": "ai",
+      "description": "AI libraries and frameworks (LangChain, PyTorch, PydanticAI, etc.)",
+      "is_component": false,
+      "technologies": [
+        {
+          "name": "PydanticAI",
+          "tech": "pydanticai",
+          "category": "ai"
+        },
+        {
+          "name": "Pytorch",
+          "tech": "pytorch",
+          "category": "ai"
+        },
+        {
+          "name": "Tensorflow",
+          "tech": "tensorflow",
+          "category": "ai"
+        }
+      ]
+    },
+    {
+      "name": "ai_service",
+      "description": "AI cloud services and APIs (OpenAI, Anthropic, AWS Bedrock, etc.)",
+      "is_component": true,
+      "technologies": [
+        {
+          "name": "Anthropic",
+          "tech": "anthropic",
+          "category": "ai_service"
+        },
+        {
+          "name": "AWS Bedrock",
+          "tech": "aws.bedrock",
+          "category": "ai_service"
+        },
+        {
+          "name": "AWS Comprehend",
+          "tech": "aws.comprehend",
+          "category": "ai_service"
+        },
+        {
+          "name": "AWS Polly",
+          "tech": "aws.polly",
+          "category": "ai_service"
+        },
+        {
+          "name": "AWS Rekognition",
+          "tech": "aws.rekognition",
+          "category": "ai_service"
+        },
+        {
+          "name": "AWS SageMaker",
+          "tech": "aws.sagemaker",
+          "category": "ai_service"
+        },
+        {
+          "name": "AWS Transcribe",
+          "tech": "aws.transcribe",
+          "category": "ai_service"
+        },
+        {
+          "name": "AWS Translate",
+          "tech": "aws.translate",
+          "category": "ai_service"
+        },
+        {
+          "name": "Azure Openai",
+          "tech": "azure.openai",
+          "category": "ai_service"
+        },
+        {
+          "name": "Cohere AI",
+          "tech": "cohereai",
+          "category": "ai_service"
+        },
+        {
+          "name": "Deepseek",
+          "tech": "deepseek",
+          "category": "ai_service"
+        },
+        {
+          "name": "Cloud AI Platform",
+          "tech": "gcp.aiplatform",
+          "category": "ai_service"
+        },
+        {
+          "name": "Cloud Dialogflow",
+          "tech": "gcp.dialogflow",
+          "category": "ai_service"
+        },
+        {
+          "name": "Cloud Language",
+          "tech": "gcp.language",
+          "category": "ai_service"
+        },
+        {
+          "name": "Cloud Speech",
+          "tech": "gcp.speech",
+          "category": "ai_service"
+        },
+        {
+          "name": "Google Translate",
+          "tech": "gcp.translate",
+          "category": "ai_service"
+        },
+        {
+          "name": "Vertex AI",
+          "tech": "gcp.vertex",
+          "category": "ai_service"
+        },
+        {
+          "name": "Cloud Vision",
+          "tech": "gcp.vision",
+          "category": "ai_service"
+        },
+        {
+          "name": "Gemini AI",
+          "tech": "geminiai",
+          "category": "ai_service"
+        },
+        {
+          "name": "Groq",
+          "tech": "groq",
+          "category": "ai_service"
+        },
+        {
+          "name": "Hugging Face",
+          "tech": "huggingface",
+          "category": "ai_service"
+        },
+        {
+          "name": "Mistral AI",
+          "tech": "mistralai",
+          "category": "ai_service"
+        },
+        {
+          "name": "Ollama",
+          "tech": "ollama",
+          "category": "ai_service"
+        },
+        {
+          "name": "Openai",
+          "tech": "openai",
+          "category": "ai_service"
+        },
+        {
+          "name": "Perplexity AI",
+          "tech": "perplexityai",
+          "category": "ai_service"
+        },
+        {
+          "name": "Replicate",
+          "tech": "replicate",
+          "category": "ai_service"
+        },
+        {
+          "name": "Vercel AI",
+          "tech": "vercel.ai",
+          "category": "ai_service"
+        },
+        {
+          "name": "X AI",
+          "tech": "xai",
+          "category": "ai_service"
+        }
+      ]
+    },
+    {
+      "name": "analytics",
+      "description": "Analytics platforms (Google Analytics, Mixpanel, etc.)",
+      "is_component": true,
+      "technologies": [
+        {
+          "name": "Adobe Analytics",
+          "tech": "adobe.analytics",
+          "category": "analytics"
+        },
+        {
+          "name": "Amplitude Analytics",
+          "tech": "amplitude",
+          "category": "analytics"
+        },
+        {
+          "name": "Databuddy",
+          "tech": "databuddy",
+          "category": "analytics"
+        },
+        {
+          "name": "Datafast",
+          "tech": "datafast",
+          "category": "analytics"
+        },
+        {
+          "name": "Fathom",
+          "tech": "fathom",
+          "category": "analytics"
+        },
+        {
+          "name": "Google Analytics",
+          "tech": "google.analytics",
+          "category": "analytics"
+        },
+        {
+          "name": "Hotjar",
+          "tech": "hotjar",
+          "category": "analytics"
+        },
+        {
+          "name": "Koala Analytics",
+          "tech": "koalaanalytics",
+          "category": "analytics"
+        },
+        {
+          "name": "LogSnag",
+          "tech": "logsnag",
+          "category": "analytics"
+        },
+        {
+          "name": "Matomo",
+          "tech": "matomo",
+          "category": "analytics"
+        },
+        {
+          "name": "Mixpanel",
+          "tech": "mixpanel",
+          "category": "analytics"
+        },
+        {
+          "name": "Pirsch Analytics",
+          "tech": "pirschanalytics",
+          "category": "analytics"
+        },
+        {
+          "name": "Plausible",
+          "tech": "plausible",
+          "category": "analytics"
+        },
+        {
+          "name": "PostHog",
+          "tech": "posthog",
+          "category": "analytics"
+        },
+        {
+          "name": "Segment",
+          "tech": "segment",
+          "category": "analytics"
+        },
+        {
+          "name": "Simple Analytics",
+          "tech": "simpleanalytics",
+          "category": "analytics"
+        },
+        {
+          "name": "Tinybird",
+          "tech": "tinybird",
+          "category": "analytics"
+        },
+        {
+          "name": "Vercel Analytics",
+          "tech": "vercel.analytics",
+          "category": "analytics"
+        }
+      ]
+    },
+    {
+      "name": "api",
+      "description": "API protocols and specifications (GraphQL, REST, gRPC, etc.)",
+      "is_component": false,
+      "technologies": [
+        {
+          "name": "Apache Thrift",
+          "tech": "apache_thrift",
+          "category": "api"
+        },
+        {
+          "name": "GraphQL",
+          "tech": "graphql",
+          "category": "api"
+        },
+        {
+          "name": "gRPC",
+          "tech": "grpc",
+          "category": "api"
+        },
+        {
+          "name": "Kong",
+          "tech": "kong",
+          "category": "api"
+        },
+        {
+          "name": "OpenAPI/Swagger",
+          "tech": "openapi_spec",
+          "category": "api"
+        },
+        {
+          "name": "Postgrest",
+          "tech": "postgrest",
+          "category": "api"
+        },
+        {
+          "name": "SOAP",
+          "tech": "soap",
+          "category": "api"
+        },
+        {
+          "name": "Socket.io",
+          "tech": "socketio",
+          "category": "api"
+        },
+        {
+          "name": "TRPC",
+          "tech": "trpc",
+          "category": "api"
+        }
+      ]
+    },
+    {
+      "name": "appserver",
+      "description": "Application servers (JBoss, Tomcat, WebLogic, etc.)",
+      "is_component": true,
+      "technologies": [
+        {
+          "name": "JBoss / WildFly",
+          "tech": "jboss",
+          "category": "appserver"
+        },
+        {
+          "name": "Apache Tomcat",
+          "tech": "tomcat",
+          "category": "appserver"
+        }
+      ]
+    },
+    {
+      "name": "automation",
+      "description": "Automation tools",
+      "is_component": true,
+      "technologies": [
+        {
+          "name": "Apify",
+          "tech": "apify",
+          "category": "automation"
+        },
+        {
+          "name": "AWS Step Functions",
+          "tech": "aws.sfn",
+          "category": "automation"
+        },
+        {
+          "name": "Browserbase",
+          "tech": "browerbase",
+          "category": "automation"
+        },
+        {
+          "name": "Browser Use",
+          "tech": "browseruse",
+          "category": "automation"
+        },
+        {
+          "name": "Crawl4AI",
+          "tech": "crawl4ai",
+          "category": "automation"
+        },
+        {
+          "name": "Firecrawl",
+          "tech": "firecrawl",
+          "category": "automation"
+        },
+        {
+          "name": "Gitlab",
+          "tech": "gitlab",
+          "category": "automation"
+        },
+        {
+          "name": "Inngest",
+          "tech": "inngest",
+          "category": "automation"
+        },
+        {
+          "name": "n8n",
+          "tech": "n8n",
+          "category": "automation"
+        },
+        {
+          "name": "Playwright",
+          "tech": "playwright",
+          "category": "automation"
+        },
+        {
+          "name": "Prefect",
+          "tech": "prefect",
+          "category": "automation"
+        },
+        {
+          "name": "Puppeteer",
+          "tech": "puppeteer",
+          "category": "automation"
+        },
+        {
+          "name": "Selenium",
+          "tech": "selenium",
+          "category": "automation"
+        }
+      ]
+    },
+    {
+      "name": "backend_framework",
+      "description": "Backend frameworks (Django, Spring, Express, NestJS, etc.)",
+      "is_component": false,
+      "technologies": [
+        {
+          "name": "AdonisJS",
+          "tech": "adonisjs",
+          "category": "backend_framework"
+        },
+        {
+          "name": "Api Platform",
+          "tech": "apiplatform",
+          "category": "backend_framework"
+        },
+        {
+          "name": "ASP",
+          "tech": "asp",
+          "category": "backend_framework"
+        },
+        {
+          "name": "ASP.NET",
+          "tech": "aspnet",
+          "category": "backend_framework"
+        },
+        {
+          "name": "Autofac",
+          "tech": "autofac",
+          "category": "backend_framework"
+        },
+        {
+          "name": "Django",
+          "tech": "django",
+          "category": "backend_framework"
+        },
+        {
+          "name": ".NET",
+          "tech": "dotnet",
+          "category": "backend_framework"
+        },
+        {
+          "name": "ElysiaJS",
+          "tech": "elysiajs",
+          "category": "backend_framework"
+        },
+        {
+          "name": "Express",
+          "tech": "express",
+          "category": "backend_framework"
+        },
+        {
+          "name": "Fastify",
+          "tech": "fastify",
+          "category": "backend_framework"
+        },
+        {
+          "name": "HonoJS",
+          "tech": "honojs",
+          "category": "backend_framework"
+        },
+        {
+          "name": "Koa",
+          "tech": "koa",
+          "category": "backend_framework"
+        },
+        {
+          "name": "Ktor",
+          "tech": "ktor",
+          "category": "backend_framework"
+        },
+        {
+          "name": "Laravel",
+          "tech": "laravel",
+          "category": "backend_framework"
+        },
+        {
+          "name": "NestJS",
+          "tech": "nestjs",
+          "category": "backend_framework"
+        },
+        {
+          "name": "Quarkus",
+          "tech": "quarkus",
+          "category": "backend_framework"
+        },
+        {
+          "name": "Rails",
+          "tech": "rails",
+          "category": "backend_framework"
+        },
+        {
+          "name": "Spring Framework",
+          "tech": "spring",
+          "category": "backend_framework"
+        },
+        {
+          "name": "Spring Boot",
+          "tech": "springboot",
+          "category": "backend_framework"
+        },
+        {
+          "name": "Symfony",
+          "tech": "symfony",
+          "category": "backend_framework"
+        },
+        {
+          "name": "Yii2",
+          "tech": "yii2",
+          "category": "backend_framework"
+        }
+      ]
+    },
+    {
+      "name": "build",
+      "description": "Build tools (Maven, Gradle, etc.)",
+      "is_component": false,
+      "technologies": [
+        {
+          "name": "Babel",
+          "tech": "babel",
+          "category": "build"
+        },
+        {
+          "name": "CMake",
+          "tech": "cmake",
+          "category": "build"
+        },
+        {
+          "name": "Esbuild",
+          "tech": "esbuild",
+          "category": "build"
+        },
+        {
+          "name": "Gradle",
+          "tech": "gradle",
+          "category": "build"
+        },
+        {
+          "name": "Make",
+          "tech": "make",
+          "category": "build"
+        },
+        {
+          "name": "Apache Maven",
+          "tech": "maven",
+          "category": "build"
+        },
+        {
+          "name": "MSIX",
+          "tech": "msix",
+          "category": "build"
+        },
+        {
+          "name": "NX",
+          "tech": "nxjs",
+          "category": "build"
+        },
+        {
+          "name": "Parcel",
+          "tech": "parceljs",
+          "category": "build"
+        },
+        {
+          "name": "Rolldown",
+          "tech": "rolldown",
+          "category": "build"
+        },
+        {
+          "name": "Rollup",
+          "tech": "rollup",
+          "category": "build"
+        },
+        {
+          "name": "Rspack",
+          "tech": "rspack",
+          "category": "build"
+        },
+        {
+          "name": "SWC",
+          "tech": "swc",
+          "category": "build"
+        },
+        {
+          "name": "Turborepo",
+          "tech": "turborepo",
+          "category": "build"
+        },
+        {
+          "name": "Vite",
+          "tech": "vite",
+          "category": "build"
+        },
+        {
+          "name": "Webpack",
+          "tech": "webpack",
+          "category": "build"
+        }
+      ]
+    },
+    {
+      "name": "cicd",
+      "description": "CI/CD tools (GitHub Actions, Jenkins, CircleCI, etc.)",
+      "is_component": false,
+      "technologies": [
+        {
+          "name": "AppVeyor",
+          "tech": "appveyor",
+          "category": "cicd"
+        },
+        {
+          "name": "Bitbucket Pipelines",
+          "tech": "atlassian.bitbucketpipelines",
+          "category": "cicd"
+        },
+        {
+          "name": "AWS Code Build",
+          "tech": "aws.codebuild",
+          "category": "cicd"
+        },
+        {
+          "name": "AWS Code Pipeline",
+          "tech": "aws.codepipeline",
+          "category": "cicd"
+        },
+        {
+          "name": "AzureCI",
+          "tech": "azure.ci",
+          "category": "cicd"
+        },
+        {
+          "name": "Browserstack",
+          "tech": "browserstack",
+          "category": "cicd"
+        },
+        {
+          "name": "CircleCI",
+          "tech": "circleci",
+          "category": "cicd"
+        },
+        {
+          "name": "CirrusCI",
+          "tech": "cirrusci",
+          "category": "cicd"
+        },
+        {
+          "name": "CloudBees Codeship",
+          "tech": "cloudbees.codeship",
+          "category": "cicd"
+        },
+        {
+          "name": "Code Climate",
+          "tech": "codeclimate",
+          "category": "cicd"
+        },
+        {
+          "name": "Codecov",
+          "tech": "codecov",
+          "category": "cicd"
+        },
+        {
+          "name": "CodeSandboxCI",
+          "tech": "codesandboxci",
+          "category": "cicd"
+        },
+        {
+          "name": "Concourse CI",
+          "tech": "concourseci",
+          "category": "cicd"
+        },
+        {
+          "name": "Coveralls",
+          "tech": "coveralls",
+          "category": "cicd"
+        },
+        {
+          "name": "CypressCI",
+          "tech": "cypressci",
+          "category": "cicd"
+        },
+        {
+          "name": "Deepsource",
+          "tech": "deepsource",
+          "category": "cicd"
+        },
+        {
+          "name": "Dependabot",
+          "tech": "dependabot",
+          "category": "cicd"
+        },
+        {
+          "name": "Depot.dev",
+          "tech": "depotdev",
+          "category": "cicd"
+        },
+        {
+          "name": "DroneCI",
+          "tech": "droneci",
+          "category": "cicd"
+        },
+        {
+          "name": "Cloud Build",
+          "tech": "gcp.cloudbuild",
+          "category": "cicd"
+        },
+        {
+          "name": "Github Actions",
+          "tech": "github.actions",
+          "category": "cicd"
+        },
+        {
+          "name": "GitHub CodeQL",
+          "tech": "github.codeql",
+          "category": "cicd"
+        },
+        {
+          "name": "Gitlab CI",
+          "tech": "gitlab.ci",
+          "category": "cicd"
+        },
+        {
+          "name": "Jenkins",
+          "tech": "jenkins",
+          "category": "cicd"
+        },
+        {
+          "name": "NX Cloud",
+          "tech": "nxcloud",
+          "category": "cicd"
+        },
+        {
+          "name": "RelativeCI",
+          "tech": "relativeci",
+          "category": "cicd"
+        },
+        {
+          "name": "Renovate",
+          "tech": "renovate",
+          "category": "cicd"
+        },
+        {
+          "name": "SonarCloud",
+          "tech": "sonarcloud",
+          "category": "cicd"
+        },
+        {
+          "name": "SonarQube",
+          "tech": "sonarqube",
+          "category": "cicd"
+        },
+        {
+          "name": "StyleCI",
+          "tech": "styleci",
+          "category": "cicd"
+        },
+        {
+          "name": "TeamCity",
+          "tech": "teamcity",
+          "category": "cicd"
+        },
+        {
+          "name": "TravisCI",
+          "tech": "travisci",
+          "category": "cicd"
+        },
+        {
+          "name": "Truffle Security",
+          "tech": "trufflesecurity",
+          "category": "cicd"
+        },
+        {
+          "name": "TrustSource",
+          "tech": "trustsource",
+          "category": "cicd"
+        }
+      ]
+    },
+    {
+      "name": "cloud",
+      "description": "Cloud providers (AWS, GCP, Azure, etc.)",
+      "is_component": true,
+      "technologies": [
+        {
+          "name": "Adobe",
+          "tech": "adobe",
+          "category": "cloud"
+        },
+        {
+          "name": "Akamai",
+          "tech": "akamai",
+          "category": "cloud"
+        },
+        {
+          "name": "Alibaba Cloud",
+          "tech": "alibabacloud",
+          "category": "cloud"
+        },
+        {
+          "name": "Apple",
+          "tech": "apple",
+          "category": "cloud"
+        },
+        {
+          "name": "Atlassian",
+          "tech": "atlassian",
+          "category": "cloud"
+        },
+        {
+          "name": "AWS",
+          "tech": "aws",
+          "category": "cloud"
+        },
+        {
+          "name": "Azure",
+          "tech": "azure",
+          "category": "cloud"
+        },
+        {
+          "name": "CloudBees",
+          "tech": "cloudbees",
+          "category": "cloud"
+        },
+        {
+          "name": "Cloudflare",
+          "tech": "cloudflare",
+          "category": "cloud"
+        },
+        {
+          "name": "Dokku",
+          "tech": "dokku",
+          "category": "cloud"
+        },
+        {
+          "name": "Equinix",
+          "tech": "equinix",
+          "category": "cloud"
+        },
+        {
+          "name": "Firebase",
+          "tech": "firebase",
+          "category": "cloud"
+        },
+        {
+          "name": "Flyio",
+          "tech": "flyio",
+          "category": "cloud"
+        },
+        {
+          "name": "GCP",
+          "tech": "gcp",
+          "category": "cloud"
+        },
+        {
+          "name": "Google",
+          "tech": "google",
+          "category": "cloud"
+        },
+        {
+          "name": "Heroku",
+          "tech": "heroku",
+          "category": "cloud"
+        },
+        {
+          "name": "Hetzner",
+          "tech": "hetzner",
+          "category": "cloud"
+        },
+        {
+          "name": "Hostinger",
+          "tech": "hostinger",
+          "category": "cloud"
+        },
+        {
+          "name": "IBM Cloud",
+          "tech": "ibmcloud",
+          "category": "cloud"
+        },
+        {
+          "name": "Microsoft",
+          "tech": "microsoft",
+          "category": "cloud"
+        },
+        {
+          "name": "Netlify",
+          "tech": "netlify",
+          "category": "cloud"
+        },
+        {
+          "name": "Nextcloud",
+          "tech": "nextcloud",
+          "category": "cloud"
+        },
+        {
+          "name": "OpenStack",
+          "tech": "openstack",
+          "category": "cloud"
+        },
+        {
+          "name": "Oracle Cloud",
+          "tech": "oraclecloud",
+          "category": "cloud"
+        },
+        {
+          "name": "OVH",
+          "tech": "ovh",
+          "category": "cloud"
+        },
+        {
+          "name": "Qovery",
+          "tech": "qovery",
+          "category": "cloud"
+        },
+        {
+          "name": "Railway",
+          "tech": "railway",
+          "category": "cloud"
+        },
+        {
+          "name": "Scaleway",
+          "tech": "scaleway",
+          "category": "cloud"
+        },
+        {
+          "name": "Supabase",
+          "tech": "supabase",
+          "category": "cloud"
+        },
+        {
+          "name": "Tencent Cloud",
+          "tech": "tencentcloud",
+          "category": "cloud"
+        },
+        {
+          "name": "Upstash",
+          "tech": "upstash",
+          "category": "cloud"
+        },
+        {
+          "name": "Vercel",
+          "tech": "vercel",
+          "category": "cloud"
+        }
+      ]
+    },
+    {
+      "name": "cms",
+      "description": "Content management systems",
+      "is_component": true,
+      "technologies": [
+        {
+          "name": "Adobe Commerce Cloud",
+          "tech": "adobe.commercecloud",
+          "category": "cms"
+        },
+        {
+          "name": "Adobe Experience Manager",
+          "tech": "adobe.experiencemanager",
+          "category": "cms"
+        },
+        {
+          "name": "BigCommerce",
+          "tech": "bigcommerce",
+          "category": "cms"
+        },
+        {
+          "name": "Commercetools",
+          "tech": "commercetools",
+          "category": "cms"
+        },
+        {
+          "name": "Contentful",
+          "tech": "contentful",
+          "category": "cms"
+        },
+        {
+          "name": "Dato CMS",
+          "tech": "datocms",
+          "category": "cms"
+        },
+        {
+          "name": "Discourse",
+          "tech": "discourse",
+          "category": "cms"
+        },
+        {
+          "name": "Drupal",
+          "tech": "drupal",
+          "category": "cms"
+        },
+        {
+          "name": "Fabric",
+          "tech": "fabric",
+          "category": "cms"
+        },
+        {
+          "name": "Ghost",
+          "tech": "ghost",
+          "category": "cms"
+        },
+        {
+          "name": "Gitbook",
+          "tech": "gitbook",
+          "category": "cms"
+        },
+        {
+          "name": "Joomla!",
+          "tech": "joomla",
+          "category": "cms"
+        },
+        {
+          "name": "Kentico",
+          "tech": "kentico",
+          "category": "cms"
+        },
+        {
+          "name": "Magento",
+          "tech": "magento",
+          "category": "cms"
+        },
+        {
+          "name": "Payload",
+          "tech": "payloadcms",
+          "category": "cms"
+        },
+        {
+          "name": "Prestashop",
+          "tech": "prestashop",
+          "category": "cms"
+        },
+        {
+          "name": "Sanity",
+          "tech": "sanity",
+          "category": "cms"
+        },
+        {
+          "name": "Shopify",
+          "tech": "shopify",
+          "category": "cms"
+        },
+        {
+          "name": "Sitecore",
+          "tech": "sitecore",
+          "category": "cms"
+        },
+        {
+          "name": "Sitecore XM cloud",
+          "tech": "sitecore.xmlcloud",
+          "category": "cms"
+        },
+        {
+          "name": "Squarespace",
+          "tech": "squarespace",
+          "category": "cms"
+        },
+        {
+          "name": "Storyblok",
+          "tech": "storyblok",
+          "category": "cms"
+        },
+        {
+          "name": "Strapi",
+          "tech": "strapi",
+          "category": "cms"
+        },
+        {
+          "name": "Webflow",
+          "tech": "webflow",
+          "category": "cms"
+        },
+        {
+          "name": "WooCommerce",
+          "tech": "woocommerce",
+          "category": "cms"
+        },
+        {
+          "name": "Wordpress",
+          "tech": "wordpress",
+          "category": "cms"
+        }
+      ]
+    },
+    {
+      "name": "codequality",
+      "description": "Code quality and static analysis tools (ESLint, Prettier, Sonarlint, RuboCop, etc.)",
+      "is_component": false,
+      "technologies": [
+        {
+          "name": "Biome JS",
+          "tech": "biomejs",
+          "category": "codequality"
+        },
+        {
+          "name": "Eslint",
+          "tech": "eslint",
+          "category": "codequality"
+        },
+        {
+          "name": "GolangCI Lint",
+          "tech": "golangcilint",
+          "category": "codequality"
+        },
+        {
+          "name": "OxLint",
+          "tech": "oxlint",
+          "category": "codequality"
+        },
+        {
+          "name": "PHPStan",
+          "tech": "phpstan",
+          "category": "codequality"
+        },
+        {
+          "name": "Prettier",
+          "tech": "prettier",
+          "category": "codequality"
+        },
+        {
+          "name": "Rubocop",
+          "tech": "rubocop",
+          "category": "codequality"
+        },
+        {
+          "name": "SonarLint",
+          "tech": "sonarlint",
+          "category": "codequality"
+        },
+        {
+          "name": "Stylelint",
+          "tech": "stylelint",
+          "category": "codequality"
+        }
+      ]
+    },
+    {
+      "name": "collaboration",
+      "description": "Collaboration platforms",
+      "is_component": true,
+      "technologies": [
+        {
+          "name": "Airtable",
+          "tech": "airtable",
+          "category": "collaboration"
+        },
+        {
+          "name": "Asana",
+          "tech": "asana",
+          "category": "collaboration"
+        },
+        {
+          "name": "Confluence",
+          "tech": "atlassian.confluence",
+          "category": "collaboration"
+        },
+        {
+          "name": "Jira",
+          "tech": "atlassian.jira",
+          "category": "collaboration"
+        },
+        {
+          "name": "Atlassian OpsGenie",
+          "tech": "atlassian.opsgenie",
+          "category": "collaboration"
+        },
+        {
+          "name": "Atlassian Trello",
+          "tech": "atlassian.trello",
+          "category": "collaboration"
+        },
+        {
+          "name": "Cal.com",
+          "tech": "calcom",
+          "category": "collaboration"
+        },
+        {
+          "name": "Calendly",
+          "tech": "calendly",
+          "category": "collaboration"
+        },
+        {
+          "name": "ClickUp",
+          "tech": "clickup",
+          "category": "collaboration"
+        },
+        {
+          "name": "Crowdin",
+          "tech": "crowdin",
+          "category": "collaboration"
+        },
+        {
+          "name": "Google Calendar",
+          "tech": "google.calendar",
+          "category": "collaboration"
+        },
+        {
+          "name": "Google Chat",
+          "tech": "google.chat",
+          "category": "collaboration"
+        },
+        {
+          "name": "Google Docs",
+          "tech": "google.docs",
+          "category": "collaboration"
+        },
+        {
+          "name": "Google Drive",
+          "tech": "google.drive",
+          "category": "collaboration"
+        },
+        {
+          "name": "Google Forms",
+          "tech": "google.forms",
+          "category": "collaboration"
+        },
+        {
+          "name": "Gmail",
+          "tech": "google.gmail",
+          "category": "collaboration"
+        },
+        {
+          "name": "Google Keep",
+          "tech": "google.keep",
+          "category": "collaboration"
+        },
+        {
+          "name": "Google Meet",
+          "tech": "google.meet",
+          "category": "collaboration"
+        },
+        {
+          "name": "Google Sheets",
+          "tech": "google.sheets",
+          "category": "collaboration"
+        },
+        {
+          "name": "Google Slides",
+          "tech": "google.slides",
+          "category": "collaboration"
+        },
+        {
+          "name": "Google Tasks",
+          "tech": "google.tasks",
+          "category": "collaboration"
+        },
+        {
+          "name": "Linear",
+          "tech": "linear",
+          "category": "collaboration"
+        },
+        {
+          "name": "OneDrive",
+          "tech": "microsoft.onedrive",
+          "category": "collaboration"
+        },
+        {
+          "name": "Miro",
+          "tech": "miro",
+          "category": "collaboration"
+        },
+        {
+          "name": "Monday",
+          "tech": "monday",
+          "category": "collaboration"
+        },
+        {
+          "name": "Notion",
+          "tech": "notion",
+          "category": "collaboration"
+        }
+      ]
+    },
+    {
+      "name": "communication",
+      "description": "Communication tools (Slack, Discord, etc.)",
+      "is_component": true,
+      "technologies": [
+        {
+          "name": "Aircall",
+          "tech": "aircall",
+          "category": "communication"
+        },
+        {
+          "name": "Discord",
+          "tech": "discord",
+          "category": "communication"
+        },
+        {
+          "name": "Facebook",
+          "tech": "facebook",
+          "category": "communication"
+        },
+        {
+          "name": "Freshdesk",
+          "tech": "freshdesk",
+          "category": "communication"
+        },
+        {
+          "name": "Instagram",
+          "tech": "instagram",
+          "category": "communication"
+        },
+        {
+          "name": "Intercom",
+          "tech": "intercom",
+          "category": "communication"
+        },
+        {
+          "name": "Linkedin",
+          "tech": "linkedin",
+          "category": "communication"
+        },
+        {
+          "name": "Mattermost",
+          "tech": "mattermost",
+          "category": "communication"
+        },
+        {
+          "name": "Reddit",
+          "tech": "reddit",
+          "category": "communication"
+        },
+        {
+          "name": "Slack",
+          "tech": "slack",
+          "category": "communication"
+        },
+        {
+          "name": "Telegram",
+          "tech": "telegram",
+          "category": "communication"
+        },
+        {
+          "name": "Twitch",
+          "tech": "twitch",
+          "category": "communication"
+        },
+        {
+          "name": "X",
+          "tech": "twitter",
+          "category": "communication"
+        },
+        {
+          "name": "WhatsApp",
+          "tech": "whatsapp",
+          "category": "communication"
+        },
+        {
+          "name": "Wikipedia",
+          "tech": "wikipedia",
+          "category": "communication"
+        },
+        {
+          "name": "Youtube",
+          "tech": "youtube",
+          "category": "communication"
+        },
+        {
+          "name": "Zendesk",
+          "tech": "zendesk",
+          "category": "communication"
+        },
+        {
+          "name": "Zoom",
+          "tech": "zoom",
+          "category": "communication"
+        }
+      ]
+    },
+    {
+      "name": "containerization",
+      "description": "Container tools (Docker, Podman, containerd)",
+      "is_component": true,
+      "technologies": [
+        {
+          "name": "Docker",
+          "tech": "docker",
+          "category": "containerization"
+        }
+      ]
+    },
+    {
+      "name": "crm",
+      "description": "CRM systems",
+      "is_component": true,
+      "technologies": [
+        {
+          "name": "HubSpot",
+          "tech": "hubspot",
+          "category": "crm"
+        },
+        {
+          "name": "Klaviyo",
+          "tech": "klaviyo",
+          "category": "crm"
+        },
+        {
+          "name": "Salesforce",
+          "tech": "salesforce",
+          "category": "crm"
+        },
+        {
+          "name": "Twenty CRM",
+          "tech": "twentycrm",
+          "category": "crm"
+        }
+      ]
+    },
+    {
+      "name": "database",
+      "description": "Database systems (PostgreSQL, MongoDB, Redis, etc.)",
+      "is_component": true,
+      "technologies": [
+        {
+          "name": "Algolia",
+          "tech": "algolia",
+          "category": "database"
+        },
+        {
+          "name": "Apache Cassandra",
+          "tech": "apache_cassandra",
+          "category": "database"
+        },
+        {
+          "name": "Apache CouchDB",
+          "tech": "apache_couchdb",
+          "category": "database"
+        },
+        {
+          "name": "Apache Hadoop",
+          "tech": "apache_hadoop",
+          "category": "database"
+        },
+        {
+          "name": "Apache Hive",
+          "tech": "apache_hive",
+          "category": "database"
+        },
+        {
+          "name": "Apache Iceberg",
+          "tech": "apache_iceberg",
+          "category": "database"
+        },
+        {
+          "name": "Apache Solr",
+          "tech": "apache_solr",
+          "category": "database"
+        },
+        {
+          "name": "Apache Spark",
+          "tech": "apache_spark",
+          "category": "database"
+        },
+        {
+          "name": "AWS Athena",
+          "tech": "aws.athena",
+          "category": "database"
+        },
+        {
+          "name": "AWS Cloudsearch",
+          "tech": "aws.cloudsearch",
+          "category": "database"
+        },
+        {
+          "name": "AWS Document DB",
+          "tech": "aws.documentdb",
+          "category": "database"
+        },
+        {
+          "name": "AWS DynamoDB",
+          "tech": "aws.dynamodb",
+          "category": "database"
+        },
+        {
+          "name": "AWS ElastiCache",
+          "tech": "aws.elasticache",
+          "category": "database"
+        },
+        {
+          "name": "AWS MemoryDB",
+          "tech": "aws.memorydb",
+          "category": "database"
+        },
+        {
+          "name": "AWS Neptune",
+          "tech": "aws.neptune",
+          "category": "database"
+        },
+        {
+          "name": "AWS Opensearch",
+          "tech": "aws.opensearch",
+          "category": "database"
+        },
+        {
+          "name": "AWS RDS",
+          "tech": "aws.rds",
+          "category": "database"
+        },
+        {
+          "name": "AWS Redshift",
+          "tech": "aws.redshift",
+          "category": "database"
+        },
+        {
+          "name": "AWS Timestream",
+          "tech": "aws.timestream",
+          "category": "database"
+        },
+        {
+          "name": "Azure Cosmos DB",
+          "tech": "azure.cosmosdb",
+          "category": "database"
+        },
+        {
+          "name": "Azure MariaDB",
+          "tech": "azure.mariadb",
+          "category": "database"
+        },
+        {
+          "name": "Azure MySQL",
+          "tech": "azure.mysql",
+          "category": "database"
+        },
+        {
+          "name": "Azure Postgres",
+          "tech": "azure.postgres",
+          "category": "database"
+        },
+        {
+          "name": "Azure Redis",
+          "tech": "azure.redis",
+          "category": "database"
+        },
+        {
+          "name": "Azure SQL",
+          "tech": "azure.sql",
+          "category": "database"
+        },
+        {
+          "name": "ChromaDB",
+          "tech": "chromadb",
+          "category": "database"
+        },
+        {
+          "name": "ClickHouse",
+          "tech": "clickhouse",
+          "category": "database"
+        },
+        {
+          "name": "CockroachDB",
+          "tech": "cockroachdb",
+          "category": "database"
+        },
+        {
+          "name": "Convex",
+          "tech": "convexdb",
+          "category": "database"
+        },
+        {
+          "name": "Couchbase",
+          "tech": "couchbase",
+          "category": "database"
+        },
+        {
+          "name": "CrateDB",
+          "tech": "cratedb",
+          "category": "database"
+        },
+        {
+          "name": "Datastax",
+          "tech": "datastax",
+          "category": "database"
+        },
+        {
+          "name": "DuckDB",
+          "tech": "duckdb",
+          "category": "database"
+        },
+        {
+          "name": "Elasticsearch",
+          "tech": "elasticsearch",
+          "category": "database"
+        },
+        {
+          "name": "Firebase Firestore",
+          "tech": "firebase.firestore",
+          "category": "database"
+        },
+        {
+          "name": "Firebird",
+          "tech": "firebird",
+          "category": "database"
+        },
+        {
+          "name": "Cloud BigQuery",
+          "tech": "gcp.bigquery",
+          "category": "database"
+        },
+        {
+          "name": "Cloud BigTable",
+          "tech": "gcp.bigtable",
+          "category": "database"
+        },
+        {
+          "name": "Cloud Datastore",
+          "tech": "gcp.datastore",
+          "category": "database"
+        },
+        {
+          "name": "Cloud Memorystore",
+          "tech": "gcp.memorystore",
+          "category": "database"
+        },
+        {
+          "name": "Cloud Spanner",
+          "tech": "gcp.spanner",
+          "category": "database"
+        },
+        {
+          "name": "Cloud SQL",
+          "tech": "gcp.sql",
+          "category": "database"
+        },
+        {
+          "name": "InfluxDB",
+          "tech": "influxdb",
+          "category": "database"
+        },
+        {
+          "name": "InterSystems Cache",
+          "tech": "intersystems_cache",
+          "category": "database"
+        },
+        {
+          "name": "libSQL",
+          "tech": "libsql",
+          "category": "database"
+        },
+        {
+          "name": "MariaDB",
+          "tech": "mariadb",
+          "category": "database"
+        },
+        {
+          "name": "Meilisearch",
+          "tech": "meilisearch",
+          "category": "database"
+        },
+        {
+          "name": "Meilisearch Cloud",
+          "tech": "meilisearchcloud",
+          "category": "database"
+        },
+        {
+          "name": "Memcached",
+          "tech": "memcached",
+          "category": "database"
+        },
+        {
+          "name": "MilvusDB",
+          "tech": "milvusdb",
+          "category": "database"
+        },
+        {
+          "name": "MongoDB",
+          "tech": "mongodb",
+          "category": "database"
+        },
+        {
+          "name": "Microsoft Access",
+          "tech": "msaccess",
+          "category": "database"
+        },
+        {
+          "name": "MS SQL",
+          "tech": "mssql",
+          "category": "database"
+        },
+        {
+          "name": "Mysql",
+          "tech": "mysql",
+          "category": "database"
+        },
+        {
+          "name": "Neo4j",
+          "tech": "neo4j",
+          "category": "database"
+        },
+        {
+          "name": "NeonDB",
+          "tech": "neondb",
+          "category": "database"
+        },
+        {
+          "name": "Oceanbase",
+          "tech": "oceanbase",
+          "category": "database"
+        },
+        {
+          "name": "Oracle Database",
+          "tech": "oracle",
+          "category": "database"
+        },
+        {
+          "name": "OVH Database",
+          "tech": "ovh.database",
+          "category": "database"
+        },
+        {
+          "name": "Percona",
+          "tech": "percona",
+          "category": "database"
+        },
+        {
+          "name": "PgVector",
+          "tech": "pgvector",
+          "category": "database"
+        },
+        {
+          "name": "Pinecone",
+          "tech": "pinecone",
+          "category": "database"
+        },
+        {
+          "name": "PlanetScale",
+          "tech": "planetscale",
+          "category": "database"
+        },
+        {
+          "name": "Postgres",
+          "tech": "postgresql",
+          "category": "database"
+        },
+        {
+          "name": "Qdrant",
+          "tech": "qdrant",
+          "category": "database"
+        },
+        {
+          "name": "Qovery Database",
+          "tech": "qovery.database",
+          "category": "database"
+        },
+        {
+          "name": "QuestDB",
+          "tech": "questdb",
+          "category": "database"
+        },
+        {
+          "name": "Railway MongoDB",
+          "tech": "railway.mongodb",
+          "category": "database"
+        },
+        {
+          "name": "Railway MySQL",
+          "tech": "railway.mysql",
+          "category": "database"
+        },
+        {
+          "name": "Railway Postgres",
+          "tech": "railway.postgres",
+          "category": "database"
+        },
+        {
+          "name": "Railway Redis",
+          "tech": "railway.redis",
+          "category": "database"
+        },
+        {
+          "name": "Redis",
+          "tech": "redis",
+          "category": "database"
+        },
+        {
+          "name": "Replit Database",
+          "tech": "replit.database",
+          "category": "database"
+        },
+        {
+          "name": "Replit Postgres",
+          "tech": "replit.postgres",
+          "category": "database"
+        },
+        {
+          "name": "RethinkDB",
+          "tech": "rethinkdb",
+          "category": "database"
+        },
+        {
+          "name": "Scaleway Database",
+          "tech": "scaleway.database",
+          "category": "database"
+        },
+        {
+          "name": "Scaleway DocumentDB",
+          "tech": "scaleway.documentdb",
+          "category": "database"
+        },
+        {
+          "name": "Scaleway Redis",
+          "tech": "scaleway.redis",
+          "category": "database"
+        },
+        {
+          "name": "Snowflake",
+          "tech": "snowflake",
+          "category": "database"
+        },
+        {
+          "name": "SQLite",
+          "tech": "sqlite",
+          "category": "database"
+        },
+        {
+          "name": "Supabase Postgres",
+          "tech": "supabase.postgres",
+          "category": "database"
+        },
+        {
+          "name": "SurrealDB",
+          "tech": "surrealdb",
+          "category": "database"
+        },
+        {
+          "name": "Swiftype",
+          "tech": "swiftype",
+          "category": "database"
+        },
+        {
+          "name": "TDengine",
+          "tech": "tdengine",
+          "category": "database"
+        },
+        {
+          "name": "TiDB",
+          "tech": "tidb",
+          "category": "database"
+        },
+        {
+          "name": "TimescaleDB",
+          "tech": "timescaledb",
+          "category": "database"
+        },
+        {
+          "name": "Turso",
+          "tech": "tursodb",
+          "category": "database"
+        },
+        {
+          "name": "Typesense",
+          "tech": "typesense",
+          "category": "database"
+        },
+        {
+          "name": "Typesense Cloud",
+          "tech": "typesensecloud",
+          "category": "database"
+        },
+        {
+          "name": "Upstash Redis",
+          "tech": "upstash.redis",
+          "category": "database"
+        },
+        {
+          "name": "Valkey",
+          "tech": "valkey",
+          "category": "database"
+        },
+        {
+          "name": "Vercel Blob",
+          "tech": "vercel.blob",
+          "category": "database"
+        },
+        {
+          "name": "Vercel KV",
+          "tech": "vercel.kv",
+          "category": "database"
+        },
+        {
+          "name": "Vercel Postgres",
+          "tech": "vercel.postgres",
+          "category": "database"
+        },
+        {
+          "name": "VictoriaMetrics",
+          "tech": "victoriametrics",
+          "category": "database"
+        }
+      ]
+    },
+    {
+      "name": "dbmigration",
+      "description": "Database migration tools (Flyway, Liquibase, etc.)",
+      "is_component": false,
+      "technologies": [
+        {
+          "name": "Flyway",
+          "tech": "flyway",
+          "category": "dbmigration"
+        },
+        {
+          "name": "Liquibase",
+          "tech": "liquibase",
+          "category": "dbmigration"
+        }
+      ]
+    },
+    {
+      "name": "desktop_framework",
+      "description": "Desktop frameworks (Qt, MFC, Win32, Electron, etc.)",
+      "is_component": false,
+      "technologies": [
+        {
+          "name": "Delphi",
+          "tech": "delphi",
+          "category": "desktop_framework"
+        },
+        {
+          "name": "Dioxus",
+          "tech": "dioxus",
+          "category": "desktop_framework"
+        },
+        {
+          "name": "Electron",
+          "tech": "electron",
+          "category": "desktop_framework"
+        },
+        {
+          "name": "Iced",
+          "tech": "iced",
+          "category": "desktop_framework"
+        },
+        {
+          "name": "Microsoft Foundation Class Library",
+          "tech": "mfc",
+          "category": "desktop_framework"
+        },
+        {
+          "name": "Qt Framework",
+          "tech": "qt",
+          "category": "desktop_framework"
+        },
+        {
+          "name": "Java Swing",
+          "tech": "swing",
+          "category": "desktop_framework"
+        },
+        {
+          "name": "Tauri",
+          "tech": "tauri",
+          "category": "desktop_framework"
+        },
+        {
+          "name": "VCL",
+          "tech": "vcl",
+          "category": "desktop_framework"
+        },
+        {
+          "name": "Win32 API",
+          "tech": "win32",
+          "category": "desktop_framework"
+        },
+        {
+          "name": "Windows Presentation Foundation",
+          "tech": "wpf",
+          "category": "desktop_framework"
+        }
+      ]
+    },
+    {
+      "name": "etl",
+      "description": "ETL tools",
+      "is_component": true,
+      "technologies": [
+        {
+          "name": "Airbyte",
+          "tech": "airbyte",
+          "category": "etl"
+        },
+        {
+          "name": "Apache Airflow",
+          "tech": "apache_airflow",
+          "category": "etl"
+        },
+        {
+          "name": "Apache Flink",
+          "tech": "apache_flink",
+          "category": "etl"
+        },
+        {
+          "name": "Apache Storm",
+          "tech": "apache_storm",
+          "category": "etl"
+        },
+        {
+          "name": "Apideck",
+          "tech": "apideck",
+          "category": "etl"
+        },
+        {
+          "name": "AWS Glue",
+          "tech": "aws.glue",
+          "category": "etl"
+        },
+        {
+          "name": "Composio",
+          "tech": "composio",
+          "category": "etl"
+        },
+        {
+          "name": "Databricks",
+          "tech": "databricks",
+          "category": "etl"
+        },
+        {
+          "name": "Dataiku",
+          "tech": "dataiku",
+          "category": "etl"
+        },
+        {
+          "name": "Cloud Dataflow",
+          "tech": "gcp.dataflow",
+          "category": "etl"
+        },
+        {
+          "name": "Cloud Dataproc",
+          "tech": "gcp.dataproc",
+          "category": "etl"
+        },
+        {
+          "name": "Integration.app",
+          "tech": "integrationapp",
+          "category": "etl"
+        },
+        {
+          "name": "Logstash",
+          "tech": "logstash",
+          "category": "etl"
+        },
+        {
+          "name": "Merge.dev",
+          "tech": "mergedev",
+          "category": "etl"
+        },
+        {
+          "name": "Nango",
+          "tech": "nango",
+          "category": "etl"
+        },
+        {
+          "name": "Tray.ai",
+          "tech": "trayio",
+          "category": "etl"
+        },
+        {
+          "name": "Paragon",
+          "tech": "useparagon",
+          "category": "etl"
+        }
+      ]
+    },
+    {
+      "name": "fullstack_framework",
+      "description": "Full-stack frameworks (Next.js, Nuxt, Remix, etc.)",
+      "is_component": false,
+      "technologies": [
+        {
+          "name": "Blitzjs",
+          "tech": "blitzjs",
+          "category": "fullstack_framework"
+        },
+        {
+          "name": "Meteor",
+          "tech": "meteorjs",
+          "category": "fullstack_framework"
+        },
+        {
+          "name": "Next.js",
+          "tech": "nextjs",
+          "category": "fullstack_framework"
+        },
+        {
+          "name": "Nuxt.js",
+          "tech": "nuxtjs",
+          "category": "fullstack_framework"
+        },
+        {
+          "name": "RedwoodJs",
+          "tech": "redwoodjs",
+          "category": "fullstack_framework"
+        },
+        {
+          "name": "Remix",
+          "tech": "remixrun",
+          "category": "fullstack_framework"
+        },
+        {
+          "name": "Remult",
+          "tech": "remult",
+          "category": "fullstack_framework"
+        },
+        {
+          "name": "SvelteKit",
+          "tech": "sveltekit",
+          "category": "fullstack_framework"
+        },
+        {
+          "name": "Tanstack Start",
+          "tech": "tanstackstart",
+          "category": "fullstack_framework"
+        },
+        {
+          "name": "Wasp",
+          "tech": "wasp",
+          "category": "fullstack_framework"
+        }
+      ]
+    },
+    {
+      "name": "healthcare",
+      "description": "Healthcare standards and systems (FHIR, HL7, DICOM, etc.)",
+      "is_component": false,
+      "technologies": [
+        {
+          "name": "FHIR",
+          "tech": "fhir",
+          "category": "healthcare"
+        },
+        {
+          "name": "OpenEHR",
+          "tech": "openehr",
+          "category": "healthcare"
+        }
+      ]
+    },
+    {
+      "name": "hosting",
+      "description": "Hosting platforms (Vercel, Netlify, AWS, etc.)",
+      "is_component": true,
+      "technologies": [
+        {
+          "name": "AWS Amplify Hosting",
+          "tech": "aws.amplifyhosting",
+          "category": "hosting"
+        },
+        {
+          "name": "AWS Api Gateway",
+          "tech": "aws.apigateway",
+          "category": "hosting"
+        },
+        {
+          "name": "AWS Compute",
+          "tech": "aws.ec2",
+          "category": "hosting"
+        },
+        {
+          "name": "AWS Container",
+          "tech": "aws.ecs",
+          "category": "hosting"
+        },
+        {
+          "name": "AWS Kubernetes",
+          "tech": "aws.eks",
+          "category": "hosting"
+        },
+        {
+          "name": "AWS Fargate",
+          "tech": "aws.fargate",
+          "category": "hosting"
+        },
+        {
+          "name": "AWS Lambda",
+          "tech": "aws.lambda",
+          "category": "hosting"
+        },
+        {
+          "name": "AWS Lightsail",
+          "tech": "aws.lightsail",
+          "category": "hosting"
+        },
+        {
+          "name": "Azure Kubernetes",
+          "tech": "azure.aks",
+          "category": "hosting"
+        },
+        {
+          "name": "Azure Functions",
+          "tech": "azure.functions",
+          "category": "hosting"
+        },
+        {
+          "name": "Azure Static Web Apps",
+          "tech": "azure.staticwebapps",
+          "category": "hosting"
+        },
+        {
+          "name": "Cloudflare Pages",
+          "tech": "cloudflare.pages",
+          "category": "hosting"
+        },
+        {
+          "name": "Cloudflare Workers",
+          "tech": "cloudflare.workers",
+          "category": "hosting"
+        },
+        {
+          "name": "Deno Deploy",
+          "tech": "denodeploy",
+          "category": "hosting"
+        },
+        {
+          "name": "DigitalOcean",
+          "tech": "digitalocean",
+          "category": "hosting"
+        },
+        {
+          "name": "Elastic Cloud",
+          "tech": "elasticcloud",
+          "category": "hosting"
+        },
+        {
+          "name": "Expo.dev",
+          "tech": "expodev",
+          "category": "hosting"
+        },
+        {
+          "name": "Fastly",
+          "tech": "fastly",
+          "category": "hosting"
+        },
+        {
+          "name": "Google App Engine",
+          "tech": "gcp.appengine",
+          "category": "hosting"
+        },
+        {
+          "name": "Cloud Run",
+          "tech": "gcp.cloudrun",
+          "category": "hosting"
+        },
+        {
+          "name": "Cloud Functions",
+          "tech": "gcp.functions",
+          "category": "hosting"
+        },
+        {
+          "name": "Google Compute",
+          "tech": "gcp.gce",
+          "category": "hosting"
+        },
+        {
+          "name": "Google Kubernetes",
+          "tech": "gcp.gke",
+          "category": "hosting"
+        },
+        {
+          "name": "Cloud Tasks",
+          "tech": "gcp.tasks",
+          "category": "hosting"
+        },
+        {
+          "name": "Github Pages",
+          "tech": "github.pages",
+          "category": "hosting"
+        },
+        {
+          "name": "Koyeb",
+          "tech": "koyeb",
+          "category": "hosting"
+        },
+        {
+          "name": "MongoDB Atlas",
+          "tech": "mongodbatlas",
+          "category": "hosting"
+        },
+        {
+          "name": "OVH Dedicated Server",
+          "tech": "ovh.dedicated",
+          "category": "hosting"
+        },
+        {
+          "name": "OVH Kubernetes",
+          "tech": "ovh.kubernetes",
+          "category": "hosting"
+        },
+        {
+          "name": "OVH VPS",
+          "tech": "ovh.vps",
+          "category": "hosting"
+        },
+        {
+          "name": "Platform.sh",
+          "tech": "platformsh",
+          "category": "hosting"
+        },
+        {
+          "name": "Qovery Cluster",
+          "tech": "qovery.cluster",
+          "category": "hosting"
+        },
+        {
+          "name": "Render",
+          "tech": "render",
+          "category": "hosting"
+        },
+        {
+          "name": "Replit",
+          "tech": "replit",
+          "category": "hosting"
+        },
+        {
+          "name": "Scaleway Container",
+          "tech": "scaleway.container",
+          "category": "hosting"
+        },
+        {
+          "name": "Scaleway Elastic Metal",
+          "tech": "scaleway.elasticmetal",
+          "category": "hosting"
+        },
+        {
+          "name": "Scaleway Function",
+          "tech": "scaleway.function",
+          "category": "hosting"
+        },
+        {
+          "name": "Scaleway Kubernetes",
+          "tech": "scaleway.kubernetes",
+          "category": "hosting"
+        },
+        {
+          "name": "Supabase Functions",
+          "tech": "supabase.functions",
+          "category": "hosting"
+        },
+        {
+          "name": "Vercel Edge",
+          "tech": "vercel.edge",
+          "category": "hosting"
+        },
+        {
+          "name": "Vercel Functions",
+          "tech": "vercel.functions",
+          "category": "hosting"
+        }
+      ]
+    },
+    {
+      "name": "iac",
+      "description": "Infrastructure as Code tools (Terraform, Pulumi, etc.)",
+      "is_component": false,
+      "technologies": [
+        {
+          "name": "Ansible",
+          "tech": "ansible",
+          "category": "iac"
+        },
+        {
+          "name": "AWS CloudFormation",
+          "tech": "aws.cloudformation",
+          "category": "iac"
+        },
+        {
+          "name": "Chef",
+          "tech": "chef",
+          "category": "iac"
+        },
+        {
+          "name": "Pulumi",
+          "tech": "pulumi",
+          "category": "iac"
+        },
+        {
+          "name": "Terraform",
+          "tech": "terraform",
+          "category": "iac"
+        },
+        {
+          "name": "Terragrunt",
+          "tech": "terragrunt",
+          "category": "iac"
+        }
+      ]
+    },
+    {
+      "name": "identity",
+      "description": "Identity \u0026 access management (Auth0, Okta, Keycloak, etc.)",
+      "is_component": true,
+      "technologies": [
+        {
+          "name": "Auth0",
+          "tech": "auth0",
+          "category": "identity"
+        },
+        {
+          "name": "AWS Cognito",
+          "tech": "aws.cognito",
+          "category": "identity"
+        },
+        {
+          "name": "Betterauth",
+          "tech": "betterauth",
+          "category": "identity"
+        },
+        {
+          "name": "Clerk",
+          "tech": "clerk",
+          "category": "identity"
+        },
+        {
+          "name": "Frontegg",
+          "tech": "frontegg",
+          "category": "identity"
+        },
+        {
+          "name": "Fusionauth",
+          "tech": "fusionauth",
+          "category": "identity"
+        },
+        {
+          "name": "Hanko",
+          "tech": "hanko",
+          "category": "identity"
+        },
+        {
+          "name": "Kinde",
+          "tech": "kinde",
+          "category": "identity"
+        },
+        {
+          "name": "Logto",
+          "tech": "logtoio",
+          "category": "identity"
+        },
+        {
+          "name": "Okta",
+          "tech": "okta",
+          "category": "identity"
+        },
+        {
+          "name": "Ory",
+          "tech": "orysh",
+          "category": "identity"
+        },
+        {
+          "name": "PropelAuth",
+          "tech": "propelauth",
+          "category": "identity"
+        },
+        {
+          "name": "Stytch",
+          "tech": "stytch",
+          "category": "identity"
+        },
+        {
+          "name": "Supabase Auth",
+          "tech": "supabase.auth",
+          "category": "identity"
+        },
+        {
+          "name": "SuperTokens",
+          "tech": "supertokens",
+          "category": "identity"
+        },
+        {
+          "name": "WorkOS",
+          "tech": "workos",
+          "category": "identity"
+        }
+      ]
+    },
+    {
+      "name": "language",
+      "description": "Programming languages (Python, JavaScript, etc.)",
+      "is_component": false,
+      "technologies": [
+        {
+          "name": "Ada",
+          "tech": "ada",
+          "category": "language"
+        },
+        {
+          "name": "AWK",
+          "tech": "awk",
+          "category": "language"
+        },
+        {
+          "name": "Bash",
+          "tech": "bash",
+          "category": "language"
+        },
+        {
+          "name": "C",
+          "tech": "c",
+          "category": "language"
+        },
+        {
+          "name": "Cache ObjectScript",
+          "tech": "cache_objectscript",
+          "category": "language"
+        },
+        {
+          "name": "Clojure",
+          "tech": "clojure",
+          "category": "language"
+        },
+        {
+          "name": "COBOL",
+          "tech": "cobol",
+          "category": "language"
+        },
+        {
+          "name": "CoffeeScript",
+          "tech": "coffeescript",
+          "category": "language"
+        },
+        {
+          "name": "C++",
+          "tech": "cplusplus",
+          "category": "language"
+        },
+        {
+          "name": "C#",
+          "tech": "csharp",
+          "category": "language"
+        },
+        {
+          "name": "CSS",
+          "tech": "css",
+          "category": "language"
+        },
+        {
+          "name": "Dart",
+          "tech": "dart",
+          "category": "language"
+        },
+        {
+          "name": "Elixir",
+          "tech": "elixir",
+          "category": "language"
+        },
+        {
+          "name": "GLSL",
+          "tech": "glsl",
+          "category": "language"
+        },
+        {
+          "name": "Golang",
+          "tech": "golang",
+          "category": "language"
+        },
+        {
+          "name": "Groovy",
+          "tech": "groovy",
+          "category": "language"
+        },
+        {
+          "name": "Haskell",
+          "tech": "haskell",
+          "category": "language"
+        },
+        {
+          "name": "Java",
+          "tech": "java",
+          "category": "language"
+        },
+        {
+          "name": "JavaScript",
+          "tech": "javascript",
+          "category": "language"
+        },
+        {
+          "name": "JSX",
+          "tech": "jsx",
+          "category": "language"
+        },
+        {
+          "name": "Kotlin",
+          "tech": "kotlin",
+          "category": "language"
+        },
+        {
+          "name": "Lua",
+          "tech": "lua",
+          "category": "language"
+        },
+        {
+          "name": "MATLAB",
+          "tech": "matlab",
+          "category": "language"
+        },
+        {
+          "name": "Objective-C",
+          "tech": "objectivec",
+          "category": "language"
+        },
+        {
+          "name": "Perl",
+          "tech": "perl",
+          "category": "language"
+        },
+        {
+          "name": "PHP",
+          "tech": "php",
+          "category": "language"
+        },
+        {
+          "name": "Python",
+          "tech": "python",
+          "category": "language"
+        },
+        {
+          "name": "R",
+          "tech": "r",
+          "category": "language"
+        },
+        {
+          "name": "Ruby",
+          "tech": "ruby",
+          "category": "language"
+        },
+        {
+          "name": "Rust",
+          "tech": "rust",
+          "category": "language"
+        },
+        {
+          "name": "Scala",
+          "tech": "scala",
+          "category": "language"
+        },
+        {
+          "name": "SCSS",
+          "tech": "scss",
+          "category": "language"
+        },
+        {
+          "name": "Swift",
+          "tech": "swift",
+          "category": "language"
+        },
+        {
+          "name": "Typescript",
+          "tech": "typescript",
+          "category": "language"
+        },
+        {
+          "name": "VB.NET",
+          "tech": "vbnet",
+          "category": "language"
+        },
+        {
+          "name": "Visual Basic .NET",
+          "tech": "visualbasicnet",
+          "category": "language"
+        },
+        {
+          "name": "XSLT",
+          "tech": "xslt",
+          "category": "language"
+        },
+        {
+          "name": "Zig",
+          "tech": "zig",
+          "category": "language"
+        }
+      ]
+    },
+    {
+      "name": "library",
+      "description": "Utility libraries (JSON processing, validation, cryptography, etc.)",
+      "is_component": false,
+      "technologies": [
+        {
+          "name": "BouncyCastle",
+          "tech": "bouncycastle",
+          "category": "library"
+        },
+        {
+          "name": "EffectJS",
+          "tech": "effectjs",
+          "category": "library"
+        },
+        {
+          "name": "Jackson",
+          "tech": "jackson",
+          "category": "library"
+        },
+        {
+          "name": "JodaTime",
+          "tech": "jodatime",
+          "category": "library"
+        },
+        {
+          "name": "Joi",
+          "tech": "joijs",
+          "category": "library"
+        },
+        {
+          "name": "libphonenumber",
+          "tech": "libphonenumber",
+          "category": "library"
+        },
+        {
+          "name": "Newtonsoft.Json",
+          "tech": "newtonsoftjson",
+          "category": "library"
+        },
+        {
+          "name": "NodaTime",
+          "tech": "nodatime",
+          "category": "library"
+        },
+        {
+          "name": "OpenSSL",
+          "tech": "openssl",
+          "category": "library"
+        },
+        {
+          "name": "POI",
+          "tech": "poi",
+          "category": "library"
+        },
+        {
+          "name": "RxJS",
+          "tech": "rxjs",
+          "category": "library"
+        },
+        {
+          "name": "Superstruct",
+          "tech": "superstruct",
+          "category": "library"
+        },
+        {
+          "name": "Zod",
+          "tech": "zod",
+          "category": "library"
+        }
+      ]
+    },
+    {
+      "name": "logging",
+      "description": "Logging libraries (Log4j, Logback, SLF4J, etc.)",
+      "is_component": false,
+      "technologies": [
+        {
+          "name": "Log4j",
+          "tech": "log4j",
+          "category": "logging"
+        },
+        {
+          "name": "Logback",
+          "tech": "logback",
+          "category": "logging"
+        },
+        {
+          "name": "Loguru",
+          "tech": "loguru",
+          "category": "logging"
+        },
+        {
+          "name": "Microsoft Logger",
+          "tech": "mslogger",
+          "category": "logging"
+        },
+        {
+          "name": "SLF4J",
+          "tech": "slf4j",
+          "category": "logging"
+        }
+      ]
+    },
+    {
+      "name": "messaging",
+      "description": "Message brokers and queues (Kafka, RabbitMQ, SQS, etc.)",
+      "is_component": true,
+      "technologies": [
+        {
+          "name": "Apache Kafka",
+          "tech": "apache_kafka",
+          "category": "messaging"
+        },
+        {
+          "name": "AWS Kafka",
+          "tech": "aws.kafka",
+          "category": "messaging"
+        },
+        {
+          "name": "AWS Kinesis",
+          "tech": "aws.kinesis",
+          "category": "messaging"
+        },
+        {
+          "name": "AWS ActiveMQ",
+          "tech": "aws.mq",
+          "category": "messaging"
+        },
+        {
+          "name": "AWS SQS",
+          "tech": "aws.sqs",
+          "category": "messaging"
+        },
+        {
+          "name": "Celery",
+          "tech": "celery",
+          "category": "messaging"
+        },
+        {
+          "name": "PubSub",
+          "tech": "gcp.pubsub",
+          "category": "messaging"
+        },
+        {
+          "name": "Nats",
+          "tech": "nats",
+          "category": "messaging"
+        },
+        {
+          "name": "RabbitMQ",
+          "tech": "rabbitmq",
+          "category": "messaging"
+        },
+        {
+          "name": "Scaleway M\u0026Q",
+          "tech": "scaleway.mq",
+          "category": "messaging"
+        },
+        {
+          "name": "Supabase Realtime",
+          "tech": "supabase.realtime",
+          "category": "messaging"
+        },
+        {
+          "name": "Upstash Kafka",
+          "tech": "upstash.kafka",
+          "category": "messaging"
+        },
+        {
+          "name": "Upstash QStash",
+          "tech": "upstash.qstash",
+          "category": "messaging"
+        }
+      ]
+    },
+    {
+      "name": "mobile_framework",
+      "description": "Mobile frameworks (React Native, Flutter, Swift, Kotlin, etc.)",
+      "is_component": false,
+      "technologies": [
+        {
+          "name": "Cordova",
+          "tech": "apacheCordova",
+          "category": "mobile_framework"
+        },
+        {
+          "name": "Capacitor",
+          "tech": "capacitorjs",
+          "category": "mobile_framework"
+        },
+        {
+          "name": "ExpoJS",
+          "tech": "expojs",
+          "category": "mobile_framework"
+        },
+        {
+          "name": "Ionic",
+          "tech": "ionic",
+          "category": "mobile_framework"
+        },
+        {
+          "name": "MAUI",
+          "tech": "maui",
+          "category": "mobile_framework"
+        }
+      ]
+    },
+    {
+      "name": "monitoring",
+      "description": "Monitoring services (Datadog, Sentry, etc.)",
+      "is_component": true,
+      "technologies": [
+        {
+          "name": "AppSignal",
+          "tech": "appsignal",
+          "category": "monitoring"
+        },
+        {
+          "name": "AWS Cloudwatch",
+          "tech": "aws.cloudwatch",
+          "category": "monitoring"
+        },
+        {
+          "name": "Better Stack",
+          "tech": "betterstack",
+          "category": "monitoring"
+        },
+        {
+          "name": "Blackfire",
+          "tech": "blackfire",
+          "category": "monitoring"
+        },
+        {
+          "name": "Bugsnag",
+          "tech": "bugsnag",
+          "category": "monitoring"
+        },
+        {
+          "name": "Datadog",
+          "tech": "datadog",
+          "category": "monitoring"
+        },
+        {
+          "name": "Dynatrace",
+          "tech": "dynatrace",
+          "category": "monitoring"
+        },
+        {
+          "name": "Cloud Logging",
+          "tech": "gcp.logging",
+          "category": "monitoring"
+        },
+        {
+          "name": "Grafana",
+          "tech": "grafana",
+          "category": "monitoring"
+        },
+        {
+          "name": "Healthchecks.io",
+          "tech": "healthchecksio",
+          "category": "monitoring"
+        },
+        {
+          "name": "Honeybadger",
+          "tech": "honeybadger",
+          "category": "monitoring"
+        },
+        {
+          "name": "HyperDX",
+          "tech": "hyperdx",
+          "category": "monitoring"
+        },
+        {
+          "name": "Kibana",
+          "tech": "kibana",
+          "category": "monitoring"
+        },
+        {
+          "name": "New Relic",
+          "tech": "newrelic",
+          "category": "monitoring"
+        },
+        {
+          "name": "OnlineOrNot",
+          "tech": "onlineornot",
+          "category": "monitoring"
+        },
+        {
+          "name": "OpenTelemetry",
+          "tech": "opentelemetry",
+          "category": "monitoring"
+        },
+        {
+          "name": "Papertrail",
+          "tech": "papertrail",
+          "category": "monitoring"
+        },
+        {
+          "name": "Pingdom",
+          "tech": "pingdom",
+          "category": "monitoring"
+        },
+        {
+          "name": "Prometheus",
+          "tech": "prometheus",
+          "category": "monitoring"
+        },
+        {
+          "name": "Rollbar",
+          "tech": "rollbar",
+          "category": "monitoring"
+        },
+        {
+          "name": "Scout APM",
+          "tech": "scoutapm",
+          "category": "monitoring"
+        },
+        {
+          "name": "Sentry",
+          "tech": "sentry",
+          "category": "monitoring"
+        },
+        {
+          "name": "Signoz",
+          "tech": "signoz",
+          "category": "monitoring"
+        },
+        {
+          "name": "Telegraf",
+          "tech": "telegraf",
+          "category": "monitoring"
+        },
+        {
+          "name": "Uptime Kuma",
+          "tech": "uptimekuma",
+          "category": "monitoring"
+        },
+        {
+          "name": "Zipkin",
+          "tech": "zipkin",
+          "category": "monitoring"
+        }
+      ]
+    },
+    {
+      "name": "network",
+      "description": "Network services",
+      "is_component": true,
+      "technologies": [
+        {
+          "name": "Caddy",
+          "tech": "caddy",
+          "category": "network"
+        },
+        {
+          "name": "Consul",
+          "tech": "consul",
+          "category": "network"
+        },
+        {
+          "name": "Google DNS",
+          "tech": "gcp.dns",
+          "category": "network"
+        },
+        {
+          "name": "HAProxy",
+          "tech": "haproxy",
+          "category": "network"
+        },
+        {
+          "name": "HTTPD",
+          "tech": "httpd",
+          "category": "network"
+        },
+        {
+          "name": "Nginx",
+          "tech": "nginx",
+          "category": "network"
+        },
+        {
+          "name": "Traefik",
+          "tech": "traefik",
+          "category": "network"
+        },
+        {
+          "name": "YARP",
+          "tech": "yarp",
+          "category": "network"
+        }
+      ]
+    },
+    {
+      "name": "notification",
+      "description": "Notification services (SendGrid, Twilio, etc.)",
+      "is_component": true,
+      "technologies": [
+        {
+          "name": "AWS Simple Email Service",
+          "tech": "aws.ses",
+          "category": "notification"
+        },
+        {
+          "name": "AWS Notification Service",
+          "tech": "aws.sns",
+          "category": "notification"
+        },
+        {
+          "name": "Beehiiv",
+          "tech": "beehiiv",
+          "category": "notification"
+        },
+        {
+          "name": "Brevo",
+          "tech": "brevo",
+          "category": "notification"
+        },
+        {
+          "name": "ClickSend",
+          "tech": "clicksend",
+          "category": "notification"
+        },
+        {
+          "name": "ifttt",
+          "tech": "ifttt",
+          "category": "notification"
+        },
+        {
+          "name": "Mailchimp",
+          "tech": "mailchimp",
+          "category": "notification"
+        },
+        {
+          "name": "Mailgun",
+          "tech": "mailgun",
+          "category": "notification"
+        },
+        {
+          "name": "Mailjet",
+          "tech": "mailjet",
+          "category": "notification"
+        },
+        {
+          "name": "Novy",
+          "tech": "novu",
+          "category": "notification"
+        },
+        {
+          "name": "Resend",
+          "tech": "resend",
+          "category": "notification"
+        },
+        {
+          "name": "Sendgrid",
+          "tech": "sendgrid",
+          "category": "notification"
+        },
+        {
+          "name": "Twilio",
+          "tech": "twilio",
+          "category": "notification"
+        },
+        {
+          "name": "Zapier",
+          "tech": "zapier",
+          "category": "notification"
+        }
+      ]
+    },
+    {
+      "name": "orchestration",
+      "description": "Container orchestration (Kubernetes, Docker Swarm, Nomad)",
+      "is_component": true,
+      "technologies": [
+        {
+          "name": "Helm",
+          "tech": "helm",
+          "category": "orchestration"
+        },
+        {
+          "name": "Kubernetes",
+          "tech": "kubernetes",
+          "category": "orchestration"
+        },
+        {
+          "name": "Zookeeper",
+          "tech": "zookeeper",
+          "category": "orchestration"
+        }
+      ]
+    },
+    {
+      "name": "orm",
+      "description": "Object-relational mappers (SQLAlchemy, Prisma, etc.)",
+      "is_component": false,
+      "technologies": [
+        {
+          "name": "Diesel",
+          "tech": "dieselrs",
+          "category": "orm"
+        },
+        {
+          "name": "Doctrine",
+          "tech": "doctrinephp",
+          "category": "orm"
+        },
+        {
+          "name": "Drizzle ORM",
+          "tech": "drizzleorm",
+          "category": "orm"
+        },
+        {
+          "name": "Entity Framework",
+          "tech": "entityframework",
+          "category": "orm"
+        },
+        {
+          "name": "Exposed",
+          "tech": "exposed",
+          "category": "orm"
+        },
+        {
+          "name": "ent.",
+          "tech": "goent",
+          "category": "orm"
+        },
+        {
+          "name": "GORM",
+          "tech": "gorm",
+          "category": "orm"
+        },
+        {
+          "name": "Hibernate",
+          "tech": "hibernate",
+          "category": "orm"
+        },
+        {
+          "name": "JPA",
+          "tech": "jpa",
+          "category": "orm"
+        },
+        {
+          "name": "Knex",
+          "tech": "knex",
+          "category": "orm"
+        },
+        {
+          "name": "Kysely",
+          "tech": "kysely",
+          "category": "orm"
+        },
+        {
+          "name": "Prisma",
+          "tech": "prisma",
+          "category": "orm"
+        },
+        {
+          "name": "Sequelize",
+          "tech": "sequelize",
+          "category": "orm"
+        },
+        {
+          "name": "Sequel",
+          "tech": "sequelruby",
+          "category": "orm"
+        },
+        {
+          "name": "SQLAlchemy",
+          "tech": "sqlalchemy",
+          "category": "orm"
+        },
+        {
+          "name": "TypeORM",
+          "tech": "typeorm",
+          "category": "orm"
+        }
+      ]
+    },
+    {
+      "name": "package_manager",
+      "description": "Package managers (npm, pip, cargo, maven)",
+      "is_component": false,
+      "technologies": [
+        {
+          "name": "asdf",
+          "tech": "asdf",
+          "category": "package_manager"
+        },
+        {
+          "name": "AtlasGo",
+          "tech": "atlasgo",
+          "category": "package_manager"
+        },
+        {
+          "name": "Bundler",
+          "tech": "bundler",
+          "category": "package_manager"
+        },
+        {
+          "name": "Cargo",
+          "tech": "cargo",
+          "category": "package_manager"
+        },
+        {
+          "name": "CocoaPods",
+          "tech": "cocoapods",
+          "category": "package_manager"
+        },
+        {
+          "name": "Conan",
+          "tech": "conan",
+          "category": "package_manager"
+        },
+        {
+          "name": "goenv",
+          "tech": "goenv",
+          "category": "package_manager"
+        },
+        {
+          "name": "npm",
+          "tech": "npm",
+          "category": "package_manager"
+        },
+        {
+          "name": "NuGet",
+          "tech": "nuget",
+          "category": "package_manager"
+        },
+        {
+          "name": "nvm",
+          "tech": "nvm",
+          "category": "package_manager"
+        },
+        {
+          "name": "Composer",
+          "tech": "phpcomposer",
+          "category": "package_manager"
+        },
+        {
+          "name": "phpenv",
+          "tech": "phpenv",
+          "category": "package_manager"
+        },
+        {
+          "name": "pipenv",
+          "tech": "pipenv",
+          "category": "package_manager"
+        },
+        {
+          "name": "pnpm",
+          "tech": "pnpm",
+          "category": "package_manager"
+        },
+        {
+          "name": "Poetry",
+          "tech": "poetry",
+          "category": "package_manager"
+        },
+        {
+          "name": "rubyenv",
+          "tech": "rubyenv",
+          "category": "package_manager"
+        },
+        {
+          "name": "unplugin",
+          "tech": "unplugin",
+          "category": "package_manager"
+        },
+        {
+          "name": "Yarn",
+          "tech": "yarn",
+          "category": "package_manager"
+        }
+      ]
+    },
+    {
+      "name": "payment",
+      "description": "Payment processors (Stripe, PayPal, etc.)",
+      "is_component": true,
+      "technologies": [
+        {
+          "name": "Adyen",
+          "tech": "adyen",
+          "category": "payment"
+        },
+        {
+          "name": "Chargebee",
+          "tech": "chargebee",
+          "category": "payment"
+        },
+        {
+          "name": "Google Pay",
+          "tech": "google.pay",
+          "category": "payment"
+        },
+        {
+          "name": "Intuit",
+          "tech": "intuit",
+          "category": "payment"
+        },
+        {
+          "name": "Klarna",
+          "tech": "klarna",
+          "category": "payment"
+        },
+        {
+          "name": "Lemon Squeezy",
+          "tech": "lemonsqueezy",
+          "category": "payment"
+        },
+        {
+          "name": "Paddle",
+          "tech": "paddle",
+          "category": "payment"
+        },
+        {
+          "name": "Paypal",
+          "tech": "paypal",
+          "category": "payment"
+        },
+        {
+          "name": "Paystack",
+          "tech": "paystack",
+          "category": "payment"
+        },
+        {
+          "name": "Polar",
+          "tech": "polarsh",
+          "category": "payment"
+        },
+        {
+          "name": "RevenueCat",
+          "tech": "revenuecat",
+          "category": "payment"
+        },
+        {
+          "name": "Square",
+          "tech": "squareup",
+          "category": "payment"
+        },
+        {
+          "name": "Stripe",
+          "tech": "stripe",
+          "category": "payment"
+        },
+        {
+          "name": "Use Autumn",
+          "tech": "useautumn",
+          "category": "payment"
+        },
+        {
+          "name": "Zuora",
+          "tech": "zuora",
+          "category": "payment"
+        }
+      ]
+    },
+    {
+      "name": "platform",
+      "description": "Low-code platforms, operating systems (Uniface, Windows, Linux)",
+      "is_component": false,
+      "technologies": [
+        {
+          "name": "Uniface",
+          "tech": "uniface",
+          "category": "platform"
+        }
+      ]
+    },
+    {
+      "name": "runtime",
+      "description": "Runtime environments (Node.js runtime, Python runtime, etc.)",
+      "is_component": false,
+      "technologies": [
+        {
+          "name": "Bun",
+          "tech": "bunsh",
+          "category": "runtime"
+        },
+        {
+          "name": "Deno",
+          "tech": "deno",
+          "category": "runtime"
+        },
+        {
+          "name": "NodeJS",
+          "tech": "nodejs",
+          "category": "runtime"
+        }
+      ]
+    },
+    {
+      "name": "saas",
+      "description": "SaaS platforms",
+      "is_component": true,
+      "technologies": [
+        {
+          "name": "Apple Maps",
+          "tech": "apple.maps",
+          "category": "saas"
+        },
+        {
+          "name": "Atlassian Bitbucket",
+          "tech": "atlassian.bitbucket",
+          "category": "saas"
+        },
+        {
+          "name": "Bing Maps",
+          "tech": "azure.maps",
+          "category": "saas"
+        },
+        {
+          "name": "Box",
+          "tech": "box",
+          "category": "saas"
+        },
+        {
+          "name": "Cloudinary",
+          "tech": "cloudinary",
+          "category": "saas"
+        },
+        {
+          "name": "Docusign",
+          "tech": "docusign",
+          "category": "saas"
+        },
+        {
+          "name": "Dropbox",
+          "tech": "dropbox",
+          "category": "saas"
+        },
+        {
+          "name": "Figma",
+          "tech": "figma",
+          "category": "saas"
+        },
+        {
+          "name": "Google Maps",
+          "tech": "gcp.maps",
+          "category": "saas"
+        },
+        {
+          "name": "GitHub",
+          "tech": "github",
+          "category": "saas"
+        },
+        {
+          "name": "HERE Maps",
+          "tech": "heremaps",
+          "category": "saas"
+        },
+        {
+          "name": "Hypertune",
+          "tech": "hypertune",
+          "category": "saas"
+        },
+        {
+          "name": "Lago",
+          "tech": "lago",
+          "category": "saas"
+        },
+        {
+          "name": "LaunchDarkly",
+          "tech": "launchdarkly",
+          "category": "saas"
+        },
+        {
+          "name": "LogRocket",
+          "tech": "logrocket",
+          "category": "saas"
+        },
+        {
+          "name": "Mapbox",
+          "tech": "mapbox",
+          "category": "saas"
+        },
+        {
+          "name": "Metabase",
+          "tech": "metabase",
+          "category": "saas"
+        },
+        {
+          "name": "Optimizely",
+          "tech": "optimizely",
+          "category": "saas"
+        },
+        {
+          "name": "Pagerduty",
+          "tech": "pagerduty",
+          "category": "saas"
+        },
+        {
+          "name": "PlaceKit",
+          "tech": "placekit",
+          "category": "saas"
+        },
+        {
+          "name": "Postman",
+          "tech": "postman",
+          "category": "saas"
+        },
+        {
+          "name": "Postmark",
+          "tech": "postmark",
+          "category": "saas"
+        },
+        {
+          "name": "Prisma Cloud",
+          "tech": "prismacloud",
+          "category": "saas"
+        },
+        {
+          "name": "SAP",
+          "tech": "sap",
+          "category": "saas"
+        },
+        {
+          "name": "SAS",
+          "tech": "sas",
+          "category": "saas"
+        },
+        {
+          "name": "ServiceNow",
+          "tech": "servicenow",
+          "category": "saas"
+        },
+        {
+          "name": "Split",
+          "tech": "splitio",
+          "category": "saas"
+        },
+        {
+          "name": "Splunk",
+          "tech": "splunk",
+          "category": "saas"
+        },
+        {
+          "name": "Spotify",
+          "tech": "spotify",
+          "category": "saas"
+        },
+        {
+          "name": "Tailscale",
+          "tech": "tailscale",
+          "category": "saas"
+        },
+        {
+          "name": "Veriff",
+          "tech": "veriff",
+          "category": "saas"
+        },
+        {
+          "name": "Vialink",
+          "tech": "vialink",
+          "category": "saas"
+        },
+        {
+          "name": "Orb",
+          "tech": "withorb",
+          "category": "saas"
+        },
+        {
+          "name": "Wolfram Alpha",
+          "tech": "wolframalpha",
+          "category": "saas"
+        },
+        {
+          "name": "Yousign",
+          "tech": "yousign",
+          "category": "saas"
+        }
+      ]
+    },
+    {
+      "name": "security",
+      "description": "Security services",
+      "is_component": true,
+      "technologies": [
+        {
+          "name": "AWS Kms",
+          "tech": "aws.kms",
+          "category": "security"
+        },
+        {
+          "name": "AWS Secrets Manager",
+          "tech": "aws.secretsmanager",
+          "category": "security"
+        },
+        {
+          "name": "Checkov",
+          "tech": "checkov",
+          "category": "security"
+        },
+        {
+          "name": "DataDome",
+          "tech": "datadome",
+          "category": "security"
+        },
+        {
+          "name": "Cloud KMS",
+          "tech": "gcp.kms",
+          "category": "security"
+        },
+        {
+          "name": "Cloud Secret Manager",
+          "tech": "gcp.secretmanager",
+          "category": "security"
+        },
+        {
+          "name": "GitGuardian",
+          "tech": "gitguardian",
+          "category": "security"
+        },
+        {
+          "name": "Vault",
+          "tech": "hashicorp_vault",
+          "category": "security"
+        },
+        {
+          "name": "Infisical",
+          "tech": "infisical",
+          "category": "security"
+        },
+        {
+          "name": "Scaleway Secret Manager",
+          "tech": "scaleway.secretmanager",
+          "category": "security"
+        },
+        {
+          "name": "Snyk",
+          "tech": "snyk",
+          "category": "security"
+        },
+        {
+          "name": "Sqreen",
+          "tech": "sqreen",
+          "category": "security"
+        },
+        {
+          "name": "Wiz",
+          "tech": "wiz",
+          "category": "security"
+        }
+      ]
+    },
+    {
+      "name": "ssg",
+      "description": "Static site generators (when used as main tech)",
+      "is_component": true,
+      "technologies": [
+        {
+          "name": "Assemble",
+          "tech": "assemble",
+          "category": "ssg"
+        },
+        {
+          "name": "Astro",
+          "tech": "astro",
+          "category": "ssg"
+        },
+        {
+          "name": "Fern",
+          "tech": "builtwithfern",
+          "category": "ssg"
+        },
+        {
+          "name": "Docsify",
+          "tech": "docsify",
+          "category": "ssg"
+        },
+        {
+          "name": "Docusaurus",
+          "tech": "docusaurus",
+          "category": "ssg"
+        },
+        {
+          "name": "Eleventy",
+          "tech": "eleventy",
+          "category": "ssg"
+        },
+        {
+          "name": "FumaDocs",
+          "tech": "fumadocs",
+          "category": "ssg"
+        },
+        {
+          "name": "Gatsby",
+          "tech": "gatsby",
+          "category": "ssg"
+        },
+        {
+          "name": "Gridsome",
+          "tech": "gridsome",
+          "category": "ssg"
+        },
+        {
+          "name": "HexoJS",
+          "tech": "hexojs",
+          "category": "ssg"
+        },
+        {
+          "name": "Hugo",
+          "tech": "hugo",
+          "category": "ssg"
+        },
+        {
+          "name": "Jekyll",
+          "tech": "jekyll",
+          "category": "ssg"
+        },
+        {
+          "name": "Mintlify",
+          "tech": "mintlify",
+          "category": "ssg"
+        },
+        {
+          "name": "MkDocs",
+          "tech": "mkdocs",
+          "category": "ssg"
+        },
+        {
+          "name": "Read The Docs",
+          "tech": "readthedocs",
+          "category": "ssg"
+        },
+        {
+          "name": "Slate",
+          "tech": "slatedocs",
+          "category": "ssg"
+        },
+        {
+          "name": "VitePress",
+          "tech": "vitepress",
+          "category": "ssg"
+        },
+        {
+          "name": "VuePress",
+          "tech": "vuepress",
+          "category": "ssg"
+        }
+      ]
+    },
+    {
+      "name": "storage",
+      "description": "Storage services (S3, Cloudinary, etc.)",
+      "is_component": true,
+      "technologies": [
+        {
+          "name": "AWS CloudFront",
+          "tech": "aws.cloudfront",
+          "category": "storage"
+        },
+        {
+          "name": "AWS Block Storage",
+          "tech": "aws.ebs",
+          "category": "storage"
+        },
+        {
+          "name": "AWS Container Registry",
+          "tech": "aws.ecr",
+          "category": "storage"
+        },
+        {
+          "name": "AWS File System",
+          "tech": "aws.efs",
+          "category": "storage"
+        },
+        {
+          "name": "AWS Glacier",
+          "tech": "aws.glacier",
+          "category": "storage"
+        },
+        {
+          "name": "AWS S3",
+          "tech": "aws.s3",
+          "category": "storage"
+        },
+        {
+          "name": "Azure Storage",
+          "tech": "azure.storage",
+          "category": "storage"
+        },
+        {
+          "name": "Cloudflare R2",
+          "tech": "cloudflare.r2",
+          "category": "storage"
+        },
+        {
+          "name": "Cloud Artifact Registry",
+          "tech": "gcp.artifactregistry",
+          "category": "storage"
+        },
+        {
+          "name": "Cloud Container Registry",
+          "tech": "gcp.containerregistry",
+          "category": "storage"
+        },
+        {
+          "name": "Cloud Storage",
+          "tech": "gcp.gcs",
+          "category": "storage"
+        },
+        {
+          "name": "OVH Storage",
+          "tech": "ovh.storage",
+          "category": "storage"
+        },
+        {
+          "name": "Scaleway Storage",
+          "tech": "scaleway.storage",
+          "category": "storage"
+        },
+        {
+          "name": "Supabase Storage",
+          "tech": "supabase.storage",
+          "category": "storage"
+        }
+      ]
+    },
+    {
+      "name": "test",
+      "description": "Testing frameworks (Jest, Pytest, JUnit, Mocha, etc.)",
+      "is_component": false,
+      "technologies": [
+        {
+          "name": "AssertJ",
+          "tech": "assertj",
+          "category": "test"
+        },
+        {
+          "name": "Bogus",
+          "tech": "bogus",
+          "category": "test"
+        },
+        {
+          "name": "Coverlet",
+          "tech": "coverlet",
+          "category": "test"
+        },
+        {
+          "name": "JaCoCo",
+          "tech": "jacoco",
+          "category": "test"
+        },
+        {
+          "name": "Jest",
+          "tech": "jest",
+          "category": "test"
+        },
+        {
+          "name": "jsdom",
+          "tech": "jsdom",
+          "category": "test"
+        },
+        {
+          "name": "JUnit",
+          "tech": "junit",
+          "category": "test"
+        },
+        {
+          "name": "JUnit 5",
+          "tech": "junit5",
+          "category": "test"
+        },
+        {
+          "name": "Grafana K6",
+          "tech": "k6",
+          "category": "test"
+        },
+        {
+          "name": "Lighthouse",
+          "tech": "lighthouse",
+          "category": "test"
+        },
+        {
+          "name": "Mocha",
+          "tech": "mochajs",
+          "category": "test"
+        },
+        {
+          "name": "Mockito",
+          "tech": "mockito",
+          "category": "test"
+        },
+        {
+          "name": "Moq",
+          "tech": "moq",
+          "category": "test"
+        },
+        {
+          "name": "NUnit",
+          "tech": "nunit",
+          "category": "test"
+        },
+        {
+          "name": "PHP Pest",
+          "tech": "phppest",
+          "category": "test"
+        },
+        {
+          "name": "PHPUnit",
+          "tech": "phpunit",
+          "category": "test"
+        },
+        {
+          "name": "Rest Assured",
+          "tech": "rest-assured",
+          "category": "test"
+        },
+        {
+          "name": "Storybook",
+          "tech": "storybook",
+          "category": "test"
+        },
+        {
+          "name": "Testing Library",
+          "tech": "testinglibrary",
+          "category": "test"
+        },
+        {
+          "name": "TestNG",
+          "tech": "testng",
+          "category": "test"
+        },
+        {
+          "name": "Vitest",
+          "tech": "vitest",
+          "category": "test"
+        }
+      ]
+    },
+    {
+      "name": "tool",
+      "description": "General development tools",
+      "is_component": false,
+      "technologies": [
+        {
+          "name": "Adminer",
+          "tech": "adminer",
+          "category": "tool"
+        },
+        {
+          "name": "Tika",
+          "tech": "apachetika",
+          "category": "tool"
+        },
+        {
+          "name": "Bytebase",
+          "tech": "bytebase",
+          "category": "tool"
+        },
+        {
+          "name": "Lego",
+          "tech": "goacmelego",
+          "category": "tool"
+        },
+        {
+          "name": "Mailhog",
+          "tech": "mailhog",
+          "category": "tool"
+        },
+        {
+          "name": "MapStruct",
+          "tech": "mapstruct",
+          "category": "tool"
+        },
+        {
+          "name": "MCP",
+          "tech": "mcp",
+          "category": "tool"
+        },
+        {
+          "name": "Mongo Express",
+          "tech": "mongoexpress",
+          "category": "tool"
+        },
+        {
+          "name": "picocli",
+          "tech": "picocli",
+          "category": "tool"
+        },
+        {
+          "name": "React Email",
+          "tech": "reactemail",
+          "category": "tool"
+        },
+        {
+          "name": "Serde",
+          "tech": "serde",
+          "category": "tool"
+        },
+        {
+          "name": "Teamspeak",
+          "tech": "teamspeak",
+          "category": "tool"
+        },
+        {
+          "name": "Twig",
+          "tech": "twigphp",
+          "category": "tool"
+        },
+        {
+          "name": "Ultracite",
+          "tech": "ultracite",
+          "category": "tool"
+        },
+        {
+          "name": "Vale",
+          "tech": "vale",
+          "category": "tool"
+        }
+      ]
+    },
+    {
+      "name": "ui",
+      "description": "UI components and frameworks (MUI, shadcn, Qt, MFC)",
+      "is_component": false,
+      "technologies": [
+        {
+          "name": "Angular Material",
+          "tech": "angular-material",
+          "category": "ui"
+        },
+        {
+          "name": "Ant Design",
+          "tech": "antd",
+          "category": "ui"
+        },
+        {
+          "name": "Ant Design Icons",
+          "tech": "antdicons",
+          "category": "ui"
+        },
+        {
+          "name": "AriaKit UI",
+          "tech": "ariakitui",
+          "category": "ui"
+        },
+        {
+          "name": "Ark UI",
+          "tech": "arkui",
+          "category": "ui"
+        },
+        {
+          "name": "Base UI",
+          "tech": "baseui",
+          "category": "ui"
+        },
+        {
+          "name": "Bootstrap",
+          "tech": "bootstrap",
+          "category": "ui"
+        },
+        {
+          "name": "Bootstrap Icons",
+          "tech": "bootstrapicons",
+          "category": "ui"
+        },
+        {
+          "name": "CEF4Delphi",
+          "tech": "cef4delphi",
+          "category": "ui"
+        },
+        {
+          "name": "Chakra UI",
+          "tech": "chakraui",
+          "category": "ui"
+        },
+        {
+          "name": "CodeMirror",
+          "tech": "codemirror",
+          "category": "ui"
+        },
+        {
+          "name": "D3.js",
+          "tech": "d3js",
+          "category": "ui"
+        },
+        {
+          "name": "daisyUI",
+          "tech": "daisyui",
+          "category": "ui"
+        },
+        {
+          "name": "DevExpress",
+          "tech": "devexpress",
+          "category": "ui"
+        },
+        {
+          "name": "Feather Icons",
+          "tech": "feathericons",
+          "category": "ui"
+        },
+        {
+          "name": "Fluent UI",
+          "tech": "fluentui",
+          "category": "ui"
+        },
+        {
+          "name": "Font Awesome",
+          "tech": "fontawesome",
+          "category": "ui"
+        },
+        {
+          "name": "Gradio",
+          "tech": "gradio",
+          "category": "ui"
+        },
+        {
+          "name": "Headless UI",
+          "tech": "headlessui",
+          "category": "ui"
+        },
+        {
+          "name": "Heroicons",
+          "tech": "heroicons",
+          "category": "ui"
+        },
+        {
+          "name": "Hero UI",
+          "tech": "heroui",
+          "category": "ui"
+        },
+        {
+          "name": "HugeIcons",
+          "tech": "hugeicons",
+          "category": "ui"
+        },
+        {
+          "name": "Ionicons",
+          "tech": "ionicons",
+          "category": "ui"
+        },
+        {
+          "name": "jQuery",
+          "tech": "jquery",
+          "category": "ui"
+        },
+        {
+          "name": "jQuery UI",
+          "tech": "jqueryui",
+          "category": "ui"
+        },
+        {
+          "name": "Lexical Editor",
+          "tech": "lexicaleditor",
+          "category": "ui"
+        },
+        {
+          "name": "Lord Icon",
+          "tech": "lordicon",
+          "category": "ui"
+        },
+        {
+          "name": "Lucide Icons",
+          "tech": "lucideicons",
+          "category": "ui"
+        },
+        {
+          "name": "Mantine UI",
+          "tech": "mantineui",
+          "category": "ui"
+        },
+        {
+          "name": "Material Design Icons",
+          "tech": "materialdesignicons",
+          "category": "ui"
+        },
+        {
+          "name": "Material UI",
+          "tech": "materialui",
+          "category": "ui"
+        },
+        {
+          "name": "Monaco Editor",
+          "tech": "monacoeditor",
+          "category": "ui"
+        },
+        {
+          "name": "MUI Icons",
+          "tech": "muiicons",
+          "category": "ui"
+        },
+        {
+          "name": "Phaser",
+          "tech": "phaserjs",
+          "category": "ui"
+        },
+        {
+          "name": "Phosphor Icons",
+          "tech": "phosphoreicons",
+          "category": "ui"
+        },
+        {
+          "name": "Radix Icons",
+          "tech": "radixicons",
+          "category": "ui"
+        },
+        {
+          "name": "Radix UI",
+          "tech": "radixui",
+          "category": "ui"
+        },
+        {
+          "name": "React",
+          "tech": "react",
+          "category": "ui"
+        },
+        {
+          "name": "React Icons",
+          "tech": "reacticons",
+          "category": "ui"
+        },
+        {
+          "name": "React Router",
+          "tech": "reactrouterdom",
+          "category": "ui"
+        },
+        {
+          "name": "Refine",
+          "tech": "refinedev",
+          "category": "ui"
+        },
+        {
+          "name": "Reka UI",
+          "tech": "rekaui",
+          "category": "ui"
+        },
+        {
+          "name": "Remix Icons",
+          "tech": "remixicons",
+          "category": "ui"
+        },
+        {
+          "name": "Remix Router",
+          "tech": "remixrouter",
+          "category": "ui"
+        },
+        {
+          "name": "Sandpack",
+          "tech": "sandpackeditor",
+          "category": "ui"
+        },
+        {
+          "name": "Shadcn",
+          "tech": "shadcn",
+          "category": "ui"
+        },
+        {
+          "name": "Shopify Hydrogen",
+          "tech": "shopify.hydrogen",
+          "category": "ui"
+        },
+        {
+          "name": "Simple Icons",
+          "tech": "simpleicons",
+          "category": "ui"
+        },
+        {
+          "name": "Svelte",
+          "tech": "svelte",
+          "category": "ui"
+        },
+        {
+          "name": "Tabler",
+          "tech": "tablericons",
+          "category": "ui"
+        },
+        {
+          "name": "Tailwind",
+          "tech": "tailwind",
+          "category": "ui"
+        },
+        {
+          "name": "TanStack Router",
+          "tech": "tanstackrouter",
+          "category": "ui"
+        },
+        {
+          "name": "Tiptap",
+          "tech": "tiptap",
+          "category": "ui"
+        },
+        {
+          "name": "UmiJS",
+          "tech": "umijs",
+          "category": "ui"
+        }
+      ]
+    },
+    {
+      "name": "validation",
+      "description": "Validation libraries",
+      "is_component": false,
+      "technologies": [
+        {
+          "name": "ArkType",
+          "tech": "arktype",
+          "category": "validation"
+        },
+        {
+          "name": "JSON Schema",
+          "tech": "jsonschema",
+          "category": "validation"
+        },
+        {
+          "name": "Pydantic",
+          "tech": "pydantic",
+          "category": "validation"
+        },
+        {
+          "name": "TypeBox",
+          "tech": "typebox",
+          "category": "validation"
+        },
+        {
+          "name": "Valibot",
+          "tech": "valibot",
+          "category": "validation"
+        }
+      ]
+    },
+    {
+      "name": "vcs",
+      "description": "Version control systems (Git, SVN, Mercurial, etc.)",
+      "is_component": false,
+      "technologies": [
+        {
+          "name": "Bazaar",
+          "tech": "bazaar",
+          "category": "vcs"
+        },
+        {
+          "name": "CVS",
+          "tech": "cvs",
+          "category": "vcs"
+        },
+        {
+          "name": "Git",
+          "tech": "git",
+          "category": "vcs"
+        },
+        {
+          "name": "Mercurial",
+          "tech": "mercurial",
+          "category": "vcs"
+        },
+        {
+          "name": "Perforce Helix",
+          "tech": "perforce",
+          "category": "vcs"
+        },
+        {
+          "name": "Subversion",
+          "tech": "svn",
+          "category": "vcs"
+        }
+      ]
+    },
+    {
+      "name": "web_framework",
+      "description": "Web frameworks (React, Vue, Angular, Svelte, etc.)",
+      "is_component": false,
+      "technologies": [
+        {
+          "name": "Alpine.js",
+          "tech": "alpinejs",
+          "category": "web_framework"
+        },
+        {
+          "name": "Angular",
+          "tech": "angular",
+          "category": "web_framework"
+        },
+        {
+          "name": "AngularJS",
+          "tech": "angularjs",
+          "category": "web_framework"
+        },
+        {
+          "name": "Ember",
+          "tech": "emberjs",
+          "category": "web_framework"
+        },
+        {
+          "name": "Ext JS",
+          "tech": "extjs",
+          "category": "web_framework"
+        },
+        {
+          "name": "HTMX",
+          "tech": "htmx",
+          "category": "web_framework"
+        },
+        {
+          "name": "Inferno",
+          "tech": "infernojs",
+          "category": "web_framework"
+        },
+        {
+          "name": "Lit",
+          "tech": "litjs",
+          "category": "web_framework"
+        },
+        {
+          "name": "Mithril",
+          "tech": "mithriljs",
+          "category": "web_framework"
+        },
+        {
+          "name": "Preact",
+          "tech": "preactjs",
+          "category": "web_framework"
+        },
+        {
+          "name": "Qwik",
+          "tech": "qwikjs",
+          "category": "web_framework"
+        },
+        {
+          "name": "Solid js",
+          "tech": "solidjs",
+          "category": "web_framework"
+        },
+        {
+          "name": "Stencil",
+          "tech": "stenciljs",
+          "category": "web_framework"
+        },
+        {
+          "name": "Vue.js",
+          "tech": "vue",
+          "category": "web_framework"
+        },
+        {
+          "name": "Vue",
+          "tech": "vuejs",
+          "category": "web_framework"
+        }
+      ]
+    }
+  ],
+  "count": 49
+}

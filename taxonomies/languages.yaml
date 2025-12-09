@@ -1,0 +1,3741 @@
+languages:
+    - name: 1C Enterprise
+      type: programming
+      extensions:
+        - .bsl
+        - .os
+    - name: 2-Dimensional Array
+      type: data
+      extensions:
+        - .2da
+    - name: 4D
+      type: programming
+      extensions:
+        - .4dm
+    - name: ABAP
+      type: programming
+      extensions:
+        - .abap
+    - name: ABAP CDS
+      type: programming
+      extensions:
+        - .asddls
+    - name: ABNF
+      type: data
+      extensions:
+        - .abnf
+    - name: AGS Script
+      type: programming
+      extensions:
+        - .asc
+        - .ash
+    - name: AIDL
+      type: programming
+      extensions:
+        - .aidl
+    - name: AL
+      type: programming
+      extensions:
+        - .al
+    - name: AMPL
+      type: programming
+      extensions:
+        - .ampl
+        - .mod
+    - name: ANTLR
+      type: programming
+      extensions:
+        - .g4
+    - name: API Blueprint
+      type: markup
+      extensions:
+        - .apib
+    - name: APL
+      type: programming
+      extensions:
+        - .apl
+        - .dyalog
+    - name: ASL
+      type: programming
+      extensions:
+        - .asl
+        - .dsl
+    - name: ASN.1
+      type: data
+      extensions:
+        - .asn
+        - .asn1
+    - name: ASP.NET
+      type: programming
+      extensions:
+        - .asax
+        - .ascx
+        - .ashx
+        - .asmx
+        - .aspx
+        - .axd
+    - name: ATS
+      type: programming
+      extensions:
+        - .dats
+        - .hats
+        - .sats
+    - name: ActionScript
+      type: programming
+      extensions:
+        - .as
+    - name: Ada
+      type: programming
+      extensions:
+        - .ada
+        - .adb
+        - .ads
+    - name: Adblock Filter List
+      type: data
+      extensions:
+        - .txt
+    - name: Adobe Font Metrics
+      type: data
+      extensions:
+        - .afm
+    - name: Agda
+      type: programming
+      extensions:
+        - .agda
+    - name: Alloy
+      type: programming
+      extensions:
+        - .als
+    - name: Altium Designer
+      type: data
+      extensions:
+        - .outjob
+        - .pcbdoc
+        - .prjpcb
+        - .schdoc
+    - name: AngelScript
+      type: programming
+      extensions:
+        - .angelscript
+        - .as
+    - name: Antlers
+      type: markup
+      extensions:
+        - .antlers.html
+        - .antlers.php
+        - .antlers.xml
+    - name: ApacheConf
+      type: data
+      extensions:
+        - .apacheconf
+        - .vhost
+    - name: Apex
+      type: programming
+      extensions:
+        - .cls
+        - .trigger
+    - name: Apollo Guidance Computer
+      type: programming
+      extensions:
+        - .agc
+    - name: AppleScript
+      type: programming
+      extensions:
+        - .applescript
+        - .scpt
+    - name: Arc
+      type: programming
+      extensions:
+        - .arc
+    - name: AsciiDoc
+      type: prose
+      extensions:
+        - .adoc
+        - .asc
+        - .asciidoc
+    - name: AspectJ
+      type: programming
+      extensions:
+        - .aj
+    - name: Assembly
+      type: programming
+      extensions:
+        - .a51
+        - .asm
+        - .i
+        - .inc
+        - .nas
+        - .nasm
+    - name: Astro
+      type: markup
+      extensions:
+        - .astro
+    - name: Asymptote
+      type: programming
+      extensions:
+        - .asy
+    - name: Augeas
+      type: programming
+      extensions:
+        - .aug
+    - name: AutoHotkey
+      type: programming
+      extensions:
+        - .ahk
+        - .ahkl
+    - name: AutoIt
+      type: programming
+      extensions:
+        - .au3
+    - name: Avro IDL
+      type: data
+      extensions:
+        - .avdl
+    - name: Awk
+      type: programming
+      extensions:
+        - .auk
+        - .awk
+        - .gawk
+        - .mawk
+        - .nawk
+    - name: B4X
+      type: programming
+      extensions:
+        - .bas
+    - name: BASIC
+      type: programming
+      extensions:
+        - .bas
+    - name: BQN
+      type: programming
+      extensions:
+        - .bqn
+    - name: Ballerina
+      type: programming
+      extensions:
+        - .bal
+    - name: Batchfile
+      type: programming
+      extensions:
+        - .bat
+        - .cmd
+    - name: Beef
+      type: programming
+      extensions:
+        - .bf
+    - name: Befunge
+      type: programming
+      extensions:
+        - .befunge
+        - .bf
+    - name: Berry
+      type: programming
+      extensions:
+        - .be
+    - name: BibTeX
+      type: markup
+      extensions:
+        - .bib
+        - .bibtex
+    - name: Bicep
+      type: programming
+      extensions:
+        - .bicep
+        - .bicepparam
+    - name: Bikeshed
+      type: markup
+      extensions:
+        - .bs
+    - name: Bison
+      type: programming
+      extensions:
+        - .bison
+    - name: BitBake
+      type: programming
+      extensions:
+        - .bb
+        - .bbappend
+        - .bbclass
+        - .inc
+    - name: Blade
+      type: markup
+      extensions:
+        - .blade
+        - .blade.php
+    - name: BlitzBasic
+      type: programming
+      extensions:
+        - .bb
+        - .decls
+    - name: BlitzMax
+      type: programming
+      extensions:
+        - .bmx
+    - name: Bluespec
+      type: programming
+      extensions:
+        - .bsv
+    - name: Bluespec BH
+      type: programming
+      extensions:
+        - .bs
+    - name: Boo
+      type: programming
+      extensions:
+        - .boo
+    - name: Boogie
+      type: programming
+      extensions:
+        - .bpl
+    - name: Brainfuck
+      type: programming
+      extensions:
+        - .b
+        - .bf
+    - name: BrighterScript
+      type: programming
+      extensions:
+        - .bs
+    - name: Brightscript
+      type: programming
+      extensions:
+        - .brs
+    - name: C
+      type: programming
+      extensions:
+        - .c
+        - .cats
+        - .h
+        - .idc
+    - name: C#
+      type: programming
+      extensions:
+        - .cake
+        - .cs
+        - .cs.pp
+        - .csx
+        - .linq
+    - name: C++
+      type: programming
+      extensions:
+        - .c++
+        - .cc
+        - .cp
+        - .cpp
+        - .cppm
+        - .cxx
+        - .h
+        - .h++
+        - .hh
+        - .hpp
+        - .hxx
+        - .inc
+        - .inl
+        - .ino
+        - .ipp
+        - .ixx
+        - .re
+        - .tcc
+        - .tpp
+        - .txx
+    - name: C-ObjDump
+      type: data
+      extensions:
+        - .c-objdump
+    - name: C2hs Haskell
+      type: programming
+      extensions:
+        - .chs
+    - name: CAP CDS
+      type: programming
+      extensions:
+        - .cds
+    - name: CIL
+      type: data
+      extensions:
+        - .cil
+    - name: CLIPS
+      type: programming
+      extensions:
+        - .clp
+    - name: CMake
+      type: programming
+      extensions:
+        - .cmake
+        - .cmake.in
+    - name: COBOL
+      type: programming
+      extensions:
+        - .cbl
+        - .ccp
+        - .cob
+        - .cobol
+        - .cpy
+    - name: COLLADA
+      type: data
+      extensions:
+        - .dae
+    - name: CSON
+      type: data
+      extensions:
+        - .cson
+    - name: CSS
+      type: markup
+      extensions:
+        - .css
+    - name: CSV
+      type: data
+      extensions:
+        - .csv
+    - name: CUE
+      type: programming
+      extensions:
+        - .cue
+    - name: CWeb
+      type: programming
+      extensions:
+        - .w
+    - name: Cabal Config
+      type: data
+      extensions:
+        - .cabal
+    - name: Caddyfile
+      type: data
+      extensions:
+        - .caddyfile
+    - name: Cadence
+      type: programming
+      extensions:
+        - .cdc
+    - name: Cairo
+      type: programming
+      extensions:
+        - .cairo
+    - name: Cairo Zero
+      type: programming
+      extensions:
+        - .cairo
+    - name: CameLIGO
+      type: programming
+      extensions:
+        - .mligo
+    - name: Cap'n Proto
+      type: programming
+      extensions:
+        - .capnp
+    - name: Carbon
+      type: programming
+      extensions:
+        - .carbon
+    - name: CartoCSS
+      type: programming
+      extensions:
+        - .mss
+    - name: Ceylon
+      type: programming
+      extensions:
+        - .ceylon
+    - name: Chapel
+      type: programming
+      extensions:
+        - .chpl
+    - name: Charity
+      type: programming
+      extensions:
+        - .ch
+    - name: Checksums
+      type: data
+      extensions:
+        - .crc32
+        - .md2
+        - .md4
+        - .md5
+        - .sha1
+        - .sha2
+        - .sha224
+        - .sha256
+        - .sha256sum
+        - .sha3
+        - .sha384
+        - .sha512
+    - name: ChucK
+      type: programming
+      extensions:
+        - .ck
+    - name: Circom
+      type: programming
+      extensions:
+        - .circom
+    - name: Cirru
+      type: programming
+      extensions:
+        - .cirru
+    - name: Clarion
+      type: programming
+      extensions:
+        - .clw
+    - name: Clarity
+      type: programming
+      extensions:
+        - .clar
+    - name: Classic ASP
+      type: programming
+      extensions:
+        - .asp
+    - name: Clean
+      type: programming
+      extensions:
+        - .dcl
+        - .icl
+    - name: Click
+      type: programming
+      extensions:
+        - .click
+    - name: Clojure
+      type: programming
+      extensions:
+        - .bb
+        - .boot
+        - .cl2
+        - .clj
+        - .cljc
+        - .cljs
+        - .cljs.hl
+        - .cljscm
+        - .cljx
+        - .hic
+    - name: Closure Templates
+      type: markup
+      extensions:
+        - .soy
+    - name: CoNLL-U
+      type: data
+      extensions:
+        - .conll
+        - .conllu
+    - name: CodeQL
+      type: programming
+      extensions:
+        - .ql
+        - .qll
+    - name: CoffeeScript
+      type: programming
+      extensions:
+        - ._coffee
+        - .cake
+        - .cjsx
+        - .coffee
+        - .iced
+    - name: ColdFusion
+      type: programming
+      extensions:
+        - .cfm
+        - .cfml
+    - name: ColdFusion CFC
+      type: programming
+      extensions:
+        - .cfc
+    - name: Common Lisp
+      type: programming
+      extensions:
+        - .asd
+        - .cl
+        - .l
+        - .lisp
+        - .lsp
+        - .ny
+        - .podsl
+        - .sexp
+    - name: Common Workflow Language
+      type: programming
+      extensions:
+        - .cwl
+    - name: Component Pascal
+      type: programming
+      extensions:
+        - .cp
+        - .cps
+    - name: Cool
+      type: programming
+      extensions:
+        - .cl
+    - name: Coq
+      type: programming
+      extensions:
+        - .coq
+        - .v
+    - name: Cpp-ObjDump
+      type: data
+      extensions:
+        - .c++-objdump
+        - .c++objdump
+        - .cpp-objdump
+        - .cppobjdump
+        - .cxx-objdump
+    - name: Creole
+      type: prose
+      extensions:
+        - .creole
+    - name: Crystal
+      type: programming
+      extensions:
+        - .cr
+    - name: Csound
+      type: programming
+      extensions:
+        - .orc
+        - .udo
+    - name: Csound Document
+      type: programming
+      extensions:
+        - .csd
+    - name: Csound Score
+      type: programming
+      extensions:
+        - .sco
+    - name: Cuda
+      type: programming
+      extensions:
+        - .cu
+        - .cuh
+    - name: Cue Sheet
+      type: data
+      extensions:
+        - .cue
+    - name: Curry
+      type: programming
+      extensions:
+        - .curry
+    - name: Cycript
+      type: programming
+      extensions:
+        - .cy
+    - name: Cylc
+      type: data
+      extensions:
+        - .cylc
+    - name: Cypher
+      type: programming
+      extensions:
+        - .cyp
+        - .cypher
+    - name: Cython
+      type: programming
+      extensions:
+        - .pxd
+        - .pxi
+        - .pyx
+    - name: D
+      type: programming
+      extensions:
+        - .d
+        - .di
+    - name: D-ObjDump
+      type: data
+      extensions:
+        - .d-objdump
+    - name: D2
+      type: markup
+      extensions:
+        - .d2
+    - name: DIGITAL Command Language
+      type: programming
+      extensions:
+        - .com
+    - name: DM
+      type: programming
+      extensions:
+        - .dm
+    - name: DNS Zone
+      type: data
+      extensions:
+        - .arpa
+        - .zone
+    - name: DTrace
+      type: programming
+      extensions:
+        - .d
+    - name: Dafny
+      type: programming
+      extensions:
+        - .dfy
+    - name: Darcs Patch
+      type: data
+      extensions:
+        - .darcspatch
+        - .dpatch
+    - name: Dart
+      type: programming
+      extensions:
+        - .dart
+    - name: DataWeave
+      type: programming
+      extensions:
+        - .dwl
+    - name: Debian Package Control File
+      type: data
+      extensions:
+        - .dsc
+    - name: DenizenScript
+      type: programming
+      extensions:
+        - .dsc
+    - name: Dhall
+      type: programming
+      extensions:
+        - .dhall
+    - name: Diff
+      type: data
+      extensions:
+        - .diff
+        - .patch
+    - name: DirectX 3D File
+      type: data
+      extensions:
+        - .x
+    - name: Dockerfile
+      type: programming
+      extensions:
+        - .containerfile
+        - .dockerfile
+    - name: Dogescript
+      type: programming
+      extensions:
+        - .djs
+    - name: Dotenv
+      type: data
+      extensions:
+        - .env
+    - name: Dylan
+      type: programming
+      extensions:
+        - .dyl
+        - .dylan
+        - .intr
+        - .lid
+    - name: E
+      type: programming
+      extensions:
+        - .e
+    - name: E-mail
+      type: data
+      extensions:
+        - .eml
+        - .mbox
+    - name: EBNF
+      type: data
+      extensions:
+        - .ebnf
+    - name: ECL
+      type: programming
+      extensions:
+        - .ecl
+        - .eclxml
+    - name: ECLiPSe
+      type: programming
+      extensions:
+        - .ecl
+    - name: EJS
+      type: markup
+      extensions:
+        - .ect
+        - .ejs
+        - .ejs.t
+        - .jst
+    - name: EQ
+      type: programming
+      extensions:
+        - .eq
+    - name: Eagle
+      type: data
+      extensions:
+        - .brd
+        - .sch
+    - name: Easybuild
+      type: data
+      extensions:
+        - .eb
+    - name: Ecere Projects
+      type: data
+      extensions:
+        - .epj
+    - name: Ecmarkup
+      type: markup
+      extensions:
+        - .html
+    - name: Edge
+      type: markup
+      extensions:
+        - .edge
+    - name: EdgeQL
+      type: programming
+      extensions:
+        - .edgeql
+        - .esdl
+    - name: EditorConfig
+      type: data
+      extensions:
+        - .editorconfig
+    - name: Edje Data Collection
+      type: data
+      extensions:
+        - .edc
+    - name: Eiffel
+      type: programming
+      extensions:
+        - .e
+    - name: Elixir
+      type: programming
+      extensions:
+        - .ex
+        - .exs
+    - name: Elm
+      type: programming
+      extensions:
+        - .elm
+    - name: Elvish
+      type: programming
+      extensions:
+        - .elv
+    - name: Emacs Lisp
+      type: programming
+      extensions:
+        - .el
+        - .emacs
+        - .emacs.desktop
+    - name: EmberScript
+      type: programming
+      extensions:
+        - .em
+        - .emberscript
+    - name: Erlang
+      type: programming
+      extensions:
+        - .app
+        - .app.src
+        - .erl
+        - .es
+        - .escript
+        - .hrl
+        - .xrl
+        - .yrl
+    - name: Euphoria
+      type: programming
+      extensions:
+        - .e
+        - .ex
+    - name: F#
+      type: programming
+      extensions:
+        - .fs
+        - .fsi
+        - .fsx
+    - name: F*
+      type: programming
+      extensions:
+        - .fst
+        - .fsti
+    - name: FIGlet Font
+      type: data
+      extensions:
+        - .flf
+    - name: FIRRTL
+      type: programming
+      extensions:
+        - .fir
+    - name: FLUX
+      type: programming
+      extensions:
+        - .flux
+        - .fx
+    - name: Factor
+      type: programming
+      extensions:
+        - .factor
+    - name: Fancy
+      type: programming
+      extensions:
+        - .fancypack
+        - .fy
+    - name: Fantom
+      type: programming
+      extensions:
+        - .fan
+    - name: Faust
+      type: programming
+      extensions:
+        - .dsp
+    - name: Fennel
+      type: programming
+      extensions:
+        - .fnl
+    - name: Filebench WML
+      type: programming
+      extensions:
+        - .f
+    - name: Filterscript
+      type: programming
+      extensions:
+        - .fs
+    - name: Fluent
+      type: programming
+      extensions:
+        - .ftl
+    - name: Formatted
+      type: data
+      extensions:
+        - .eam.fs
+        - .for
+    - name: Forth
+      type: programming
+      extensions:
+        - .4th
+        - .f
+        - .for
+        - .forth
+        - .fr
+        - .frt
+        - .fs
+        - .fth
+    - name: Fortran
+      type: programming
+      extensions:
+        - .f
+        - .f77
+        - .for
+        - .fpp
+    - name: Fortran Free Form
+      type: programming
+      extensions:
+        - .f03
+        - .f08
+        - .f90
+        - .f95
+    - name: FreeBASIC
+      type: programming
+      extensions:
+        - .bas
+        - .bi
+    - name: FreeMarker
+      type: programming
+      extensions:
+        - .ftl
+    - name: Frege
+      type: programming
+      extensions:
+        - .fr
+    - name: Futhark
+      type: programming
+      extensions:
+        - .fut
+    - name: G-code
+      type: programming
+      extensions:
+        - .cnc
+        - .g
+        - .gco
+        - .gcode
+    - name: GAML
+      type: programming
+      extensions:
+        - .gaml
+    - name: GAMS
+      type: programming
+      extensions:
+        - .gms
+    - name: GAP
+      type: programming
+      extensions:
+        - .g
+        - .gap
+        - .gd
+        - .gi
+        - .tst
+    - name: GCC Machine Description
+      type: programming
+      extensions:
+        - .md
+    - name: GDB
+      type: programming
+      extensions:
+        - .gdb
+        - .gdbinit
+    - name: GDScript
+      type: programming
+      extensions:
+        - .gd
+    - name: GEDCOM
+      type: data
+      extensions:
+        - .ged
+    - name: GLSL
+      type: programming
+      extensions:
+        - .fp
+        - .frag
+        - .frg
+        - .fs
+        - .fsh
+        - .fshader
+        - .geo
+        - .geom
+        - .glsl
+        - .glslf
+        - .glslv
+        - .gs
+        - .gshader
+        - .rchit
+        - .rmiss
+        - .shader
+        - .tesc
+        - .tese
+        - .vert
+        - .vrx
+        - .vs
+        - .vsh
+        - .vshader
+    - name: GN
+      type: data
+      extensions:
+        - .gn
+        - .gni
+    - name: GSC
+      type: programming
+      extensions:
+        - .csc
+        - .gsc
+        - .gsh
+    - name: Game Maker Language
+      type: programming
+      extensions:
+        - .gml
+    - name: Gemini
+      type: prose
+      extensions:
+        - .gmi
+    - name: Genero 4gl
+      type: programming
+      extensions:
+        - .4gl
+    - name: Genero per
+      type: markup
+      extensions:
+        - .per
+    - name: Genie
+      type: programming
+      extensions:
+        - .gs
+    - name: Genshi
+      type: programming
+      extensions:
+        - .kid
+    - name: Gentoo Ebuild
+      type: programming
+      extensions:
+        - .ebuild
+    - name: Gentoo Eclass
+      type: programming
+      extensions:
+        - .eclass
+    - name: Gerber Image
+      type: data
+      extensions:
+        - .cmp
+        - .gbl
+        - .gbo
+        - .gbp
+        - .gbr
+        - .gbs
+        - .gko
+        - .gml
+        - .gpb
+        - .gpt
+        - .gtl
+        - .gto
+        - .gtp
+        - .gts
+        - .ncl
+        - .sol
+    - name: Gettext Catalog
+      type: prose
+      extensions:
+        - .po
+        - .pot
+    - name: Gherkin
+      type: programming
+      extensions:
+        - .feature
+        - .story
+    - name: Git Config
+      type: data
+      extensions:
+        - .gitconfig
+    - name: Gleam
+      type: programming
+      extensions:
+        - .gleam
+    - name: Glimmer JS
+      type: programming
+      extensions:
+        - .gjs
+    - name: Glimmer TS
+      type: programming
+      extensions:
+        - .gts
+    - name: Glyph
+      type: programming
+      extensions:
+        - .glf
+    - name: Glyph Bitmap Distribution Format
+      type: data
+      extensions:
+        - .bdf
+    - name: Gnuplot
+      type: programming
+      extensions:
+        - .gnu
+        - .gnuplot
+        - .gp
+        - .p
+        - .plot
+        - .plt
+    - name: Go
+      type: programming
+      extensions:
+        - .go
+    - name: Godot Resource
+      type: data
+      extensions:
+        - .gdnlib
+        - .gdns
+        - .tres
+        - .tscn
+    - name: Golo
+      type: programming
+      extensions:
+        - .golo
+    - name: Gosu
+      type: programming
+      extensions:
+        - .gs
+        - .gst
+        - .gsx
+        - .vark
+    - name: Grace
+      type: programming
+      extensions:
+        - .grace
+    - name: Gradle
+      type: data
+      extensions:
+        - .gradle
+    - name: Gradle Kotlin DSL
+      type: data
+      extensions:
+        - .gradle.kts
+    - name: Grammatical Framework
+      type: programming
+      extensions:
+        - .gf
+    - name: Graph Modeling Language
+      type: data
+      extensions:
+        - .gml
+    - name: GraphQL
+      type: data
+      extensions:
+        - .gql
+        - .graphql
+        - .graphqls
+    - name: Graphviz (DOT)
+      type: data
+      extensions:
+        - .dot
+        - .gv
+    - name: Groovy
+      type: programming
+      extensions:
+        - .groovy
+        - .grt
+        - .gtpl
+        - .gvy
+    - name: Groovy Server Pages
+      type: programming
+      extensions:
+        - .gsp
+    - name: HAProxy
+      type: data
+      extensions:
+        - .cfg
+    - name: HCL
+      type: programming
+      extensions:
+        - .hcl
+        - .nomad
+        - .tf
+        - .tfvars
+        - .workflow
+    - name: HLSL
+      type: programming
+      extensions:
+        - .cginc
+        - .fx
+        - .fxh
+        - .hlsl
+        - .hlsli
+    - name: HOCON
+      type: data
+      extensions:
+        - .hocon
+    - name: HTML
+      type: markup
+      extensions:
+        - .hta
+        - .htm
+        - .html
+        - .html.hl
+        - .inc
+        - .xht
+        - .xhtml
+    - name: HTML+ECR
+      type: markup
+      extensions:
+        - .ecr
+    - name: HTML+EEX
+      type: markup
+      extensions:
+        - .eex
+        - .html.heex
+        - .html.leex
+    - name: HTML+ERB
+      type: markup
+      extensions:
+        - .erb
+        - .erb.deface
+        - .rhtml
+    - name: HTML+PHP
+      type: markup
+      extensions:
+        - .phtml
+    - name: HTML+Razor
+      type: markup
+      extensions:
+        - .cshtml
+        - .razor
+    - name: HTTP
+      type: data
+      extensions:
+        - .http
+    - name: HXML
+      type: data
+      extensions:
+        - .hxml
+    - name: Hack
+      type: programming
+      extensions:
+        - .hack
+        - .hh
+        - .hhi
+        - .php
+    - name: Haml
+      type: markup
+      extensions:
+        - .haml
+        - .haml.deface
+    - name: Handlebars
+      type: markup
+      extensions:
+        - .handlebars
+        - .hbs
+    - name: Harbour
+      type: programming
+      extensions:
+        - .hb
+    - name: Hare
+      type: programming
+      extensions:
+        - .ha
+    - name: Haskell
+      type: programming
+      extensions:
+        - .hs
+        - .hs-boot
+        - .hsc
+    - name: Haxe
+      type: programming
+      extensions:
+        - .hx
+        - .hxsl
+    - name: HiveQL
+      type: programming
+      extensions:
+        - .hql
+        - .q
+    - name: HolyC
+      type: programming
+      extensions:
+        - .hc
+    - name: Hy
+      type: programming
+      extensions:
+        - .hy
+    - name: HyPhy
+      type: programming
+      extensions:
+        - .bf
+    - name: IDL
+      type: programming
+      extensions:
+        - .dlm
+        - .pro
+    - name: IGOR Pro
+      type: programming
+      extensions:
+        - .ipf
+    - name: INI
+      type: data
+      extensions:
+        - .cfg
+        - .cnf
+        - .dof
+        - .ini
+        - .lektorproject
+        - .prefs
+        - .pro
+        - .properties
+        - .url
+    - name: IRC log
+      type: data
+      extensions:
+        - .irclog
+        - .weechatlog
+    - name: Idris
+      type: programming
+      extensions:
+        - .idr
+        - .lidr
+    - name: Ignore List
+      type: data
+      extensions:
+        - .gitignore
+    - name: ImageJ Macro
+      type: programming
+      extensions:
+        - .ijm
+    - name: Imba
+      type: programming
+      extensions:
+        - .imba
+    - name: Inform 7
+      type: programming
+      extensions:
+        - .i7x
+        - .ni
+    - name: Ink
+      type: programming
+      extensions:
+        - .ink
+    - name: Inno Setup
+      type: programming
+      extensions:
+        - .isl
+        - .iss
+    - name: Io
+      type: programming
+      extensions:
+        - .io
+    - name: Ioke
+      type: programming
+      extensions:
+        - .ik
+    - name: Isabelle
+      type: programming
+      extensions:
+        - .thy
+    - name: J
+      type: programming
+      extensions:
+        - .ijs
+    - name: JCL
+      type: programming
+      extensions:
+        - .jcl
+    - name: JFlex
+      type: programming
+      extensions:
+        - .flex
+        - .jflex
+    - name: JSON
+      type: data
+      extensions:
+        - .4dform
+        - .4dproject
+        - .avsc
+        - .geojson
+        - .gltf
+        - .har
+        - .ice
+        - .json
+        - .json-tmlanguage
+        - .json.example
+        - .jsonl
+        - .mcmeta
+        - .sarif
+        - .tact
+        - .tfstate
+        - .tfstate.backup
+        - .topojson
+        - .webapp
+        - .webmanifest
+        - .yy
+        - .yyp
+    - name: JSON with Comments
+      type: data
+      extensions:
+        - .code-snippets
+        - .code-workspace
+        - .jsonc
+        - .sublime-build
+        - .sublime-color-scheme
+        - .sublime-commands
+        - .sublime-completions
+        - .sublime-keymap
+        - .sublime-macro
+        - .sublime-menu
+        - .sublime-mousemap
+        - .sublime-project
+        - .sublime-settings
+        - .sublime-theme
+        - .sublime-workspace
+        - .sublime_metrics
+        - .sublime_session
+    - name: JSON5
+      type: data
+      extensions:
+        - .json5
+    - name: JSONLD
+      type: data
+      extensions:
+        - .jsonld
+    - name: JSONiq
+      type: programming
+      extensions:
+        - .jq
+    - name: Janet
+      type: programming
+      extensions:
+        - .janet
+    - name: Jasmin
+      type: programming
+      extensions:
+        - .j
+    - name: Java
+      type: programming
+      extensions:
+        - .jav
+        - .java
+        - .jsh
+    - name: Java Properties
+      type: data
+      extensions:
+        - .properties
+    - name: Java Server Pages
+      type: programming
+      extensions:
+        - .jsp
+        - .tag
+    - name: Java Template Engine
+      type: programming
+      extensions:
+        - .jte
+    - name: JavaScript
+      type: programming
+      extensions:
+        - ._js
+        - .bones
+        - .cjs
+        - .es
+        - .es6
+        - .frag
+        - .gs
+        - .jake
+        - .javascript
+        - .js
+        - .jsb
+        - .jscad
+        - .jsfl
+        - .jslib
+        - .jsm
+        - .jspre
+        - .jss
+        - .jsx
+        - .mjs
+        - .njs
+        - .pac
+        - .sjs
+        - .ssjs
+        - .xsjs
+        - .xsjslib
+    - name: JavaScript+ERB
+      type: programming
+      extensions:
+        - .js.erb
+    - name: Jest Snapshot
+      type: data
+      extensions:
+        - .snap
+    - name: JetBrains MPS
+      type: programming
+      extensions:
+        - .mpl
+        - .mps
+        - .msd
+    - name: Jinja
+      type: markup
+      extensions:
+        - .j2
+        - .jinja
+        - .jinja2
+    - name: Jison
+      type: programming
+      extensions:
+        - .jison
+    - name: Jison Lex
+      type: programming
+      extensions:
+        - .jisonlex
+    - name: Jolie
+      type: programming
+      extensions:
+        - .iol
+        - .ol
+    - name: Jsonnet
+      type: programming
+      extensions:
+        - .jsonnet
+        - .libsonnet
+    - name: Julia
+      type: programming
+      extensions:
+        - .jl
+    - name: Jupyter Notebook
+      type: markup
+      extensions:
+        - .ipynb
+    - name: Just
+      type: programming
+      extensions:
+        - .just
+    - name: KRL
+      type: programming
+      extensions:
+        - .krl
+    - name: Kaitai Struct
+      type: programming
+      extensions:
+        - .ksy
+    - name: KakouneScript
+      type: programming
+      extensions:
+        - .kak
+    - name: KerboScript
+      type: programming
+      extensions:
+        - .ks
+    - name: KiCad Layout
+      type: data
+      extensions:
+        - .kicad_mod
+        - .kicad_pcb
+        - .kicad_wks
+    - name: KiCad Legacy Layout
+      type: data
+      extensions:
+        - .brd
+    - name: KiCad Schematic
+      type: data
+      extensions:
+        - .kicad_sch
+        - .sch
+    - name: Kickstart
+      type: data
+      extensions:
+        - .ks
+    - name: Kit
+      type: markup
+      extensions:
+        - .kit
+    - name: Kotlin
+      type: programming
+      extensions:
+        - .kt
+        - .ktm
+        - .kts
+    - name: Kusto
+      type: data
+      extensions:
+        - .csl
+        - .kql
+    - name: LFE
+      type: programming
+      extensions:
+        - .lfe
+    - name: LLVM
+      type: programming
+      extensions:
+        - .ll
+    - name: LOLCODE
+      type: programming
+      extensions:
+        - .lol
+    - name: LSL
+      type: programming
+      extensions:
+        - .lsl
+        - .lslp
+    - name: LTspice Symbol
+      type: data
+      extensions:
+        - .asy
+    - name: LabVIEW
+      type: programming
+      extensions:
+        - .lvclass
+        - .lvlib
+        - .lvproj
+    - name: Lark
+      type: data
+      extensions:
+        - .lark
+    - name: Lasso
+      type: programming
+      extensions:
+        - .las
+        - .lasso
+        - .lasso8
+        - .lasso9
+    - name: Latte
+      type: markup
+      extensions:
+        - .latte
+    - name: Lean
+      type: programming
+      extensions:
+        - .hlean
+        - .lean
+    - name: Lean 4
+      type: programming
+      extensions:
+        - .lean
+    - name: Less
+      type: markup
+      extensions:
+        - .less
+    - name: Lex
+      type: programming
+      extensions:
+        - .l
+        - .lex
+    - name: LigoLANG
+      type: programming
+      extensions:
+        - .ligo
+    - name: LilyPond
+      type: programming
+      extensions:
+        - .ily
+        - .ly
+    - name: Limbo
+      type: programming
+      extensions:
+        - .b
+        - .m
+    - name: Linker Script
+      type: data
+      extensions:
+        - .ld
+        - .lds
+        - .x
+    - name: Linux Kernel Module
+      type: data
+      extensions:
+        - .mod
+    - name: Liquid
+      type: markup
+      extensions:
+        - .liquid
+    - name: Literate Agda
+      type: programming
+      extensions:
+        - .lagda
+    - name: Literate CoffeeScript
+      type: programming
+      extensions:
+        - .coffee.md
+        - .litcoffee
+    - name: Literate Haskell
+      type: programming
+      extensions:
+        - .lhs
+    - name: LiveCode Script
+      type: programming
+      extensions:
+        - .livecodescript
+    - name: LiveScript
+      type: programming
+      extensions:
+        - ._ls
+        - .ls
+    - name: Logos
+      type: programming
+      extensions:
+        - .x
+        - .xi
+        - .xm
+    - name: Logtalk
+      type: programming
+      extensions:
+        - .lgt
+        - .logtalk
+    - name: LookML
+      type: programming
+      extensions:
+        - .lkml
+        - .lookml
+    - name: LoomScript
+      type: programming
+      extensions:
+        - .ls
+    - name: Lua
+      type: programming
+      extensions:
+        - .fcgi
+        - .lua
+        - .nse
+        - .p8
+        - .pd_lua
+        - .rbxs
+        - .rockspec
+        - .wlua
+    - name: Luau
+      type: programming
+      extensions:
+        - .luau
+    - name: M
+      type: programming
+      extensions:
+        - .m
+        - .mumps
+    - name: M4
+      type: programming
+      extensions:
+        - .m4
+        - .mc
+    - name: M4Sugar
+      type: programming
+      extensions:
+        - .m4
+    - name: MATLAB
+      type: programming
+      extensions:
+        - .m
+        - .matlab
+    - name: MAXScript
+      type: programming
+      extensions:
+        - .mcr
+        - .ms
+    - name: MDX
+      type: markup
+      extensions:
+        - .mdx
+    - name: MLIR
+      type: programming
+      extensions:
+        - .mlir
+    - name: MQL4
+      type: programming
+      extensions:
+        - .mq4
+        - .mqh
+    - name: MQL5
+      type: programming
+      extensions:
+        - .mq5
+        - .mqh
+    - name: MTML
+      type: markup
+      extensions:
+        - .mtml
+    - name: MUF
+      type: programming
+      extensions:
+        - .m
+        - .muf
+    - name: Macaulay2
+      type: programming
+      extensions:
+        - .m2
+    - name: Makefile
+      type: programming
+      extensions:
+        - .d
+        - .mak
+        - .make
+        - .makefile
+        - .mk
+        - .mkfile
+    - name: Mako
+      type: programming
+      extensions:
+        - .mako
+        - .mao
+    - name: Markdown
+      type: prose
+      extensions:
+        - .livemd
+        - .markdown
+        - .md
+        - .mdown
+        - .mdwn
+        - .mkd
+        - .mkdn
+        - .mkdown
+        - .ronn
+        - .scd
+        - .workbook
+    - name: Marko
+      type: markup
+      extensions:
+        - .marko
+    - name: Mask
+      type: markup
+      extensions:
+        - .mask
+    - name: Mathematica
+      type: programming
+      extensions:
+        - .cdf
+        - .m
+        - .ma
+        - .mathematica
+        - .mt
+        - .nb
+        - .nbp
+        - .wl
+        - .wlt
+    - name: Max
+      type: programming
+      extensions:
+        - .maxhelp
+        - .maxpat
+        - .maxproj
+        - .mxt
+        - .pat
+    - name: Mercury
+      type: programming
+      extensions:
+        - .m
+        - .moo
+    - name: Mermaid
+      type: markup
+      extensions:
+        - .mermaid
+        - .mmd
+    - name: Metal
+      type: programming
+      extensions:
+        - .metal
+    - name: Microsoft Developer Studio Project
+      type: data
+      extensions:
+        - .dsp
+    - name: Microsoft Visual Studio Solution
+      type: data
+      extensions:
+        - .sln
+    - name: MiniD
+      type: programming
+      extensions:
+        - .minid
+    - name: MiniYAML
+      type: data
+      extensions:
+        - .yaml
+        - .yml
+    - name: Mint
+      type: programming
+      extensions:
+        - .mint
+    - name: Mirah
+      type: programming
+      extensions:
+        - .druby
+        - .duby
+        - .mirah
+    - name: Modelica
+      type: programming
+      extensions:
+        - .mo
+    - name: Modula-2
+      type: programming
+      extensions:
+        - .mod
+    - name: Modula-3
+      type: programming
+      extensions:
+        - .i3
+        - .ig
+        - .m3
+        - .mg
+    - name: Module Management System
+      type: programming
+      extensions:
+        - .mmk
+        - .mms
+    - name: Mojo
+      type: programming
+      extensions:
+        - .mojo
+    - name: Monkey
+      type: programming
+      extensions:
+        - .monkey
+        - .monkey2
+    - name: Monkey C
+      type: programming
+      extensions:
+        - .mc
+    - name: Moocode
+      type: programming
+      extensions:
+        - .moo
+    - name: MoonBit
+      type: programming
+      extensions:
+        - .mbt
+    - name: MoonScript
+      type: programming
+      extensions:
+        - .moon
+    - name: Motoko
+      type: programming
+      extensions:
+        - .mo
+    - name: Motorola 68K Assembly
+      type: programming
+      extensions:
+        - .asm
+        - .i
+        - .inc
+        - .s
+        - .x68
+    - name: Move
+      type: programming
+      extensions:
+        - .move
+    - name: Muse
+      type: prose
+      extensions:
+        - .muse
+    - name: Mustache
+      type: markup
+      extensions:
+        - .mustache
+    - name: Myghty
+      type: programming
+      extensions:
+        - .myt
+    - name: NASL
+      type: programming
+      extensions:
+        - .inc
+        - .nasl
+    - name: NCL
+      type: programming
+      extensions:
+        - .ncl
+    - name: NEON
+      type: data
+      extensions:
+        - .neon
+    - name: NL
+      type: data
+      extensions:
+        - .nl
+    - name: NMODL
+      type: programming
+      extensions:
+        - .mod
+    - name: NSIS
+      type: programming
+      extensions:
+        - .nsh
+        - .nsi
+    - name: NWScript
+      type: programming
+      extensions:
+        - .nss
+    - name: Nasal
+      type: programming
+      extensions:
+        - .nas
+    - name: Nearley
+      type: programming
+      extensions:
+        - .ne
+        - .nearley
+    - name: Nemerle
+      type: programming
+      extensions:
+        - .n
+    - name: NetLinx
+      type: programming
+      extensions:
+        - .axi
+        - .axs
+    - name: NetLinx+ERB
+      type: programming
+      extensions:
+        - .axi.erb
+        - .axs.erb
+    - name: NetLogo
+      type: programming
+      extensions:
+        - .nlogo
+    - name: NewLisp
+      type: programming
+      extensions:
+        - .lisp
+        - .lsp
+        - .nl
+    - name: Nextflow
+      type: programming
+      extensions:
+        - .nf
+    - name: Nginx
+      type: data
+      extensions:
+        - .nginx
+        - .nginxconf
+        - .vhost
+    - name: Nim
+      type: programming
+      extensions:
+        - .nim
+        - .nim.cfg
+        - .nimble
+        - .nimrod
+        - .nims
+    - name: Ninja
+      type: data
+      extensions:
+        - .ninja
+    - name: Nit
+      type: programming
+      extensions:
+        - .nit
+    - name: Nix
+      type: programming
+      extensions:
+        - .nix
+    - name: Noir
+      type: programming
+      extensions:
+        - .nr
+    - name: Nu
+      type: programming
+      extensions:
+        - .nu
+    - name: NumPy
+      type: programming
+      extensions:
+        - .numpy
+        - .numpyw
+        - .numsc
+    - name: Nunjucks
+      type: markup
+      extensions:
+        - .njk
+    - name: Nushell
+      type: programming
+      extensions:
+        - .nu
+    - name: OASv2-json
+      type: data
+      extensions:
+        - .json
+    - name: OASv2-yaml
+      type: data
+      extensions:
+        - .yaml
+        - .yml
+    - name: OASv3-json
+      type: data
+      extensions:
+        - .json
+    - name: OASv3-yaml
+      type: data
+      extensions:
+        - .yaml
+        - .yml
+    - name: OCaml
+      type: programming
+      extensions:
+        - .eliom
+        - .eliomi
+        - .ml
+        - .ml4
+        - .mli
+        - .mll
+        - .mly
+    - name: Oberon
+      type: programming
+      extensions:
+        - .ob2
+    - name: ObjDump
+      type: data
+      extensions:
+        - .objdump
+    - name: Object Data Instance Notation
+      type: data
+      extensions:
+        - .odin
+    - name: ObjectScript
+      type: programming
+      extensions:
+        - .cls
+    - name: Objective-C
+      type: programming
+      extensions:
+        - .h
+        - .m
+    - name: Objective-C++
+      type: programming
+      extensions:
+        - .mm
+    - name: Objective-J
+      type: programming
+      extensions:
+        - .j
+        - .sj
+    - name: Odin
+      type: programming
+      extensions:
+        - .odin
+    - name: Omgrofl
+      type: programming
+      extensions:
+        - .omgrofl
+    - name: Opa
+      type: programming
+      extensions:
+        - .opa
+    - name: Opal
+      type: programming
+      extensions:
+        - .opal
+    - name: Open Policy Agent
+      type: programming
+      extensions:
+        - .rego
+    - name: OpenCL
+      type: programming
+      extensions:
+        - .cl
+        - .opencl
+    - name: OpenEdge ABL
+      type: programming
+      extensions:
+        - .cls
+        - .p
+        - .w
+    - name: OpenQASM
+      type: programming
+      extensions:
+        - .qasm
+    - name: OpenSCAD
+      type: programming
+      extensions:
+        - .scad
+    - name: OpenStep Property List
+      type: data
+      extensions:
+        - .glyphs
+        - .plist
+    - name: OpenType Feature File
+      type: data
+      extensions:
+        - .fea
+    - name: Org
+      type: prose
+      extensions:
+        - .org
+    - name: Ox
+      type: programming
+      extensions:
+        - .ox
+        - .oxh
+        - .oxo
+    - name: Oxygene
+      type: programming
+      extensions:
+        - .oxygene
+    - name: Oz
+      type: programming
+      extensions:
+        - .oz
+    - name: P4
+      type: programming
+      extensions:
+        - .p4
+    - name: PDDL
+      type: programming
+      extensions:
+        - .pddl
+    - name: PEG.js
+      type: programming
+      extensions:
+        - .peggy
+        - .pegjs
+    - name: PHP
+      type: programming
+      extensions:
+        - .aw
+        - .ctp
+        - .fcgi
+        - .inc
+        - .php
+        - .php3
+        - .php4
+        - .php5
+        - .phps
+        - .phpt
+    - name: PLSQL
+      type: programming
+      extensions:
+        - .bdy
+        - .ddl
+        - .fnc
+        - .pck
+        - .pkb
+        - .pks
+        - .plb
+        - .pls
+        - .plsql
+        - .prc
+        - .spc
+        - .sql
+        - .tpb
+        - .tps
+        - .trg
+        - .vw
+    - name: PLpgSQL
+      type: programming
+      extensions:
+        - .pgsql
+        - .sql
+    - name: POV-Ray SDL
+      type: programming
+      extensions:
+        - .inc
+        - .pov
+    - name: Pact
+      type: programming
+      extensions:
+        - .pact
+    - name: Pan
+      type: programming
+      extensions:
+        - .pan
+    - name: Papyrus
+      type: programming
+      extensions:
+        - .psc
+    - name: Parrot
+      type: programming
+      extensions:
+        - .parrot
+    - name: Parrot Assembly
+      type: programming
+      extensions:
+        - .pasm
+    - name: Parrot Internal Representation
+      type: programming
+      extensions:
+        - .pir
+    - name: Pascal
+      type: programming
+      extensions:
+        - .dfm
+        - .dpr
+        - .inc
+        - .lpr
+        - .pas
+        - .pascal
+        - .pp
+    - name: Pawn
+      type: programming
+      extensions:
+        - .inc
+        - .pwn
+        - .sma
+    - name: Pep8
+      type: programming
+      extensions:
+        - .pep
+    - name: Perl
+      type: programming
+      extensions:
+        - .al
+        - .cgi
+        - .fcgi
+        - .perl
+        - .ph
+        - .pl
+        - .plx
+        - .pm
+        - .psgi
+        - .t
+    - name: Pic
+      type: markup
+      extensions:
+        - .chem
+        - .pic
+    - name: Pickle
+      type: data
+      extensions:
+        - .pkl
+    - name: PicoLisp
+      type: programming
+      extensions:
+        - .l
+    - name: PigLatin
+      type: programming
+      extensions:
+        - .pig
+    - name: Pike
+      type: programming
+      extensions:
+        - .pike
+        - .pmod
+    - name: Pkl
+      type: programming
+      extensions:
+        - .pkl
+    - name: PlantUML
+      type: data
+      extensions:
+        - .iuml
+        - .plantuml
+        - .puml
+    - name: Pod
+      type: prose
+      extensions:
+        - .pod
+    - name: Pod 6
+      type: prose
+      extensions:
+        - .pod
+        - .pod6
+    - name: PogoScript
+      type: programming
+      extensions:
+        - .pogo
+    - name: Polar
+      type: programming
+      extensions:
+        - .polar
+    - name: Pony
+      type: programming
+      extensions:
+        - .pony
+    - name: Portugol
+      type: programming
+      extensions:
+        - .por
+    - name: PostCSS
+      type: markup
+      extensions:
+        - .pcss
+        - .postcss
+    - name: PostScript
+      type: markup
+      extensions:
+        - .eps
+        - .epsi
+        - .pfa
+        - .ps
+    - name: PowerBuilder
+      type: programming
+      extensions:
+        - .pbt
+        - .sra
+        - .sru
+        - .srw
+    - name: PowerShell
+      type: programming
+      extensions:
+        - .ps1
+        - .psd1
+        - .psm1
+    - name: Praat
+      type: programming
+      extensions:
+        - .praat
+    - name: Prisma
+      type: data
+      extensions:
+        - .prisma
+    - name: Processing
+      type: programming
+      extensions:
+        - .pde
+    - name: Proguard
+      type: data
+      extensions:
+        - .pro
+    - name: Prolog
+      type: programming
+      extensions:
+        - .pl
+        - .plt
+        - .pro
+        - .prolog
+        - .yap
+    - name: Promela
+      type: programming
+      extensions:
+        - .pml
+    - name: Propeller Spin
+      type: programming
+      extensions:
+        - .spin
+    - name: Protocol Buffer
+      type: data
+      extensions:
+        - .proto
+    - name: Protocol Buffer Text Format
+      type: data
+      extensions:
+        - .pbt
+        - .pbtxt
+        - .textproto
+    - name: Public Key
+      type: data
+      extensions:
+        - .asc
+        - .pub
+    - name: Pug
+      type: markup
+      extensions:
+        - .jade
+        - .pug
+    - name: Puppet
+      type: programming
+      extensions:
+        - .pp
+    - name: Pure Data
+      type: data
+      extensions:
+        - .pd
+    - name: PureBasic
+      type: programming
+      extensions:
+        - .pb
+        - .pbi
+    - name: PureScript
+      type: programming
+      extensions:
+        - .purs
+    - name: Pyret
+      type: programming
+      extensions:
+        - .arr
+    - name: Python
+      type: programming
+      extensions:
+        - .cgi
+        - .fcgi
+        - .gyp
+        - .gypi
+        - .lmi
+        - .py
+        - .py3
+        - .pyde
+        - .pyi
+        - .pyp
+        - .pyt
+        - .pyw
+        - .rpy
+        - .spec
+        - .tac
+        - .wsgi
+        - .xpy
+    - name: Python traceback
+      type: data
+      extensions:
+        - .pytb
+    - name: Q#
+      type: programming
+      extensions:
+        - .qs
+    - name: QML
+      type: programming
+      extensions:
+        - .qbs
+        - .qml
+    - name: QMake
+      type: programming
+      extensions:
+        - .pri
+        - .pro
+    - name: Qt Script
+      type: programming
+      extensions:
+        - .qs
+    - name: QuickBASIC
+      type: programming
+      extensions:
+        - .bas
+    - name: R
+      type: programming
+      extensions:
+        - .r
+        - .rd
+        - .rsx
+    - name: RAML
+      type: markup
+      extensions:
+        - .raml
+    - name: RBS
+      type: data
+      extensions:
+        - .rbs
+    - name: RDoc
+      type: prose
+      extensions:
+        - .rdoc
+    - name: REALbasic
+      type: programming
+      extensions:
+        - .rbbas
+        - .rbfrm
+        - .rbmnu
+        - .rbres
+        - .rbtbar
+        - .rbuistate
+    - name: REXX
+      type: programming
+      extensions:
+        - .pprx
+        - .rex
+        - .rexx
+    - name: RMarkdown
+      type: prose
+      extensions:
+        - .qmd
+        - .rmd
+    - name: RON
+      type: data
+      extensions:
+        - .ron
+    - name: RPC
+      type: programming
+      extensions:
+        - .x
+    - name: RPGLE
+      type: programming
+      extensions:
+        - .rpgle
+        - .sqlrpgle
+    - name: RPM Spec
+      type: data
+      extensions:
+        - .spec
+    - name: RUNOFF
+      type: markup
+      extensions:
+        - .rnh
+        - .rno
+    - name: Racket
+      type: programming
+      extensions:
+        - .rkt
+        - .rktd
+        - .rktl
+        - .scrbl
+    - name: Ragel
+      type: programming
+      extensions:
+        - .rl
+    - name: Raku
+      type: programming
+      extensions:
+        - .6pl
+        - .6pm
+        - .nqp
+        - .p6
+        - .p6l
+        - .p6m
+        - .pl
+        - .pl6
+        - .pm
+        - .pm6
+        - .raku
+        - .rakumod
+        - .t
+    - name: Rascal
+      type: programming
+      extensions:
+        - .rsc
+    - name: Raw token data
+      type: data
+      extensions:
+        - .raw
+    - name: ReScript
+      type: programming
+      extensions:
+        - .res
+    - name: Reason
+      type: programming
+      extensions:
+        - .re
+        - .rei
+    - name: ReasonLIGO
+      type: programming
+      extensions:
+        - .religo
+    - name: Rebol
+      type: programming
+      extensions:
+        - .r
+        - .r2
+        - .r3
+        - .reb
+        - .rebol
+    - name: Red
+      type: programming
+      extensions:
+        - .red
+        - .reds
+    - name: Redcode
+      type: programming
+      extensions:
+        - .cw
+    - name: Regular Expression
+      type: data
+      extensions:
+        - .regex
+        - .regexp
+    - name: Ren'Py
+      type: programming
+      extensions:
+        - .rpy
+    - name: RenderScript
+      type: programming
+      extensions:
+        - .rs
+        - .rsh
+    - name: Rez
+      type: programming
+      extensions:
+        - .r
+    - name: Rich Text Format
+      type: markup
+      extensions:
+        - .rtf
+    - name: Ring
+      type: programming
+      extensions:
+        - .ring
+    - name: Riot
+      type: markup
+      extensions:
+        - .riot
+    - name: RobotFramework
+      type: programming
+      extensions:
+        - .resource
+        - .robot
+    - name: Roc
+      type: programming
+      extensions:
+        - .roc
+    - name: Roff
+      type: markup
+      extensions:
+        - ".1"
+        - .1in
+        - .1m
+        - .1x
+        - ".2"
+        - ".3"
+        - .3in
+        - .3m
+        - .3p
+        - .3pm
+        - .3qt
+        - .3x
+        - ".4"
+        - ".5"
+        - ".6"
+        - ".7"
+        - ".8"
+        - ".9"
+        - .l
+        - .man
+        - .mdoc
+        - .me
+        - .ms
+        - .n
+        - .nr
+        - .rno
+        - .roff
+        - .tmac
+    - name: Roff Manpage
+      type: markup
+      extensions:
+        - ".1"
+        - .1in
+        - .1m
+        - .1x
+        - ".2"
+        - ".3"
+        - .3in
+        - .3m
+        - .3p
+        - .3pm
+        - .3qt
+        - .3x
+        - ".4"
+        - ".5"
+        - ".6"
+        - ".7"
+        - ".8"
+        - ".9"
+        - .man
+        - .mdoc
+    - name: Rouge
+      type: programming
+      extensions:
+        - .rg
+    - name: RouterOS Script
+      type: programming
+      extensions:
+        - .rsc
+    - name: Ruby
+      type: programming
+      extensions:
+        - .builder
+        - .eye
+        - .fcgi
+        - .gemspec
+        - .god
+        - .jbuilder
+        - .mspec
+        - .pluginspec
+        - .podspec
+        - .prawn
+        - .rabl
+        - .rake
+        - .rb
+        - .rbi
+        - .rbuild
+        - .rbw
+        - .rbx
+        - .ru
+        - .ruby
+        - .spec
+        - .thor
+        - .watchr
+    - name: Rust
+      type: programming
+      extensions:
+        - .rs
+        - .rs.in
+    - name: SAS
+      type: programming
+      extensions:
+        - .sas
+    - name: SCSS
+      type: markup
+      extensions:
+        - .scss
+    - name: SELinux Policy
+      type: data
+      extensions:
+        - .te
+    - name: SMT
+      type: programming
+      extensions:
+        - .smt
+        - .smt2
+    - name: SPARQL
+      type: data
+      extensions:
+        - .rq
+        - .sparql
+    - name: SQF
+      type: programming
+      extensions:
+        - .hqf
+        - .sqf
+    - name: SQL
+      type: data
+      extensions:
+        - .cql
+        - .ddl
+        - .inc
+        - .mysql
+        - .prc
+        - .sql
+        - .tab
+        - .udf
+        - .viw
+    - name: SQLPL
+      type: programming
+      extensions:
+        - .db2
+        - .sql
+    - name: SRecode Template
+      type: markup
+      extensions:
+        - .srt
+    - name: STAR
+      type: data
+      extensions:
+        - .star
+    - name: STL
+      type: data
+      extensions:
+        - .stl
+    - name: STON
+      type: data
+      extensions:
+        - .ston
+    - name: SVG
+      type: data
+      extensions:
+        - .svg
+    - name: SWIG
+      type: programming
+      extensions:
+        - .i
+    - name: Sage
+      type: programming
+      extensions:
+        - .sage
+        - .sagews
+    - name: SaltStack
+      type: programming
+      extensions:
+        - .sls
+    - name: Sass
+      type: markup
+      extensions:
+        - .sass
+    - name: Scala
+      type: programming
+      extensions:
+        - .kojo
+        - .sbt
+        - .sc
+        - .scala
+    - name: Scaml
+      type: markup
+      extensions:
+        - .scaml
+    - name: Scenic
+      type: programming
+      extensions:
+        - .scenic
+    - name: Scheme
+      type: programming
+      extensions:
+        - .sch
+        - .scm
+        - .sld
+        - .sls
+        - .sps
+        - .ss
+    - name: Scilab
+      type: programming
+      extensions:
+        - .sce
+        - .sci
+        - .tst
+    - name: Self
+      type: programming
+      extensions:
+        - .self
+    - name: ShaderLab
+      type: programming
+      extensions:
+        - .shader
+    - name: Shell
+      type: programming
+      extensions:
+        - .bash
+        - .bats
+        - .cgi
+        - .command
+        - .fcgi
+        - .ksh
+        - .sh
+        - .sh.in
+        - .tmux
+        - .tool
+        - .trigger
+        - .zsh
+        - .zsh-theme
+    - name: ShellSession
+      type: programming
+      extensions:
+        - .sh-session
+    - name: Shen
+      type: programming
+      extensions:
+        - .shen
+    - name: Sieve
+      type: programming
+      extensions:
+        - .sieve
+    - name: Simple File Verification
+      type: data
+      extensions:
+        - .sfv
+    - name: Slash
+      type: programming
+      extensions:
+        - .sl
+    - name: Slice
+      type: programming
+      extensions:
+        - .ice
+    - name: Slim
+      type: markup
+      extensions:
+        - .slim
+    - name: Slint
+      type: markup
+      extensions:
+        - .slint
+    - name: SmPL
+      type: programming
+      extensions:
+        - .cocci
+    - name: Smali
+      type: programming
+      extensions:
+        - .smali
+    - name: Smalltalk
+      type: programming
+      extensions:
+        - .cs
+        - .st
+    - name: Smarty
+      type: programming
+      extensions:
+        - .tpl
+    - name: Smithy
+      type: programming
+      extensions:
+        - .smithy
+    - name: Snakemake
+      type: programming
+      extensions:
+        - .smk
+        - .snakefile
+    - name: Solidity
+      type: programming
+      extensions:
+        - .sol
+    - name: SourcePawn
+      type: programming
+      extensions:
+        - .inc
+        - .sp
+    - name: Spline Font Database
+      type: data
+      extensions:
+        - .sfd
+    - name: Squirrel
+      type: programming
+      extensions:
+        - .nut
+    - name: Stan
+      type: programming
+      extensions:
+        - .stan
+    - name: Standard ML
+      type: programming
+      extensions:
+        - .fun
+        - .ml
+        - .sig
+        - .sml
+    - name: Starlark
+      type: programming
+      extensions:
+        - .bzl
+        - .star
+    - name: Stata
+      type: programming
+      extensions:
+        - .ado
+        - .do
+        - .doh
+        - .ihlp
+        - .mata
+        - .matah
+        - .sthlp
+    - name: StringTemplate
+      type: markup
+      extensions:
+        - .st
+    - name: Stylus
+      type: markup
+      extensions:
+        - .styl
+    - name: SubRip Text
+      type: data
+      extensions:
+        - .srt
+    - name: SugarSS
+      type: markup
+      extensions:
+        - .sss
+    - name: SuperCollider
+      type: programming
+      extensions:
+        - .sc
+        - .scd
+    - name: Svelte
+      type: markup
+      extensions:
+        - .svelte
+    - name: Sway
+      type: programming
+      extensions:
+        - .sw
+    - name: Sweave
+      type: prose
+      extensions:
+        - .rnw
+    - name: Swift
+      type: programming
+      extensions:
+        - .swift
+    - name: SystemVerilog
+      type: programming
+      extensions:
+        - .sv
+        - .svh
+        - .vh
+    - name: TI Program
+      type: programming
+      extensions:
+        - .8xp
+        - .8xp.txt
+    - name: TL-Verilog
+      type: programming
+      extensions:
+        - .tlv
+    - name: TLA
+      type: programming
+      extensions:
+        - .tla
+    - name: TOML
+      type: data
+      extensions:
+        - .toml
+    - name: TSPLIB data
+      type: data
+      extensions:
+        - .tsp
+    - name: TSQL
+      type: programming
+      extensions:
+        - .sql
+    - name: TSV
+      type: data
+      extensions:
+        - .tsv
+        - .vcf
+    - name: TSX
+      type: programming
+      extensions:
+        - .tsx
+    - name: TXL
+      type: programming
+      extensions:
+        - .txl
+    - name: Tact
+      type: programming
+      extensions:
+        - .tact
+    - name: Talon
+      type: programming
+      extensions:
+        - .talon
+    - name: Tcl
+      type: programming
+      extensions:
+        - .adp
+        - .sdc
+        - .tcl
+        - .tcl.in
+        - .tm
+        - .xdc
+    - name: Tcsh
+      type: programming
+      extensions:
+        - .csh
+        - .tcsh
+    - name: TeX
+      type: markup
+      extensions:
+        - .aux
+        - .bbx
+        - .cbx
+        - .cls
+        - .dtx
+        - .ins
+        - .lbx
+        - .ltx
+        - .mkii
+        - .mkiv
+        - .mkvi
+        - .sty
+        - .tex
+        - .toc
+    - name: Tea
+      type: markup
+      extensions:
+        - .tea
+    - name: Terra
+      type: programming
+      extensions:
+        - .t
+    - name: Terraform Template
+      type: markup
+      extensions:
+        - .tftpl
+    - name: Texinfo
+      type: prose
+      extensions:
+        - .texi
+        - .texinfo
+        - .txi
+    - name: Text
+      type: prose
+      extensions:
+        - .fr
+        - .nb
+        - .ncl
+        - .no
+        - .txt
+    - name: TextGrid
+      type: data
+      extensions:
+        - .textgrid
+    - name: Textile
+      type: prose
+      extensions:
+        - .textile
+    - name: Thrift
+      type: programming
+      extensions:
+        - .thrift
+    - name: Toit
+      type: programming
+      extensions:
+        - .toit
+    - name: Turing
+      type: programming
+      extensions:
+        - .t
+        - .tu
+    - name: Turtle
+      type: data
+      extensions:
+        - .ttl
+    - name: Twig
+      type: markup
+      extensions:
+        - .twig
+    - name: Type Language
+      type: data
+      extensions:
+        - .tl
+    - name: TypeScript
+      type: programming
+      extensions:
+        - .cts
+        - .mts
+        - .ts
+    - name: TypeSpec
+      type: programming
+      extensions:
+        - .tsp
+    - name: Typst
+      type: programming
+      extensions:
+        - .typ
+    - name: Unified Parallel C
+      type: programming
+      extensions:
+        - .upc
+    - name: Unity3D Asset
+      type: data
+      extensions:
+        - .anim
+        - .asset
+        - .mask
+        - .mat
+        - .meta
+        - .prefab
+        - .unity
+    - name: Unix Assembly
+      type: programming
+      extensions:
+        - .ms
+        - .s
+    - name: Uno
+      type: programming
+      extensions:
+        - .uno
+    - name: UnrealScript
+      type: programming
+      extensions:
+        - .uc
+    - name: UrWeb
+      type: programming
+      extensions:
+        - .ur
+        - .urs
+    - name: V
+      type: programming
+      extensions:
+        - .v
+    - name: VBA
+      type: programming
+      extensions:
+        - .bas
+        - .cls
+        - .frm
+        - .vba
+    - name: VBScript
+      type: programming
+      extensions:
+        - .vbs
+    - name: VCL
+      type: programming
+      extensions:
+        - .vcl
+    - name: VHDL
+      type: programming
+      extensions:
+        - .vhd
+        - .vhdl
+        - .vhf
+        - .vhi
+        - .vho
+        - .vhs
+        - .vht
+        - .vhw
+    - name: Vala
+      type: programming
+      extensions:
+        - .vala
+        - .vapi
+    - name: Valve Data Format
+      type: data
+      extensions:
+        - .vdf
+    - name: Velocity Template Language
+      type: markup
+      extensions:
+        - .vtl
+    - name: Verilog
+      type: programming
+      extensions:
+        - .v
+        - .veo
+    - name: Vim Help File
+      type: prose
+      extensions:
+        - .txt
+    - name: Vim Script
+      type: programming
+      extensions:
+        - .vba
+        - .vim
+        - .vimrc
+        - .vmb
+    - name: Vim Snippet
+      type: markup
+      extensions:
+        - .snip
+        - .snippet
+        - .snippets
+    - name: Visual Basic .NET
+      type: programming
+      extensions:
+        - .vb
+        - .vbhtml
+    - name: Visual Basic 6.0
+      type: programming
+      extensions:
+        - .bas
+        - .cls
+        - .ctl
+        - .dsr
+        - .frm
+    - name: Volt
+      type: programming
+      extensions:
+        - .volt
+    - name: Vue
+      type: markup
+      extensions:
+        - .vue
+    - name: Vyper
+      type: programming
+      extensions:
+        - .vy
+    - name: WDL
+      type: programming
+      extensions:
+        - .wdl
+    - name: WGSL
+      type: programming
+      extensions:
+        - .wgsl
+    - name: Wavefront Material
+      type: data
+      extensions:
+        - .mtl
+    - name: Wavefront Object
+      type: data
+      extensions:
+        - .obj
+    - name: Web Ontology Language
+      type: data
+      extensions:
+        - .owl
+    - name: WebAssembly
+      type: programming
+      extensions:
+        - .wast
+        - .wat
+    - name: WebAssembly Interface Type
+      type: data
+      extensions:
+        - .wit
+    - name: WebIDL
+      type: programming
+      extensions:
+        - .webidl
+    - name: WebVTT
+      type: data
+      extensions:
+        - .vtt
+    - name: Whiley
+      type: programming
+      extensions:
+        - .whiley
+    - name: Wikitext
+      type: prose
+      extensions:
+        - .mediawiki
+        - .wiki
+        - .wikitext
+    - name: Win32 Message File
+      type: data
+      extensions:
+        - .mc
+    - name: Windows Registry Entries
+      type: data
+      extensions:
+        - .reg
+    - name: Witcher Script
+      type: programming
+      extensions:
+        - .ws
+    - name: Wollok
+      type: programming
+      extensions:
+        - .wlk
+    - name: World of Warcraft Addon Data
+      type: data
+      extensions:
+        - .toc
+    - name: Wren
+      type: programming
+      extensions:
+        - .wren
+    - name: X BitMap
+      type: data
+      extensions:
+        - .xbm
+    - name: X PixMap
+      type: data
+      extensions:
+        - .pm
+        - .xpm
+    - name: X10
+      type: programming
+      extensions:
+        - .x10
+    - name: XC
+      type: programming
+      extensions:
+        - .xc
+    - name: XML
+      type: data
+      extensions:
+        - .adml
+        - .admx
+        - .ant
+        - .axaml
+        - .axml
+        - .builds
+        - .ccproj
+        - .ccxml
+        - .clixml
+        - .cproject
+        - .cscfg
+        - .csdef
+        - .csl
+        - .csproj
+        - .ct
+        - .depproj
+        - .dita
+        - .ditamap
+        - .ditaval
+        - .dll.config
+        - .dotsettings
+        - .filters
+        - .fsproj
+        - .fxml
+        - .glade
+        - .gml
+        - .gmx
+        - .grxml
+        - .gst
+        - .hzp
+        - .iml
+        - .ivy
+        - .jelly
+        - .jsproj
+        - .kml
+        - .launch
+        - .mdpolicy
+        - .mjml
+        - .mm
+        - .mod
+        - .mojo
+        - .mxml
+        - .natvis
+        - .ncl
+        - .ndproj
+        - .nproj
+        - .nuspec
+        - .odd
+        - .osm
+        - .pkgproj
+        - .pluginspec
+        - .proj
+        - .props
+        - .ps1xml
+        - .psc1
+        - .pt
+        - .qhelp
+        - .rdf
+        - .res
+        - .resx
+        - .rs
+        - .rss
+        - .sch
+        - .scxml
+        - .sfproj
+        - .shproj
+        - .srdf
+        - .storyboard
+        - .sublime-snippet
+        - .sw
+        - .targets
+        - .tml
+        - .ts
+        - .tsx
+        - .typ
+        - .ui
+        - .urdf
+        - .ux
+        - .vbproj
+        - .vcxproj
+        - .vsixmanifest
+        - .vssettings
+        - .vstemplate
+        - .vxml
+        - .wixproj
+        - .workflow
+        - .wsdl
+        - .wsf
+        - .wxi
+        - .wxl
+        - .wxs
+        - .x3d
+        - .xacro
+        - .xaml
+        - .xib
+        - .xlf
+        - .xliff
+        - .xmi
+        - .xml
+        - .xml.dist
+        - .xmp
+        - .xproj
+        - .xsd
+        - .xspec
+        - .xul
+        - .zcml
+    - name: XML Property List
+      type: data
+      extensions:
+        - .plist
+        - .sttheme
+        - .tmcommand
+        - .tmlanguage
+        - .tmpreferences
+        - .tmsnippet
+        - .tmtheme
+    - name: XPages
+      type: data
+      extensions:
+        - .xsp-config
+        - .xsp.metadata
+    - name: XProc
+      type: programming
+      extensions:
+        - .xpl
+        - .xproc
+    - name: XQuery
+      type: programming
+      extensions:
+        - .xq
+        - .xql
+        - .xqm
+        - .xquery
+        - .xqy
+    - name: XS
+      type: programming
+      extensions:
+        - .xs
+    - name: XSLT
+      type: programming
+      extensions:
+        - .xsl
+        - .xslt
+    - name: Xojo
+      type: programming
+      extensions:
+        - .xojo_code
+        - .xojo_menu
+        - .xojo_report
+        - .xojo_script
+        - .xojo_toolbar
+        - .xojo_window
+    - name: Xonsh
+      type: programming
+      extensions:
+        - .xsh
+    - name: Xtend
+      type: programming
+      extensions:
+        - .xtend
+    - name: YAML
+      type: data
+      extensions:
+        - .mir
+        - .reek
+        - .rviz
+        - .sublime-syntax
+        - .syntax
+        - .yaml
+        - .yaml-tmlanguage
+        - .yaml.sed
+        - .yml
+        - .yml.mysql
+    - name: YANG
+      type: data
+      extensions:
+        - .yang
+    - name: YARA
+      type: programming
+      extensions:
+        - .yar
+        - .yara
+    - name: YASnippet
+      type: markup
+      extensions:
+        - .yasnippet
+    - name: Yacc
+      type: programming
+      extensions:
+        - .y
+        - .yacc
+        - .yy
+    - name: Yul
+      type: programming
+      extensions:
+        - .yul
+    - name: ZAP
+      type: programming
+      extensions:
+        - .xzap
+        - .zap
+    - name: ZIL
+      type: programming
+      extensions:
+        - .mud
+        - .zil
+    - name: Zeek
+      type: programming
+      extensions:
+        - .bro
+        - .zeek
+    - name: ZenScript
+      type: programming
+      extensions:
+        - .zs
+    - name: Zephir
+      type: programming
+      extensions:
+        - .zep
+    - name: Zig
+      type: programming
+      extensions:
+        - .zig
+        - .zig.zon
+    - name: Zimpl
+      type: programming
+      extensions:
+        - .zimpl
+        - .zmpl
+        - .zpl
+    - name: desktop
+      type: data
+      extensions:
+        - .desktop
+        - .desktop.in
+        - .service
+    - name: dircolors
+      type: data
+      extensions:
+        - .dircolors
+    - name: eC
+      type: programming
+      extensions:
+        - .ec
+        - .eh
+    - name: edn
+      type: data
+      extensions:
+        - .edn
+    - name: fish
+      type: programming
+      extensions:
+        - .fish
+    - name: hoon
+      type: programming
+      extensions:
+        - .hoon
+    - name: iCalendar
+      type: data
+      extensions:
+        - .ical
+        - .ics
+    - name: jq
+      type: programming
+      extensions:
+        - .jq
+    - name: kvlang
+      type: markup
+      extensions:
+        - .kv
+    - name: mIRC Script
+      type: programming
+      extensions:
+        - .mrc
+    - name: mcfunction
+      type: programming
+      extensions:
+        - .mcfunction
+    - name: mupad
+      type: programming
+      extensions:
+        - .mu
+    - name: nanorc
+      type: data
+      extensions:
+        - .nanorc
+    - name: nesC
+      type: programming
+      extensions:
+        - .nc
+    - name: omnetpp-msg
+      type: programming
+      extensions:
+        - .msg
+    - name: omnetpp-ned
+      type: programming
+      extensions:
+        - .ned
+    - name: ooc
+      type: programming
+      extensions:
+        - .ooc
+    - name: q
+      type: programming
+      extensions:
+        - .q
+    - name: reStructuredText
+      type: prose
+      extensions:
+        - .rest
+        - .rest.txt
+        - .rst
+        - .rst.txt
+    - name: sed
+      type: programming
+      extensions:
+        - .sed
+    - name: templ
+      type: markup
+      extensions:
+        - .templ
+    - name: vCard
+      type: data
+      extensions:
+        - .vcf
+    - name: wisp
+      type: programming
+      extensions:
+        - .wisp
+    - name: xBase
+      type: programming
+      extensions:
+        - .ch
+        - .prg
+        - .prw
+summary:
+    total: 705
+    bytype:
+        data: 137
+        markup: 64
+        programming: 486
+        prose: 18

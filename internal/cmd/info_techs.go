@@ -3,15 +3,14 @@ package cmd
 import (
 	"fmt"
 	"io"
-	"log"
 	"sort"
 
-	"github.com/petrarca/tech-stack-analyzer/internal/rules"
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
 	"github.com/spf13/cobra"
 )
 
 var techsFormat string
+var techsOutput string
 
 var techsCmd = &cobra.Command{
 	Use:   "techs",
@@ -21,21 +20,12 @@ var techsCmd = &cobra.Command{
 }
 
 func init() {
-	setupFormatFlag(techsCmd, &techsFormat)
-}
-
-// TechInfo holds information about a technology
-type TechInfo struct {
-	Name        string                 `json:"name"`
-	Tech        string                 `json:"tech"`
-	Category    string                 `json:"category"`
-	Description string                 `json:"description,omitempty"`
-	Properties  map[string]interface{} `json:"properties,omitempty"`
+	setupOutputFlags(techsCmd, &techsFormat, &techsOutput)
 }
 
 // TechsResult is the output for the techs command
 type TechsResult struct {
-	Technologies []TechInfo `json:"technologies"`
+	Technologies []types.TechInfo `json:"technologies"`
 }
 
 func (r *TechsResult) ToJSON() interface{} {
@@ -50,26 +40,26 @@ func (r *TechsResult) ToText(w io.Writer) {
 }
 
 func runTechs(cmd *cobra.Command, args []string) {
-	allRules, err := rules.LoadEmbeddedRules()
-	if err != nil {
-		log.Fatalf("Failed to load rules: %v", err)
-	}
+	allRules, _ := LoadRulesAndCategories()
 
+	// Create rule map for easy lookup
 	ruleMap := make(map[string]*types.Rule)
 	for i := range allRules {
 		ruleMap[allRules[i].Tech] = &allRules[i]
 	}
 
+	// Get sorted tech keys
 	techKeys := make([]string, 0, len(ruleMap))
 	for tech := range ruleMap {
 		techKeys = append(techKeys, tech)
 	}
 	sort.Strings(techKeys)
 
-	technologies := make([]TechInfo, 0, len(techKeys))
+	// Build technologies list
+	technologies := make([]types.TechInfo, 0, len(techKeys))
 	for _, techKey := range techKeys {
 		rule := ruleMap[techKey]
-		info := TechInfo{
+		info := types.TechInfo{
 			Name:     rule.Name,
 			Tech:     techKey,
 			Category: rule.Type,
@@ -84,5 +74,5 @@ func runTechs(cmd *cobra.Command, args []string) {
 	}
 
 	result := &TechsResult{Technologies: technologies}
-	Output(result, techsFormat)
+	OutputToFile(result, techsFormat, techsOutput)
 }

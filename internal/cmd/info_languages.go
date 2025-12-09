@@ -12,6 +12,7 @@ import (
 )
 
 var languagesFormat string
+var languagesOutput string
 
 var languagesCmd = &cobra.Command{
 	Use:   "languages",
@@ -21,7 +22,7 @@ var languagesCmd = &cobra.Command{
 }
 
 func init() {
-	setupFormatFlag(languagesCmd, &languagesFormat)
+	setupOutputFlags(languagesCmd, &languagesFormat, &languagesOutput)
 }
 
 // LanguageInfo holds information about a language from go-enry
@@ -59,7 +60,7 @@ func (r *LanguagesResult) ToText(w io.Writer) {
 
 func runLanguages(cmd *cobra.Command, args []string) {
 	result := buildLanguagesResult()
-	Output(result, languagesFormat)
+	OutputToFile(result, languagesFormat, languagesOutput)
 }
 
 func buildLanguagesResult() *LanguagesResult {
