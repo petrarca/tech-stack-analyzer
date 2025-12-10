@@ -1,0 +1,84 @@
+# scan-config.yml - Tech Stack Analyzer Scan Configuration
+# Use with: stack-analyzer scan --config scan-config.yml
+
+scan:
+  # What to scan - specify one or more paths
+  # If not specified, defaults to current directory (".")
+  paths:
+    - "/path/to/project1"
+    - "/path/to/project2"
+    # - "/path/to/single/file.xml"  # Also supports single files
+  
+  # Output configuration
+  output:
+    file: "results.json"           # Output file path, or "-" for stdout
+    pretty: true                   # Pretty print JSON output
+    aggregate: "techs,languages"   # Aggregate fields: tech,techs,reason,languages,licenses,dependencies,git,all
+  
+  # Custom properties added to metadata.properties in scan output
+  # Use this to document project context, ownership, or deployment information
+  properties:
+    product: "My Product Name"
+    team: "Platform Engineering"
+    owner: "engineering@company.com"
+    environment: "production"
+    version: "1.2.3"
+    # Add any custom key-value pairs relevant to your project
+  
+  # Files and directories to exclude from scanning
+  # Supports glob patterns (**, *, ?)
+  exclude:
+    # Directories
+    - "node_modules"
+    - "vendor"
+    - "dist"
+    - "build"
+    - ".git"
+    
+    # File patterns
+    - "*.log"
+    - "*.tmp"
+    
+    # Glob patterns (relative to project root)
+    - "**/__tests__/**"
+    - "**/*.test.js"
+    - "**/test/**"
+  
+  # Technologies to add to the scan results (even if not auto-detected)
+  # Useful for documenting external dependencies, deployment targets, or SaaS services
+  techs:
+    - tech: "aws"
+      reason: "Deployed on AWS ECS"
+    - tech: "datadog"
+      reason: "Monitoring via Datadog"
+    - tech: "auth0"
+      reason: "Authentication provider"
+    - tech: "stripe"
+      reason: "Payment processing"
+  
+  # Scanner options (behavior flags)
+  options:
+    verbose: false                  # Show progress with simple output
+    debug: true                     # Show progress with tree structure
+    no_code_stats: false           # Disable code statistics (lines of code, comments, blanks, complexity)
+    component_code_stats: true     # Enable per-component code statistics
+    trace_timings: false            # Show timing information for each directory
+    trace_rules: false              # Show detailed rule matching information
+    filter_rules:                   # Only use these rules (for debugging)
+      - "nodejs"
+      - "python"
+      - "docker"
+
+# Example usage scenarios:
+#
+# 1. Developer workflow:
+#    stack-analyzer scan --config scan-config.yml
+#
+# 2. CI/CD pipeline with inline JSON:
+#    stack-analyzer scan --config '{"scan":{"paths":["./project"],"output":{"file":"$BUILD_DIR/scan-results.json"},"properties":{"build":"'$BUILD_NUMBER'"}}}'
+#
+# 3. Portfolio analysis (multiple repositories):
+#    stack-analyzer scan --config portfolio-config.yml --output portfolio-analysis.json
+#
+# 4. Config overrides (CLI flags take precedence):
+#    stack-analyzer scan --config scan-config.yml --verbose --output custom.json
