@@ -480,6 +480,39 @@ export STACK_ANALYZER_LOG_FORMAT=json      # text or json
 export STACK_ANALYZER_LOG_FILE=debug.log   # Optional: write logs to file
 ```
 
+#### Scan Configuration Files
+
+The `--config` flag supports comprehensive scan configuration through YAML files or inline JSON, enabling multi-path scanning, custom metadata, and unified option management.
+
+**Configuration Precedence** (highest to lowest):
+1. **CLI arguments** - Always take precedence over all other sources
+2. **Scan config file** - Overrides project config and environment variables  
+3. **`.stack-analyzer.yml`** - Project-specific config (merged with scan config)
+4. **Environment variables** - Provide defaults for unset values
+5. **Built-in defaults** - Used when nothing else is specified
+
+**Usage Examples:**
+```bash
+# YAML configuration file
+stack-analyzer scan --config scan-config.yml
+
+# Inline JSON configuration (ideal for CI/CD pipelines)
+stack-analyzer scan --config '{"scan":{"paths":["./src","./tests"],"options":{"debug":true}}}'
+
+# Portfolio analysis with multiple repositories
+stack-analyzer scan --config portfolio.yml --output portfolio-analysis.json
+```
+
+**Configuration Features:**
+- **Multi-path scanning** - Specify multiple directories and files to analyze
+- **Custom metadata** - Add project properties (team, environment, version, etc.)
+- **Unified options** - All scanner flags configurable in one place
+- **External technologies** - Document SaaS services and deployment targets
+- **Flexible exclusions** - Project-specific ignore patterns beyond .gitignore
+- **Inline JSON support** - Perfect for CI/CD and automation pipelines
+
+See `scan-config.example.yml` for a complete configuration template with all available options and precedence examples.
+
 #### Logging and Output Channels
 
 The scanner separates data output from progress messages following Unix philosophy:
@@ -592,6 +625,7 @@ stack-analyzer scan [path] [flags]
 ```
 
 **Flags:**
+- `--config` - Scan configuration file path or inline JSON (YAML/JSON file path or inline JSON string starting with `{`)
 - `--output, -o` - Output file path (default: stack-analysis.json). Use `-o -` or `-o /dev/stdout` for piping
 - `--aggregate` - Aggregate fields: `tech,techs,languages,licenses,dependencies,git,all` (use `all` for all aggregated fields)
 - `--exclude` - Additional patterns to exclude (combined with .gitignore; supports glob patterns like `**/__tests__/**`, `*.log`; can be specified multiple times)
@@ -607,6 +641,13 @@ stack-analyzer scan [path] [flags]
 # Basic usage (automatic .gitignore exclusions)
 stack-analyzer scan /path
 stack-analyzer scan --aggregate all /path  # Aggregate all fields with metadata
+
+# Scan configuration file
+stack-analyzer scan --config scan-config.yml
+stack-analyzer scan --config portfolio-config.yml --output portfolio-analysis.json
+
+# Inline JSON configuration (useful for CI/CD)
+stack-analyzer scan --config '{"scan":{"paths":["./project"],"output":{"file":"results.json"},"properties":{"build":"123"}}}'
 
 # Add additional exclusions beyond .gitignore
 stack-analyzer scan /path --exclude build-cache --exclude "*.tmp"
