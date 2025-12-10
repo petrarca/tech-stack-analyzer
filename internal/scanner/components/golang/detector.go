@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/components"
+	"github.com/petrarca/tech-stack-analyzer/internal/scanner/parsers"
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
 
@@ -68,52 +69,21 @@ func (d *Detector) detectGoMod(file types.File, currentPath, basePath string, pr
 	// Set tech field to golang
 	payload.AddPrimaryTech("golang")
 
-	// Parse go.mod for dependencies
-	// Format: \t<url> v<version>
-	// Match TypeScript: const lineReg = /[\t](.+)\sv(.+)/;
-	lineRegex := regexp.MustCompile(`[\t](.+)\sv(.+)`)
+	// Parse go.mod for dependencies using parser
+	goParser := parsers.NewGolangParser()
+	dependencies := goParser.ParseGoMod(string(content))
 
+	// Add dependencies to payload
+	for _, dep := range dependencies {
+		payload.AddDependency(dep)
+	}
+
+	// Extract dependency names for tech matching
 	var depNames []string
-	lines := strings.Split(string(content), "\n")
-
-	for _, line := range lines {
-		// First check if line matches the pattern
-		if !lineRegex.MatchString(line) {
-			continue
-		}
-
-		// Match TypeScript: const [url, version, comment, ...rest] = line.slice(1).split(' ');
-		// Remove first character (tab) and split by spaces
-		parts := strings.Split(line[1:], " ")
-		if len(parts) < 2 {
-			continue
-		}
-
-		url := parts[0]
-		version := parts[1]
-		var comment string
-		var rest []string
-
-		if len(parts) > 2 {
-			comment = parts[2]
-		}
-		if len(parts) > 3 {
-			rest = parts[3:]
-		}
-
-		// Match TypeScript: if (rest.length > 0 || comment) { continue; }
-		// Skip false positives and '// indirect'
-		if len(rest) > 0 || comment != "" {
-			continue
-		}
-
-		// Store dependency
-		payload.Dependencies = append(payload.Dependencies, types.Dependency{
-			Type: "golang",
-			Name: url + "@" + version,
-		})
-
-		depNames = append(depNames, url)
+	for _, dep := range dependencies {
+		// Remove version suffix for tech matching
+		name := strings.Split(dep.Name, "@")[0]
+		depNames = append(depNames, name)
 	}
 
 	// Match dependencies against rules

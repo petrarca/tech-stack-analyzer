@@ -469,7 +469,10 @@ require (
 	github.com/gin-gonic/gin v1.9.1 // web framework
 	gorm.io/gorm v1.25.4 // orm
 )`,
-			expectedDeps: []string{}, // Comments are skipped
+			expectedDeps: []string{
+				"github.com/gin-gonic/gin@v1.9.1",
+				"gorm.io/gorm@v1.25.4",
+			}, // Comments after dependencies don't affect them
 		},
 		{
 			name: "no dependencies",

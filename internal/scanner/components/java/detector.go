@@ -19,38 +19,15 @@ func (d *Detector) Detect(files []types.File, currentPath, basePath string, prov
 	var results []*types.Payload
 	var payload *types.Payload
 
-	// Define gradle regex once
-	gradleRegex := regexp.MustCompile(`^build\.gradle(\.kts)?$`)
+	// Check for Maven first
+	payload = d.detectMaven(files, currentPath, basePath, provider, depDetector)
 
-	// Check for pom.xml (Maven) first
-	for _, file := range files {
-		if file.Name == "pom.xml" {
-			payload = d.detectPomXML(file, currentPath, basePath, provider, depDetector)
-			break
-		}
-	}
-
-	// If no pom.xml, check for build.gradle or build.gradle.kts (Gradle)
+	// If no Maven found, check for Gradle
 	if payload == nil {
-		for _, file := range files {
-			if gradleRegex.MatchString(file.Name) {
-				payload = d.detectGradle(file, currentPath, basePath, provider, depDetector)
-				break
-			}
-		}
+		payload = d.detectGradleOnly(files, currentPath, basePath, provider, depDetector)
 	} else {
-		// If we found pom.xml, also check for gradle files and add them to the path
-		for _, file := range files {
-			if gradleRegex.MatchString(file.Name) {
-				relativeFilePath, _ := filepath.Rel(basePath, filepath.Join(currentPath, file.Name))
-				if relativeFilePath != "." {
-					relativeFilePath = "/" + relativeFilePath
-					payload.AddPath(relativeFilePath)
-				}
-				// Also add gradle tech
-				payload.AddTech("gradle", "matched file: "+file.Name)
-			}
-		}
+		// Maven found - also add Gradle info if present
+		d.addGradleInfoToMaven(payload, files, currentPath, basePath, provider, depDetector)
 	}
 
 	if payload != nil {
@@ -58,6 +35,58 @@ func (d *Detector) Detect(files []types.File, currentPath, basePath string, prov
 	}
 
 	return results
+}
+
+// detectMaven looks for pom.xml and creates a Maven payload
+func (d *Detector) detectMaven(files []types.File, currentPath, basePath string, provider types.Provider, depDetector components.DependencyDetector) *types.Payload {
+	for _, file := range files {
+		if file.Name == "pom.xml" {
+			return d.detectPomXML(file, currentPath, basePath, provider, depDetector)
+		}
+	}
+	return nil
+}
+
+// detectGradleOnly looks for Gradle files when no Maven was found
+func (d *Detector) detectGradleOnly(files []types.File, currentPath, basePath string, provider types.Provider, depDetector components.DependencyDetector) *types.Payload {
+	gradleRegex := regexp.MustCompile(`^build\.gradle(\.kts)?$`)
+	for _, file := range files {
+		if gradleRegex.MatchString(file.Name) {
+			return d.detectGradle(file, currentPath, basePath, provider, depDetector)
+		}
+	}
+	return nil
+}
+
+// addGradleInfoToMaven adds Gradle file paths and dependencies to an existing Maven payload
+func (d *Detector) addGradleInfoToMaven(payload *types.Payload, files []types.File, currentPath, basePath string, provider types.Provider, depDetector components.DependencyDetector) {
+	gradleRegex := regexp.MustCompile(`^build\.gradle(\.kts)?$`)
+
+	for _, file := range files {
+		if gradleRegex.MatchString(file.Name) {
+			relativeFilePath, _ := filepath.Rel(basePath, filepath.Join(currentPath, file.Name))
+			if relativeFilePath != "." {
+				relativeFilePath = "/" + relativeFilePath
+				payload.AddPath(relativeFilePath)
+			}
+			// Add gradle tech
+			payload.AddTech("gradle", "matched file: "+file.Name)
+
+			// Parse and merge gradle dependencies
+			if gradlePayload := d.detectGradle(file, currentPath, basePath, provider, depDetector); gradlePayload != nil {
+				for _, dep := range gradlePayload.Dependencies {
+					payload.AddDependency(dep)
+				}
+				// Merge gradle properties if they exist
+				if gradleProps, exists := gradlePayload.Properties["gradle"]; exists {
+					if payload.Properties == nil {
+						payload.Properties = make(map[string]interface{})
+					}
+					payload.Properties["gradle"] = gradleProps
+				}
+			}
+		}
+	}
 }
 
 func (d *Detector) detectPomXML(file types.File, currentPath, basePath string, provider types.Provider, depDetector components.DependencyDetector) *types.Payload {
