@@ -1,5 +1,12 @@
 # scan-config.yml - Tech Stack Analyzer Scan Configuration
 # Use with: stack-analyzer scan --config scan-config.yml
+#
+# CONFIGURATION PRECEDENCE (highest to lowest):
+# 1. CLI arguments (flags) - Always take precedence
+# 2. This scan-config.yml - Overrides project config and defaults
+# 3. .stack-analyzer.yml - Project-specific config (merged with scan config)
+# 4. Environment variables - Provide defaults for unset values
+# 5. Built-in defaults - Used when nothing else is specified
 
 scan:
   # What to scan - specify one or more paths
@@ -82,3 +89,9 @@ scan:
 #
 # 4. Config overrides (CLI flags take precedence):
 #    stack-analyzer scan --config scan-config.yml --verbose --output custom.json
+#
+# PRECEDENCE EXAMPLES:
+# - CLI flag --debug=true overrides scan-config debug: false
+# - scan-config output.file overrides .stack-analyzer.yml output  
+# - .stack-analyzer.yml properties merge with scan-config properties
+# - Environment variable STACK_ANALYZER_DEBUG provides default when no config sets debug

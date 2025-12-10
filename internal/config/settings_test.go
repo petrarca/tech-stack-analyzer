@@ -24,7 +24,7 @@ func TestLoadSettings_WithDefaults(t *testing.T) {
 	// Clear any existing environment variables
 	clearEnvVars()
 
-	settings := LoadSettings()
+	settings := LoadSettingsFromEnvironment()
 
 	// Should match default settings
 	defaultSettings := DefaultSettings()
@@ -43,14 +43,14 @@ func TestLoadSettings_WithEnvironmentVariables(t *testing.T) {
 	// Set environment variables
 	os.Setenv("STACK_ANALYZER_OUTPUT", "/tmp/test.json")
 	os.Setenv("STACK_ANALYZER_PRETTY", "false")
-	os.Setenv("STACK_ANALYZER_EXCLUDE_DIRS", "vendor,node_modules,build")
+	os.Setenv("STACK_ANALYZER_EXCLUDE", "vendor,node_modules,build")
 	os.Setenv("STACK_ANALYZER_AGGREGATE", "tech,techs")
 	os.Setenv("STACK_ANALYZER_LOG_LEVEL", "debug")
 	os.Setenv("STACK_ANALYZER_LOG_FORMAT", "json")
 
 	defer clearEnvVars()
 
-	settings := LoadSettings()
+	settings := LoadSettingsFromEnvironment()
 
 	assert.Equal(t, "/tmp/test.json", settings.OutputFile)
 	assert.False(t, settings.PrettyPrint)
@@ -70,7 +70,7 @@ func TestLoadSettings_WithPartialEnvironmentVariables(t *testing.T) {
 
 	defer clearEnvVars()
 
-	settings := LoadSettings()
+	settings := LoadSettingsFromEnvironment()
 
 	// Should have defaults for unset variables
 	assert.Equal(t, "stack-analysis.json", settings.OutputFile)
@@ -90,7 +90,7 @@ func TestLoadSettings_InvalidLogLevel(t *testing.T) {
 
 	defer clearEnvVars()
 
-	settings := LoadSettings()
+	settings := LoadSettingsFromEnvironment()
 
 	// Should fall back to default for invalid log level
 	assert.Equal(t, slog.LevelError, settings.LogLevel, "Should use default log level for invalid input")
@@ -115,7 +115,7 @@ func TestLoadSettings_BooleanParsing(t *testing.T) {
 			os.Setenv("STACK_ANALYZER_PRETTY", tt.envValue)
 			defer clearEnvVars()
 
-			settings := LoadSettings()
+			settings := LoadSettingsFromEnvironment()
 			assert.Equal(t, tt.expected, settings.PrettyPrint)
 		})
 	}
@@ -169,7 +169,7 @@ func clearEnvVars() {
 	envVars := []string{
 		"STACK_ANALYZER_OUTPUT",
 		"STACK_ANALYZER_PRETTY",
-		"STACK_ANALYZER_EXCLUDE_DIRS",
+		"STACK_ANALYZER_EXCLUDE",
 		"STACK_ANALYZER_AGGREGATE",
 		"STACK_ANALYZER_LOG_LEVEL",
 		"STACK_ANALYZER_LOG_FORMAT",
@@ -197,10 +197,10 @@ func TestLoadSettings_ExcludePatternsParsing(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			clearEnvVars()
-			os.Setenv("STACK_ANALYZER_EXCLUDE_DIRS", tt.envValue)
+			os.Setenv("STACK_ANALYZER_EXCLUDE", tt.envValue)
 			defer clearEnvVars()
 
-			settings := LoadSettings()
+			settings := LoadSettingsFromEnvironment()
 			assert.Equal(t, tt.expected, settings.ExcludePatterns)
 		})
 	}
@@ -216,7 +216,7 @@ func TestLoadSettings_DoesNotModifyDefaults(t *testing.T) {
 	defer clearEnvVars()
 
 	// Load settings with environment overrides
-	settings := LoadSettings()
+	settings := LoadSettingsFromEnvironment()
 
 	// Default settings should remain unchanged
 	assert.True(t, defaultSettings.PrettyPrint, "Default settings should not be modified")

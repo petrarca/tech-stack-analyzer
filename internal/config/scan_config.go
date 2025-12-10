@@ -4,10 +4,30 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"reflect"
 	"strings"
 
 	"gopkg.in/yaml.v3"
 )
+
+// ScanOptions represents all configurable scanner options
+// This is the single source of truth for all option fields
+type ScanOptions struct {
+	// Output settings
+	OutputFile  string `yaml:"output_file,omitempty" json:"output_file,omitempty" default:"stack-analysis.json"`
+	PrettyPrint bool   `yaml:"pretty,omitempty" json:"pretty,omitempty" default:"true"`
+	Aggregate   string `yaml:"aggregate,omitempty" json:"aggregate,omitempty" default:""`
+
+	// Scan behavior
+	ExcludePatterns       []string `yaml:"exclude_patterns,omitempty" json:"exclude_patterns,omitempty"`
+	Verbose               bool     `yaml:"verbose,omitempty" json:"verbose,omitempty" default:"false"`
+	Debug                 bool     `yaml:"debug,omitempty" json:"debug,omitempty" default:"false"`
+	TraceTimings          bool     `yaml:"trace_timings,omitempty" json:"trace_timings,omitempty" default:"false"`
+	TraceRules            bool     `yaml:"trace_rules,omitempty" json:"trace_rules,omitempty" default:"false"`
+	FilterRules           []string `yaml:"filter_rules,omitempty" json:"filter_rules,omitempty"`
+	NoCodeStats           bool     `yaml:"no_code_stats,omitempty" json:"no_code_stats,omitempty" default:"false"`
+	CodeStatsPerComponent bool     `yaml:"component_code_stats,omitempty" json:"component_code_stats,omitempty" default:"false"`
+}
 
 // ScanConfigFile represents the external scan configuration file
 type ScanConfigFile struct {
@@ -19,7 +39,7 @@ type ScanConfigSection struct {
 	// What to scan
 	Paths []string `yaml:"paths,omitempty" json:"paths,omitempty"`
 
-	// Output configuration
+	// Output configuration (legacy field names for backward compatibility)
 	Output OutputConfig `yaml:"output,omitempty" json:"output,omitempty"`
 
 	// Metadata (identical to .stack-analyzer.yml)
@@ -31,26 +51,15 @@ type ScanConfigSection struct {
 	// Additional technologies
 	Techs []ConfigTech `yaml:"techs,omitempty" json:"techs,omitempty"`
 
-	// Scanner options
-	Options ScannerOptions `yaml:"options,omitempty" json:"options,omitempty"`
+	// Scanner options (unified structure)
+	Options ScanOptions `yaml:"options,omitempty" json:"options,omitempty"`
 }
 
-// OutputConfig defines output settings
+// OutputConfig defines output settings (legacy for backward compatibility)
 type OutputConfig struct {
 	File      string `yaml:"file,omitempty" json:"file,omitempty"`
 	Pretty    bool   `yaml:"pretty,omitempty" json:"pretty,omitempty"`
 	Aggregate string `yaml:"aggregate,omitempty" json:"aggregate,omitempty"`
-}
-
-// ScannerOptions defines scanner behavior options
-type ScannerOptions struct {
-	Verbose               bool     `yaml:"verbose,omitempty" json:"verbose,omitempty"`
-	Debug                 bool     `yaml:"debug,omitempty" json:"debug,omitempty"`
-	NoCodeStats           bool     `yaml:"no_code_stats,omitempty" json:"no_code_stats,omitempty"`
-	CodeStatsPerComponent bool     `yaml:"component_code_stats,omitempty" json:"component_code_stats,omitempty"`
-	TraceTimings          bool     `yaml:"trace_timings,omitempty" json:"trace_timings,omitempty"`
-	TraceRules            bool     `yaml:"trace_rules,omitempty" json:"trace_rules,omitempty"`
-	FilterRules           []string `yaml:"filter_rules,omitempty" json:"filter_rules,omitempty"`
 }
 
 // LoadScanConfig loads scan configuration from file path or inline JSON
@@ -104,44 +113,73 @@ func (c *ScanConfigFile) MergeWithSettings(settings *Settings) {
 		return
 	}
 
-	// Only merge if settings haven't been explicitly set via CLI flags
-	// (we assume non-default values come from CLI)
+	// Create unified options from config
+	configOpts := c.getUnifiedOptions()
 
-	// Output settings
-	if c.Scan.Output.File != "" && settings.OutputFile == "stack-analysis.json" {
-		settings.OutputFile = c.Scan.Output.File
-	}
-	if !settings.PrettyPrint && c.Scan.Output.Pretty {
-		settings.PrettyPrint = c.Scan.Output.Pretty
-	}
-	if c.Scan.Output.Aggregate != "" && settings.Aggregate == "" {
-		settings.Aggregate = c.Scan.Output.Aggregate
-	}
+	// Merge using reflection to avoid manual field mapping
+	mergeOptions(configOpts, settings)
+}
 
-	// Scanner options
-	if !settings.Verbose && c.Scan.Options.Verbose {
-		settings.Verbose = c.Scan.Options.Verbose
+// getUnifiedOptions creates unified ScanOptions from config
+func (c *ScanConfigFile) getUnifiedOptions() *ScanOptions {
+	opts := &ScanOptions{}
+
+	// Copy from options section
+	*opts = c.Scan.Options
+
+	// Handle legacy output config for backward compatibility
+	if c.Scan.Output.File != "" {
+		opts.OutputFile = c.Scan.Output.File
 	}
-	if !settings.Debug && c.Scan.Options.Debug {
-		settings.Debug = c.Scan.Options.Debug
+	if c.Scan.Output.Pretty {
+		opts.PrettyPrint = c.Scan.Output.Pretty
 	}
-	if !settings.NoCodeStats && c.Scan.Options.NoCodeStats {
-		settings.NoCodeStats = c.Scan.Options.NoCodeStats
-	}
-	if !settings.CodeStatsPerComponent && c.Scan.Options.CodeStatsPerComponent {
-		settings.CodeStatsPerComponent = c.Scan.Options.CodeStatsPerComponent
-	}
-	if !settings.TraceTimings && c.Scan.Options.TraceTimings {
-		settings.TraceTimings = c.Scan.Options.TraceTimings
-	}
-	if !settings.TraceRules && c.Scan.Options.TraceRules {
-		settings.TraceRules = c.Scan.Options.TraceRules
-	}
-	if len(settings.FilterRules) == 0 && len(c.Scan.Options.FilterRules) > 0 {
-		settings.FilterRules = c.Scan.Options.FilterRules
+	if c.Scan.Output.Aggregate != "" {
+		opts.Aggregate = c.Scan.Output.Aggregate
 	}
 
-	// Exclude patterns will be merged separately with project config
+	// Copy excludes to options
+	if len(c.Scan.Exclude) > 0 {
+		opts.ExcludePatterns = c.Scan.Exclude
+	}
+
+	return opts
+}
+
+// mergeOptions merges config options into settings using reflection
+func mergeOptions(configOpts *ScanOptions, settings *Settings) {
+	configValue := reflect.ValueOf(configOpts).Elem()
+	settingsValue := reflect.ValueOf(settings).Elem()
+	configType := configValue.Type()
+
+	for i := 0; i < configValue.NumField(); i++ {
+		field := configValue.Field(i)
+		fieldType := configType.Field(i)
+		settingsField := settingsValue.FieldByName(fieldType.Name)
+
+		if !settingsField.IsValid() || !settingsField.CanSet() {
+			continue
+		}
+
+		// Only merge if setting is at default value and config has non-default value
+		if isDefaultValue(settingsField) && !isDefaultValue(field) {
+			settingsField.Set(field)
+		}
+	}
+}
+
+// isDefaultValue checks if a field has its default/zero value
+func isDefaultValue(field reflect.Value) bool {
+	switch field.Kind() {
+	case reflect.String:
+		return field.String() == ""
+	case reflect.Bool:
+		return !field.Bool()
+	case reflect.Slice:
+		return field.Len() == 0
+	default:
+		return field.IsZero()
+	}
 }
 
 // GetScanPaths returns the paths to scan, defaulting to ["."] if not specified

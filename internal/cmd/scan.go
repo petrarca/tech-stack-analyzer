@@ -93,7 +93,7 @@ func init() {
 	rootCmd.AddCommand(scanCmd)
 
 	// Initialize settings with defaults and environment variables
-	settings = config.LoadSettings()
+	settings = config.LoadSettingsFromEnvironment()
 
 	// Store environment variable values for flag defaults
 	outputFile := settings.OutputFile

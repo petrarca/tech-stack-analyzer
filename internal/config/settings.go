@@ -10,14 +10,15 @@ import (
 )
 
 // Settings holds all scanner configuration
+// Field names match ScanOptions for reflection-based merging
 type Settings struct {
 	// Output settings
 	OutputFile  string
 	PrettyPrint bool
+	Aggregate   string
 
 	// Scan behavior
 	ExcludePatterns       []string
-	Aggregate             string
 	Verbose               bool
 	Debug                 bool
 	TraceTimings          bool
@@ -37,8 +38,8 @@ func DefaultSettings() *Settings {
 	return &Settings{
 		OutputFile:            "stack-analysis.json",
 		PrettyPrint:           true,
-		ExcludePatterns:       []string{},
 		Aggregate:             "",
+		ExcludePatterns:       []string{},
 		Verbose:               false,
 		Debug:                 false,
 		TraceTimings:          false,
@@ -48,47 +49,25 @@ func DefaultSettings() *Settings {
 		CodeStatsPerComponent: false,           // Per-component code stats disabled by default
 		LogLevel:              slog.LevelError, // Changed from InfoLevel - only errors by default
 		LogFormat:             "text",
-		LogFile:               "", // Empty = stderr
+		LogFile:               "",
 	}
 }
 
-// LoadSettings creates settings from defaults and applies environment variable overrides
-func LoadSettings() *Settings {
+// LoadSettingsFromEnvironment loads settings from environment variables
+func LoadSettingsFromEnvironment() *Settings {
 	settings := DefaultSettings()
 
-	// Apply environment variable overrides
+	// Override with environment variables if set
 	if outputFile := os.Getenv("STACK_ANALYZER_OUTPUT"); outputFile != "" {
 		settings.OutputFile = outputFile
-	}
-
-	if excludePatterns := os.Getenv("STACK_ANALYZER_EXCLUDE_DIRS"); excludePatterns != "" {
-		settings.ExcludePatterns = strings.Split(excludePatterns, ",")
-		for i, pattern := range settings.ExcludePatterns {
-			settings.ExcludePatterns[i] = strings.TrimSpace(pattern)
-		}
-	}
-
-	if aggregate := os.Getenv("STACK_ANALYZER_AGGREGATE"); aggregate != "" {
-		settings.Aggregate = aggregate
 	}
 
 	if pretty := os.Getenv("STACK_ANALYZER_PRETTY"); pretty != "" {
 		settings.PrettyPrint = strings.ToLower(pretty) == "true"
 	}
 
-	// Logging settings
-	if logLevel := os.Getenv("STACK_ANALYZER_LOG_LEVEL"); logLevel != "" {
-		if level, err := parseLogLevel(logLevel); err == nil {
-			settings.LogLevel = level
-		}
-	}
-
-	if logFormat := os.Getenv("STACK_ANALYZER_LOG_FORMAT"); logFormat != "" {
-		settings.LogFormat = logFormat
-	}
-
-	if logFile := os.Getenv("STACK_ANALYZER_LOG_FILE"); logFile != "" {
-		settings.LogFile = logFile
+	if aggregate := os.Getenv("STACK_ANALYZER_AGGREGATE"); aggregate != "" {
+		settings.Aggregate = aggregate
 	}
 
 	if verbose := os.Getenv("STACK_ANALYZER_VERBOSE"); verbose != "" {
@@ -97,6 +76,14 @@ func LoadSettings() *Settings {
 
 	if debug := os.Getenv("STACK_ANALYZER_DEBUG"); debug != "" {
 		settings.Debug = strings.ToLower(debug) == "true"
+	}
+
+	if noCodeStats := os.Getenv("STACK_ANALYZER_NO_CODE_STATS"); noCodeStats != "" {
+		settings.NoCodeStats = strings.ToLower(noCodeStats) == "true"
+	}
+
+	if componentStats := os.Getenv("STACK_ANALYZER_COMPONENT_CODE_STATS"); componentStats != "" {
+		settings.CodeStatsPerComponent = strings.ToLower(componentStats) == "true"
 	}
 
 	if traceTimings := os.Getenv("STACK_ANALYZER_TRACE_TIMINGS"); traceTimings != "" {
@@ -114,28 +101,51 @@ func LoadSettings() *Settings {
 		}
 	}
 
+	if excludes := os.Getenv("STACK_ANALYZER_EXCLUDE"); excludes != "" {
+		settings.ExcludePatterns = strings.Split(excludes, ",")
+		for i, exclude := range settings.ExcludePatterns {
+			settings.ExcludePatterns[i] = strings.TrimSpace(exclude)
+		}
+	}
+
+	if logLevel := os.Getenv("STACK_ANALYZER_LOG_LEVEL"); logLevel != "" {
+		if level, err := parseLogLevel(logLevel); err == nil {
+			settings.LogLevel = level
+		}
+	}
+
+	if logFormat := os.Getenv("STACK_ANALYZER_LOG_FORMAT"); logFormat != "" {
+		settings.LogFormat = logFormat
+	}
+
+	if logFile := os.Getenv("STACK_ANALYZER_LOG_FILE"); logFile != "" {
+		settings.LogFile = logFile
+	}
+
 	return settings
 }
 
 // parseLogLevel converts string log level to slog.Level
 func parseLogLevel(level string) (slog.Level, error) {
-	switch strings.ToLower(level) {
-	case "debug":
+	switch strings.ToUpper(level) {
+	case "TRACE":
+		return slog.LevelDebug - 4, nil
+	case "DEBUG":
 		return slog.LevelDebug, nil
-	case "info":
+	case "INFO":
 		return slog.LevelInfo, nil
-	case "warn", "warning":
+	case "WARN", "WARNING":
 		return slog.LevelWarn, nil
-	case "error":
+	case "ERROR":
 		return slog.LevelError, nil
-	case "fatal":
-		return slog.LevelError, nil // slog doesn't have fatal, use error
+	case "FATAL":
+		return slog.LevelError + 4, nil
 	default:
 		return slog.LevelInfo, fmt.Errorf("invalid log level: %s", level)
 	}
 }
 
-// ConfigureLogger sets up the global logger based on settings
+// ConfigureLogger sets up the logger based on settings
 func (s *Settings) ConfigureLogger() *slog.Logger {
 	var handler slog.Handler
 
@@ -152,25 +162,44 @@ func (s *Settings) ConfigureLogger() *slog.Logger {
 		}
 	}
 
-	// Set log format and level
+	// Configure handler based on format
 	opts := &slog.HandlerOptions{
 		Level: s.LogLevel,
 	}
 
-	if s.LogFormat == "json" {
+	switch strings.ToLower(s.LogFormat) {
+	case "json":
 		handler = slog.NewJSONHandler(output, opts)
-	} else {
+	default:
 		handler = slog.NewTextHandler(output, opts)
 	}
 
 	return slog.New(handler)
 }
 
-// Validate checks if settings are valid
+// Validate checks if the settings are valid
 func (s *Settings) Validate() error {
-	// TODO: Add validation logic
-	// - Check if output directory exists/writable
-	// - Validate aggregate fields
-	// - Validate max depth is reasonable
+	// Check for mutually exclusive flags
+	if s.Verbose && s.Debug {
+		return fmt.Errorf("cannot use both --verbose and --debug flags")
+	}
+
+	// Validate aggregate fields if specified
+	if s.Aggregate != "" {
+		validFields := map[string]bool{
+			"tech": true, "techs": true, "reason": true,
+			"languages": true, "licenses": true,
+			"dependencies": true, "git": true, "all": true,
+		}
+
+		fields := strings.Split(s.Aggregate, ",")
+		for _, field := range fields {
+			field = strings.TrimSpace(field)
+			if !validFields[field] {
+				return fmt.Errorf("invalid aggregate field '%s'. Valid fields: tech, techs, reason, languages, licenses, dependencies, git, all", field)
+			}
+		}
+	}
+
 	return nil
 }
