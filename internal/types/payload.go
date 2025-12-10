@@ -54,25 +54,25 @@ func (e Edge) MarshalJSON() ([]byte, error) {
 	return json.Marshal(edgeMap)
 }
 
-// NewPayload creates a new payload
+// NewPayload creates a new payload with a temporary ID (will be finalized by AssignIDs)
 func NewPayload(name string, paths []string) *Payload {
-	// Use first path for ID generation, or empty string if no paths
+	// Use first path for temporary ID generation
 	var relativePath string
 	if len(paths) > 0 {
 		relativePath = paths[0]
 	}
 
 	return &Payload{
-		ID:           GenerateID(name, relativePath), // Generate stable ID
+		ID:           GenerateComponentID("temp", name, relativePath), // Temporary ID, will be replaced
 		Name:         name,
-		Path:         paths, // Store paths as array (like TypeScript Set)
+		Path:         paths,
 		Techs:        make([]string, 0),
 		Languages:    make(map[string]int),
 		Dependencies: make([]Dependency, 0),
 		Childs:       make([]*Payload, 0),
 		Edges:        make([]Edge, 0),
 		Licenses:     make([]string, 0),
-		Reason:       make(map[string][]string), // Initialize reason mapping
+		Reason:       make(map[string][]string),
 		Properties:   make(map[string]interface{}),
 	}
 }
@@ -80,6 +80,35 @@ func NewPayload(name string, paths []string) *Payload {
 // NewPayloadWithPath creates a new payload with a single path (convenience function)
 func NewPayloadWithPath(name, path string) *Payload {
 	return NewPayload(name, []string{path})
+}
+
+// AssignIDs assigns unique IDs to the entire payload tree.
+// The root gets the provided ID (or generates random if empty), and all children get deterministic IDs
+// based on the root ID + their relative path.
+// This should be called once after the entire tree is built.
+func (p *Payload) AssignIDs(rootID string) {
+	if rootID == "" {
+		rootID = GenerateRootID()
+	}
+	p.ID = rootID
+
+	// Recursively assign IDs to all children
+	p.assignChildIDs(rootID)
+}
+
+// assignChildIDs recursively assigns deterministic IDs to children
+func (p *Payload) assignChildIDs(rootID string) {
+	for _, child := range p.Childs {
+		// Use first path for ID generation
+		var relativePath string
+		if len(child.Path) > 0 {
+			relativePath = child.Path[0]
+		}
+		child.ID = GenerateComponentID(rootID, child.Name, relativePath)
+
+		// Recurse into grandchildren
+		child.assignChildIDs(rootID)
+	}
 }
 
 // AddChild adds a child payload with deduplication (following TypeScript's addChild logic exactly)

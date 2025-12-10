@@ -26,6 +26,7 @@ type Settings struct {
 	FilterRules           []string // Only use these rules (for debugging)
 	NoCodeStats           bool     // Disable code statistics (enabled by default)
 	CodeStatsPerComponent bool     // Enable per-component code statistics (disabled by default)
+	RootID                string   // Override random root ID for deterministic scans
 
 	// Logging
 	LogLevel  slog.Level

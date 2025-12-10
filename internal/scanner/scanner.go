@@ -55,6 +55,7 @@ type Scanner struct {
 	gitignoreStack  *git.StackBasedLoader
 	gitCache        map[string]*git.GitInfo // Cache git info by repo root path
 	gitRootCache    map[string]string       // Cache path -> repo root mapping
+	rootID          string                  // Override root ID for deterministic scans
 }
 
 // CodeStatsAnalyzer interface for code statistics collection
@@ -95,11 +96,16 @@ func NewScannerWithExcludes(path string, excludePatterns []string, verbose bool,
 
 // NewScannerWithOptions creates a new scanner with all options including code stats
 func NewScannerWithOptions(path string, excludePatterns []string, verbose bool, useTreeView bool, traceTimings bool, traceRules bool, codeStats CodeStatsAnalyzer) (*Scanner, error) {
-	return NewScannerWithOptionsAndLogger(path, excludePatterns, verbose, useTreeView, traceTimings, traceRules, codeStats, nil)
+	return NewScannerWithOptionsAndLogger(path, excludePatterns, verbose, useTreeView, traceTimings, traceRules, codeStats, nil, "")
+}
+
+// NewScannerWithOptionsAndRootID creates a new scanner with root ID override
+func NewScannerWithOptionsAndRootID(path string, excludePatterns []string, verbose bool, useTreeView bool, traceTimings bool, traceRules bool, codeStats CodeStatsAnalyzer, rootID string) (*Scanner, error) {
+	return NewScannerWithOptionsAndLogger(path, excludePatterns, verbose, useTreeView, traceTimings, traceRules, codeStats, nil, rootID)
 }
 
 // NewScannerWithOptionsAndLogger creates a new scanner with all options including logger
-func NewScannerWithOptionsAndLogger(path string, excludePatterns []string, verbose bool, useTreeView bool, traceTimings bool, traceRules bool, codeStats CodeStatsAnalyzer, logger *slog.Logger) (*Scanner, error) {
+func NewScannerWithOptionsAndLogger(path string, excludePatterns []string, verbose bool, useTreeView bool, traceTimings bool, traceRules bool, codeStats CodeStatsAnalyzer, logger *slog.Logger, rootID string) (*Scanner, error) {
 	// Create provider for the target path (like TypeScript's FSProvider)
 	provider := provider.NewFSProvider(path)
 
@@ -159,6 +165,7 @@ func NewScannerWithOptionsAndLogger(path string, excludePatterns []string, verbo
 		gitignoreStack:  gitignoreStack,
 		gitCache:        make(map[string]*git.GitInfo),
 		gitRootCache:    make(map[string]string),
+		rootID:          rootID,
 	}, nil
 }
 
@@ -268,6 +275,9 @@ func (s *Scanner) Scan() (*types.Payload, error) {
 	// Attach metadata to root payload
 	payload.Metadata = scanMeta
 
+	// Assign unique IDs to the entire payload tree
+	payload.AssignIDs(s.resolveRootID(basePath))
+
 	// Report scan complete
 	s.progress.ScanComplete(fileCount, componentCount, time.Since(startTime))
 
@@ -364,12 +374,11 @@ func (s *Scanner) collectTechs(payload *types.Payload, primaryTechs, allTechs ma
 
 // ScanFile performs analysis on a single file, treating it as a directory with just that file
 func (s *Scanner) ScanFile(fileName string) (*types.Payload, error) {
-	// Create main payload
-	payload := types.NewPayloadWithPath("main", "/")
-
 	// The provider's base path is already set to the directory containing the file
-	// We just need to pass the file name
 	basePath := s.provider.GetBasePath()
+
+	// Create main payload (ID will be assigned at the end)
+	payload := types.NewPayloadWithPath("main", "/")
 
 	// Create a virtual file list with just the single file
 	files := []types.File{
@@ -421,7 +430,27 @@ func (s *Scanner) ScanFile(fileName string) (*types.Payload, error) {
 
 	payload.Metadata = scanMeta
 
+	// Assign unique IDs to the payload tree
+	payload.AssignIDs(s.resolveRootID(basePath))
+
 	return payload, nil
+}
+
+// resolveRootID determines the root component ID using priority system:
+// 1. CLI/config override (s.rootID)
+// 2. Git remote URL (deterministic)
+// 3. Empty string (will trigger random generation in AssignIDs)
+func (s *Scanner) resolveRootID(basePath string) string {
+	if s.rootID != "" {
+		return s.rootID // CLI or config override
+	}
+
+	gitRootID := git.GenerateRootIDFromGit(basePath)
+	if gitRootID != "" {
+		return gitRootID // Git-based deterministic ID
+	}
+
+	return "" // Will trigger random generation
 }
 
 // processFile handles language detection and code statistics for a single file

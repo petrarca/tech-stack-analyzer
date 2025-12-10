@@ -18,6 +18,7 @@ type ScanConfig struct {
 	Properties map[string]interface{} `yaml:"properties,omitempty"`
 	Exclude    []string               `yaml:"exclude,omitempty"`
 	Techs      []ConfigTech           `yaml:"techs,omitempty"`
+	RootID     string                 `yaml:"root_id,omitempty"` // Override random root ID for deterministic scans
 }
 
 // ConfigTech represents a technology to add to the scan

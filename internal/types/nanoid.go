@@ -8,21 +8,12 @@ import (
 	"math/big"
 )
 
-// Alphabet matches the TypeScript nanoid alphabet (kept for backward compatibility)
+// Alphabet matches the TypeScript nanoid alphabet
 const alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 
-// GenerateID generates a stable 20-character hash-based ID using name and relative path
-// This provides stable, reproducible IDs across scans while maintaining uniqueness
-func GenerateID(name, relativePath string) string {
-	content := fmt.Sprintf("%s:%s", name, relativePath)
-	hash := sha256.Sum256([]byte(content))
-	return hex.EncodeToString(hash[:])[:20]
-}
-
-// GenerateRandomID generates a 12-character nanoid-like string (legacy)
-// Matches TypeScript: nid = customAlphabet(alphabet, maxSize)
-// DEPRECATED: Use GenerateID for stable IDs
-func GenerateRandomID() string {
+// GenerateRootID generates a unique 12-character random ID for root/main components.
+// Each scan gets a unique root ID, ensuring all component IDs within that scan are unique.
+func GenerateRootID() string {
 	const length = 12
 	const alphabetLen = 62 // len(alphabet)
 
@@ -33,4 +24,13 @@ func GenerateRandomID() string {
 	}
 
 	return string(result)
+}
+
+// GenerateComponentID generates a deterministic 20-character ID for child components.
+// It combines the root ID, component name, and relative path to create unique, reproducible IDs
+// within a scan context. Components with different names at the same path will have different IDs.
+func GenerateComponentID(rootID, name, relativePath string) string {
+	content := fmt.Sprintf("%s:%s:%s", rootID, name, relativePath)
+	hash := sha256.Sum256([]byte(content))
+	return hex.EncodeToString(hash[:])[:20]
 }

@@ -1,6 +1,11 @@
 package git
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
+	"path/filepath"
+	"strings"
+
 	"github.com/go-git/go-git/v5"
 )
 
@@ -87,4 +92,55 @@ func GetGitInfoWithRoot(path string) (*GitInfo, string) {
 	}
 
 	return gitInfo, repoRoot
+}
+
+// GenerateRootIDFromGit generates a deterministic root ID from git remote URL and relative path
+// If no remote URL is available, returns empty string
+func GenerateRootIDFromGit(path string) string {
+	// Get git info to extract remote URL and repo root
+	gitInfo, repoRoot := GetGitInfoWithRoot(path)
+	if gitInfo == nil || gitInfo.RemoteURL == "" {
+		return ""
+	}
+
+	// Normalize the remote URL to create a consistent base
+	remoteURL := normalizeRemoteURL(gitInfo.RemoteURL)
+
+	// Get relative path from repo root if we're in a subdirectory
+	var relativePath string
+	if repoRoot != "" && repoRoot != path {
+		rel, err := filepath.Rel(repoRoot, path)
+		if err == nil {
+			relativePath = rel
+		}
+	}
+
+	// Generate deterministic ID: hash(remoteURL + relativePath)
+	content := remoteURL
+	if relativePath != "" && relativePath != "." {
+		content += ":" + relativePath
+	}
+
+	hash := sha256.Sum256([]byte(content))
+	return hex.EncodeToString(hash[:])[:20]
+}
+
+// normalizeRemoteURL converts various git URL formats to a consistent format
+func normalizeRemoteURL(url string) string {
+	// Remove protocol variations
+	url = strings.TrimPrefix(url, "https://")
+	url = strings.TrimPrefix(url, "http://")
+	url = strings.TrimPrefix(url, "git@")
+	url = strings.TrimPrefix(url, "git://")
+	url = strings.TrimSuffix(url, ".git")
+
+	// Convert SSH format git@github.com:user/repo to github.com/user/repo
+	if strings.Contains(url, ":") && strings.Contains(url, "@") {
+		url = strings.Replace(url, ":", "/", 1)
+	}
+
+	// Remove trailing slash
+	url = strings.TrimSuffix(url, "/")
+
+	return url
 }

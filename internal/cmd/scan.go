@@ -128,6 +128,9 @@ func init() {
 	// Per-component code statistics flag (disabled by default)
 	scanCmd.Flags().BoolVar(&settings.CodeStatsPerComponent, "component-code-stats", settings.CodeStatsPerComponent, "Enable per-component code statistics (lines of code, comments, blanks, complexity per component)")
 
+	// Root ID override flag for deterministic scans
+	scanCmd.Flags().StringVar(&settings.RootID, "root-id", "", "Override random root ID for deterministic scans (e.g., 'my-project-2024')")
+
 	// Logging flags - use defaults from environment variables
 	scanCmd.Flags().String("log-level", logLevel, "Log level: trace, debug, error, fatal")
 	scanCmd.Flags().String("log-format", logFormat, "Log format: text or json")
@@ -265,7 +268,7 @@ func createAndRunScanner(scannerPath, absPath string, isFile bool, excludePatter
 	codeStatsAnalyzer := codestats.NewAnalyzerWithPerComponent(!settings.NoCodeStats, settings.CodeStatsPerComponent)
 
 	// Create scanner
-	s, err := scanner.NewScannerWithOptionsAndLogger(scannerPath, excludePatterns, settings.Verbose, settings.Debug, settings.TraceTimings, settings.TraceRules, codeStatsAnalyzer, logger)
+	s, err := scanner.NewScannerWithOptionsAndLogger(scannerPath, excludePatterns, settings.Verbose, settings.Debug, settings.TraceTimings, settings.TraceRules, codeStatsAnalyzer, logger, settings.RootID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create scanner: %w", err)
 	}
@@ -475,6 +478,11 @@ func loadAndMergeProjectConfig(absPath string, logger *slog.Logger) (*config.Sca
 	// Apply merged excludes to settings
 	settings.ExcludePatterns = mergedConfig.MergeExcludes(settings.ExcludePatterns)
 
+	// Apply root ID from config if not set by CLI (CLI takes precedence)
+	if settings.RootID == "" && mergedConfig.RootID != "" {
+		settings.RootID = mergedConfig.RootID
+	}
+
 	return projectConfig, mergedConfig
 }
 
@@ -506,7 +514,7 @@ func runScanner(absPath string, isFile bool, mergedConfig *config.ScanConfig, lo
 	// Create code stats analyzer (enabled by default, disabled with --no-code-stats)
 	codeStatsAnalyzer := codestats.NewAnalyzerWithPerComponent(!settings.NoCodeStats, settings.CodeStatsPerComponent)
 
-	s, err := scanner.NewScannerWithOptionsAndLogger(scannerPath, settings.ExcludePatterns, settings.Verbose, settings.Debug, settings.TraceTimings, settings.TraceRules, codeStatsAnalyzer, logger)
+	s, err := scanner.NewScannerWithOptionsAndLogger(scannerPath, settings.ExcludePatterns, settings.Verbose, settings.Debug, settings.TraceTimings, settings.TraceRules, codeStatsAnalyzer, logger, settings.RootID)
 	if err != nil {
 		logger.Error("Failed to create scanner", "error", err)
 		os.Exit(1)
