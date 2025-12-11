@@ -89,15 +89,28 @@ func (d *Detector) detectCargoToml(file types.File, currentPath, basePath string
 		// Try to detect license format with SPDX normalization
 		detectedLicense := d.detectLicense(license)
 		if detectedLicense != "" {
+			// Create structured License object
+			licenseObj := types.License{
+				LicenseName: detectedLicense,
+				SourceFile:  "Cargo.toml",
+				Confidence:  1.0,
+			}
+
 			// Add traceability reason for license detection
 			if detectedLicense == license {
 				// License was already in correct format
-				payload.AddReason(fmt.Sprintf("license detected: %s (from Cargo.toml)", detectedLicense))
+				licenseObj.DetectionType = "direct"
+				reason := fmt.Sprintf("license detected: %s (from Cargo.toml)", detectedLicense)
+				payload.AddReason(reason)
 			} else {
 				// License was normalized to SPDX format
-				payload.AddReason(fmt.Sprintf("license normalized: %q -> %s (from Cargo.toml, SPDX format)", license, detectedLicense))
+				licenseObj.DetectionType = "normalized"
+				licenseObj.OriginalLicense = license
+				reason := fmt.Sprintf("license normalized: %q -> %s (from Cargo.toml, SPDX format)", license, detectedLicense)
+				payload.AddReason(reason)
 			}
-			payload.Licenses = append(payload.Licenses, detectedLicense)
+
+			payload.Licenses = append(payload.Licenses, licenseObj)
 		} else {
 			// License was invalid or empty after processing
 			payload.AddReason(fmt.Sprintf("license ignored: %q (invalid format from Cargo.toml)", license))

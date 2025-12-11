@@ -142,32 +142,58 @@ func (d *Detector) processLicense(packageJSON *struct {
 		// Add traceability reason for license expression parsing
 		if len(licenses) == 1 {
 			// Single license
-			if licenses[0] == packageJSON.License {
-				payload.AddReason(fmt.Sprintf("license detected: %s (from package.json)", licenses[0]))
-			} else {
-				payload.AddReason(fmt.Sprintf("license normalized: %q -> %s (from package.json, SPDX format)", packageJSON.License, licenses[0]))
+			license := types.License{
+				LicenseName: licenses[0],
+				SourceFile:  "package.json",
+				Confidence:  1.0,
 			}
+
+			if licenses[0] == packageJSON.License {
+				license.DetectionType = "direct"
+				reason := fmt.Sprintf("license detected: %s (from package.json)", licenses[0])
+				payload.AddReason(reason)
+			} else {
+				license.DetectionType = "normalized"
+				license.OriginalLicense = packageJSON.License
+				reason := fmt.Sprintf("license normalized: %q -> %s (from package.json, SPDX format)", packageJSON.License, licenses[0])
+				payload.AddReason(reason)
+			}
+
+			d.addLicenseToPayload(payload, license)
 		} else {
 			// License expression was parsed into multiple licenses
-			payload.AddReason(fmt.Sprintf("license expression parsed: %q -> [%s] (from package.json, SPDX format)", packageJSON.License, strings.Join(licenses, ", ")))
-		}
+			reason := fmt.Sprintf("license expression parsed: %q -> [%s] (from package.json, SPDX format)", packageJSON.License, strings.Join(licenses, ", "))
 
-		// Add all detected licenses, avoiding duplicates
-		for _, license := range licenses {
-			exists := false
-			for _, existing := range payload.Licenses {
-				if existing == license {
-					exists = true
-					break
+			for _, licenseName := range licenses {
+				license := types.License{
+					LicenseName:     licenseName,
+					DetectionType:   "expression_parsed",
+					SourceFile:      "package.json",
+					Confidence:      1.0,
+					OriginalLicense: packageJSON.License,
 				}
-			}
-			if !exists {
-				payload.Licenses = append(payload.Licenses, license)
+				d.addLicenseToPayload(payload, license)
+				payload.AddReason(reason)
 			}
 		}
 	} else {
 		// License was invalid or empty after processing
 		payload.AddReason(fmt.Sprintf("license ignored: %q (invalid expression from package.json)", packageJSON.License))
+	}
+}
+
+// addLicenseToPayload adds a license to payload avoiding duplicates
+func (d *Detector) addLicenseToPayload(payload *types.Payload, license types.License) {
+	// Avoid duplicates
+	exists := false
+	for _, existing := range payload.Licenses {
+		if existing.LicenseName == license.LicenseName {
+			exists = true
+			break
+		}
+	}
+	if !exists {
+		payload.Licenses = append(payload.Licenses, license)
 	}
 }
 

@@ -10,15 +10,15 @@ import (
 
 // AggregateOutput represents aggregated/rolled-up data from the scan
 type AggregateOutput struct {
-	Metadata     interface{}         `json:"metadata,omitempty"`     // Scan metadata (from root payload)
-	Git          []*git.GitInfo      `json:"git,omitempty"`          // Git repositories (deduplicated)
-	Tech         []string            `json:"tech,omitempty"`         // Primary/main technologies
-	Techs        []string            `json:"techs,omitempty"`        // All detected technologies
-	Reason       map[string][]string `json:"reason,omitempty"`       // Technology to detection reasons mapping, "_" for non-tech reasons
-	Languages    map[string]int      `json:"languages,omitempty"`    // Language file counts
-	Licenses     []string            `json:"licenses,omitempty"`     // Detected licenses
-	Dependencies [][]string          `json:"dependencies,omitempty"` // All dependencies [type, name, version]
-	CodeStats    interface{}         `json:"code_stats,omitempty"`   // Code statistics (if enabled)
+	Metadata           interface{}         `json:"metadata,omitempty"`            // Scan metadata (from root payload)
+	Git                []*git.GitInfo      `json:"git,omitempty"`                 // Git repositories (deduplicated)
+	Tech               []string            `json:"tech,omitempty"`                // Primary/main technologies
+	Techs              []string            `json:"techs,omitempty"`               // All detected technologies
+	Reason             map[string][]string `json:"reason,omitempty"`              // Technology to detection reasons mapping, "_" for non-tech reasons
+	Languages          map[string]int      `json:"languages,omitempty"`           // Language file counts
+	LicensesAggregated []string            `json:"licenses_aggregated,omitempty"` // Detected licenses (unique names only)
+	Dependencies       [][]string          `json:"dependencies,omitempty"`        // All dependencies [type, name, version]
+	CodeStats          interface{}         `json:"code_stats,omitempty"`          // Code statistics (if enabled)
 }
 
 // Aggregator handles aggregation of scan results
@@ -68,7 +68,7 @@ func (a *Aggregator) Aggregate(payload *types.Payload) *AggregateOutput {
 	}
 
 	if a.fields["licenses"] {
-		output.Licenses = a.collectLicenses(payload)
+		output.LicensesAggregated = a.collectLicenses(payload)
 	}
 
 	if a.fields["dependencies"] {
@@ -195,6 +195,7 @@ func (a *Aggregator) collectLanguagesRecursive(payload *types.Payload, languages
 
 // collectLicenses recursively collects all unique licenses
 func (a *Aggregator) collectLicenses(payload *types.Payload) []string {
+	// Use a map with string key to track unique licenses
 	licenseSet := make(map[string]bool)
 	a.collectLicensesRecursive(payload, licenseSet)
 
@@ -209,9 +210,9 @@ func (a *Aggregator) collectLicenses(payload *types.Payload) []string {
 
 // collectLicensesRecursive helper function
 func (a *Aggregator) collectLicensesRecursive(payload *types.Payload, licenseSet map[string]bool) {
-	// Add licenses from current payload
+	// Add licenses from current payload (extract license_name from structured objects)
 	for _, license := range payload.Licenses {
-		licenseSet[license] = true
+		licenseSet[license.LicenseName] = true
 	}
 
 	// Recursively process children

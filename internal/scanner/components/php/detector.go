@@ -85,15 +85,28 @@ func (d *Detector) detectComposerJSON(file types.File, currentPath, basePath str
 		// Try to detect license format with SPDX normalization
 		detectedLicense := d.detectLicense(license)
 		if detectedLicense != "" {
+			// Create structured License object
+			licenseObj := types.License{
+				LicenseName: detectedLicense,
+				SourceFile:  "composer.json",
+				Confidence:  1.0,
+			}
+
 			// Add traceability reason for license detection
 			if detectedLicense == license {
 				// License was already in correct format
-				payload.AddReason(fmt.Sprintf("license detected: %s (from composer.json)", detectedLicense))
+				licenseObj.DetectionType = "direct"
+				reason := fmt.Sprintf("license detected: %s (from composer.json)", detectedLicense)
+				payload.AddReason(reason)
 			} else {
 				// License was normalized to SPDX format
-				payload.AddReason(fmt.Sprintf("license normalized: %q -> %s (from composer.json, SPDX format)", license, detectedLicense))
+				licenseObj.DetectionType = "normalized"
+				licenseObj.OriginalLicense = license
+				reason := fmt.Sprintf("license normalized: %q -> %s (from composer.json, SPDX format)", license, detectedLicense)
+				payload.AddReason(reason)
 			}
-			payload.Licenses = append(payload.Licenses, detectedLicense)
+
+			payload.Licenses = append(payload.Licenses, licenseObj)
 		} else {
 			// License was invalid or empty after processing
 			payload.AddReason(fmt.Sprintf("license ignored: %q (invalid format from composer.json)", license))

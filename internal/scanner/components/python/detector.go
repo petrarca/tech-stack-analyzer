@@ -347,28 +347,42 @@ func processLicenseLine(line string, payload *types.Payload, normalizer *license
 
 // addLicenseWithReason adds a normalized license with appropriate traceability reason
 func addLicenseWithReason(payload *types.Payload, originalLicense, normalizedLicense, source string) {
+	license := types.License{
+		LicenseName: normalizedLicense,
+		SourceFile:  source,
+		Confidence:  1.0,
+	}
+
 	// Add traceability reason for license detection
 	if normalizedLicense == originalLicense {
 		// License was already in correct format (no TOML parsing needed)
-		payload.AddReason(fmt.Sprintf("license detected: %s (from %s)", normalizedLicense, source))
+		license.DetectionType = "direct"
+		reason := fmt.Sprintf("license detected: %s (from %s)", normalizedLicense, source)
+		payload.AddReason(reason)
 	} else if strings.Contains(originalLicense, "{text =") || strings.Contains(originalLicense, "{file =") {
 		// TOML object format was parsed
-		payload.AddReason(fmt.Sprintf("license parsed from TOML: %q -> %s (from %s, SPDX format)", originalLicense, normalizedLicense, source))
+		license.DetectionType = "toml_parsed"
+		license.OriginalLicense = originalLicense
+		reason := fmt.Sprintf("license parsed from TOML: %q -> %s (from %s, SPDX format)", originalLicense, normalizedLicense, source)
+		payload.AddReason(reason)
 	} else {
 		// License was normalized to SPDX format
-		payload.AddReason(fmt.Sprintf("license normalized: %q -> %s (from %s, SPDX format)", originalLicense, normalizedLicense, source))
+		license.DetectionType = "normalized"
+		license.OriginalLicense = originalLicense
+		reason := fmt.Sprintf("license normalized: %q -> %s (from %s, SPDX format)", originalLicense, normalizedLicense, source)
+		payload.AddReason(reason)
 	}
 
 	// Avoid duplicates
 	if !licenseExists(payload.Licenses, normalizedLicense) {
-		payload.Licenses = append(payload.Licenses, normalizedLicense)
+		payload.Licenses = append(payload.Licenses, license)
 	}
 }
 
 // licenseExists checks if a license already exists in the payload
-func licenseExists(licenses []string, license string) bool {
+func licenseExists(licenses []types.License, license string) bool {
 	for _, existing := range licenses {
-		if existing == license {
+		if existing.LicenseName == license {
 			return true
 		}
 	}

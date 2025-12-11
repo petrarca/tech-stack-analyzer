@@ -11,6 +11,42 @@
         }
     ],
     "definitions": {
+        "license": {
+            "type": "object",
+            "description": "Structured license entity for knowledge graph integration",
+            "properties": {
+                "license_name": {
+                    "type": "string",
+                    "description": "Primary SPDX identifier (e.g., 'MIT', 'Apache-2.0')"
+                },
+                "detection_type": {
+                    "type": "string",
+                    "enum": ["direct", "normalized", "toml_parsed", "file_based", "expression_parsed"],
+                    "description": "How the license was detected"
+                },
+                "source_file": {
+                    "type": "string",
+                    "description": "Where the license was detected (e.g., 'package.json', 'pyproject.toml', 'LICENSE')"
+                },
+                "confidence": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "Detection confidence (0.0-1.0)"
+                },
+                "original_license": {
+                    "type": "string",
+                    "description": "Original license before normalization (optional)"
+                }
+            },
+            "required": [
+                "license_name",
+                "detection_type",
+                "source_file",
+                "confidence"
+            ],
+            "additionalProperties": false
+        },
         "properties": {
             "type": "object",
             "description": "Arbitrary properties map",
@@ -98,7 +134,7 @@
                 "licenses": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/license"
                     }
                 },
                 "reason": {
@@ -294,11 +330,12 @@
                 "languages": {
                     "type": "object"
                 },
-                "licenses": {
+                "licenses_aggregated": {
                     "type": "array",
                     "items": {
                         "type": "string"
-                    }
+                    },
+                    "description": "Unique license names (aggregated view)"
                 },
                 "dependencies": {
                     "type": "array",

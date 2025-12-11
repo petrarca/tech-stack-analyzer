@@ -20,8 +20,8 @@ type Payload struct {
 	Tech         []string               `json:"tech"` // Changed from *string to []string to support multiple primary technologies
 	Techs        []string               `json:"techs"`
 	Languages    map[string]int         `json:"languages"`
-	Licenses     []string               `json:"licenses"`
-	Reason       map[string][]string    `json:"reason"` // Maps technology to detection reasons, "_" for non-tech reasons
+	Licenses     []License              `json:"licenses"` // Changed to structured License objects
+	Reason       map[string][]string    `json:"reason"`   // Maps technology to detection reasons, "_" for non-tech reasons
 	Dependencies []Dependency           `json:"dependencies"`
 	Properties   map[string]interface{} `json:"properties,omitempty"`
 	Childs       []*Payload             `json:"childs"` // Changed from Children to Childs
@@ -34,6 +34,15 @@ type Edge struct {
 	Target *Payload `json:"target"`
 	Read   bool     `json:"read"`
 	Write  bool     `json:"write"`
+}
+
+// License represents a structured license entity for knowledge graph integration
+type License struct {
+	LicenseName     string  `json:"license_name"`               // Primary SPDX identifier (e.g., "MIT", "Apache-2.0")
+	DetectionType   string  `json:"detection_type"`             // "direct", "normalized", "toml_parsed", "file_based"
+	SourceFile      string  `json:"source_file"`                // Where detected (e.g., "package.json", "pyproject.toml")
+	Confidence      float64 `json:"confidence"`                 // Detection confidence (0.0-1.0)
+	OriginalLicense string  `json:"original_license,omitempty"` // Original license before normalization
 }
 
 // MarshalJSON customizes Edge JSON serialization to match TypeScript (target as ID string)
@@ -71,7 +80,7 @@ func NewPayload(name string, paths []string) *Payload {
 		Dependencies: make([]Dependency, 0),
 		Childs:       make([]*Payload, 0),
 		Edges:        make([]Edge, 0),
-		Licenses:     make([]string, 0),
+		Licenses:     make([]License, 0),
 		Reason:       make(map[string][]string),
 		Properties:   make(map[string]interface{}),
 	}
@@ -231,12 +240,22 @@ func (p *Payload) mergeDependencies(deps []Dependency) {
 	}
 }
 
-func (p *Payload) mergeLicenses(licenses []string) {
+func (p *Payload) mergeLicenses(licenses []License) {
 	for _, license := range licenses {
-		if !p.containsString(p.Licenses, license) {
+		if !p.containsLicense(p.Licenses, license.LicenseName) {
 			p.Licenses = append(p.Licenses, license)
 		}
 	}
+}
+
+// containsLicense checks if a license with the given name exists in the license slice
+func (p *Payload) containsLicense(licenses []License, licenseName string) bool {
+	for _, existing := range licenses {
+		if existing.LicenseName == licenseName {
+			return true
+		}
+	}
+	return false
 }
 
 func (p *Payload) mergeReasons(reasons map[string][]string) {
@@ -410,10 +429,10 @@ func (p *Payload) HasPrimaryTech(tech string) bool {
 }
 
 // AddLicense adds a license to the payload (like TypeScript addLicenses)
-func (p *Payload) AddLicense(license string) {
+func (p *Payload) AddLicense(license License) {
 	// Avoid duplicates (like TypeScript Set behavior)
 	for _, existing := range p.Licenses {
-		if existing == license {
+		if existing.LicenseName == license.LicenseName {
 			return
 		}
 	}

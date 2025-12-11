@@ -62,18 +62,25 @@ func (d *LicenseDetector) AddLicensesToPayload(payload *types.Payload, dirPath s
 		// Check if license already exists
 		exists := false
 		for _, existing := range payload.Licenses {
-			if existing == match.License {
+			if existing.LicenseName == match.License {
 				exists = true
 				break
 			}
 		}
 
 		if !exists {
-			payload.Licenses = append(payload.Licenses, match.License)
-			// Add reason with filename and confidence for traceability
-			reason := fmt.Sprintf("license detected: %s (confidence: %.2f, file: %s)",
-				match.License, match.Confidence, match.File)
-			payload.AddReason(reason)
+			// Create structured License object
+			license := types.License{
+				LicenseName:   match.License,
+				DetectionType: "file_based",
+				SourceFile:    match.File,
+				Confidence:    float64(match.Confidence),
+			}
+
+			payload.Licenses = append(payload.Licenses, license)
+			// Add reason for backward compatibility
+			payload.AddReason(fmt.Sprintf("license detected: %s (confidence: %.2f, file: %s)",
+				match.License, match.Confidence, match.File))
 		}
 	}
 }

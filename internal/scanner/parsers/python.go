@@ -1,6 +1,7 @@
 package parsers
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -170,15 +171,31 @@ func (p *PythonParser) addLicenseIfMatch(licenseText string, payload *types.Payl
 	}
 
 	if standardLicense, exists := licenseMap[licenseText]; exists {
-		payload.AddLicense(standardLicense)
+		license := types.License{
+			LicenseName:   standardLicense,
+			DetectionType: "file_based",
+			SourceFile:    "setup.py",
+			Confidence:    1.0,
+		}
+		payload.AddLicense(license)
+		reason := fmt.Sprintf("license detected: %s (from setup.py)", standardLicense)
+		payload.AddReason(reason)
 		return true
 	}
 
 	// Check for exact match with standard license
 	standardLicenses := []string{"MIT", "Apache-2.0", "GPL-3.0", "BSD-3-Clause", "ISC", "BSD"}
-	for _, license := range standardLicenses {
-		if strings.EqualFold(licenseText, license) {
+	for _, licenseName := range standardLicenses {
+		if strings.EqualFold(licenseText, licenseName) {
+			license := types.License{
+				LicenseName:   licenseName,
+				DetectionType: "file_based",
+				SourceFile:    "setup.py",
+				Confidence:    1.0,
+			}
 			payload.AddLicense(license)
+			reason := fmt.Sprintf("license detected: %s (from setup.py)", licenseName)
+			payload.AddReason(reason)
 			return true
 		}
 	}
