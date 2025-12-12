@@ -455,7 +455,7 @@ func (s *Scanner) ScanFile(fileName string) (*types.Payload, error) {
 // resolveRootID determines the root component ID using priority system:
 // 1. CLI/config override (s.rootID)
 // 2. Git remote URL (deterministic)
-// 3. Empty string (will trigger random generation in AssignIDs)
+// 3. Absolute path (deterministic when no git)
 func (s *Scanner) resolveRootID(basePath string) string {
 	if s.rootID != "" {
 		return s.rootID // CLI or config override
@@ -466,7 +466,8 @@ func (s *Scanner) resolveRootID(basePath string) string {
 		return gitRootID // Git-based deterministic ID
 	}
 
-	return "" // Will trigger random generation
+	// Use absolute path for deterministic ID when no git repository
+	return git.GenerateRootIDFromPath(basePath)
 }
 
 // processFile handles language detection and code statistics for a single file

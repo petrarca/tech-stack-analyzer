@@ -144,3 +144,19 @@ func normalizeRemoteURL(url string) string {
 
 	return url
 }
+
+// GenerateRootIDFromPath generates a deterministic root ID from absolute path
+// Used when git repository is not available
+func GenerateRootIDFromPath(basePath string) string {
+	// Ensure we have absolute path
+	absPath := basePath
+	if !filepath.IsAbs(basePath) {
+		absPath = filepath.Join(basePath) // This will make it relative to current dir
+	}
+
+	// Normalize path for consistency across platforms
+	absPath = filepath.Clean(absPath)
+
+	hash := sha256.Sum256([]byte(absPath))
+	return hex.EncodeToString(hash[:])[:20]
+}

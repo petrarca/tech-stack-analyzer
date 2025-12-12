@@ -9,11 +9,12 @@ The Tech Stack Analyzer uses a hierarchical ID system that ensures unique identi
 
 ## Design Goals
 
-1. **Uniqueness**: Each scan should have a unique root component ID
+1. **Uniqueness**: Each scan should have a unique root component ID (or deterministic for reproducible builds)
 2. **Determinism**: Child components should have reproducible IDs within the same scan
-3. **Flexibility**: Support both random and deterministic root ID generation
+3. **Flexibility**: Support both deterministic and override-based root ID generation
 4. **Git Integration**: Automatic deterministic IDs for version-controlled projects
-5. **Override Capability**: Allow manual specification of root IDs for CI/CD and testing
+5. **Path-Based Fallback**: Deterministic IDs for non-git directories using absolute paths
+6. **Override Capability**: Allow manual specification of root IDs for CI/CD and testing
 
 ## Root Component ID Generation
 
@@ -24,7 +25,7 @@ Root component IDs are generated using the following priority order (highest to 
 1. **CLI Flag**: `--root-id <string>` (explicit override)
 2. **Config File**: `root_id: <string>` in `.stack-analyzer.yml`
 3. **Git Remote**: Deterministic ID from git repository remote URL
-4. **Random**: Unique 12-character random ID (fallback)
+4. **Absolute Path**: Deterministic ID from absolute file path (for non-git directories)
 
 ### Git-Based ID Generation
 
@@ -42,6 +43,23 @@ When no explicit root ID is provided and the project is a git repository with a 
    ```go
    hash("github.com/user/repo:subdir")[:20]
    ```
+
+### Absolute Path ID Generation
+
+When no explicit root ID is provided and the project is not a git repository:
+
+1. **Normalize Path**: Convert to absolute path and clean path separators:
+   ```
+   ./project                  → /current/dir/project
+   ../sibling/project         → /current/dir/../sibling/project
+   /Volumes/Data/Develop/cgm  → /Volumes/Data/Develop/cgm
+   ```
+2. **Generate Hash**: Create SHA256 hash of absolute path and use first 20 characters:
+   ```go
+   hash("/Volumes/Data/Develop/cgm/nais-master")[:20]
+   ```
+
+This ensures deterministic IDs for non-git directories while maintaining consistency across platforms.
 
 ### Examples
 
@@ -61,9 +79,13 @@ cd /path/to/github.com/user/repo
 stack-analyzer scan .
 # Result: "a30339f5ba410aaa588e" (deterministic)
 
-# Non-git directory (random fallback)
-stack-analyzer scan /tmp/local-project
-# Result: "yKPLUOOP61zZ" (random each scan)
+# Non-git directory (deterministic path-based)
+stack-analyzer scan /Volumes/Data/Develop/cgm/nais-master
+# Result: "38e064cf93bfb689cb50" (deterministic from absolute path)
+
+# Same non-git path always gets same ID
+stack-analyzer scan /Volumes/Data/Develop/cgm/nais-master
+# Result: "38e064cf93bfb689cb50" (same as above)
 ```
 
 ## Child Component ID Generation
@@ -163,16 +185,21 @@ func (p *Payload) AssignIDs(rootID string)
 
 ### Development Workflow
 ```bash
-# Local development - unique IDs each scan
+# Local development - deterministic IDs for non-git directories
 stack-analyzer scan .
-# Root: "yKPLUOOP61zZ" (random)
-# Child: "hash(yKPLUOOP61zZ:/go.mod)"
+# Root: "hash(/current/dir/.)" (deterministic from absolute path)
+# Child: "hash(root_id:/go.mod)"
 
 # Git repository - deterministic IDs
 cd my-git-project
 stack-analyzer scan .
 # Root: "a30339f5ba410aaa588e" (from git remote)
 # Child: "hash(a30339f5ba410aaa588e:/go.mod)"
+
+# Non-git directory - reproducible across scans
+stack-analyzer scan /Volumes/Data/Develop/cgm/nais-master
+# Root: "38e064cf93bfb689cb50" (always same for this path)
+# Child: "hash(38e064cf93bfb689cb50:/api/Dockerfile)"
 ```
 
 ### CI/CD Pipeline

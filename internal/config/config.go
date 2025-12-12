@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
+	"github.com/petrarca/tech-stack-analyzer/internal/validation"
 	"gopkg.in/yaml.v3"
 )
 
@@ -48,6 +49,11 @@ func LoadConfig(scanPath string) (*ScanConfig, error) {
 	var config ScanConfig
 	if err := yaml.Unmarshal(data, &config); err != nil {
 		return nil, err
+	}
+
+	// Validate configuration against schema
+	if err := validation.ValidateYAML("stack-analyzer-yml.json", data); err != nil {
+		return nil, fmt.Errorf("configuration validation failed: %w", err)
 	}
 
 	return &config, nil

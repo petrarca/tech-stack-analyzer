@@ -1,0 +1,103 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Stack Analyzer Configuration",
+    "description": "Configuration schema for .stack-analyzer.yml project configuration files",
+    "type": "object",
+    "properties": {
+        "properties": {
+            "type": "object",
+            "description": "Custom properties added to metadata.properties in scan output",
+            "additionalProperties": {
+                "oneOf": [
+                    {"type": "string"},
+                    {"type": "number"},
+                    {"type": "boolean"}
+                ]
+            },
+            "propertyNames": {
+                "type": "string",
+                "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$",
+                "minLength": 1,
+                "maxLength": 50,
+                "description": "Property names must start with letter and contain only letters, numbers, underscores, and hyphens"
+            },
+            "maxProperties": 20
+        },
+        "exclude": {
+            "type": "array",
+            "description": "Files and directories to exclude from scanning (supports glob patterns)",
+            "items": {
+                "type": "string",
+                "pattern": "^[^/][^/]*$|^[^/][^/]*/([^/]+/)*[^/]+$|^\\*\\*[^/]*$|^\\*[^/]*$|^[^*][^*]*\\*[^*]*$",
+                "minLength": 1,
+                "maxLength": 255,
+                "description": "Glob pattern for exclusion (no absolute paths, supports **, *, ?)"
+            },
+            "uniqueItems": true,
+            "maxItems": 1000,
+            "examples": [
+                ["node_modules", "vendor", "*.log", "**/__tests__/**"]
+            ]
+        },
+        "techs": {
+            "type": "array",
+            "description": "Technologies to add to scan results (even if not auto-detected)",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "tech": {
+                        "type": "string",
+                        "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$",
+                        "minLength": 1,
+                        "maxLength": 50,
+                        "description": "Technology name (must start with letter, contain only letters, numbers, underscores, hyphens)"
+                    },
+                    "reason": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200,
+                        "description": "Reason for including this technology"
+                    }
+                },
+                "required": ["tech"],
+                "additionalProperties": false
+            },
+            "uniqueItems": true,
+            "maxItems": 100,
+            "examples": [
+                [
+                    {"tech": "aws", "reason": "Deployed on AWS ECS"},
+                    {"tech": "datadog", "reason": "Monitoring via Datadog"}
+                ]
+            ]
+        },
+        "root_id": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_-]*$",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Override random root ID for deterministic scans (e.g., 'my-project-2024')"
+        }
+    },
+    "additionalProperties": false,
+    "examples": [
+        {
+            "properties": {
+                "product": "My Product Name",
+                "team": "Platform Engineering",
+                "owner": "engineering@company.com"
+            },
+            "exclude": [
+                "node_modules",
+                "vendor",
+                "*.log",
+                "**/__tests__/**"
+            ],
+            "techs": [
+                {"tech": "aws", "reason": "Deployed on AWS ECS"},
+                {"tech": "datadog", "reason": "Monitoring via Datadog"}
+            ],
+            "root_id": "my-project-2024"
+        }
+    ]
+}

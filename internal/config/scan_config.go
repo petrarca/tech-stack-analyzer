@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/petrarca/tech-stack-analyzer/internal/validation"
 	"gopkg.in/yaml.v3"
 )
 
@@ -76,6 +77,11 @@ func loadScanConfigFromFile(configPath string) (*ScanConfigFile, error) {
 		}
 	}
 
+	// Validate configuration against schema
+	if err := validation.ValidateStruct("stack-analyzer-config.json", &config); err != nil {
+		return nil, fmt.Errorf("configuration validation failed: %w", err)
+	}
+
 	return &config, nil
 }
 
@@ -85,6 +91,12 @@ func loadScanConfigFromJSON(jsonStr string) (*ScanConfigFile, error) {
 	if err := json.Unmarshal([]byte(jsonStr), &config); err != nil {
 		return nil, fmt.Errorf("failed to parse inline JSON config: %w", err)
 	}
+
+	// Validate configuration against schema
+	if err := validation.ValidateStruct("stack-analyzer-config.json", &config); err != nil {
+		return nil, fmt.Errorf("configuration validation failed: %w", err)
+	}
+
 	return &config, nil
 }
 
