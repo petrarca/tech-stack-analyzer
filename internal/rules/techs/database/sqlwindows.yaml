@@ -1,0 +1,30 @@
+tech: sqlwindows
+name: SqlWindows/SQLBase
+type: database
+dependencies:
+  - type: nuget
+    name: Gupta.SQLBase.DataProvider
+    example: Gupta.SQLBase.DataProvider
+  - type: nuget
+    name: SQLBase.Data
+    example: SQLBase.Data
+  - type: nuget
+    name: OpenText.SQLBase.DataProvider
+    example: OpenText.SQLBase.DataProvider
+  - type: java
+    name: com.gupta.sqlbase
+    example: com.gupta.sqlbase
+  - type: java
+    name: com.opentext.sqlbase
+    example: com.opentext.sqlbase
+  - type: java
+    name: sqlbase-jdbc
+    example: sqlbase-jdbc
+  - type: npm
+    name: sqlbase-odbc
+    example: sqlbase-odbc
+dotenv:
+  - SQLBASE_HOME
+  - GUPTA_HOME
+  - SQLBASE_SERVER
+  - SQLBASE_DATABASE

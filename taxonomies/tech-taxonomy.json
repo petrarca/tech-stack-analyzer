@@ -1860,6 +1860,11 @@
           "category": "database"
         },
         {
+          "name": "SqlWindows/SQLBase",
+          "tech": "sqlwindows",
+          "category": "database"
+        },
+        {
           "name": "Supabase Postgres",
           "tech": "supabase.postgres",
           "category": "database"

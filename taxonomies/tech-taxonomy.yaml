@@ -2155,6 +2155,12 @@ categories:
           description: ""
           isprimarytech: null
           properties: {}
+        - name: SqlWindows/SQLBase
+          tech: sqlwindows
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
         - name: Supabase Postgres
           tech: supabase.postgres
           category: database
