@@ -74,7 +74,7 @@ func (d *Detector) detectTerraformLock(file types.File, currentPath, basePath st
 		dependencies = append(dependencies, types.Dependency{
 			Type:    "terraform",
 			Name:    provider.Name,
-			Example: provider.Version,
+			Version: provider.Version,
 		})
 
 		// Match provider name against dependency rules
@@ -104,7 +104,7 @@ func (d *Detector) detectTerraformLock(file types.File, currentPath, basePath st
 			{
 				Type:    "terraform",
 				Name:    provider.Name,
-				Example: provider.Version,
+				Version: provider.Version,
 			},
 		}
 
@@ -168,7 +168,7 @@ func (d *Detector) detectTerraformResource(file types.File, currentPath, basePat
 		dependencies = append(dependencies, types.Dependency{
 			Type:    "terraform-resource",
 			Name:    resource.Type, // e.g., "aws_instance"
-			Example: resource.Name, // e.g., "web_server"
+			Version: resource.Name, // e.g., "web_server"
 		})
 
 		// Match resource type against dependency rules
@@ -198,7 +198,7 @@ func (d *Detector) detectTerraformResource(file types.File, currentPath, basePat
 			{
 				Type:    "terraform-resource",
 				Name:    resource.Type,
-				Example: resource.Name,
+				Version: resource.Name,
 			},
 		}
 

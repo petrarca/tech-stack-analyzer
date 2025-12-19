@@ -124,7 +124,7 @@ version = "1.0.193"
 			if len(deps) != tt.expected {
 				t.Errorf("ParseCargoLock() got %d dependencies, want %d", len(deps), tt.expected)
 				for _, d := range deps {
-					t.Logf("  got: %s = %s", d.Name, d.Example)
+					t.Logf("  got: %s = %s", d.Name, d.Version)
 				}
 			}
 
@@ -136,8 +136,8 @@ version = "1.0.193"
 					t.Errorf("ParseCargoLock() dep.SourceFile = %s, want Cargo.lock", dep.SourceFile)
 				}
 				if expectedVersion, ok := tt.wantDeps[dep.Name]; ok {
-					if dep.Example != expectedVersion {
-						t.Errorf("ParseCargoLock() dep %s version = %s, want %s", dep.Name, dep.Example, expectedVersion)
+					if dep.Version != expectedVersion {
+						t.Errorf("ParseCargoLock() dep %s version = %s, want %s", dep.Name, dep.Version, expectedVersion)
 					}
 				}
 			}

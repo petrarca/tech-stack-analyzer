@@ -27,7 +27,7 @@ func ParsePoetryLock(lockContent []byte, pyprojectContent string) []types.Depend
 			dependencies = append(dependencies, types.Dependency{
 				Type:       "python",
 				Name:       name,
-				Example:    version,
+				Version:    version,
 				SourceFile: "poetry.lock",
 			})
 		}

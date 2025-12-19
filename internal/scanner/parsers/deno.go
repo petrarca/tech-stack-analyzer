@@ -37,7 +37,7 @@ func (p *DenoParser) ParseDenoLock(content string) (string, []types.Dependency) 
 		dependencies = append(dependencies, types.Dependency{
 			Type:    "deno",
 			Name:    url,
-			Example: hash,
+			Version: hash,
 		})
 	}
 

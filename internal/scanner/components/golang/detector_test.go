@@ -120,9 +120,9 @@ require (
 		assert.Equal(t, "golang", dep.Type, "All dependencies should be golang type")
 	}
 
-	assert.True(t, depNames["github.com/gin-gonic/gin@v1.9.1"], "Should have gin dependency")
-	assert.True(t, depNames["github.com/stretchr/testify@v1.8.4"], "Should have testify dependency")
-	assert.True(t, depNames["gorm.io/gorm@v1.25.4"], "Should have gorm dependency")
+	assert.True(t, depNames["github.com/gin-gonic/gin"], "Should have gin dependency")
+	assert.True(t, depNames["github.com/stretchr/testify"], "Should have testify dependency")
+	assert.True(t, depNames["gorm.io/gorm"], "Should have gorm dependency")
 }
 
 func TestDetector_Detect_MainGo(t *testing.T) {
@@ -445,8 +445,8 @@ require (
 	gorm.io/gorm v1.25.4
 )`,
 			expectedDeps: []string{
-				"github.com/gin-gonic/gin@v1.9.1",
-				"gorm.io/gorm@v1.25.4",
+				"github.com/gin-gonic/gin",
+				"gorm.io/gorm",
 			},
 		},
 		{
@@ -458,7 +458,7 @@ require (
 	github.com/stretchr/testify v1.8.4 // indirect
 )`,
 			expectedDeps: []string{
-				"github.com/gin-gonic/gin@v1.9.1",
+				"github.com/gin-gonic/gin",
 			},
 		},
 		{
@@ -470,8 +470,8 @@ require (
 	gorm.io/gorm v1.25.4 // orm
 )`,
 			expectedDeps: []string{
-				"github.com/gin-gonic/gin@v1.9.1",
-				"gorm.io/gorm@v1.25.4",
+				"github.com/gin-gonic/gin",
+				"gorm.io/gorm",
 			}, // Comments after dependencies don't affect them
 		},
 		{

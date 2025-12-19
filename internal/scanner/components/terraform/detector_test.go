@@ -233,7 +233,7 @@ resource "azurerm_resource_group" "main" {
 	assert.Len(t, awsChild.Dependencies, 1, "AWS instance child should have 1 dependency")
 	assert.Equal(t, "aws_instance", awsChild.Dependencies[0].Name)
 	assert.Equal(t, "terraform-resource", awsChild.Dependencies[0].Type)
-	assert.Equal(t, "web", awsChild.Dependencies[0].Example, "Should have resource name as Example")
+	assert.Equal(t, "web", awsChild.Dependencies[0].Version, "Should have resource name as Example")
 
 	// Verify Kubernetes deployment child
 	k8sChild := childNames["kubernetes_deployment"]
@@ -242,7 +242,7 @@ resource "azurerm_resource_group" "main" {
 	assert.Len(t, k8sChild.Dependencies, 1, "Kubernetes deployment child should have 1 dependency")
 	assert.Equal(t, "kubernetes_deployment", k8sChild.Dependencies[0].Name)
 	assert.Equal(t, "terraform-resource", k8sChild.Dependencies[0].Type)
-	assert.Equal(t, "app", k8sChild.Dependencies[0].Example, "Should have resource name as Example")
+	assert.Equal(t, "app", k8sChild.Dependencies[0].Version, "Should have resource name as Example")
 }
 
 func TestDetector_Detect_BothLockAndTfFiles(t *testing.T) {

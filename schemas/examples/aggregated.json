@@ -2,11 +2,11 @@
   "metadata": {
     "format": "aggregated",
     "source": "tech-stack-scanner",
-    "timestamp": "2025-12-19T09:20:17Z",
+    "timestamp": "2025-12-19T14:39:28Z",
     "scan_path": "/path/to/your/project",
     "specVersion": "0.1",
-    "duration_ms": 1227,
-    "file_count": 159,
+    "duration_ms": 1237,
+    "file_count": 171,
     "component_count": 4,
     "language_count": 9,
     "tech_count": 1,
@@ -15,7 +15,7 @@
   "git": [
     {
       "branch": "main",
-      "commit": "c3626aa",
+      "commit": "30e2bb8",
       "is_dirty": true,
       "remote_url": "https://github.com/petrarca/tech-stack-analyzer.git"
     }
@@ -41,7 +41,7 @@
   },
   "languages": {
     "GCC Machine Description": 1,
-    "Go": 127,
+    "Go": 139,
     "Go Checksums": 1,
     "Go Module": 1,
     "Ignore List": 1,
@@ -62,80 +62,80 @@
   "dependencies": [
     [
       "golang",
-      "github.com/bmatcuk/doublestar/v4@v4.9.1",
-      ""
+      "github.com/bmatcuk/doublestar/v4",
+      "v4.9.1"
     ],
     [
       "golang",
-      "github.com/boyter/scc/v3@v3.6.0",
-      ""
+      "github.com/boyter/scc/v3",
+      "v3.6.0"
     ],
     [
       "golang",
-      "github.com/go-enry/go-enry/v2@v2.9.2",
-      ""
+      "github.com/go-enry/go-enry/v2",
+      "v2.9.2"
     ],
     [
       "golang",
-      "github.com/go-enry/go-license-detector/v4@v4.3.1",
-      ""
+      "github.com/go-enry/go-license-detector/v4",
+      "v4.3.1"
     ],
     [
       "golang",
-      "github.com/go-git/go-git/v5@v5.4.2",
-      ""
+      "github.com/go-git/go-git/v5",
+      "v5.4.2"
     ],
     [
       "golang",
-      "github.com/hashicorp/hcl/v2@v2.24.0",
-      ""
+      "github.com/hashicorp/hcl/v2",
+      "v2.24.0"
     ],
     [
       "golang",
-      "github.com/spf13/cobra@v1.10.1",
-      ""
+      "github.com/spf13/cobra",
+      "v1.10.1"
     ],
     [
       "golang",
-      "github.com/stretchr/testify@v1.11.1",
-      ""
+      "github.com/stretchr/testify",
+      "v1.11.1"
     ],
     [
       "golang",
-      "github.com/zclconf/go-cty@v1.16.3",
-      ""
+      "github.com/zclconf/go-cty",
+      "v1.16.3"
     ],
     [
       "golang",
-      "gopkg.in/yaml.v3@v3.0.1",
-      ""
+      "gopkg.in/yaml.v3",
+      "v3.0.1"
     ]
   ],
   "code_stats": {
     "total": {
-      "lines": 55585,
-      "code": 47544,
-      "comments": 2663,
-      "blanks": 5378,
-      "complexity": 2754,
-      "files": 155
+      "lines": 57588,
+      "code": 49219,
+      "comments": 2788,
+      "blanks": 5581,
+      "complexity": 3009,
+      "files": 167
     },
     "by_type": {
       "programming": {
         "total": {
-          "lines": 28135,
-          "code": 21487,
-          "comments": 2580,
-          "blanks": 4068,
-          "complexity": 2754,
-          "files": 127
+          "lines": 30045,
+          "code": 23089,
+          "comments": 2705,
+          "blanks": 4251,
+          "complexity": 3009,
+          "files": 139
         },
         "metrics": {
           "comment_ratio": 0.12,
-          "code_density": 0.76,
-          "avg_file_size": 221.54,
-          "complexity_per_kloc": 128.17,
-          "avg_complexity": 21.69,
+          "code_density": 0.77,
+          "avg_file_size": 216.15,
+          "complexity_per_kloc": 130.32,
+          "avg_complexity": 21.65,
           "primary_languages": [
             {
               "language": "Go",
@@ -149,8 +149,8 @@
       },
       "data": {
         "total": {
-          "lines": 22035,
-          "code": 21456,
+          "lines": 22040,
+          "code": 21461,
           "comments": 83,
           "blanks": 90,
           "complexity": 0,
@@ -166,10 +166,10 @@
       },
       "prose": {
         "total": {
-          "lines": 5821,
-          "code": 4601,
+          "lines": 5909,
+          "code": 4669,
           "comments": 0,
-          "blanks": 1220,
+          "blanks": 1240,
           "complexity": 0,
           "files": 13
         },
@@ -181,27 +181,27 @@
     },
     "analyzed": {
       "total": {
-        "lines": 55585,
-        "code": 47544,
-        "comments": 2663,
-        "blanks": 5378,
-        "complexity": 2754,
-        "files": 155
+        "lines": 57588,
+        "code": 49219,
+        "comments": 2788,
+        "blanks": 5581,
+        "complexity": 3009,
+        "files": 167
       },
       "by_language": [
         {
           "language": "Go",
-          "lines": 28135,
-          "code": 21487,
-          "comments": 2580,
-          "blanks": 4068,
-          "complexity": 2754,
-          "files": 127
+          "lines": 30045,
+          "code": 23089,
+          "comments": 2705,
+          "blanks": 4251,
+          "complexity": 3009,
+          "files": 139
         },
         {
           "language": "JSON",
-          "lines": 11955,
-          "code": 11955,
+          "lines": 11960,
+          "code": 11960,
           "comments": 0,
           "blanks": 0,
           "complexity": 0,
@@ -218,10 +218,10 @@
         },
         {
           "language": "Markdown",
-          "lines": 5800,
-          "code": 4584,
+          "lines": 5888,
+          "code": 4652,
           "comments": 0,
-          "blanks": 1216,
+          "blanks": 1236,
           "complexity": 0,
           "files": 12
         },

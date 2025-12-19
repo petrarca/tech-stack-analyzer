@@ -333,7 +333,7 @@ func (p *Payload) containsString(slice []string, str string) bool {
 
 func (p *Payload) containsDependency(dep Dependency) bool {
 	for _, existing := range p.Dependencies {
-		if existing.Type == dep.Type && existing.Name == dep.Name && existing.Example == dep.Example {
+		if existing.Type == dep.Type && existing.Name == dep.Name && existing.Version == dep.Version {
 			return true
 		}
 	}

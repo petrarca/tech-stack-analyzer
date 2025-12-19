@@ -85,7 +85,7 @@ func ParseUvLock(content []byte, projectName string) []types.Dependency {
 		dependencies = append(dependencies, types.Dependency{
 			Type:       "python",
 			Name:       name,
-			Example:    version,
+			Version:    version,
 			SourceFile: "uv.lock",
 		})
 	}

@@ -54,7 +54,7 @@ func ParseYarnLock(lockContent []byte, packageJSON *PackageJSON) []types.Depende
 					dependencies = append(dependencies, types.Dependency{
 						Type:       "npm",
 						Name:       currentPackage,
-						Example:    version,
+						Version:    version,
 						SourceFile: "yarn.lock",
 					})
 					// Remove from map to avoid duplicates (same package, different version ranges)

@@ -458,9 +458,9 @@ dependencies = [
     "numpy",
 ]`,
 			expected: []types.Dependency{
-				{Type: "python", Name: "flask", Example: "2.0.0"},
-				{Type: "python", Name: "requests", Example: "2.26.0"},
-				{Type: "python", Name: "numpy", Example: "latest"},
+				{Type: "python", Name: "flask", Version: "2.0.0"},
+				{Type: "python", Name: "requests", Version: "2.26.0"},
+				{Type: "python", Name: "numpy", Version: "latest"},
 			},
 		},
 		{
@@ -471,9 +471,9 @@ django = "^4.0.0"
 celery = ">=5.0.0"
 ]`,
 			expected: []types.Dependency{
-				{Type: "python", Name: "python", Example: "3.8"},
-				{Type: "python", Name: "django", Example: "4.0.0"},
-				{Type: "python", Name: "celery", Example: "5.0.0"},
+				{Type: "python", Name: "python", Version: "3.8"},
+				{Type: "python", Name: "django", Version: "4.0.0"},
+				{Type: "python", Name: "celery", Version: "5.0.0"},
 			},
 		},
 		{
@@ -501,7 +501,7 @@ name = "test-app"
 				if i < len(result) {
 					assert.Equal(t, expectedDep.Type, result[i].Type)
 					assert.Equal(t, expectedDep.Name, result[i].Name)
-					assert.Equal(t, expectedDep.Example, result[i].Example)
+					assert.Equal(t, expectedDep.Version, result[i].Version)
 				}
 			}
 		})

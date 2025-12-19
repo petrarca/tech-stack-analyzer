@@ -83,7 +83,7 @@ func (d *Detector) detectDotNetProject(file types.File, currentPath, basePath st
 		dep := types.Dependency{
 			Type:    "nuget",
 			Name:    pkg.Name,
-			Example: pkg.Version,
+			Version: pkg.Version,
 		}
 		payload.AddDependency(dep)
 

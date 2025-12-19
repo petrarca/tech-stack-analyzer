@@ -122,21 +122,21 @@ services:
 	assert.NotEmpty(t, webService.Tech, "Should have some tech detected")
 	assert.Len(t, webService.Dependencies, 1, "Should have one dependency")
 	assert.Equal(t, "nginx", webService.Dependencies[0].Name)
-	assert.Equal(t, "", webService.Dependencies[0].Example) // parseImage bug returns empty version
+	assert.Equal(t, "", webService.Dependencies[0].Version) // parseImage bug returns empty version
 
 	// Check db service (postgres)
 	dbService := serviceNames["db"]
 	require.NotNil(t, dbService, "Should have db service")
 	assert.NotEmpty(t, dbService.Tech, "Should have some tech detected")
 	assert.Equal(t, "postgres", dbService.Dependencies[0].Name)
-	assert.Equal(t, "", dbService.Dependencies[0].Example) // parseImage bug returns empty version
+	assert.Equal(t, "", dbService.Dependencies[0].Version) // parseImage bug returns empty version
 
 	// Check redis service
 	redisService := serviceNames["redis"]
 	require.NotNil(t, redisService, "Should have redis service")
 	assert.NotEmpty(t, redisService.Tech, "Should have some tech detected")
 	assert.Equal(t, "redis", redisService.Dependencies[0].Name)
-	assert.Equal(t, "", redisService.Dependencies[0].Example) // parseImage bug returns empty version
+	assert.Equal(t, "", redisService.Dependencies[0].Version) // parseImage bug returns empty version
 }
 
 func TestDetector_Detect_DockerComposeYaml(t *testing.T) {
@@ -182,7 +182,7 @@ services:
 	assert.Equal(t, "app", child.Name)
 	assert.Contains(t, child.Tech, "docker", "Should fallback to docker tech")
 	assert.Equal(t, "node", child.Dependencies[0].Name)
-	assert.Equal(t, "", child.Dependencies[0].Example) // parseImage bug returns empty version
+	assert.Equal(t, "", child.Dependencies[0].Version) // parseImage bug returns empty version
 }
 
 func TestDetector_Detect_DockerComposeWithOverride(t *testing.T) {

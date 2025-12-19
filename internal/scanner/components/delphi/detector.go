@@ -72,7 +72,7 @@ func (d *Detector) detectDelphiProject(file types.File, currentPath, basePath st
 		dep := types.Dependency{
 			Type:    "delphi",
 			Name:    pkg,
-			Example: "",
+			Version: "",
 		}
 		dependencies = append(dependencies, dep)
 		depNames = append(depNames, pkg)

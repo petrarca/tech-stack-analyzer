@@ -11,6 +11,38 @@
         }
     ],
     "definitions": {
+        "dependency": {
+            "type": "array",
+            "description": "Dependency in array format for compact serialization",
+            "minItems": 3,
+            "maxItems": 4,
+            "items": [
+                {
+                    "type": "string",
+                    "description": "Dependency type (e.g., 'golang', 'npm', 'python', 'cargo', 'maven', 'gradle')"
+                },
+                {
+                    "type": "string",
+                    "description": "Dependency name (e.g., module path, package name, crate name)"
+                },
+                {
+                    "type": "string",
+                    "description": "Version or version range (e.g., 'v1.2.3', '^1.2.3', 'latest', or empty string if no version available)"
+                },
+                {
+                    "type": "string",
+                    "description": "Source file (optional - only included when needed for clarity, e.g., 'pyproject.toml', 'package-lock.json')"
+                }
+            ],
+            "examples": [
+                ["golang", "github.com/user/module", "v1.2.3"],
+                ["npm", "package", "^1.2.3"],
+                ["python", "requests", "2.31.0", "pyproject.toml"],
+                ["npm", "package", "1.2.3.4", "package-lock.json"],
+                ["delphi", "Vcl", ""],
+                ["conan", "package", ""]
+            ]
+        },
         "license": {
             "type": "object",
             "description": "Structured license entity for knowledge graph integration",
@@ -122,13 +154,9 @@
                 "dependencies": {
                     "type": "array",
                     "items": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        },
-                        "minItems": 2,
-                        "maxItems": 3
-                    }
+                        "$ref": "#/definitions/dependency"
+                    },
+                    "description": "List of dependencies detected in this component"
                 },
                 "childs": {
                     "type": "array",
@@ -380,11 +408,9 @@
                 "dependencies": {
                     "type": "array",
                     "items": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    }
+                        "$ref": "#/definitions/dependency"
+                    },
+                    "description": "List of all dependencies detected across the entire project"
                 },
                 "code_stats": {
                     "type": "object"

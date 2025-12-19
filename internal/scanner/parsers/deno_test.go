@@ -35,9 +35,9 @@ func TestParseDenoLock(t *testing.T) {
 }`,
 			expectedVersion: "2",
 			expectedDeps: []types.Dependency{
-				{Type: "deno", Name: "https://deno.land/std@0.140.0/fmt/colors.ts", Example: "3d5a9b5e5c5a5d5e5f5a5b5c5d5e5f5a5b5c5d5e"},
-				{Type: "deno", Name: "https://deno.land/x/oak@v10.6.0/mod.ts", Example: "1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b"},
-				{Type: "deno", Name: "https://deno.land/x/redis@v0.25.2/mod.ts", Example: "9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9"},
+				{Type: "deno", Name: "https://deno.land/std@0.140.0/fmt/colors.ts", Version: "3d5a9b5e5c5a5d5e5f5a5b5c5d5e5f5a5b5c5d5e"},
+				{Type: "deno", Name: "https://deno.land/x/oak@v10.6.0/mod.ts", Version: "1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b"},
+				{Type: "deno", Name: "https://deno.land/x/redis@v0.25.2/mod.ts", Version: "9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9"},
 			},
 		},
 		{
@@ -80,11 +80,11 @@ func TestParseDenoLock(t *testing.T) {
 }`,
 			expectedVersion: "2",
 			expectedDeps: []types.Dependency{
-				{Type: "deno", Name: "https://deno.land/std@0.177.0/node/fs.ts", Example: "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0"},
-				{Type: "deno", Name: "https://deno.land/x/express@v4.17.1/mod.ts", Example: "b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1"},
-				{Type: "deno", Name: "https://github.com/denoland/deno_std/archive/refs/heads/main.zip", Example: "c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2"},
-				{Type: "deno", Name: "https://raw.githubusercontent.com/denoland/deno/main/README.md", Example: "d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3"},
-				{Type: "deno", Name: "file:///Users/user/project/local_module.ts", Example: "e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4"},
+				{Type: "deno", Name: "https://deno.land/std@0.177.0/node/fs.ts", Version: "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0"},
+				{Type: "deno", Name: "https://deno.land/x/express@v4.17.1/mod.ts", Version: "b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1"},
+				{Type: "deno", Name: "https://github.com/denoland/deno_std/archive/refs/heads/main.zip", Version: "c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2"},
+				{Type: "deno", Name: "https://raw.githubusercontent.com/denoland/deno/main/README.md", Version: "d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3"},
+				{Type: "deno", Name: "file:///Users/user/project/local_module.ts", Version: "e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4"},
 			},
 		},
 		{
@@ -109,7 +109,7 @@ func TestParseDenoLock(t *testing.T) {
 }`,
 			expectedVersion: "1",
 			expectedDeps: []types.Dependency{
-				{Type: "deno", Name: "https://deno.land/std@0.100.0/mod.ts", Example: "f1e2d3c4b5a6f7e8d9c0b1a2c3d4e5f6a7b8c9d0"},
+				{Type: "deno", Name: "https://deno.land/std@0.100.0/mod.ts", Version: "f1e2d3c4b5a6f7e8d9c0b1a2c3d4e5f6a7b8c9d0"},
 			},
 		},
 		{
@@ -124,9 +124,9 @@ func TestParseDenoLock(t *testing.T) {
 }`,
 			expectedVersion: "2",
 			expectedDeps: []types.Dependency{
-				{Type: "deno", Name: "https://deno.land/x/awesome-lib@v1.2.3/mod.ts", Example: "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0"},
-				{Type: "deno", Name: "https://example.com/some-path/with-hyphens.ts", Example: "b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1"},
-				{Type: "deno", Name: "https://api.example.com/v1/endpoints", Example: "c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2"},
+				{Type: "deno", Name: "https://deno.land/x/awesome-lib@v1.2.3/mod.ts", Version: "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0"},
+				{Type: "deno", Name: "https://example.com/some-path/with-hyphens.ts", Version: "b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1"},
+				{Type: "deno", Name: "https://api.example.com/v1/endpoints", Version: "c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2"},
 			},
 		},
 	}
@@ -155,7 +155,7 @@ func TestParseDenoLock(t *testing.T) {
 				actualDep, exists := actualDepMap[name]
 				require.True(t, exists, "Expected dependency %s not found", name)
 				assert.Equal(t, expectedDep.Type, actualDep.Type, "Should have correct type for %s", name)
-				assert.Equal(t, expectedDep.Example, actualDep.Example, "Should have correct hash for %s", name)
+				assert.Equal(t, expectedDep.Version, actualDep.Version, "Should have correct hash for %s", name)
 			}
 		})
 	}
@@ -194,23 +194,23 @@ func TestDenoParser_Integration(t *testing.T) {
 
 	// Verify standard library dependencies
 	assert.Equal(t, "deno", depMap["https://deno.land/std@0.177.0/fmt/colors.ts"].Type)
-	assert.Equal(t, "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c", depMap["https://deno.land/std@0.177.0/fmt/colors.ts"].Example)
+	assert.Equal(t, "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c", depMap["https://deno.land/std@0.177.0/fmt/colors.ts"].Version)
 	assert.Equal(t, "deno", depMap["https://deno.land/std@0.177.0/async/mod.ts"].Type)
 	assert.Equal(t, "deno", depMap["https://deno.land/std@0.177.0/http/server.ts"].Type)
 
 	// Verify third-party dependencies
 	assert.Equal(t, "deno", depMap["https://deno.land/x/oak@v12.1.0/mod.ts"].Type)
-	assert.Equal(t, "d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f", depMap["https://deno.land/x/oak@v12.1.0/mod.ts"].Example)
+	assert.Equal(t, "d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f", depMap["https://deno.land/x/oak@v12.1.0/mod.ts"].Version)
 	assert.Equal(t, "deno", depMap["https://deno.land/x/redis@v0.31.0/mod.ts"].Type)
 	assert.Equal(t, "deno", depMap["https://deno.land/x/dotenv@v3.2.0/mod.ts"].Type)
 
 	// Verify GitHub dependency
 	assert.Equal(t, "deno", depMap["https://github.com/denoland/deno_std/archive/refs/heads/main.zip"].Type)
-	assert.Equal(t, "c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e", depMap["https://github.com/denoland/deno_std/archive/refs/heads/main.zip"].Example)
+	assert.Equal(t, "c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e", depMap["https://github.com/denoland/deno_std/archive/refs/heads/main.zip"].Version)
 
 	// Verify local file dependency
 	assert.Equal(t, "deno", depMap["file:///Users/user/project/src/utils.ts"].Type)
-	assert.Equal(t, "d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f", depMap["file:///Users/user/project/src/utils.ts"].Example)
+	assert.Equal(t, "d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f", depMap["file:///Users/user/project/src/utils.ts"].Version)
 }
 
 func TestDenoParser_EdgeCases(t *testing.T) {
@@ -263,9 +263,9 @@ func TestDenoParser_EdgeCases(t *testing.T) {
 			depMap[dep.Name] = dep
 		}
 
-		assert.Equal(t, "empty_url_hash", depMap[""].Example)
-		assert.Equal(t, "", depMap["https://deno.land/std@0.177.0/mod.ts"].Example)
-		assert.Equal(t, "valid_hash", depMap["https://example.com/mod.ts"].Example)
+		assert.Equal(t, "empty_url_hash", depMap[""].Version)
+		assert.Equal(t, "", depMap["https://deno.land/std@0.177.0/mod.ts"].Version)
+		assert.Equal(t, "valid_hash", depMap["https://example.com/mod.ts"].Version)
 	})
 
 	// Test with different JSON formatting

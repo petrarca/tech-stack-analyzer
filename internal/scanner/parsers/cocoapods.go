@@ -42,7 +42,7 @@ func (p *CocoaPodsParser) ParsePodfile(content string) []types.Dependency {
 			dependencies = append(dependencies, types.Dependency{
 				Type:    "cocoapods",
 				Name:    podName,
-				Example: version,
+				Version: version,
 			})
 			continue
 		}
@@ -54,7 +54,7 @@ func (p *CocoaPodsParser) ParsePodfile(content string) []types.Dependency {
 			dependencies = append(dependencies, types.Dependency{
 				Type:    "cocoapods",
 				Name:    podName,
-				Example: "latest",
+				Version: "latest",
 			})
 		}
 	}
@@ -102,7 +102,7 @@ func (p *CocoaPodsParser) ParsePodfileLock(content string) []types.Dependency {
 			dependencies = append(dependencies, types.Dependency{
 				Type:    "cocoapods",
 				Name:    podName,
-				Example: version,
+				Version: version,
 			})
 		}
 	}

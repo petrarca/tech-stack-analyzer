@@ -46,7 +46,7 @@ func (p *PHPParser) ParseComposerJSON(content string) (string, string, []types.D
 			dependencies = append(dependencies, types.Dependency{
 				Type:    "php",
 				Name:    name,
-				Example: version,
+				Version: version,
 			})
 		}
 	}
@@ -57,7 +57,7 @@ func (p *PHPParser) ParseComposerJSON(content string) (string, string, []types.D
 			dependencies = append(dependencies, types.Dependency{
 				Type:    "php",
 				Name:    name,
-				Example: version,
+				Version: version,
 			})
 		}
 	}

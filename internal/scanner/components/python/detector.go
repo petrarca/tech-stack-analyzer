@@ -261,7 +261,7 @@ func parseArrayDependency(line string, arrayDepReg *regexp.Regexp) *types.Depend
 	return &types.Dependency{
 		Type:    "python",
 		Name:    name,
-		Example: version,
+		Version: version,
 	}
 }
 
@@ -282,7 +282,7 @@ func parseKeyValueDependency(line string, lineReg *regexp.Regexp) *types.Depende
 	return &types.Dependency{
 		Type:    "python",
 		Name:    name,
-		Example: version,
+		Version: version,
 	}
 }
 

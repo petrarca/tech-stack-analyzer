@@ -23,8 +23,8 @@ func TestConanParser_ExtractDependencies(t *testing.T) {
 				self.requires("sqlite3/3.49.1.0")
 			`,
 			expected: []types.Dependency{
-				{Type: "conan", Name: "openssl", Example: "3.2.6"},
-				{Type: "conan", Name: "sqlite3", Example: "3.49.1.0"},
+				{Type: "conan", Name: "openssl", Version: "3.2.6"},
+				{Type: "conan", Name: "sqlite3", Version: "3.49.1.0"},
 			},
 		},
 		{
@@ -34,8 +34,8 @@ func TestConanParser_ExtractDependencies(t *testing.T) {
 				self.tool_requires("ninja/1.11.0")
 			`,
 			expected: []types.Dependency{
-				{Type: "conan", Name: "cmake", Example: "3.25.0"},
-				{Type: "conan", Name: "ninja", Example: "1.11.0"},
+				{Type: "conan", Name: "cmake", Version: "3.25.0"},
+				{Type: "conan", Name: "ninja", Version: "1.11.0"},
 			},
 		},
 		{
@@ -46,9 +46,9 @@ func TestConanParser_ExtractDependencies(t *testing.T) {
 				self.requires("boost/1.82.0")
 			`,
 			expected: []types.Dependency{
-				{Type: "conan", Name: "openssl", Example: "3.2.6"},
-				{Type: "conan", Name: "cmake", Example: "3.25.0"},
-				{Type: "conan", Name: "boost", Example: "1.82.0"},
+				{Type: "conan", Name: "openssl", Version: "3.2.6"},
+				{Type: "conan", Name: "cmake", Version: "3.25.0"},
+				{Type: "conan", Name: "boost", Version: "1.82.0"},
 			},
 		},
 		{
@@ -58,8 +58,8 @@ func TestConanParser_ExtractDependencies(t *testing.T) {
 				self.requires("libpq/10.7.1942_2")
 			`,
 			expected: []types.Dependency{
-				{Type: "conan", Name: "cgmassist_dev", Example: "2.0.0.26001"},
-				{Type: "conan", Name: "libpq", Example: "10.7.1942_2"},
+				{Type: "conan", Name: "cgmassist_dev", Version: "2.0.0.26001"},
+				{Type: "conan", Name: "libpq", Version: "10.7.1942_2"},
 			},
 		},
 		{
@@ -85,19 +85,19 @@ func TestConanParser_ExtractDependencies(t *testing.T) {
 			// Create a map for easier comparison since order might differ
 			expectedMap := make(map[string]types.Dependency)
 			for _, dep := range tt.expected {
-				key := dep.Name + "/" + dep.Example
+				key := dep.Name + "/" + dep.Version
 				expectedMap[key] = dep
 			}
 
 			for _, dep := range result {
-				key := dep.Name + "/" + dep.Example
+				key := dep.Name + "/" + dep.Version
 				expected, exists := expectedMap[key]
 				if !exists {
-					t.Errorf("Unexpected dependency found: %s/%s", dep.Name, dep.Example)
+					t.Errorf("Unexpected dependency found: %s/%s", dep.Name, dep.Version)
 					continue
 				}
 				if dep.Type != expected.Type {
-					t.Errorf("Expected type %s, got %s for %s/%s", expected.Type, dep.Type, dep.Name, dep.Example)
+					t.Errorf("Expected type %s, got %s for %s/%s", expected.Type, dep.Type, dep.Name, dep.Version)
 				}
 			}
 		})
@@ -140,14 +140,14 @@ occi/21.15.0
 	}
 
 	expected := []types.Dependency{
-		{Type: "conan", Name: "cbox_dev", Example: "25.4.1002.0"},
-		{Type: "conan", Name: "cgmassist_dev", Example: "2.0.0.26001"},
-		{Type: "conan", Name: "chartdirector", Example: "5.1.0.1"},
-		{Type: "conan", Name: "dcmtk", Example: "3.5.4.4"},
-		{Type: "conan", Name: "openssl", Example: "3.2.6"},
-		{Type: "conan", Name: "sqlite3", Example: "3.49.1.0"},
-		{Type: "conan", Name: "iqeasy", Example: "0.1.30.76402_2"},
-		{Type: "conan", Name: "occi", Example: "21.15.0"},
+		{Type: "conan", Name: "cbox_dev", Version: "25.4.1002.0"},
+		{Type: "conan", Name: "cgmassist_dev", Version: "2.0.0.26001"},
+		{Type: "conan", Name: "chartdirector", Version: "5.1.0.1"},
+		{Type: "conan", Name: "dcmtk", Version: "3.5.4.4"},
+		{Type: "conan", Name: "openssl", Version: "3.2.6"},
+		{Type: "conan", Name: "sqlite3", Version: "3.49.1.0"},
+		{Type: "conan", Name: "iqeasy", Version: "0.1.30.76402_2"},
+		{Type: "conan", Name: "occi", Version: "21.15.0"},
 	}
 
 	if len(dependencies) != len(expected) {
@@ -159,8 +159,8 @@ occi/21.15.0
 		if dependencies[i].Name != expected.Name {
 			t.Errorf("Expected name %s, got %s", expected.Name, dependencies[i].Name)
 		}
-		if dependencies[i].Example != expected.Example {
-			t.Errorf("Expected version %s, got %s", expected.Example, dependencies[i].Example)
+		if dependencies[i].Version != expected.Version {
+			t.Errorf("Expected version %s, got %s", expected.Version, dependencies[i].Version)
 		}
 	}
 }
@@ -174,19 +174,19 @@ func TestConanParser_parseConanDependency(t *testing.T) {
 	}{
 		{
 			input:    "openssl/3.2.6",
-			expected: types.Dependency{Name: "openssl", Example: "3.2.6"},
+			expected: types.Dependency{Name: "openssl", Version: "3.2.6"},
 		},
 		{
 			input:    "cgmassist_dev/2.0.0.26001",
-			expected: types.Dependency{Name: "cgmassist_dev", Example: "2.0.0.26001"},
+			expected: types.Dependency{Name: "cgmassist_dev", Version: "2.0.0.26001"},
 		},
 		{
 			input:    "libpq/10.7.1942_2",
-			expected: types.Dependency{Name: "libpq", Example: "10.7.1942_2"},
+			expected: types.Dependency{Name: "libpq", Version: "10.7.1942_2"},
 		},
 		{
 			input:    "simplepackage",
-			expected: types.Dependency{Name: "simplepackage", Example: ""},
+			expected: types.Dependency{Name: "simplepackage", Version: ""},
 		},
 	}
 
@@ -196,8 +196,8 @@ func TestConanParser_parseConanDependency(t *testing.T) {
 			if result.Name != tt.expected.Name {
 				t.Errorf("Expected name %s, got %s", tt.expected.Name, result.Name)
 			}
-			if result.Example != tt.expected.Example {
-				t.Errorf("Expected version %s, got %s", tt.expected.Example, result.Example)
+			if result.Version != tt.expected.Version {
+				t.Errorf("Expected version %s, got %s", tt.expected.Version, result.Version)
 			}
 		})
 	}

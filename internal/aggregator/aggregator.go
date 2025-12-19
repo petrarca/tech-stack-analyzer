@@ -235,7 +235,7 @@ func (a *Aggregator) collectDependencies(payload *types.Payload) [][]string {
 	// Convert to array format for JSON output
 	dependencies := make([][]string, 0, len(depMap))
 	for _, dep := range depMap {
-		dependencies = append(dependencies, []string{dep.Type, dep.Name, dep.Example})
+		dependencies = append(dependencies, []string{dep.Type, dep.Name, dep.Version})
 	}
 
 	// Sort by type, then name, then version
@@ -257,7 +257,7 @@ func (a *Aggregator) collectDependenciesRecursive(payload *types.Payload, depMap
 	// Add dependencies from current payload
 	for _, dep := range payload.Dependencies {
 		// Create unique key from type|name|version
-		key := dep.Type + "|" + dep.Name + "|" + dep.Example
+		key := dep.Type + "|" + dep.Name + "|" + dep.Version
 		depMap[key] = dep
 	}
 

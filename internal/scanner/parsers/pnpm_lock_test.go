@@ -112,8 +112,8 @@ importers:
 					t.Errorf("ParsePnpmLock() dep.SourceFile = %s, want pnpm-lock.yaml", dep.SourceFile)
 				}
 				if expectedVersion, ok := tt.wantDeps[dep.Name]; ok {
-					if dep.Example != expectedVersion {
-						t.Errorf("ParsePnpmLock() dep %s version = %s, want %s", dep.Name, dep.Example, expectedVersion)
+					if dep.Version != expectedVersion {
+						t.Errorf("ParsePnpmLock() dep %s version = %s, want %s", dep.Name, dep.Version, expectedVersion)
 					}
 				}
 			}

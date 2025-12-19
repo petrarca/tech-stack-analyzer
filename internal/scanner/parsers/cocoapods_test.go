@@ -22,8 +22,8 @@ func TestCocoaPodsParser_ParsePodfile(t *testing.T) {
   pod 'Alamofire', '5.6.0'
 end`,
 			expected: []types.Dependency{
-				{Type: "cocoapods", Name: "AFNetworking", Example: "4.0.1"},
-				{Type: "cocoapods", Name: "Alamofire", Example: "5.6.0"},
+				{Type: "cocoapods", Name: "AFNetworking", Version: "4.0.1"},
+				{Type: "cocoapods", Name: "Alamofire", Version: "5.6.0"},
 			},
 		},
 		{
@@ -33,8 +33,8 @@ end`,
   pod 'Alamofire'
 end`,
 			expected: []types.Dependency{
-				{Type: "cocoapods", Name: "AFNetworking", Example: "latest"},
-				{Type: "cocoapods", Name: "Alamofire", Example: "latest"},
+				{Type: "cocoapods", Name: "AFNetworking", Version: "latest"},
+				{Type: "cocoapods", Name: "Alamofire", Version: "latest"},
 			},
 		},
 		{
@@ -45,9 +45,9 @@ end`,
   pod "SnapKit"
 end`,
 			expected: []types.Dependency{
-				{Type: "cocoapods", Name: "AFNetworking", Example: "4.0.1"},
-				{Type: "cocoapods", Name: "Alamofire", Example: "5.6.0"},
-				{Type: "cocoapods", Name: "SnapKit", Example: "latest"},
+				{Type: "cocoapods", Name: "AFNetworking", Version: "4.0.1"},
+				{Type: "cocoapods", Name: "Alamofire", Version: "5.6.0"},
+				{Type: "cocoapods", Name: "SnapKit", Version: "latest"},
 			},
 		},
 		{
@@ -60,8 +60,8 @@ target 'TestApp' do
   pod 'Alamofire', '5.6.0'
 end`,
 			expected: []types.Dependency{
-				{Type: "cocoapods", Name: "AFNetworking", Example: "4.0.1"},
-				{Type: "cocoapods", Name: "Alamofire", Example: "5.6.0"},
+				{Type: "cocoapods", Name: "AFNetworking", Version: "4.0.1"},
+				{Type: "cocoapods", Name: "Alamofire", Version: "5.6.0"},
 			},
 		},
 		{
@@ -105,8 +105,8 @@ DEPENDENCIES:
   - AFNetworking (~> 4.0.1)
   - Alamofire (~> 5.6.0)`,
 			expected: []types.Dependency{
-				{Type: "cocoapods", Name: "AFNetworking", Example: "4.0.1"},
-				{Type: "cocoapods", Name: "Alamofire", Example: "5.6.0"},
+				{Type: "cocoapods", Name: "AFNetworking", Version: "4.0.1"},
+				{Type: "cocoapods", Name: "Alamofire", Version: "5.6.0"},
 			},
 		},
 		{
@@ -121,9 +121,9 @@ DEPENDENCIES:
 DEPENDENCIES:
   - MySDK (= 1.0.0)`,
 			expected: []types.Dependency{
-				{Type: "cocoapods", Name: "MySDK", Example: "1.0.0"},
-				{Type: "cocoapods", Name: "AFNetworking", Example: "4.0.1"},
-				{Type: "cocoapods", Name: "Alamofire", Example: "5.6.0"},
+				{Type: "cocoapods", Name: "MySDK", Version: "1.0.0"},
+				{Type: "cocoapods", Name: "AFNetworking", Version: "4.0.1"},
+				{Type: "cocoapods", Name: "Alamofire", Version: "5.6.0"},
 			},
 		},
 		{
@@ -143,8 +143,8 @@ SPEC REPOS:
 CHECKSUMS:
   AFNetworking: somechecksum`,
 			expected: []types.Dependency{
-				{Type: "cocoapods", Name: "AFNetworking", Example: "4.0.1"},
-				{Type: "cocoapods", Name: "Alamofire", Example: "5.6.0"},
+				{Type: "cocoapods", Name: "AFNetworking", Version: "4.0.1"},
+				{Type: "cocoapods", Name: "Alamofire", Version: "5.6.0"},
 			},
 		},
 		{
@@ -196,13 +196,13 @@ DEPENDENCIES:
 			name:     "extracts from Podfile",
 			content:  podfileContent,
 			filename: "Podfile",
-			expected: []types.Dependency{{Type: "cocoapods", Name: "AFNetworking", Example: "4.0.1"}},
+			expected: []types.Dependency{{Type: "cocoapods", Name: "AFNetworking", Version: "4.0.1"}},
 		},
 		{
 			name:     "extracts from Podfile.lock",
 			content:  podfileLockContent,
 			filename: "Podfile.lock",
-			expected: []types.Dependency{{Type: "cocoapods", Name: "AFNetworking", Example: "4.0.1"}},
+			expected: []types.Dependency{{Type: "cocoapods", Name: "AFNetworking", Version: "4.0.1"}},
 		},
 		{
 			name:     "handles unknown filename",

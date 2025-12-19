@@ -8,11 +8,11 @@ func TestPayload_AddDependency_Deduplication(t *testing.T) {
 	payload := NewPayload("test", []string{"test/path"})
 
 	// Add the same dependency multiple times
-	dep1 := Dependency{Type: "docker", Name: "naisacrname.azurecr.io/nais/vromero/activemq-artemis", Example: ""}
-	dep2 := Dependency{Type: "docker", Name: "naisacrname.azurecr.io/nais/vromero/activemq-artemis", Example: ""}
-	dep3 := Dependency{Type: "docker", Name: "naisacrname.azurecr.io/nais/vromero/activemq-artemis", Example: ""}
-	dep4 := Dependency{Type: "docker", Name: "naisacrname.azurecr.io/nais/vromero/activemq-artemis", Example: ""}
-	dep5 := Dependency{Type: "docker", Name: "naisacrname.azurecr.io/nais/vromero/activemq-artemis", Example: ""}
+	dep1 := Dependency{Type: "docker", Name: "naisacrname.azurecr.io/nais/vromero/activemq-artemis", Version: ""}
+	dep2 := Dependency{Type: "docker", Name: "naisacrname.azurecr.io/nais/vromero/activemq-artemis", Version: ""}
+	dep3 := Dependency{Type: "docker", Name: "naisacrname.azurecr.io/nais/vromero/activemq-artemis", Version: ""}
+	dep4 := Dependency{Type: "docker", Name: "naisacrname.azurecr.io/nais/vromero/activemq-artemis", Version: ""}
+	dep5 := Dependency{Type: "docker", Name: "naisacrname.azurecr.io/nais/vromero/activemq-artemis", Version: ""}
 
 	payload.AddDependency(dep1)
 	payload.AddDependency(dep2)
@@ -34,7 +34,7 @@ func TestPayload_AddDependency_Deduplication(t *testing.T) {
 	}
 
 	// Test adding different dependencies
-	depDifferent := Dependency{Type: "docker", Name: "different-image", Example: ""}
+	depDifferent := Dependency{Type: "docker", Name: "different-image", Version: ""}
 	payload.AddDependency(depDifferent)
 
 	if len(payload.Dependencies) != 2 {
@@ -42,7 +42,7 @@ func TestPayload_AddDependency_Deduplication(t *testing.T) {
 	}
 
 	// Test adding dependency with different version
-	depWithVersion := Dependency{Type: "docker", Name: "naisacrname.azurecr.io/nais/vromero/activemq-artemis", Example: "latest"}
+	depWithVersion := Dependency{Type: "docker", Name: "naisacrname.azurecr.io/nais/vromero/activemq-artemis", Version: "latest"}
 	payload.AddDependency(depWithVersion)
 
 	if len(payload.Dependencies) != 3 {
@@ -53,9 +53,9 @@ func TestPayload_AddDependency_Deduplication(t *testing.T) {
 func TestPayload_containsDependency(t *testing.T) {
 	payload := NewPayload("test", []string{"test/path"})
 
-	dep1 := Dependency{Type: "docker", Name: "test-image", Example: ""}
-	dep2 := Dependency{Type: "docker", Name: "test-image", Example: "latest"}
-	dep3 := Dependency{Type: "npm", Name: "test-image", Example: ""}
+	dep1 := Dependency{Type: "docker", Name: "test-image", Version: ""}
+	dep2 := Dependency{Type: "docker", Name: "test-image", Version: "latest"}
+	dep3 := Dependency{Type: "npm", Name: "test-image", Version: ""}
 
 	// Initially empty
 	if payload.containsDependency(dep1) {

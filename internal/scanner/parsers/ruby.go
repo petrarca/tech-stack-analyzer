@@ -37,7 +37,7 @@ func (p *RubyParser) ParseGemfile(content string) []types.Dependency {
 			dependencies = append(dependencies, types.Dependency{
 				Type:    "ruby",
 				Name:    gemName,
-				Example: version,
+				Version: version,
 			})
 			continue
 		}
@@ -49,7 +49,7 @@ func (p *RubyParser) ParseGemfile(content string) []types.Dependency {
 			dependencies = append(dependencies, types.Dependency{
 				Type:    "ruby",
 				Name:    gemName,
-				Example: "latest",
+				Version: "latest",
 			})
 		}
 	}

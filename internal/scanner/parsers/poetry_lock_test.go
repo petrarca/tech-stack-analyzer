@@ -125,7 +125,7 @@ version = "2.31.0"
 			if len(deps) != tt.expected {
 				t.Errorf("ParsePoetryLock() got %d dependencies, want %d", len(deps), tt.expected)
 				for _, d := range deps {
-					t.Logf("  got: %s = %s", d.Name, d.Example)
+					t.Logf("  got: %s = %s", d.Name, d.Version)
 				}
 			}
 
@@ -137,8 +137,8 @@ version = "2.31.0"
 					t.Errorf("ParsePoetryLock() dep.SourceFile = %s, want poetry.lock", dep.SourceFile)
 				}
 				if expectedVersion, ok := tt.wantDeps[dep.Name]; ok {
-					if dep.Example != expectedVersion {
-						t.Errorf("ParsePoetryLock() dep %s version = %s, want %s", dep.Name, dep.Example, expectedVersion)
+					if dep.Version != expectedVersion {
+						t.Errorf("ParsePoetryLock() dep %s version = %s, want %s", dep.Name, dep.Version, expectedVersion)
 					}
 				}
 			}

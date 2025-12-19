@@ -42,11 +42,11 @@ func TestParseComposerJSON(t *testing.T) {
 			expectedProjectName: "myorg/myapp",
 			expectedLicense:     "MIT",
 			expectedDeps: []types.Dependency{
-				{Type: "php", Name: "php", Example: "^8.0"},
-				{Type: "php", Name: "symfony/console", Example: "^6.0"},
-				{Type: "php", Name: "doctrine/orm", Example: "^2.14"},
-				{Type: "php", Name: "phpunit/phpunit", Example: "^9.0"},
-				{Type: "php", Name: "symfony/phpunit-bridge", Example: "^6.0"},
+				{Type: "php", Name: "php", Version: "^8.0"},
+				{Type: "php", Name: "symfony/console", Version: "^6.0"},
+				{Type: "php", Name: "doctrine/orm", Version: "^2.14"},
+				{Type: "php", Name: "phpunit/phpunit", Version: "^9.0"},
+				{Type: "php", Name: "symfony/phpunit-bridge", Version: "^6.0"},
 			},
 		},
 		{
@@ -83,8 +83,8 @@ func TestParseComposerJSON(t *testing.T) {
 			expectedProjectName: "myorg/myapp",
 			expectedLicense:     "",
 			expectedDeps: []types.Dependency{
-				{Type: "php", Name: "php", Example: "^8.0"},
-				{Type: "php", Name: "symfony/console", Example: "^6.0"},
+				{Type: "php", Name: "php", Version: "^8.0"},
+				{Type: "php", Name: "symfony/console", Version: "^6.0"},
 			},
 		},
 		{
@@ -98,7 +98,7 @@ func TestParseComposerJSON(t *testing.T) {
 			expectedProjectName: "myorg/myapp",
 			expectedLicense:     "",
 			expectedDeps: []types.Dependency{
-				{Type: "php", Name: "phpunit/phpunit", Example: "^9.0"},
+				{Type: "php", Name: "phpunit/phpunit", Version: "^9.0"},
 			},
 		},
 		{
@@ -156,7 +156,7 @@ func TestParseComposerJSON(t *testing.T) {
 				actualDep, exists := actualDepMap[name]
 				require.True(t, exists, "Expected dependency %s not found", name)
 				assert.Equal(t, expectedDep.Type, actualDep.Type, "Should have correct type for %s", name)
-				assert.Equal(t, expectedDep.Example, actualDep.Example, "Should have correct version for %s", name)
+				assert.Equal(t, expectedDep.Version, actualDep.Version, "Should have correct version for %s", name)
 			}
 		})
 	}
@@ -264,9 +264,9 @@ func TestPHPParser_Integration(t *testing.T) {
 	}
 
 	assert.Equal(t, "php", depMap["php"].Type)
-	assert.Equal(t, "^8.0.2", depMap["php"].Example)
+	assert.Equal(t, "^8.0.2", depMap["php"].Version)
 	assert.Equal(t, "php", depMap["laravel/framework"].Type)
-	assert.Equal(t, "^9.19", depMap["laravel/framework"].Example)
+	assert.Equal(t, "^9.19", depMap["laravel/framework"].Version)
 	assert.Equal(t, "php", depMap["phpunit/phpunit"].Type)
-	assert.Equal(t, "^9.5.10", depMap["phpunit/phpunit"].Example)
+	assert.Equal(t, "^9.5.10", depMap["phpunit/phpunit"].Version)
 }

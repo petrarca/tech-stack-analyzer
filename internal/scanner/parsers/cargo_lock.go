@@ -25,7 +25,7 @@ func ParseCargoLock(lockContent []byte, cargoTomlContent string) []types.Depende
 			dependencies = append(dependencies, types.Dependency{
 				Type:       "cargo",
 				Name:       name,
-				Example:    version,
+				Version:    version,
 				SourceFile: "Cargo.lock",
 			})
 		}

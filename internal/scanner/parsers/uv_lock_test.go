@@ -99,8 +99,8 @@ dev = [
 					t.Errorf("ParseUvLock() dep.SourceFile = %s, want uv.lock", dep.SourceFile)
 				}
 				if expectedVersion, ok := tt.wantDeps[dep.Name]; ok {
-					if dep.Example != expectedVersion {
-						t.Errorf("ParseUvLock() dep %s version = %s, want %s", dep.Name, dep.Example, expectedVersion)
+					if dep.Version != expectedVersion {
+						t.Errorf("ParseUvLock() dep %s version = %s, want %s", dep.Name, dep.Version, expectedVersion)
 					}
 				}
 			}

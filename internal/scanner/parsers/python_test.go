@@ -39,9 +39,9 @@ dependencies = [
 dev = ["pytest", "black"]
 `,
 			expectedDeps: []types.Dependency{
-				{Type: "python", Name: "fastapi", Example: "latest"},
-				{Type: "python", Name: "requests", Example: "2.25.0"},
-				{Type: "python", Name: "pydantic", Example: "1.8.0"},
+				{Type: "python", Name: "fastapi", Version: "latest"},
+				{Type: "python", Name: "requests", Version: "2.25.0"},
+				{Type: "python", Name: "pydantic", Version: "1.8.0"},
 			},
 		},
 		{
@@ -82,10 +82,10 @@ dependencies = [
 ]
 `,
 			expectedDeps: []types.Dependency{
-				{Type: "python", Name: "package-name", Example: "latest"},
-				{Type: "python", Name: "another-package", Example: "1.0.0"},
-				{Type: "python", Name: "exact-package", Example: "2.0.0"},
-				{Type: "python", Name: "range-package", Example: "1.0.0"},
+				{Type: "python", Name: "package-name", Version: "latest"},
+				{Type: "python", Name: "another-package", Version: "1.0.0"},
+				{Type: "python", Name: "exact-package", Version: "2.0.0"},
+				{Type: "python", Name: "range-package", Version: "1.0.0"},
 			},
 		},
 	}
@@ -99,7 +99,7 @@ dependencies = [
 			for i, expectedDep := range tt.expectedDeps {
 				assert.Equal(t, expectedDep.Type, result[i].Type, "Should have correct type")
 				assert.Equal(t, expectedDep.Name, result[i].Name, "Should have correct name")
-				assert.Equal(t, expectedDep.Example, result[i].Example, "Should have correct version")
+				assert.Equal(t, expectedDep.Version, result[i].Version, "Should have correct version")
 			}
 		})
 	}
@@ -120,9 +120,9 @@ requests>=2.25.0
 pydantic==1.8.0
 `,
 			expectedDeps: []types.Dependency{
-				{Type: "python", Name: "fastapi", Example: "latest"},
-				{Type: "python", Name: "requests", Example: "2.25.0"},
-				{Type: "python", Name: "pydantic", Example: "1.8.0"},
+				{Type: "python", Name: "fastapi", Version: "latest"},
+				{Type: "python", Name: "requests", Version: "2.25.0"},
+				{Type: "python", Name: "pydantic", Version: "1.8.0"},
 			},
 		},
 		{
@@ -137,9 +137,9 @@ pytest>=6.0.0
 requests
 `,
 			expectedDeps: []types.Dependency{
-				{Type: "python", Name: "fastapi", Example: "0.68.0"},
-				{Type: "python", Name: "pytest", Example: "6.0.0"},
-				{Type: "python", Name: "requests", Example: "latest"},
+				{Type: "python", Name: "fastapi", Version: "0.68.0"},
+				{Type: "python", Name: "pytest", Version: "6.0.0"},
+				{Type: "python", Name: "requests", Version: "latest"},
 			},
 		},
 		{
@@ -161,9 +161,9 @@ another_package>=1.0.0
 package.with.dots==2.0.0
 `,
 			expectedDeps: []types.Dependency{
-				{Type: "python", Name: "package-name", Example: "latest"},
-				{Type: "python", Name: "another_package", Example: "1.0.0"},
-				{Type: "python", Name: "package.with.dots", Example: "2.0.0"},
+				{Type: "python", Name: "package-name", Version: "latest"},
+				{Type: "python", Name: "another_package", Version: "1.0.0"},
+				{Type: "python", Name: "package.with.dots", Version: "2.0.0"},
 			},
 		},
 	}
@@ -177,7 +177,7 @@ package.with.dots==2.0.0
 			for i, expectedDep := range tt.expectedDeps {
 				assert.Equal(t, expectedDep.Type, result[i].Type, "Should have correct type")
 				assert.Equal(t, expectedDep.Name, result[i].Name, "Should have correct name")
-				assert.Equal(t, expectedDep.Example, result[i].Example, "Should have correct version")
+				assert.Equal(t, expectedDep.Version, result[i].Version, "Should have correct version")
 			}
 		})
 	}
@@ -557,9 +557,9 @@ dependencies = [
 	}
 
 	assert.Equal(t, "python", depMap["fastapi"].Type, "FastAPI should be python type")
-	assert.Equal(t, "0.68.0", depMap["fastapi"].Example, "FastAPI should have correct version")
+	assert.Equal(t, "0.68.0", depMap["fastapi"].Version, "FastAPI should have correct version")
 	assert.Equal(t, "python", depMap["requests"].Type, "Requests should be python type")
-	assert.Equal(t, "2.25.0", depMap["requests"].Example, "Requests should have correct version")
+	assert.Equal(t, "2.25.0", depMap["requests"].Version, "Requests should have correct version")
 }
 
 func TestPythonParser_RequirementsTxtIntegration(t *testing.T) {
@@ -585,7 +585,7 @@ black
 	}
 
 	assert.Equal(t, "python", depMap["fastapi"].Type, "FastAPI should be python type")
-	assert.Equal(t, "0.68.0", depMap["fastapi"].Example, "FastAPI should have correct version")
+	assert.Equal(t, "0.68.0", depMap["fastapi"].Version, "FastAPI should have correct version")
 	assert.Equal(t, "python", depMap["black"].Type, "Black should be python type")
-	assert.Equal(t, "latest", depMap["black"].Example, "Black should have latest version")
+	assert.Equal(t, "latest", depMap["black"].Version, "Black should have latest version")
 }

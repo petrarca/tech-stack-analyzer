@@ -19,7 +19,8 @@ require github.com/gin-gonic/gin v1.9.0`
 		deps := parser.ParseGoMod(content)
 		assert.Len(t, deps, 1)
 		assert.Equal(t, "golang", deps[0].Type)
-		assert.Equal(t, "github.com/gin-gonic/gin@v1.9.0", deps[0].Name)
+		assert.Equal(t, "github.com/gin-gonic/gin", deps[0].Name)
+		assert.Equal(t, "v1.9.0", deps[0].Version)
 	})
 
 	t.Run("parses multiple requires", func(t *testing.T) {
@@ -34,8 +35,10 @@ require (
 
 		deps := parser.ParseGoMod(content)
 		assert.Len(t, deps, 2)
-		assert.Equal(t, "github.com/gin-gonic/gin@v1.9.0", deps[0].Name)
-		assert.Equal(t, "github.com/stretchr/testify@v1.8.0", deps[1].Name)
+		assert.Equal(t, "github.com/gin-gonic/gin", deps[0].Name)
+		assert.Equal(t, "v1.9.0", deps[0].Version)
+		assert.Equal(t, "github.com/stretchr/testify", deps[1].Name)
+		assert.Equal(t, "v1.8.0", deps[1].Version)
 	})
 
 	t.Run("handles indented requires", func(t *testing.T) {
@@ -83,7 +86,9 @@ require (
 
 		deps := parser.ParseGoMod(content)
 		assert.Len(t, deps, 2) // Should skip indirect
-		assert.Equal(t, "github.com/gin-gonic/gin@v1.9.0", deps[0].Name)
-		assert.Equal(t, "github.com/stretchr/testify@v1.8.0", deps[1].Name)
+		assert.Equal(t, "github.com/gin-gonic/gin", deps[0].Name)
+		assert.Equal(t, "v1.9.0", deps[0].Version)
+		assert.Equal(t, "github.com/stretchr/testify", deps[1].Name)
+		assert.Equal(t, "v1.8.0", deps[1].Version)
 	})
 }

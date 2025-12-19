@@ -95,8 +95,8 @@ func TestParsePackageLock(t *testing.T) {
 					t.Errorf("ParsePackageLock() dep.SourceFile = %s, want package-lock.json", dep.SourceFile)
 				}
 				if expectedVersion, ok := tt.wantDeps[dep.Name]; ok {
-					if dep.Example != expectedVersion {
-						t.Errorf("ParsePackageLock() dep %s version = %s, want %s", dep.Name, dep.Example, expectedVersion)
+					if dep.Version != expectedVersion {
+						t.Errorf("ParsePackageLock() dep %s version = %s, want %s", dep.Name, dep.Version, expectedVersion)
 					}
 				}
 			}

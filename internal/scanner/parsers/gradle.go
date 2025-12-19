@@ -163,6 +163,6 @@ func (p *GradleParser) parseGradleDependency(line string) *types.Dependency {
 	return &types.Dependency{
 		Type:    "gradle",
 		Name:    dependencyName,
-		Example: version,
+		Version: version,
 	}
 }

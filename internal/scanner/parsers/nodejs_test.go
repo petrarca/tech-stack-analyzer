@@ -262,8 +262,8 @@ func TestCreateDependencies(t *testing.T) {
 			},
 			depNames: []string{"express", "jest"},
 			expectedDeps: []types.Dependency{
-				{Type: "npm", Name: "express", Example: "^4.18.0"},
-				{Type: "npm", Name: "jest", Example: "^29.0.0"},
+				{Type: "npm", Name: "express", Version: "^4.18.0"},
+				{Type: "npm", Name: "jest", Version: "^29.0.0"},
 			},
 		},
 		{
@@ -276,7 +276,7 @@ func TestCreateDependencies(t *testing.T) {
 			},
 			depNames: []string{"express"},
 			expectedDeps: []types.Dependency{
-				{Type: "npm", Name: "express", Example: "^4.18.0"},
+				{Type: "npm", Name: "express", Version: "^4.18.0"},
 			},
 		},
 		{
@@ -289,7 +289,7 @@ func TestCreateDependencies(t *testing.T) {
 			},
 			depNames: []string{"jest"},
 			expectedDeps: []types.Dependency{
-				{Type: "npm", Name: "jest", Example: "^29.0.0"},
+				{Type: "npm", Name: "jest", Version: "^29.0.0"},
 			},
 		},
 		{
@@ -300,7 +300,7 @@ func TestCreateDependencies(t *testing.T) {
 			},
 			depNames: []string{"non-existent"},
 			expectedDeps: []types.Dependency{
-				{Type: "npm", Name: "non-existent", Example: ""},
+				{Type: "npm", Name: "non-existent", Version: ""},
 			},
 		},
 		{
@@ -323,7 +323,7 @@ func TestCreateDependencies(t *testing.T) {
 			for i, expectedDep := range tt.expectedDeps {
 				assert.Equal(t, expectedDep.Type, result[i].Type, "Should have correct type")
 				assert.Equal(t, expectedDep.Name, result[i].Name, "Should have correct name")
-				assert.Equal(t, expectedDep.Example, result[i].Example, "Should have correct version")
+				assert.Equal(t, expectedDep.Version, result[i].Version, "Should have correct version")
 			}
 		})
 	}
@@ -369,7 +369,7 @@ func TestNodeJSParser_Integration(t *testing.T) {
 	}
 
 	assert.Equal(t, "npm", depMap["express"].Type, "Express should be npm type")
-	assert.Equal(t, "^4.18.0", depMap["express"].Example, "Express should have correct version")
+	assert.Equal(t, "^4.18.0", depMap["express"].Version, "Express should have correct version")
 	assert.Equal(t, "npm", depMap["jest"].Type, "Jest should be npm type")
-	assert.Equal(t, "^29.0.0", depMap["jest"].Example, "Jest should have correct version")
+	assert.Equal(t, "^29.0.0", depMap["jest"].Version, "Jest should have correct version")
 }

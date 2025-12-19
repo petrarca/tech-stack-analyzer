@@ -68,7 +68,7 @@ func (p *NodeJSParser) CreateDependencies(pkg *PackageJSON, depNames []string) [
 		dependencies = append(dependencies, types.Dependency{
 			Type:    "npm",
 			Name:    name,
-			Example: version,
+			Version: version,
 		})
 	}
 

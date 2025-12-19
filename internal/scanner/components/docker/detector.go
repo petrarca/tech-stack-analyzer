@@ -113,7 +113,7 @@ func (d *Detector) detectDockerCompose(file types.File, currentPath, basePath st
 			{
 				Type:    "docker",
 				Name:    imageName,
-				Example: imageVersion,
+				Version: imageVersion,
 			},
 		}
 
@@ -162,7 +162,7 @@ func (d *Detector) detectDockerfile(file types.File, currentPath, basePath strin
 		dependencies = append(dependencies, types.Dependency{
 			Type:    "docker-image",
 			Name:    imageName,
-			Example: imageVersion,
+			Version: imageVersion,
 		})
 	}
 	payload.Dependencies = dependencies

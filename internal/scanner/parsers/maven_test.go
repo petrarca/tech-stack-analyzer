@@ -50,9 +50,9 @@ func TestParsePomXML(t *testing.T) {
 	</dependencies>
 </project>`,
 			expectedDeps: []types.Dependency{
-				{Type: "maven", Name: "org.springframework.boot:spring-boot-starter-web", Example: "2.7.0"},
-				{Type: "maven", Name: "org.springframework.boot:spring-boot-starter-data-jpa", Example: "2.7.0"},
-				{Type: "maven", Name: "junit:junit", Example: "latest"},
+				{Type: "maven", Name: "org.springframework.boot:spring-boot-starter-web", Version: "2.7.0"},
+				{Type: "maven", Name: "org.springframework.boot:spring-boot-starter-data-jpa", Version: "2.7.0"},
+				{Type: "maven", Name: "junit:junit", Version: "latest"},
 			},
 		},
 		{
@@ -123,7 +123,7 @@ func TestParsePomXML(t *testing.T) {
 	</dependencies>
 </project>`,
 			expectedDeps: []types.Dependency{
-				{Type: "maven", Name: "org.springframework.boot:spring-boot-starter-web", Example: "2.7.0"},
+				{Type: "maven", Name: "org.springframework.boot:spring-boot-starter-web", Version: "2.7.0"},
 			}, // XML parser is more lenient than expected
 		},
 		{
@@ -170,10 +170,10 @@ func TestParsePomXML(t *testing.T) {
 	</dependencies>
 </project>`,
 			expectedDeps: []types.Dependency{
-				{Type: "maven", Name: "org.springframework.boot:spring-boot-starter-web", Example: "2.7.0"},
-				{Type: "maven", Name: "io.quarkiverse.quinoa:quarkus-quinoa", Example: "1.2.3"},
-				{Type: "maven", Name: "org.junit.jupiter:junit-jupiter", Example: "5.8.2"},
-				{Type: "maven", Name: "org.mockito:mockito-core", Example: "4.6.1"},
+				{Type: "maven", Name: "org.springframework.boot:spring-boot-starter-web", Version: "2.7.0"},
+				{Type: "maven", Name: "io.quarkiverse.quinoa:quarkus-quinoa", Version: "1.2.3"},
+				{Type: "maven", Name: "org.junit.jupiter:junit-jupiter", Version: "5.8.2"},
+				{Type: "maven", Name: "org.mockito:mockito-core", Version: "4.6.1"},
 			},
 		},
 		{
@@ -203,8 +203,8 @@ func TestParsePomXML(t *testing.T) {
 	</dependencies>
 </project>`,
 			expectedDeps: []types.Dependency{
-				{Type: "maven", Name: "org.springframework.boot:spring-boot-starter-web", Example: "2.7.0"},
-				{Type: "maven", Name: "io.quarkiverse.quinoa:quarkus-quinoa", Example: "${undefined.version}"},
+				{Type: "maven", Name: "org.springframework.boot:spring-boot-starter-web", Version: "2.7.0"},
+				{Type: "maven", Name: "io.quarkiverse.quinoa:quarkus-quinoa", Version: "${undefined.version}"},
 			},
 		},
 		{
@@ -228,7 +228,7 @@ func TestParsePomXML(t *testing.T) {
 	</dependencies>
 </project>`,
 			expectedDeps: []types.Dependency{
-				{Type: "maven", Name: "org.springframework.boot:spring-boot-starter-web", Example: "${spring.version}"},
+				{Type: "maven", Name: "org.springframework.boot:spring-boot-starter-web", Version: "${spring.version}"},
 			},
 		},
 	}
@@ -242,7 +242,7 @@ func TestParsePomXML(t *testing.T) {
 			for i, expectedDep := range tt.expectedDeps {
 				assert.Equal(t, expectedDep.Type, result[i].Type, "Should have correct type")
 				assert.Equal(t, expectedDep.Name, result[i].Name, "Should have correct name")
-				assert.Equal(t, expectedDep.Example, result[i].Example, "Should have correct version")
+				assert.Equal(t, expectedDep.Version, result[i].Version, "Should have correct version")
 			}
 		})
 	}
@@ -292,8 +292,8 @@ func TestMavenParser_ComplexScenarios(t *testing.T) {
 	}
 
 	assert.Equal(t, "maven", depMap["org.springframework.boot:spring-boot-starter-web"].Type)
-	assert.Equal(t, "2.7.0", depMap["org.springframework.boot:spring-boot-starter-web"].Example)
-	assert.Equal(t, "latest", depMap["org.projectlombok:lombok"].Example) // No version specified
+	assert.Equal(t, "2.7.0", depMap["org.springframework.boot:spring-boot-starter-web"].Version)
+	assert.Equal(t, "latest", depMap["org.projectlombok:lombok"].Version) // No version specified
 }
 
 func TestMavenParser_ParentPOMResolution(t *testing.T) {
@@ -342,11 +342,11 @@ func TestMavenParser_ParentPOMResolution(t *testing.T) {
 
 	// Check that project.version was resolved from parent
 	assert.Equal(t, "com.example:lib", deps[0].Name)
-	assert.Equal(t, "2.0.0", deps[0].Example, "project.version should resolve to parent's version")
+	assert.Equal(t, "2.0.0", deps[0].Version, "project.version should resolve to parent's version")
 
 	// Check that spring.version was resolved from parent's properties
 	assert.Equal(t, "org.springframework:spring-core", deps[1].Name)
-	assert.Equal(t, "3.2.0", deps[1].Example, "spring.version should resolve from parent's properties")
+	assert.Equal(t, "3.2.0", deps[1].Version, "spring.version should resolve from parent's properties")
 }
 
 // mockFileProvider implements types.Provider for testing
@@ -415,7 +415,7 @@ func TestMavenParser_RecursivePropertyResolution(t *testing.T) {
 	</dependencies>
 </project>`,
 			expectedDeps: []types.Dependency{
-				{Type: "maven", Name: "org.springframework.boot:spring-boot-starter-web", Example: "2.7.0"},
+				{Type: "maven", Name: "org.springframework.boot:spring-boot-starter-web", Version: "2.7.0"},
 			},
 		},
 		{
@@ -435,7 +435,7 @@ func TestMavenParser_RecursivePropertyResolution(t *testing.T) {
 	</dependencies>
 </project>`,
 			expectedDeps: []types.Dependency{
-				{Type: "maven", Name: "com.example:my-lib", Example: "3.0.0"},
+				{Type: "maven", Name: "com.example:my-lib", Version: "3.0.0"},
 			},
 		},
 		{
@@ -455,7 +455,7 @@ func TestMavenParser_RecursivePropertyResolution(t *testing.T) {
 	</dependencies>
 </project>`,
 			expectedDeps: []types.Dependency{
-				{Type: "maven", Name: "com.example:my-lib", Example: "4.0.0"},
+				{Type: "maven", Name: "com.example:my-lib", Version: "4.0.0"},
 			},
 		},
 		{
@@ -479,7 +479,7 @@ func TestMavenParser_RecursivePropertyResolution(t *testing.T) {
 	</dependencies>
 </project>`,
 			expectedDeps: []types.Dependency{
-				{Type: "maven", Name: "com.example:my-lib", Example: "2.0.0-RELEASE"},
+				{Type: "maven", Name: "com.example:my-lib", Version: "2.0.0-RELEASE"},
 			},
 		},
 		{
@@ -504,7 +504,7 @@ func TestMavenParser_RecursivePropertyResolution(t *testing.T) {
 	</dependencies>
 </project>`,
 			expectedDeps: []types.Dependency{
-				{Type: "maven", Name: "com.example:my-lib", Example: "${a.version}"},
+				{Type: "maven", Name: "com.example:my-lib", Version: "${a.version}"},
 			},
 		},
 		{
@@ -530,7 +530,7 @@ func TestMavenParser_RecursivePropertyResolution(t *testing.T) {
 	</dependencies>
 </project>`,
 			expectedDeps: []types.Dependency{
-				{Type: "maven", Name: "com.example:my-lib", Example: "5.0.0"},
+				{Type: "maven", Name: "com.example:my-lib", Version: "5.0.0"},
 			},
 		},
 	}
@@ -544,7 +544,7 @@ func TestMavenParser_RecursivePropertyResolution(t *testing.T) {
 			for i, expectedDep := range tt.expectedDeps {
 				assert.Equal(t, expectedDep.Type, result[i].Type, "Should have correct type")
 				assert.Equal(t, expectedDep.Name, result[i].Name, "Should have correct name")
-				assert.Equal(t, expectedDep.Example, result[i].Example, "Should have correct version")
+				assert.Equal(t, expectedDep.Version, result[i].Version, "Should have correct version")
 			}
 		})
 	}

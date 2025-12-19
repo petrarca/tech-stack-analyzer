@@ -137,7 +137,7 @@ func (d *ComponentDetector) extractFromSteps(steps []GitHubActionsStep) ([]types
 		dependencies = append(dependencies, types.Dependency{
 			Type:    "githubAction",
 			Name:    name,
-			Example: version,
+			Version: version,
 		})
 		actionNames = append(actionNames, name)
 	}
@@ -169,7 +169,7 @@ func (d *ComponentDetector) extractFromContainer(container interface{}) *types.D
 	return &types.Dependency{
 		Type:    "docker",
 		Name:    name,
-		Example: version,
+		Version: version,
 	}
 }
 
@@ -207,7 +207,7 @@ func (d *ComponentDetector) extractFromServices(services map[string]GitHubAction
 		dependencies = append(dependencies, types.Dependency{
 			Type:    "docker",
 			Name:    name,
-			Example: version,
+			Version: version,
 		})
 	}
 

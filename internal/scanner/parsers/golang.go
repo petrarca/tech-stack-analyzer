@@ -1,8 +1,6 @@
 package parsers
 
 import (
-	"fmt"
-
 	"golang.org/x/mod/modfile"
 
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
@@ -35,10 +33,10 @@ func (p *GolangParser) ParseGoMod(content string) []types.Dependency {
 		}
 
 		// Create dependency with version
-		depName := fmt.Sprintf("%s@%s", req.Mod.Path, req.Mod.Version)
 		dependencies = append(dependencies, types.Dependency{
-			Type: "golang",
-			Name: depName,
+			Type:    "golang",
+			Name:    req.Mod.Path,
+			Version: req.Mod.Version,
 		})
 	}
 

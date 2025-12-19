@@ -69,7 +69,7 @@ func (p *RustParser) ParseCargoToml(content string) (string, string, []types.Dep
 
 		if p.isDependencySection(inDependencies, inDevDependencies, inBuildDependencies, inWorkspaceDeps) {
 			dep := p.parseDependencyLine(line)
-			if dep.Name != "" && dep.Example != "" {
+			if dep.Name != "" && dep.Version != "" {
 				dependencies = append(dependencies, dep)
 			}
 		}
@@ -176,7 +176,7 @@ func (p *RustParser) parseDependencyLine(line string) types.Dependency {
 		return types.Dependency{
 			Type:    "cargo",
 			Name:    name,
-			Example: version,
+			Version: version,
 		}
 	} else if strings.HasPrefix(value, "{") && strings.HasSuffix(value, "}") {
 		// Object format: "serde = { version = "1.0", features = ["derive"] }"
@@ -239,16 +239,16 @@ func (d *dependencyInfo) parseLine(line string) {
 
 // buildDependency creates a dependency from parsed information
 func (p *RustParser) buildDependency(name string, info *dependencyInfo) types.Dependency {
-	var example string
+	var version string
 
 	switch {
 	case info.path != "":
-		example = p.buildPathExample(info)
+		version = p.buildPathExample(info)
 	case info.git != "":
-		example = p.buildGitExample(info)
+		version = p.buildGitExample(info)
 	default:
-		example = info.version
-		if example == "" {
+		version = info.version
+		if version == "" {
 			// If no version, path, or git info, this is likely an empty/malformed dependency
 			return types.Dependency{}
 		}
@@ -257,7 +257,7 @@ func (p *RustParser) buildDependency(name string, info *dependencyInfo) types.De
 	return types.Dependency{
 		Type:    "cargo",
 		Name:    name,
-		Example: example,
+		Version: version,
 	}
 }
 
@@ -285,7 +285,7 @@ func (p *RustParser) buildGitExample(info *dependencyInfo) string {
 	if ref != "" {
 		example += "#" + ref
 	} else {
-		example += "#latest"
+		example = "latest"
 	}
 
 	return example

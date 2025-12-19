@@ -25,7 +25,7 @@ type Rule struct {
 type Dependency struct {
 	Type       string `yaml:"type" json:"type"`
 	Name       string `yaml:"name" json:"name"`
-	Example    string `yaml:"example,omitempty" json:"example,omitempty"`
+	Version    string `yaml:"version,omitempty" json:"version,omitempty"`
 	SourceFile string `yaml:"source_file,omitempty" json:"source_file,omitempty"`
 }
 
@@ -33,10 +33,10 @@ type Dependency struct {
 func (d Dependency) MarshalJSON() ([]byte, error) {
 	if d.SourceFile != "" {
 		// New format with source file
-		return json.Marshal([]string{d.Type, d.Name, d.Example, d.SourceFile})
+		return json.Marshal([]string{d.Type, d.Name, d.Version, d.SourceFile})
 	}
 	// Backward compatibility - old format without source file
-	return json.Marshal([]string{d.Type, d.Name, d.Example})
+	return json.Marshal([]string{d.Type, d.Name, d.Version})
 }
 
 // CompiledDependency is a pre-compiled dependency for performance

@@ -46,11 +46,11 @@ cc = "1.0"
 			expectedProjectName: "my-rust-app",
 			expectedLicense:     "MIT",
 			expectedDeps: []types.Dependency{
-				{Type: "cargo", Name: "serde", Example: "1.0"},
-				{Type: "cargo", Name: "tokio", Example: "1.0"},
-				{Type: "cargo", Name: "serde_json", Example: "1.0.91"},
-				{Type: "cargo", Name: "criterion", Example: "0.4"},
-				{Type: "cargo", Name: "cc", Example: "1.0"},
+				{Type: "cargo", Name: "serde", Version: "1.0"},
+				{Type: "cargo", Name: "tokio", Version: "1.0"},
+				{Type: "cargo", Name: "serde_json", Version: "1.0.91"},
+				{Type: "cargo", Name: "criterion", Version: "0.4"},
+				{Type: "cargo", Name: "cc", Version: "1.0"},
 			},
 			expectedIsWorkspace: false,
 		},
@@ -82,12 +82,12 @@ test-crate = { git = "https://github.com/test/repo.git", rev = "abc123" }
 			expectedProjectName: "complex-app",
 			expectedLicense:     "Apache-2.0",
 			expectedDeps: []types.Dependency{
-				{Type: "cargo", Name: "local-crate", Example: "0.1.0"},
-				{Type: "cargo", Name: "git-dependency", Example: "git:https://github.com/user/repo.git#main"},
-				{Type: "cargo", Name: "path-dependency", Example: "path:../local-crate"},
-				{Type: "cargo", Name: "complex-dep", Example: "1.0"},
-				{Type: "cargo", Name: "workspace-dep", Example: "1.0"},
-				{Type: "cargo", Name: "test-crate", Example: "git:https://github.com/test/repo.git#abc123"},
+				{Type: "cargo", Name: "local-crate", Version: "0.1.0"},
+				{Type: "cargo", Name: "git-dependency", Version: "git:https://github.com/user/repo.git#main"},
+				{Type: "cargo", Name: "path-dependency", Version: "path:../local-crate"},
+				{Type: "cargo", Name: "complex-dep", Version: "1.0"},
+				{Type: "cargo", Name: "workspace-dep", Version: "1.0"},
+				{Type: "cargo", Name: "test-crate", Version: "git:https://github.com/test/repo.git#abc123"},
 			},
 			expectedIsWorkspace: false,
 		},
@@ -110,9 +110,9 @@ version = "0.1.0"
 			expectedProjectName: "",
 			expectedLicense:     "",
 			expectedDeps: []types.Dependency{
-				{Type: "cargo", Name: "serde", Example: "1.0"},
-				{Type: "cargo", Name: "tokio", Example: "1.0"},
-				{Type: "cargo", Name: "thiserror", Example: "1.0"},
+				{Type: "cargo", Name: "serde", Version: "1.0"},
+				{Type: "cargo", Name: "tokio", Version: "1.0"},
+				{Type: "cargo", Name: "thiserror", Version: "1.0"},
 			},
 			expectedIsWorkspace: true,
 		},
@@ -139,8 +139,8 @@ proptest = "1.0"
 			expectedProjectName: "test-only-app",
 			expectedLicense:     "",
 			expectedDeps: []types.Dependency{
-				{Type: "cargo", Name: "criterion", Example: "0.4"},
-				{Type: "cargo", Name: "proptest", Example: "1.0"},
+				{Type: "cargo", Name: "criterion", Version: "0.4"},
+				{Type: "cargo", Name: "proptest", Version: "1.0"},
 			},
 			expectedIsWorkspace: false,
 		},
@@ -175,10 +175,10 @@ criterion = "0.4"
 			expectedProjectName: "commented-app",
 			expectedLicense:     "MIT",
 			expectedDeps: []types.Dependency{
-				{Type: "cargo", Name: "serde", Example: "1.0"},
-				{Type: "cargo", Name: "serde_json", Example: "1.0.91"},
-				{Type: "cargo", Name: "tokio", Example: "1.0"},
-				{Type: "cargo", Name: "criterion", Example: "0.4"},
+				{Type: "cargo", Name: "serde", Version: "1.0"},
+				{Type: "cargo", Name: "serde_json", Version: "1.0.91"},
+				{Type: "cargo", Name: "tokio", Version: "1.0"},
+				{Type: "cargo", Name: "criterion", Version: "0.4"},
 			},
 			expectedIsWorkspace: false,
 		},
@@ -198,10 +198,10 @@ criterion = { version = "0.4" }
 			expectedProjectName: "inline-table-app",
 			expectedLicense:     "",
 			expectedDeps: []types.Dependency{
-				{Type: "cargo", Name: "serde", Example: "1.0"},
-				{Type: "cargo", Name: "tokio", Example: "1.0"},
-				{Type: "cargo", Name: "tracing", Example: "0.1"},
-				{Type: "cargo", Name: "criterion", Example: "0.4"},
+				{Type: "cargo", Name: "serde", Version: "1.0"},
+				{Type: "cargo", Name: "tokio", Version: "1.0"},
+				{Type: "cargo", Name: "tracing", Version: "0.1"},
+				{Type: "cargo", Name: "criterion", Version: "0.4"},
 			},
 			expectedIsWorkspace: false,
 		},
@@ -234,7 +234,7 @@ criterion = { version = "0.4" }
 				actualDep, exists := actualDepMap[name]
 				require.True(t, exists, "Expected dependency %s not found", name)
 				assert.Equal(t, expectedDep.Type, actualDep.Type, "Should have correct type for %s", name)
-				assert.Equal(t, expectedDep.Example, actualDep.Example, "Should have correct version for %s", name)
+				assert.Equal(t, expectedDep.Version, actualDep.Version, "Should have correct version for %s", name)
 			}
 		})
 	}
@@ -316,11 +316,11 @@ simple-dep = "1.0"
 			depMap[dep.Name] = dep
 		}
 
-		assert.Equal(t, "git:https://github.com/user/repo.git#develop", depMap["git-dep-branch"].Example)
-		assert.Equal(t, "git:https://github.com/user/repo2.git#v1.0.0", depMap["git-dep-tag"].Example)
-		assert.Equal(t, "git:https://github.com/user/repo3.git#a1b2c3d", depMap["git-dep-rev"].Example)
-		assert.Equal(t, "path:./local-crate", depMap["local-dep"].Example)
-		assert.Equal(t, "1.0", depMap["simple-dep"].Example)
+		assert.Equal(t, "git:https://github.com/user/repo.git#develop", depMap["git-dep-branch"].Version)
+		assert.Equal(t, "git:https://github.com/user/repo2.git#v1.0.0", depMap["git-dep-tag"].Version)
+		assert.Equal(t, "git:https://github.com/user/repo3.git#a1b2c3d", depMap["git-dep-rev"].Version)
+		assert.Equal(t, "path:./local-crate", depMap["local-dep"].Version)
+		assert.Equal(t, "1.0", depMap["simple-dep"].Version)
 	})
 }
 
@@ -377,19 +377,19 @@ tonic-build = "0.8"
 
 	// Check production dependencies
 	assert.Equal(t, "cargo", depMap["axum"].Type)
-	assert.Equal(t, "0.6", depMap["axum"].Example)
+	assert.Equal(t, "0.6", depMap["axum"].Version)
 	assert.Equal(t, "cargo", depMap["tokio"].Type)
-	assert.Equal(t, "1.0", depMap["tokio"].Example)
+	assert.Equal(t, "1.0", depMap["tokio"].Version)
 	assert.Equal(t, "cargo", depMap["sqlx"].Type)
-	assert.Equal(t, "0.7", depMap["sqlx"].Example)
+	assert.Equal(t, "0.7", depMap["sqlx"].Version)
 
 	// Check dev dependencies
 	assert.Equal(t, "cargo", depMap["criterion"].Type)
-	assert.Contains(t, depMap["criterion"].Example, "0.4")
+	assert.Contains(t, depMap["criterion"].Version, "0.4")
 
 	// Check build dependencies
 	assert.Equal(t, "cargo", depMap["tonic-build"].Type)
-	assert.Equal(t, "0.8", depMap["tonic-build"].Example)
+	assert.Equal(t, "0.8", depMap["tonic-build"].Version)
 
 	// Test realistic workspace setup
 	workspaceCargo := `[workspace]
@@ -430,11 +430,11 @@ publish-regex = "^crate-.*"
 	}
 
 	assert.Equal(t, "cargo", depMap["tokio"].Type)
-	assert.Equal(t, "1.0", depMap["tokio"].Example)
+	assert.Equal(t, "1.0", depMap["tokio"].Version)
 	assert.Equal(t, "cargo", depMap["serde"].Type)
-	assert.Equal(t, "1.0", depMap["serde"].Example)
+	assert.Equal(t, "1.0", depMap["serde"].Version)
 	assert.Equal(t, "cargo", depMap["anyhow"].Type)
-	assert.Equal(t, "1.0", depMap["anyhow"].Example)
+	assert.Equal(t, "1.0", depMap["anyhow"].Version)
 }
 
 func TestRustParser_ErrorHandling(t *testing.T) {

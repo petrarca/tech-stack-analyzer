@@ -44,7 +44,7 @@ func ParsePnpmLock(content []byte) []types.Dependency {
 		dependencies = append(dependencies, types.Dependency{
 			Type:       "npm",
 			Name:       name,
-			Example:    dep.Version,
+			Version:    dep.Version,
 			SourceFile: "pnpm-lock.yaml",
 		})
 	}
@@ -54,7 +54,7 @@ func ParsePnpmLock(content []byte) []types.Dependency {
 		dependencies = append(dependencies, types.Dependency{
 			Type:       "npm",
 			Name:       name,
-			Example:    dep.Version,
+			Version:    dep.Version,
 			SourceFile: "pnpm-lock.yaml",
 		})
 	}

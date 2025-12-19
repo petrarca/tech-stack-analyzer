@@ -55,9 +55,10 @@ func (p *PythonParser) ParseRequirementsTxt(content string) []types.Dependency {
 
 		if name != "" {
 			dependencies = append(dependencies, types.Dependency{
-				Type:    "python",
-				Name:    name,
-				Example: version,
+				Type:       "python",
+				Name:       name,
+				Version:    version,
+				SourceFile: "pyproject.toml",
 			})
 		}
 	}
@@ -280,9 +281,10 @@ func (p *pyprojectParser) parseDependencyLine(line string) {
 
 	if name != "" {
 		p.dependencies = append(p.dependencies, types.Dependency{
-			Type:    "python",
-			Name:    name,
-			Example: version,
+			Type:       "python",
+			Name:       name,
+			Version:    version,
+			SourceFile: "requirements.txt",
 		})
 	}
 }

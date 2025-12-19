@@ -102,7 +102,7 @@ func (p *MavenParser) ParsePomXMLWithProvider(content string, pomDir string, pro
 			dependencies = append(dependencies, types.Dependency{
 				Type:    "maven",
 				Name:    dep.GroupId + ":" + dep.ArtifactId,
-				Example: p.resolveVersion(dep.Version, properties),
+				Version: p.resolveVersion(dep.Version, properties),
 			})
 		}
 	}

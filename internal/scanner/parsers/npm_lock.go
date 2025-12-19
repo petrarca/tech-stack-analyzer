@@ -51,7 +51,7 @@ func ParsePackageLock(content []byte) []types.Dependency {
 			dependencies = append(dependencies, types.Dependency{
 				Type:       "npm",
 				Name:       name,
-				Example:    pkg.Version,
+				Version:    pkg.Version,
 				SourceFile: "package-lock.json",
 			})
 		}

@@ -145,8 +145,8 @@ func TestParseYarnLock(t *testing.T) {
 					t.Errorf("ParseYarnLock() dep.SourceFile = %s, want yarn.lock", dep.SourceFile)
 				}
 				if expectedVersion, ok := tt.wantDeps[dep.Name]; ok {
-					if dep.Example != expectedVersion {
-						t.Errorf("ParseYarnLock() dep %s version = %s, want %s", dep.Name, dep.Example, expectedVersion)
+					if dep.Version != expectedVersion {
+						t.Errorf("ParseYarnLock() dep %s version = %s, want %s", dep.Name, dep.Version, expectedVersion)
 					}
 				}
 			}

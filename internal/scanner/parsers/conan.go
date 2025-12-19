@@ -56,7 +56,7 @@ func (p *ConanParser) ParseConanDependency(depString string) types.Dependency {
 		version := strings.Join(parts[1:], "/")
 		return types.Dependency{
 			Name:    name,
-			Example: version,
+			Version: version,
 			Type:    "conan",
 		}
 	}
@@ -64,7 +64,7 @@ func (p *ConanParser) ParseConanDependency(depString string) types.Dependency {
 	// Fallback if no version found
 	return types.Dependency{
 		Name:    depString,
-		Example: "",
+		Version: "",
 		Type:    "conan",
 	}
 }

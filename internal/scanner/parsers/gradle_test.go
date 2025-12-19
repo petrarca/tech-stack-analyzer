@@ -40,14 +40,14 @@ dependencies {
 	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
 }`,
 			expectedDeps: []types.Dependency{
-				{Type: "gradle", Name: "org.springframework.boot:spring-boot-starter-web", Example: "2.7.0"},
-				{Type: "gradle", Name: "org.springframework.boot:spring-boot-starter-data-jpa", Example: "2.7.0"},
-				{Type: "gradle", Name: "junit:junit", Example: "4.13.2"},
-				{Type: "gradle", Name: "org.mockito:mockito-core", Example: "4.6.1"},
-				{Type: "gradle", Name: "com.google.guava:guava", Example: "31.1-jre"},
-				{Type: "gradle", Name: "org.projectlombok:lombok", Example: "1.18.24"},
-				{Type: "gradle", Name: "mysql:mysql-connector-java", Example: "8.0.29"},
-				{Type: "gradle", Name: "org.junit.jupiter:junit-jupiter-engine", Example: "5.8.2"},
+				{Type: "gradle", Name: "org.springframework.boot:spring-boot-starter-web", Version: "2.7.0"},
+				{Type: "gradle", Name: "org.springframework.boot:spring-boot-starter-data-jpa", Version: "2.7.0"},
+				{Type: "gradle", Name: "junit:junit", Version: "4.13.2"},
+				{Type: "gradle", Name: "org.mockito:mockito-core", Version: "4.6.1"},
+				{Type: "gradle", Name: "com.google.guava:guava", Version: "31.1-jre"},
+				{Type: "gradle", Name: "org.projectlombok:lombok", Version: "1.18.24"},
+				{Type: "gradle", Name: "mysql:mysql-connector-java", Version: "8.0.29"},
+				{Type: "gradle", Name: "org.junit.jupiter:junit-jupiter-engine", Version: "5.8.2"},
 			},
 		},
 		{
@@ -58,9 +58,9 @@ dependencies {
 	testImplementation("org.mockito:mockito-core:4.6.1")
 }`,
 			expectedDeps: []types.Dependency{
-				{Type: "gradle", Name: "org.springframework.boot:spring-boot-starter-web", Example: "2.7.0"},
-				{Type: "gradle", Name: "junit:junit", Example: "4.13.2"},
-				{Type: "gradle", Name: "org.mockito:mockito-core", Example: "4.6.1"},
+				{Type: "gradle", Name: "org.springframework.boot:spring-boot-starter-web", Version: "2.7.0"},
+				{Type: "gradle", Name: "junit:junit", Version: "4.13.2"},
+				{Type: "gradle", Name: "org.mockito:mockito-core", Version: "4.6.1"},
 			},
 		},
 		{
@@ -71,9 +71,9 @@ dependencies {
 	testImplementation 'org.mockito:mockito-core'
 }`,
 			expectedDeps: []types.Dependency{
-				{Type: "gradle", Name: "org.springframework.boot:spring-boot-starter-web", Example: "latest"},
-				{Type: "gradle", Name: "junit:junit", Example: "latest"},
-				{Type: "gradle", Name: "org.mockito:mockito-core", Example: "latest"},
+				{Type: "gradle", Name: "org.springframework.boot:spring-boot-starter-web", Version: "latest"},
+				{Type: "gradle", Name: "junit:junit", Version: "latest"},
+				{Type: "gradle", Name: "org.mockito:mockito-core", Version: "latest"},
 			},
 		},
 		{
@@ -91,10 +91,10 @@ dependencies {
 	api 'com.google.guava:guava:31.1-jre'
 }`,
 			expectedDeps: []types.Dependency{
-				{Type: "gradle", Name: "org.springframework.boot:spring-boot-starter-web", Example: "2.7.0"},
-				{Type: "gradle", Name: "org.mockito:mockito-core", Example: "4.6.1"},
-				{Type: "gradle", Name: "junit:junit", Example: "4.13.2"},
-				{Type: "gradle", Name: "com.google.guava:guava", Example: "31.1-jre"},
+				{Type: "gradle", Name: "org.springframework.boot:spring-boot-starter-web", Version: "2.7.0"},
+				{Type: "gradle", Name: "org.mockito:mockito-core", Version: "4.6.1"},
+				{Type: "gradle", Name: "junit:junit", Version: "4.13.2"},
+				{Type: "gradle", Name: "com.google.guava:guava", Version: "31.1-jre"},
 			},
 		},
 		{
@@ -133,8 +133,8 @@ dependencies {
 	testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
 }`,
 			expectedDeps: []types.Dependency{
-				{Type: "gradle", Name: "org.springframework.boot:spring-boot-starter-web", Example: "2.7.0"},
-				{Type: "gradle", Name: "org.junit.jupiter:junit-jupiter", Example: "5.8.2"},
+				{Type: "gradle", Name: "org.springframework.boot:spring-boot-starter-web", Version: "2.7.0"},
+				{Type: "gradle", Name: "org.junit.jupiter:junit-jupiter", Version: "5.8.2"},
 			},
 		},
 		{
@@ -145,8 +145,8 @@ dependencies {
 	testAnnotationProcessor 'org.projectlombok:lombok:1.18.24'
 }`,
 			expectedDeps: []types.Dependency{
-				{Type: "gradle", Name: "org.springframework.boot:spring-boot-starter-web", Example: "2.7.0"},
-				{Type: "gradle", Name: "org.projectlombok:lombok", Example: "1.18.24"},
+				{Type: "gradle", Name: "org.springframework.boot:spring-boot-starter-web", Version: "2.7.0"},
+				{Type: "gradle", Name: "org.projectlombok:lombok", Version: "1.18.24"},
 			},
 		},
 	}
@@ -160,7 +160,7 @@ dependencies {
 			for i, expectedDep := range tt.expectedDeps {
 				assert.Equal(t, expectedDep.Type, result[i].Type, "Should have correct type")
 				assert.Equal(t, expectedDep.Name, result[i].Name, "Should have correct name")
-				assert.Equal(t, expectedDep.Example, result[i].Example, "Should have correct version")
+				assert.Equal(t, expectedDep.Version, result[i].Version, "Should have correct version")
 			}
 		})
 	}
@@ -205,7 +205,7 @@ dependencies {
 	}
 
 	assert.Equal(t, "gradle", gradleDepMap["org.postgresql:postgresql"].Type)
-	assert.Equal(t, "42.3.3", gradleDepMap["org.postgresql:postgresql"].Example)
+	assert.Equal(t, "42.3.3", gradleDepMap["org.postgresql:postgresql"].Version)
 	assert.Equal(t, "gradle", gradleDepMap["org.projectlombok:lombok"].Type)
-	assert.Equal(t, "1.18.24", gradleDepMap["org.projectlombok:lombok"].Example)
+	assert.Equal(t, "1.18.24", gradleDepMap["org.projectlombok:lombok"].Version)
 }
