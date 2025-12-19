@@ -2,11 +2,11 @@
   "metadata": {
     "format": "full",
     "source": "tech-stack-scanner",
-    "timestamp": "2025-12-19T15:19:06Z",
+    "timestamp": "2025-12-19T18:56:43Z",
     "scan_path": "/path/to/your/project",
     "specVersion": "0.1",
-    "duration_ms": 1267,
-    "file_count": 172,
+    "duration_ms": 1404,
+    "file_count": 177,
     "component_count": 4,
     "language_count": 9,
     "tech_count": 1,
@@ -14,7 +14,7 @@
   },
   "git": {
     "branch": "main",
-    "commit": "27e8285",
+    "commit": "8047ff7",
     "is_dirty": true,
     "remote_url": "https://github.com/petrarca/tech-stack-analyzer.git"
   },
@@ -51,11 +51,11 @@
       ],
       "languages": {
         "GCC Machine Description": 1,
-        "Go": 138,
+        "Go": 142,
         "Go Checksums": 1,
         "Go Module": 1,
         "Ignore List": 1,
-        "JSON": 7,
+        "JSON": 8,
         "Markdown": 12,
         "Text": 1,
         "YAML": 8
@@ -189,29 +189,29 @@
   "edges": [],
   "code_stats": {
     "total": {
-      "lines": 57688,
-      "code": 49298,
-      "comments": 2800,
-      "blanks": 5590,
-      "complexity": 3031,
-      "files": 168
+      "lines": 58613,
+      "code": 50082,
+      "comments": 2853,
+      "blanks": 5678,
+      "complexity": 3170,
+      "files": 173
     },
     "by_type": {
       "programming": {
         "total": {
-          "lines": 30119,
-          "code": 23142,
-          "comments": 2717,
-          "blanks": 4260,
-          "complexity": 3031,
-          "files": 140
+          "lines": 30882,
+          "code": 23764,
+          "comments": 2770,
+          "blanks": 4348,
+          "complexity": 3170,
+          "files": 144
         },
         "metrics": {
           "comment_ratio": 0.12,
           "code_density": 0.77,
-          "avg_file_size": 215.14,
-          "complexity_per_kloc": 130.97,
-          "avg_complexity": 21.65,
+          "avg_file_size": 214.46,
+          "complexity_per_kloc": 133.4,
+          "avg_complexity": 22.01,
           "primary_languages": [
             {
               "language": "Go",
@@ -225,12 +225,12 @@
       },
       "data": {
         "total": {
-          "lines": 22066,
-          "code": 21487,
+          "lines": 22228,
+          "code": 21649,
           "comments": 83,
           "blanks": 90,
           "complexity": 0,
-          "files": 18
+          "files": 19
         },
         "languages": [
           "JSON",
@@ -257,31 +257,31 @@
     },
     "analyzed": {
       "total": {
-        "lines": 57688,
-        "code": 49298,
-        "comments": 2800,
-        "blanks": 5590,
-        "complexity": 3031,
-        "files": 168
+        "lines": 58613,
+        "code": 50082,
+        "comments": 2853,
+        "blanks": 5678,
+        "complexity": 3170,
+        "files": 173
       },
       "by_language": [
         {
           "language": "Go",
-          "lines": 30119,
-          "code": 23142,
-          "comments": 2717,
-          "blanks": 4260,
-          "complexity": 3031,
-          "files": 140
+          "lines": 30882,
+          "code": 23764,
+          "comments": 2770,
+          "blanks": 4348,
+          "complexity": 3170,
+          "files": 144
         },
         {
           "language": "JSON",
-          "lines": 11986,
-          "code": 11986,
+          "lines": 12148,
+          "code": 12148,
           "comments": 0,
           "blanks": 0,
           "complexity": 0,
-          "files": 7
+          "files": 8
         },
         {
           "language": "YAML",

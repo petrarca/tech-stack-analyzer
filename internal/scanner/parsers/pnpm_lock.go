@@ -39,23 +39,25 @@ func ParsePnpmLock(content []byte) []types.Dependency {
 		return nil
 	}
 
-	// Extract direct dependencies
+	// Extract direct dependencies with prod scope
 	for name, dep := range rootImporter.Dependencies {
 		dependencies = append(dependencies, types.Dependency{
 			Type:       "npm",
 			Name:       name,
 			Version:    dep.Version,
 			SourceFile: "pnpm-lock.yaml",
+			Scope:      types.ScopeProd,
 		})
 	}
 
-	// Extract dev dependencies
+	// Extract dev dependencies with dev scope
 	for name, dep := range rootImporter.DevDependencies {
 		dependencies = append(dependencies, types.Dependency{
 			Type:       "npm",
 			Name:       name,
 			Version:    dep.Version,
 			SourceFile: "pnpm-lock.yaml",
+			Scope:      types.ScopeDev,
 		})
 	}
 

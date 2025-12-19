@@ -9,19 +9,20 @@ import (
 
 // ParseYarnLock parses yarn.lock content and returns dependencies with resolved versions
 // Note: yarn.lock doesn't distinguish direct vs transitive deps, so we need package.json
-// to filter. This function returns only direct dependencies.
+// to filter. This function returns only direct dependencies with scope information.
 func ParseYarnLock(lockContent []byte, packageJSON *PackageJSON) []types.Dependency {
 	if packageJSON == nil {
 		return nil
 	}
 
-	// Build set of direct dependency names from package.json
-	directDeps := make(map[string]bool)
+	// Build maps of direct dependency names with their scopes from package.json
+	prodDeps := make(map[string]bool)
+	devDeps := make(map[string]bool)
 	for name := range packageJSON.Dependencies {
-		directDeps[name] = true
+		prodDeps[name] = true
 	}
 	for name := range packageJSON.DevDependencies {
-		directDeps[name] = true
+		devDeps[name] = true
 	}
 
 	var dependencies []types.Dependency
@@ -49,16 +50,27 @@ func ParseYarnLock(lockContent []byte, packageJSON *PackageJSON) []types.Depende
 			if matches := versionPattern.FindStringSubmatch(line); len(matches) > 1 {
 				version := matches[1]
 
-				// Only include if it's a direct dependency
-				if directDeps[currentPackage] {
+				// Determine scope and include if it's a direct dependency
+				var scope string
+				var isDirect bool
+				if prodDeps[currentPackage] {
+					scope = types.ScopeProd
+					isDirect = true
+					delete(prodDeps, currentPackage)
+				} else if devDeps[currentPackage] {
+					scope = types.ScopeDev
+					isDirect = true
+					delete(devDeps, currentPackage)
+				}
+
+				if isDirect {
 					dependencies = append(dependencies, types.Dependency{
 						Type:       "npm",
 						Name:       currentPackage,
 						Version:    version,
 						SourceFile: "yarn.lock",
+						Scope:      scope,
 					})
-					// Remove from map to avoid duplicates (same package, different version ranges)
-					delete(directDeps, currentPackage)
 				}
 				currentPackage = ""
 			}

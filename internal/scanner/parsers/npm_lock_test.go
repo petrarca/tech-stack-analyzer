@@ -2,6 +2,8 @@ package parsers
 
 import (
 	"testing"
+
+	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
 
 func TestParsePackageLock(t *testing.T) {
@@ -81,7 +83,7 @@ func TestParsePackageLock(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			deps := ParsePackageLock([]byte(tt.content))
+			deps := ParsePackageLock([]byte(tt.content), nil)
 
 			if len(deps) != tt.expected {
 				t.Errorf("ParsePackageLock() got %d dependencies, want %d", len(deps), tt.expected)
@@ -93,6 +95,9 @@ func TestParsePackageLock(t *testing.T) {
 				}
 				if dep.SourceFile != "package-lock.json" {
 					t.Errorf("ParsePackageLock() dep.SourceFile = %s, want package-lock.json", dep.SourceFile)
+				}
+				if dep.Scope != types.ScopeProd {
+					t.Errorf("ParsePackageLock() dep.Scope = %s, want %s", dep.Scope, types.ScopeProd)
 				}
 				if expectedVersion, ok := tt.wantDeps[dep.Name]; ok {
 					if dep.Version != expectedVersion {

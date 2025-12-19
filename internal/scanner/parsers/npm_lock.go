@@ -22,10 +22,23 @@ type PackageInfo struct {
 }
 
 // ParsePackageLock parses package-lock.json content and returns direct dependencies with resolved versions
-func ParsePackageLock(content []byte) []types.Dependency {
+// Note: package-lock.json doesn't contain scope information, so we need package.json to determine scope
+func ParsePackageLock(content []byte, packageJSON *PackageJSON) []types.Dependency {
 	var lockfile PackageLockJSON
 	if err := json.Unmarshal(content, &lockfile); err != nil {
 		return nil
+	}
+
+	// Build maps of direct dependency names with their scopes from package.json
+	prodDeps := make(map[string]bool)
+	devDeps := make(map[string]bool)
+	if packageJSON != nil {
+		for name := range packageJSON.Dependencies {
+			prodDeps[name] = true
+		}
+		for name := range packageJSON.DevDependencies {
+			devDeps[name] = true
+		}
 	}
 
 	var dependencies []types.Dependency
@@ -48,11 +61,23 @@ func ParsePackageLock(content []byte) []types.Dependency {
 		// Extract package name from path (e.g., "express" from "node_modules/express")
 		name := extractNameFromNodeModulesPath(path)
 		if name != "" {
+			// Determine scope based on package.json
+			var scope string
+			if prodDeps[name] {
+				scope = types.ScopeProd
+			} else if devDeps[name] {
+				scope = types.ScopeDev
+			} else {
+				// If not found in package.json, default to prod (likely a transitive dep that became direct)
+				scope = types.ScopeProd
+			}
+
 			dependencies = append(dependencies, types.Dependency{
 				Type:       "npm",
 				Name:       name,
 				Version:    pkg.Version,
 				SourceFile: "package-lock.json",
+				Scope:      scope,
 			})
 		}
 	}

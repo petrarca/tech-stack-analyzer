@@ -13,9 +13,9 @@
     "definitions": {
         "dependency": {
             "type": "array",
-            "description": "Dependency in array format for compact serialization",
+            "description": "Dependency in array format [type, name, version, scope?, source?]. Format: 3 elements = no scope/source, 4 elements = has scope (no source), 5 elements = has source (scope may be '')",
             "minItems": 3,
-            "maxItems": 4,
+            "maxItems": 5,
             "items": [
                 {
                     "type": "string",
@@ -31,16 +31,21 @@
                 },
                 {
                     "type": "string",
-                    "description": "Source file (optional - only included when needed for clarity, e.g., 'pyproject.toml', 'package-lock.json')"
+                    "description": "Dependency scope ('prod', 'dev', 'test', 'build', 'optional', 'peer'). May be empty string '' in 5-element format when scope is unknown.",
+                    "enum": ["prod", "dev", "test", "build", "optional", "peer", ""]
+                },
+                {
+                    "type": "string",
+                    "description": "Source file (e.g., 'pyproject.toml', 'package-lock.json'). Only present as 5th element."
                 }
             ],
             "examples": [
                 ["golang", "github.com/user/module", "v1.2.3"],
-                ["npm", "package", "^1.2.3"],
-                ["python", "requests", "2.31.0", "pyproject.toml"],
-                ["npm", "package", "1.2.3.4", "package-lock.json"],
-                ["delphi", "Vcl", ""],
-                ["conan", "package", ""]
+                ["maven", "junit:junit", "4.13.2", "dev"],
+                ["gradle", "org.projectlombok:lombok", "1.18.24", "build"],
+                ["npm", "lodash", "4.17.21", "prod", "package-lock.json"],
+                ["npm", "jest", "^29.0.0", "dev", "package.json"],
+                ["python", "requests", "2.31.0", "", "pyproject.toml"]
             ]
         },
         "license": {

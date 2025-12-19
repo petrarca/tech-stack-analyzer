@@ -9,7 +9,7 @@ import (
 // ParseCargoLock parses Cargo.lock content and returns direct dependencies with resolved versions
 // Direct dependencies are identified by cross-referencing with Cargo.toml
 func ParseCargoLock(lockContent []byte, cargoTomlContent string) []types.Dependency {
-	// Extract direct dependency names from Cargo.toml
+	// Extract direct dependency names and scopes from Cargo.toml
 	directDeps := extractDirectDepsFromCargoToml(cargoTomlContent)
 	if len(directDeps) == 0 {
 		return nil
@@ -21,12 +21,13 @@ func ParseCargoLock(lockContent []byte, cargoTomlContent string) []types.Depende
 	// Build dependency list with resolved versions for direct deps only
 	var dependencies []types.Dependency
 	for name, version := range packages {
-		if directDeps[name] {
+		if scope, exists := directDeps[name]; exists {
 			dependencies = append(dependencies, types.Dependency{
 				Type:       "cargo",
 				Name:       name,
 				Version:    version,
 				SourceFile: "Cargo.lock",
+				Scope:      scope,
 			})
 		}
 	}
@@ -34,9 +35,9 @@ func ParseCargoLock(lockContent []byte, cargoTomlContent string) []types.Depende
 	return dependencies
 }
 
-// extractDirectDepsFromCargoToml extracts direct dependency names from Cargo.toml
-func extractDirectDepsFromCargoToml(content string) map[string]bool {
-	deps := make(map[string]bool)
+// extractDirectDepsFromCargoToml extracts direct dependency names and scopes from Cargo.toml
+func extractDirectDepsFromCargoToml(content string) map[string]string {
+	deps := make(map[string]string) // name -> scope
 	lines := strings.Split(content, "\n")
 	state := &cargoTomlParseState{}
 
@@ -45,7 +46,15 @@ func extractDirectDepsFromCargoToml(content string) map[string]bool {
 		state = updateCargoTomlState(state, trimmed)
 
 		if name := extractCargoDepName(trimmed, state); name != "" {
-			deps[name] = true
+			var scope string
+			if state.inDependencies {
+				scope = types.ScopeProd
+			} else if state.inDevDependencies {
+				scope = types.ScopeDev
+			} else if state.inBuildDependencies {
+				scope = types.ScopeBuild
+			}
+			deps[name] = scope
 		}
 	}
 

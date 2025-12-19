@@ -9,7 +9,7 @@ import (
 // ParsePoetryLock parses poetry.lock content and returns direct dependencies with resolved versions
 // Direct dependencies are identified by cross-referencing with pyproject.toml
 func ParsePoetryLock(lockContent []byte, pyprojectContent string) []types.Dependency {
-	// Extract direct dependency names from pyproject.toml
+	// Extract direct dependency names and scopes from pyproject.toml
 	directDeps := extractDirectDepsFromPyproject(pyprojectContent)
 	if len(directDeps) == 0 {
 		return nil
@@ -23,12 +23,13 @@ func ParsePoetryLock(lockContent []byte, pyprojectContent string) []types.Depend
 	for name, version := range packages {
 		// Normalize name for comparison (poetry uses lowercase with hyphens)
 		normalizedName := normalizePackageName(name)
-		if directDeps[normalizedName] {
+		if scope, exists := directDeps[normalizedName]; exists {
 			dependencies = append(dependencies, types.Dependency{
 				Type:       "python",
 				Name:       name,
 				Version:    version,
 				SourceFile: "poetry.lock",
+				Scope:      scope,
 			})
 		}
 	}
@@ -43,9 +44,9 @@ type pyprojectParseState struct {
 	inArrayDeps      bool
 }
 
-// extractDirectDepsFromPyproject extracts direct dependency names from pyproject.toml
-func extractDirectDepsFromPyproject(content string) map[string]bool {
-	deps := make(map[string]bool)
+// extractDirectDepsFromPyproject extracts direct dependency names and scopes from pyproject.toml
+func extractDirectDepsFromPyproject(content string) map[string]string {
+	deps := make(map[string]string) // name -> scope
 	lines := strings.Split(content, "\n")
 	state := &pyprojectParseState{}
 
@@ -54,7 +55,15 @@ func extractDirectDepsFromPyproject(content string) map[string]bool {
 		state = updatePyprojectState(state, trimmed)
 
 		if name := extractDepFromLine(trimmed, state); name != "" {
-			deps[normalizePackageName(name)] = true
+			var scope string
+			if state.inDepsSection {
+				scope = types.ScopeProd
+			} else if state.inDevDepsSection {
+				scope = types.ScopeDev
+			} else if state.inArrayDeps {
+				scope = types.ScopeOptional
+			}
+			deps[normalizePackageName(name)] = scope
 		}
 	}
 

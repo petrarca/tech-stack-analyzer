@@ -5,6 +5,16 @@ import (
 	"regexp"
 )
 
+// Dependency scope constants
+const (
+	ScopeProd     = "prod"
+	ScopeDev      = "dev"
+	ScopeTest     = "test"
+	ScopeBuild    = "build"
+	ScopeOptional = "optional"
+	ScopePeer     = "peer"
+)
+
 // Rule represents a technology detection rule
 type Rule struct {
 	Tech          string                 `yaml:"tech" json:"tech"`
@@ -27,15 +37,23 @@ type Dependency struct {
 	Name       string `yaml:"name" json:"name"`
 	Version    string `yaml:"version,omitempty" json:"version,omitempty"`
 	SourceFile string `yaml:"source_file,omitempty" json:"source_file,omitempty"`
+	Scope      string `yaml:"scope,omitempty" json:"scope,omitempty"`
 }
 
-// MarshalJSON converts Dependency struct to array format [type, name, version, source_file] to match TypeScript
+// MarshalJSON converts Dependency struct to array format [type, name, version, scope?, source?]
+// Format rules:
+// - 3 elements: [type, name, version] - no scope, no source
+// - 4 elements: [type, name, version, scope] - has scope, no source
+// - 5 elements: [type, name, version, scope, source] - has source (scope may be "" if unknown)
 func (d Dependency) MarshalJSON() ([]byte, error) {
 	if d.SourceFile != "" {
-		// New format with source file
-		return json.Marshal([]string{d.Type, d.Name, d.Version, d.SourceFile})
+		// 5 elements: has source (scope may be empty)
+		return json.Marshal([]string{d.Type, d.Name, d.Version, d.Scope, d.SourceFile})
+	} else if d.Scope != "" {
+		// 4 elements: has scope, no source
+		return json.Marshal([]string{d.Type, d.Name, d.Version, d.Scope})
 	}
-	// Backward compatibility - old format without source file
+	// 3 elements: no scope, no source
 	return json.Marshal([]string{d.Type, d.Name, d.Version})
 }
 

@@ -7,6 +7,12 @@ import (
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
 
+// Pre-compiled regexes for Gradle parsing performance
+var (
+	gradleDepTypeRegex = regexp.MustCompile(`^\s*(testImplementation|testRuntimeOnly|testCompileOnly|testApi|compileOnly|annotationProcessor|runtimeOnly|implementation|compile|api)`)
+	gradleQuotedRegex  = regexp.MustCompile(`['"]([^'"]+)['"]`)
+)
+
 // GradleParser handles Gradle-specific file parsing (build.gradle, build.gradle.kts)
 type GradleParser struct{}
 
@@ -114,7 +120,9 @@ func (p *GradleParser) isPotentialDependencyLine(line string) bool {
 		strings.Contains(line, "compileOnly") ||
 		strings.Contains(line, "annotationProcessor") ||
 		strings.Contains(line, "testImplementation") ||
-		strings.Contains(line, "testRuntimeOnly")
+		strings.Contains(line, "testRuntimeOnly") ||
+		strings.Contains(line, "testCompileOnly") ||
+		strings.Contains(line, "testApi")
 
 	hasQuotedContent := (strings.Contains(line, "'") || strings.Contains(line, `"`)) && strings.Contains(line, ":")
 
@@ -123,22 +131,15 @@ func (p *GradleParser) isPotentialDependencyLine(line string) bool {
 
 // parseGradleDependency parses a single Gradle dependency line
 func (p *GradleParser) parseGradleDependency(line string) *types.Dependency {
-	// Supported dependency types
-	depTypes := []string{
-		"implementation", "compile", "testImplementation", "api",
-		"compileOnly", "runtimeOnly", "testRuntimeOnly", "annotationProcessor",
-	}
-
-	// Extract dependency type
-	depTypeRegex := regexp.MustCompile(`^\s*(` + strings.Join(depTypes, "|") + `)`)
-	depTypeMatch := depTypeRegex.FindStringSubmatch(line)
+	// Extract dependency type using pre-compiled regex
+	depTypeMatch := gradleDepTypeRegex.FindStringSubmatch(line)
 	if len(depTypeMatch) < 2 {
 		return nil
 	}
+	depType := depTypeMatch[1]
 
-	// Extract the quoted dependency string
-	quotedRegex := regexp.MustCompile(`['"]([^'"]+)['"]`)
-	quotedMatch := quotedRegex.FindStringSubmatch(line)
+	// Extract the quoted dependency string using pre-compiled regex
+	quotedMatch := gradleQuotedRegex.FindStringSubmatch(line)
 	if len(quotedMatch) < 2 {
 		return nil
 	}
@@ -160,9 +161,23 @@ func (p *GradleParser) parseGradleDependency(line string) *types.Dependency {
 
 	dependencyName := group + ":" + artifact
 
+	// Map Gradle dependency types to scope constants
+	var scope string
+	switch depType {
+	case "testImplementation", "testRuntimeOnly", "testCompileOnly", "testApi":
+		scope = types.ScopeDev
+	case "compileOnly", "annotationProcessor":
+		scope = types.ScopeBuild
+	case "implementation", "compile", "api", "runtimeOnly":
+		scope = types.ScopeProd
+	default:
+		scope = types.ScopeProd
+	}
+
 	return &types.Dependency{
 		Type:    "gradle",
 		Name:    dependencyName,
 		Version: version,
+		Scope:   scope,
 	}
 }

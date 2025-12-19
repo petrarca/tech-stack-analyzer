@@ -36,6 +36,7 @@ type MavenDependency struct {
 	GroupId    string `xml:"groupId"`
 	ArtifactId string `xml:"artifactId"`
 	Version    string `xml:"version"`
+	Scope      string `xml:"scope,omitempty"`
 }
 
 // MavenParent represents the parent POM reference
@@ -103,11 +104,20 @@ func (p *MavenParser) ParsePomXMLWithProvider(content string, pomDir string, pro
 				Type:    "maven",
 				Name:    dep.GroupId + ":" + dep.ArtifactId,
 				Version: p.resolveVersion(dep.Version, properties),
+				Scope:   mapMavenScope(dep.Scope),
 			})
 		}
 	}
 
 	return dependencies
+}
+
+// mapMavenScope maps Maven scope to our scope constants
+func mapMavenScope(mavenScope string) string {
+	if mavenScope == "test" {
+		return types.ScopeDev
+	}
+	return types.ScopeProd
 }
 
 // addProjectCoordinates adds project.* and pom.* properties for the given coordinates

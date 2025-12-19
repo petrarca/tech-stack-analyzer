@@ -129,7 +129,16 @@ func (d *Detector) tryPackageLock(currentPath string, provider types.Provider) [
 	if err != nil || len(lockContent) == 0 {
 		return nil
 	}
-	return parsers.ParsePackageLock(lockContent)
+
+	// Read package.json to determine scope information
+	packageContent, err := provider.ReadFile(filepath.Join(currentPath, "package.json"))
+	var packageJSON *parsers.PackageJSON
+	if err == nil && len(packageContent) > 0 {
+		parser := parsers.NewNodeJSParser()
+		packageJSON, _ = parser.ParsePackageJSON(packageContent)
+	}
+
+	return parsers.ParsePackageLock(lockContent, packageJSON)
 }
 
 func (d *Detector) tryPnpmLock(currentPath string, provider types.Provider) []types.Dependency {
