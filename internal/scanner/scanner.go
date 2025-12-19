@@ -564,6 +564,9 @@ func (s *Scanner) recurse(payload *types.Payload, filePath string) error {
 		filteredFiles = append(filteredFiles, file)
 	}
 
+	// Start timing for folder file processing
+	s.progress.FolderFileProcessingStart(filePath)
+
 	// Apply rules to detect technologies (like TypeScript's ruleComponents loop)
 	// This might return a different context if a component was detected
 	ctx := s.applyRules(payload, filteredFiles, filePath)
@@ -588,6 +591,9 @@ func (s *Scanner) recurse(payload *types.Payload, filePath string) error {
 	// This adds file-based license detection (MIT, Apache-2.0, etc.) from LICENSE files
 	s.licenseDetector.AddLicensesToPayload(ctx, filePath)
 
+	// End timing for folder file processing
+	s.progress.FolderFileProcessingEnd(filePath)
+
 	// Process each file/directory (exactly like TypeScript's loop)
 	for _, file := range filteredFiles {
 		if file.Type == "file" {
@@ -598,17 +604,14 @@ func (s *Scanner) recurse(payload *types.Payload, filePath string) error {
 		// Skip ignored directories (like TypeScript's IGNORED_DIVE_PATHS)
 		// Use stack-based gitignore checking for proper hierarchy
 		if s.shouldIgnoreDirectoryStackBased(file.Name, filePath) {
-			s.progress.Skipped(filepath.Join(filePath, file.Name), "excluded")
 			continue
 		}
 
-		// Recurse into subdirectory (like TypeScript's await ctx.recurse(provider, fp))
-		// Important: We recurse with the CURRENT CONTEXT (ctx), not the original payload
-		// This matches TypeScript's behavior where ctx might be a component
-		childPath := filepath.Join(filePath, file.Name)
-		err := s.recurse(ctx, childPath)
-		if err != nil {
-			return err
+		// Recurse into subdirectories
+		subPath := filepath.Join(filePath, file.Name)
+		if err := s.recurse(ctx, subPath); err != nil {
+			// Continue processing other directories even if one fails
+			continue
 		}
 	}
 

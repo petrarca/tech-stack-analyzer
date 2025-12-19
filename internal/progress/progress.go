@@ -17,7 +17,10 @@ const (
 	EventEnterDirectory
 	EventLeaveDirectory
 	EventComponentDetected
-	EventFileProcessing
+	EventFileProcessingStart
+	EventFileProcessingEnd
+	EventFolderFileProcessingStart
+	EventFolderFileProcessingEnd
 	EventSkipped
 	EventProgress
 	EventScanInitializing
@@ -56,13 +59,13 @@ type Handler interface {
 	Handle(event Event)
 }
 
-// Progress is the centralized verbose system
+// Progress manages scan progress reporting with different handlers
 type Progress struct {
 	enabled     bool
 	handler     Handler
 	withTimings bool
 	traceRules  bool
-	dirTimings  map[string]time.Time // Track directory entry times
+	dirTimings  map[string]time.Time // Track directory/folder timing start times
 }
 
 // New creates a new progress reporter
@@ -116,29 +119,19 @@ func (p *Progress) ScanComplete(files, dirs int, duration time.Duration) {
 	})
 }
 
+// EnterDirectory reports entering a directory (timing tracked via FolderFileProcessing events)
 func (p *Progress) EnterDirectory(path string) {
-	if p.withTimings {
-		p.dirTimings[path] = time.Now()
-	}
 	p.Report(Event{
-		Type:      EventEnterDirectory,
-		Path:      path,
-		Timestamp: time.Now(),
+		Type: EventEnterDirectory,
+		Path: path,
 	})
 }
 
+// LeaveDirectory reports leaving a directory
 func (p *Progress) LeaveDirectory(path string) {
-	var duration time.Duration
-	if p.withTimings {
-		if startTime, ok := p.dirTimings[path]; ok {
-			duration = time.Since(startTime)
-			delete(p.dirTimings, path)
-		}
-	}
 	p.Report(Event{
-		Type:     EventLeaveDirectory,
-		Path:     path,
-		Duration: duration,
+		Type: EventLeaveDirectory,
+		Path: path,
 	})
 }
 
@@ -153,9 +146,41 @@ func (p *Progress) ComponentDetected(name, tech, path string) {
 
 func (p *Progress) FileProcessing(path, info string) {
 	p.Report(Event{
-		Type: EventFileProcessing,
+		Type: EventFileProcessingStart,
 		Path: path,
 		Info: info,
+	})
+}
+
+func (p *Progress) FileProcessingEnd(path string) {
+	p.Report(Event{
+		Type: EventFileProcessingEnd,
+		Path: path,
+	})
+}
+
+func (p *Progress) FolderFileProcessingStart(path string) {
+	if p.withTimings {
+		p.dirTimings[path] = time.Now()
+	}
+	p.Report(Event{
+		Type: EventFolderFileProcessingStart,
+		Path: path,
+	})
+}
+
+func (p *Progress) FolderFileProcessingEnd(path string) {
+	var duration time.Duration
+	if p.withTimings {
+		if startTime, ok := p.dirTimings[path]; ok {
+			duration = time.Since(startTime)
+			delete(p.dirTimings, path)
+		}
+	}
+	p.Report(Event{
+		Type:     EventFolderFileProcessingEnd,
+		Path:     path,
+		Duration: duration,
 	})
 }
 
@@ -266,40 +291,78 @@ func (p *Progress) RuleResultWithPath(tech string, matched bool, reason string, 
 
 // SimpleHandler outputs events as simple lines (no tree)
 type SimpleHandler struct {
-	writer io.Writer
+	writer    io.Writer
+	timings   []TimingEntry // Track all timings for summary
+	rules     []RuleEntry   // Track all rule matches for summary
+	scanStart time.Time     // Track overall scan start time
 }
 
 func NewSimpleHandler(writer io.Writer) *SimpleHandler {
-	return &SimpleHandler{writer: writer}
+	return &SimpleHandler{
+		writer:  writer,
+		timings: make([]TimingEntry, 0),
+		rules:   make([]RuleEntry, 0),
+	}
 }
 
 func (h *SimpleHandler) Handle(event Event) {
 	switch event.Type {
 	case EventScanStart:
+		h.scanStart = time.Now()
 		fmt.Fprintf(h.writer, "[SCAN] Starting: %s\n", event.Path)
 		if event.Info != "" {
 			fmt.Fprintf(h.writer, "[SCAN] Excluding: %s\n", event.Info)
 		}
 
 	case EventScanComplete:
+		totalScanTime := time.Since(h.scanStart)
 		fmt.Fprintf(h.writer, "[SCAN] Completed: %d files, %d directories in %.1fs\n",
 			event.FileCount, event.DirCount, event.Duration.Seconds())
+
+		// Print concise summaries for verbose mode
+		h.printConciseTimingSummary(totalScanTime)
+		h.printConciseRuleSummary()
 
 	case EventEnterDirectory:
 		fmt.Fprintf(h.writer, "[DIR]  Entering: %s\n", event.Path)
 
 	case EventLeaveDirectory:
-		// Show timing if duration is set
+		// Show timing if duration is set and track it
 		if event.Duration > 0 {
-			fmt.Fprintf(h.writer, "[TIME] %s: %.2fs\n", event.Path, event.Duration.Seconds())
+			h.timings = append(h.timings, TimingEntry{
+				Path:     event.Path,
+				Duration: event.Duration,
+				Depth:    0,
+			})
+			seconds := event.Duration.Seconds()
+			fmt.Fprintf(h.writer, "[TIME] %s: %s %.2fs\n", event.Path, getTimingIcon(seconds), seconds)
 		}
 
 	case EventComponentDetected:
 		fmt.Fprintf(h.writer, "[COMP] Detected: %s (%s) at %s\n",
 			event.Name, event.Tech, event.Path)
 
-	case EventFileProcessing:
-		fmt.Fprintf(h.writer, "[FILE] Parsing: %s (%s)\n", event.Path, event.Info)
+	case EventFileProcessingStart:
+		fmt.Fprintf(h.writer, "[FILE] Processing: %s (%s)\n", event.Path, event.Info)
+
+	case EventFileProcessingEnd:
+		// File processing completed - no output needed for timing
+
+	case EventFolderFileProcessingStart:
+		// Start timing for folder file processing
+		fmt.Fprintf(h.writer, "[FOLDER] Starting file processing: %s\n", event.Path)
+
+	case EventFolderFileProcessingEnd:
+		// Track timing for individual folder file processing
+		if event.Duration > 0 {
+			h.timings = append(h.timings, TimingEntry{
+				Path:     event.Path,
+				Duration: event.Duration,
+				Depth:    0,
+			})
+			seconds := event.Duration.Seconds()
+			fmt.Fprintf(h.writer, "[FOLDER] %s: %s %.2fs\n", event.Path, getTimingIcon(seconds), seconds)
+		}
 
 	case EventSkipped:
 		fmt.Fprintf(h.writer, "[SKIP] Excluding: %s (%s)\n", event.Path, event.Reason)
@@ -336,6 +399,14 @@ func (h *SimpleHandler) Handle(event Event) {
 		}
 
 	case EventRuleResult:
+		// Track rule matches for summary
+		h.rules = append(h.rules, RuleEntry{
+			Tech:    event.Tech,
+			Reason:  event.Reason,
+			Path:    event.Path,
+			Matched: event.Matched,
+		})
+
 		if event.Matched {
 			if event.Path != "" {
 				fmt.Fprintf(h.writer, "[RULE] ✓ MATCHED: %s - %s (in %s)\n", event.Tech, event.Reason, event.Path)
@@ -350,14 +421,70 @@ func (h *SimpleHandler) Handle(event Event) {
 
 // TreeHandler outputs events with tree-like visualization
 type TreeHandler struct {
-	writer io.Writer
-	depth  int
+	writer    io.Writer
+	depth     int
+	timings   []TimingEntry // Track all timings for summary
+	rules     []RuleEntry   // Track all rule matches for summary
+	scanStart time.Time     // Track overall scan start time
+}
+
+// TimingEntry represents a directory timing for analysis
+type TimingEntry struct {
+	Path     string
+	Duration time.Duration
+	Depth    int
+}
+
+// RuleEntry represents a rule match for analysis
+type RuleEntry struct {
+	Tech    string
+	Reason  string
+	Path    string
+	Matched bool
+}
+
+// getTimingIcon returns the appropriate icon for a duration
+func getTimingIcon(seconds float64) string {
+	if seconds >= 10.0 {
+		return "🔴" // Slow
+	} else if seconds >= 1.0 {
+		return "🟡" // Medium
+	}
+	return "🟢" // Fast
+}
+
+// shortenPath shortens a path for display if it's too long
+func shortenPath(path string, maxLen int) string {
+	if len(path) <= maxLen {
+		return path
+	}
+	parts := strings.Split(path, "/")
+	if len(parts) > 3 {
+		return "..." + "/" + strings.Join(parts[len(parts)-2:], "/")
+	}
+	return path
+}
+
+// sortTimingsByDuration sorts timings by duration descending (partial sort for top N)
+func sortTimingsByDuration(timings []TimingEntry, topN int) []TimingEntry {
+	sorted := make([]TimingEntry, len(timings))
+	copy(sorted, timings)
+	for i := 0; i < len(sorted)-1 && i < topN; i++ {
+		for j := 0; j < len(sorted)-i-1; j++ {
+			if sorted[j].Duration < sorted[j+1].Duration {
+				sorted[j], sorted[j+1] = sorted[j+1], sorted[j]
+			}
+		}
+	}
+	return sorted
 }
 
 func NewTreeHandler(writer io.Writer) *TreeHandler {
 	return &TreeHandler{
-		writer: writer,
-		depth:  0,
+		writer:  writer,
+		depth:   0,
+		timings: make([]TimingEntry, 0),
+		rules:   make([]RuleEntry, 0),
 	}
 }
 
@@ -367,6 +494,7 @@ func (h *TreeHandler) Handle(event Event) {
 
 	switch event.Type {
 	case EventScanStart:
+		h.scanStart = time.Now()
 		fmt.Fprintf(h.writer, "Scanning %s...\n", event.Path)
 		if event.Info != "" {
 			fmt.Fprintf(h.writer, "Excluding: %s\n", event.Info)
@@ -377,36 +505,58 @@ func (h *TreeHandler) Handle(event Event) {
 		fmt.Fprintf(h.writer, "└─ Completed: %d files, %d directories in %.1fs\n",
 			event.FileCount, event.DirCount, event.Duration.Seconds())
 
+		// Print machine-readable CSV data for debug mode
+		h.printMachineReadableTimingData()
+		h.printMachineReadableRuleData()
+
 	case EventEnterDirectory:
 		fmt.Fprintf(h.writer, "%s%s%s\n", indent, prefix, event.Path)
 		h.depth++
+
+	case EventComponentDetected:
+		fmt.Fprintf(h.writer, "%s%sDetected: %s (%s)\n", indent, prefix, event.Name, event.Tech)
 
 	case EventLeaveDirectory:
 		h.depth--
 		if h.depth < 0 {
 			h.depth = 0
 		}
-		// Show timing if duration is set
+		// Show timing if duration is set and track it
 		if event.Duration > 0 {
 			indent := strings.Repeat("│  ", h.depth)
-			fmt.Fprintf(h.writer, "%s└─ ⏱  %.2fs\n", indent, event.Duration.Seconds())
+
+			// Track timing for summary - use cumulative time if available
+			duration := event.Duration
+			// For now, use the event duration since cumulative timing needs progress system access
+			h.timings = append(h.timings, TimingEntry{
+				Path:     event.Path,
+				Duration: duration,
+				Depth:    h.depth,
+			})
+
+			seconds := duration.Seconds()
+			fmt.Fprintf(h.writer, "%s└─ %s ⏱  %.2fs\n", indent, getTimingIcon(seconds), seconds)
 		}
-
-	case EventComponentDetected:
-		fmt.Fprintf(h.writer, "%s%sDetected: %s (%s)\n",
-			indent, prefix, event.Name, event.Tech)
-
-	case EventFileProcessing:
-		fmt.Fprintf(h.writer, "%s%sParsing: %s (%s)\n",
-			indent, prefix, event.Path, event.Info)
-
-	case EventSkipped:
-		fmt.Fprintf(h.writer, "%s%sSkipping: %s (%s)\n",
-			indent, prefix, event.Path, event.Reason)
 
 	case EventProgress:
 		fmt.Fprintf(h.writer, "%s%sProgress: %d files, %d directories\n",
 			indent, prefix, event.FileCount, event.DirCount)
+
+	case EventFolderFileProcessingStart:
+		// Start timing for folder file processing (TreeHandler)
+		fmt.Fprintf(h.writer, "%s%sProcessing files in: %s\n", indent, prefix, event.Path)
+
+	case EventFolderFileProcessingEnd:
+		// Track timing for individual folder file processing (TreeHandler)
+		if event.Duration > 0 {
+			h.timings = append(h.timings, TimingEntry{
+				Path:     event.Path,
+				Duration: event.Duration,
+				Depth:    h.depth,
+			})
+			seconds := event.Duration.Seconds()
+			fmt.Fprintf(h.writer, "%s└─ %s 📁 %.2fs\n", indent, getTimingIcon(seconds), seconds)
+		}
 
 	case EventScanInitializing:
 		fmt.Fprintf(h.writer, "%s%sInitializing: %s\n", indent, prefix, event.Path)
@@ -436,6 +586,14 @@ func (h *TreeHandler) Handle(event Event) {
 		}
 
 	case EventRuleResult:
+		// Track rule matches for CSV output
+		h.rules = append(h.rules, RuleEntry{
+			Tech:    event.Tech,
+			Reason:  event.Reason,
+			Path:    event.Path,
+			Matched: event.Matched,
+		})
+
 		if event.Matched {
 			if event.Path != "" {
 				fmt.Fprintf(h.writer, "%s└─ ✓ MATCHED: %s - %s (in %s)\n", indent, event.Tech, event.Reason, event.Path)
@@ -457,4 +615,143 @@ func NewNullHandler() *NullHandler {
 
 func (h *NullHandler) Handle(event Event) {
 	// Do nothing
+}
+
+// printConciseTimingSummary provides human-readable timing summary for SimpleHandler
+func (h *SimpleHandler) printConciseTimingSummary(totalScanTime time.Duration) {
+	if len(h.timings) == 0 {
+		return
+	}
+
+	// Calculate statistics
+	var totalDirTime time.Duration
+	slowCount := 0
+	var slowest TimingEntry
+
+	for _, timing := range h.timings {
+		totalDirTime += timing.Duration
+		seconds := timing.Duration.Seconds()
+		if seconds >= 10.0 {
+			slowCount++
+		}
+		if timing.Duration > slowest.Duration {
+			slowest = timing
+		}
+	}
+
+	avgTime := totalDirTime.Seconds() / float64(len(h.timings))
+
+	fmt.Fprintf(h.writer, "\n📊 TIMING SUMMARY\n")
+	fmt.Fprintf(h.writer, "   • Total directories: %d\n", len(h.timings))
+	fmt.Fprintf(h.writer, "   • Average per directory: %.3fs\n", avgTime)
+
+	if slowCount > 0 {
+		fmt.Fprintf(h.writer, "   • ⚠️  Slow directories (≥10s): %d\n", slowCount)
+	} else {
+		fmt.Fprintf(h.writer, "   • ✅ All directories processed quickly\n")
+	}
+
+	if slowest.Duration > 0 {
+		// Shorten path for display
+		displayPath := slowest.Path
+		if len(displayPath) > 50 {
+			parts := strings.Split(displayPath, "/")
+			if len(parts) > 2 {
+				displayPath = ".../" + strings.Join(parts[len(parts)-2:], "/")
+			}
+		}
+		fmt.Fprintf(h.writer, "   • Slowest: %s (%.2fs)\n", displayPath, slowest.Duration.Seconds())
+	}
+
+	fmt.Fprintln(h.writer)
+}
+
+// printConciseRuleSummary provides human-readable rule summary for SimpleHandler
+func (h *SimpleHandler) printConciseRuleSummary() {
+	if len(h.rules) == 0 {
+		return
+	}
+
+	matchedCount := 0
+	techCount := make(map[string]bool)
+
+	for _, rule := range h.rules {
+		if rule.Matched {
+			matchedCount++
+			techCount[rule.Tech] = true
+		}
+	}
+
+	fmt.Fprintf(h.writer, "\n🔍 RULE SUMMARY\n")
+	fmt.Fprintf(h.writer, "   • Total rules checked: %d\n", len(h.rules))
+	fmt.Fprintf(h.writer, "   • Technologies matched: %d\n", len(techCount))
+	fmt.Fprintf(h.writer, "   • Successful matches: %d\n", matchedCount)
+
+	if matchedCount > 0 {
+		fmt.Fprintf(h.writer, "   • ✅ Detection successful\n")
+	} else {
+		fmt.Fprintf(h.writer, "   • ⚠️  No technologies detected\n")
+	}
+
+	fmt.Fprintln(h.writer)
+}
+
+// printMachineReadableTimingData outputs top 10 slowest directories for TreeHandler
+func (h *TreeHandler) printMachineReadableTimingData() {
+	if len(h.timings) == 0 {
+		return
+	}
+
+	sortedTimings := sortTimingsByDuration(h.timings, 10)
+
+	fmt.Fprintln(h.writer)
+	fmt.Fprintf(h.writer, "🐌 TOP 10 SLOWEST DIRECTORIES\n")
+	fmt.Fprintf(h.writer, "═══════════════════════════════════════\n")
+
+	maxShow := len(sortedTimings)
+	if maxShow > 10 {
+		maxShow = 10
+	}
+
+	for i := 0; i < maxShow; i++ {
+		timing := sortedTimings[i]
+		seconds := timing.Duration.Seconds()
+		fmt.Fprintf(h.writer, " %s %2d. %-45s %6.2fs\n", getTimingIcon(seconds), i+1, shortenPath(timing.Path, 60), seconds)
+	}
+
+	fmt.Fprintln(h.writer)
+}
+
+// printMachineReadableRuleData outputs rule summary for TreeHandler
+func (h *TreeHandler) printMachineReadableRuleData() {
+	if len(h.rules) == 0 {
+		return
+	}
+
+	// Count matches and group by technology
+	matchedCount := 0
+	techMatches := make(map[string]int)
+
+	for _, rule := range h.rules {
+		if rule.Matched {
+			matchedCount++
+			techMatches[rule.Tech]++
+		}
+	}
+
+	fmt.Fprintf(h.writer, "🔍 RULE ANALYSIS\n")
+	fmt.Fprintf(h.writer, "═══════════════════════════════════════\n")
+	fmt.Fprintf(h.writer, " Total rules checked: %d\n", len(h.rules))
+	fmt.Fprintf(h.writer, " Successful matches: %d\n", matchedCount)
+	fmt.Fprintf(h.writer, " Technologies detected: %d\n", len(techMatches))
+
+	if len(techMatches) > 0 {
+		fmt.Fprintln(h.writer)
+		fmt.Fprintf(h.writer, " Detected technologies:\n")
+		for tech, count := range techMatches {
+			fmt.Fprintf(h.writer, "   • %s (%d matches)\n", tech, count)
+		}
+	}
+
+	fmt.Fprintln(h.writer)
 }

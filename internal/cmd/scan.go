@@ -266,10 +266,22 @@ func setupScanSettings(logger *slog.Logger) {
 		os.Exit(1)
 	}
 
-	// Auto-enable debug mode when trace flags are used without explicit output mode
+	// Validate trace flags require explicit mode selection
 	if (settings.TraceRules || settings.TraceTimings) && !settings.Verbose && !settings.Debug {
-		settings.Debug = true
-		logger.Debug("Auto-enabled --debug mode for trace output")
+		var flags []string
+		if settings.TraceTimings {
+			flags = append(flags, "--trace-timings")
+		}
+		if settings.TraceRules {
+			flags = append(flags, "--trace-rules")
+		}
+
+		fmt.Fprintf(os.Stderr, "Error: %s requires --verbose or --debug\n", strings.Join(flags, " and "))
+		fmt.Fprintf(os.Stderr, "\nUsage:\n")
+		fmt.Fprintf(os.Stderr, "  stack-analyzer scan . --verbose %s  # Human-readable output\n", strings.Join(flags, " "))
+		fmt.Fprintf(os.Stderr, "  stack-analyzer scan . --debug %s    # Machine-readable CSV output\n", strings.Join(flags, " "))
+		fmt.Fprintf(os.Stderr, "\nSee --help for more information.\n")
+		os.Exit(1)
 	}
 
 	// Validate settings

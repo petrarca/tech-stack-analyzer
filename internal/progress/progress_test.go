@@ -43,11 +43,11 @@ func TestSimpleHandler(t *testing.T) {
 		{
 			name: "file processing",
 			event: Event{
-				Type: EventFileProcessing,
+				Type: EventFileProcessingStart,
 				Path: "/package.json",
 				Info: "15 dependencies",
 			},
-			expected: "[FILE] Parsing: /package.json (15 dependencies)\n",
+			expected: "[FILE] Processing: /package.json (15 dependencies)\n",
 		},
 		{
 			name: "skipped",
