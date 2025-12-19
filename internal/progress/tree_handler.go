@@ -39,8 +39,12 @@ func (h *TreeHandler) Handle(event Event) {
 		fmt.Fprintln(h.writer)
 
 	case EventScanComplete:
-		fmt.Fprintf(h.writer, "└─ Completed: %d files, %d directories in %.1fs\n",
-			event.FileCount, event.DirCount, event.Duration.Seconds())
+		msPerKFiles := 0.0
+		if event.FileCount > 0 {
+			msPerKFiles = (event.Duration.Seconds() * 1000) / (float64(event.FileCount) / 1000)
+		}
+		fmt.Fprintf(h.writer, "└─ Completed: %d files, %d directories in %.1fs (%.1fms per 1000 files)\n",
+			event.FileCount, event.DirCount, event.Duration.Seconds(), msPerKFiles)
 
 		// Print machine-readable CSV data for debug mode
 		h.printMachineReadableTimingData()

@@ -14,6 +14,7 @@ type Progress struct {
 	withTimings bool
 	traceRules  bool
 	dirTimings  map[string]time.Time // Track directory/folder timing start times
+	dirCount    int                  // Count of directories visited
 }
 
 // New creates a new progress reporter
@@ -58,17 +59,18 @@ func (p *Progress) ScanStart(path string, excludePatterns []string) {
 	})
 }
 
-func (p *Progress) ScanComplete(files, dirs int, duration time.Duration) {
+func (p *Progress) ScanComplete(files, _ int, duration time.Duration) {
 	p.Report(Event{
 		Type:      EventScanComplete,
 		FileCount: files,
-		DirCount:  dirs,
+		DirCount:  p.dirCount, // Use tracked directory count instead of passed value
 		Duration:  duration,
 	})
 }
 
 // EnterDirectory reports entering a directory (timing tracked via FolderFileProcessing events)
 func (p *Progress) EnterDirectory(path string) {
+	p.dirCount++
 	p.Report(Event{
 		Type: EventEnterDirectory,
 		Path: path,

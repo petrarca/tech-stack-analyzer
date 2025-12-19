@@ -34,8 +34,12 @@ func (h *SimpleHandler) Handle(event Event) {
 
 	case EventScanComplete:
 		totalScanTime := time.Since(h.scanStart)
-		fmt.Fprintf(h.writer, "[SCAN] Completed: %d files, %d directories in %.1fs\n",
-			event.FileCount, event.DirCount, event.Duration.Seconds())
+		msPerKFiles := 0.0
+		if event.FileCount > 0 {
+			msPerKFiles = (event.Duration.Seconds() * 1000) / (float64(event.FileCount) / 1000)
+		}
+		fmt.Fprintf(h.writer, "[SCAN] Completed: %d files, %d directories in %.1fs (%.1fms per 1000 files)\n",
+			event.FileCount, event.DirCount, event.Duration.Seconds(), msPerKFiles)
 
 		// Print concise summaries for verbose mode
 		h.printConciseTimingSummary(totalScanTime)

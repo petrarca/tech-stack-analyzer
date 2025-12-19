@@ -75,7 +75,7 @@ func TestSimpleHandler(t *testing.T) {
 				DirCount:  412,
 				Duration:  2345 * time.Millisecond,
 			},
-			expected: "[SCAN] Completed: 3247 files, 412 directories in 2.3s\n",
+			expected: "[SCAN] Completed: 3247 files, 412 directories in 2.3s (722.2ms per 1000 files)\n",
 		},
 	}
 
