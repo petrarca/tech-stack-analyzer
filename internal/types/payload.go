@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/go-enry/go-enry/v2"
+	"github.com/petrarca/tech-stack-analyzer/internal/constants"
 	"github.com/petrarca/tech-stack-analyzer/internal/git"
 )
 
@@ -267,11 +268,19 @@ func (p *Payload) containsLicense(licenses []License, licenseName string) bool {
 
 func (p *Payload) mergeReasons(reasons map[string][]string) {
 	for tech, reasons := range reasons {
-		// Skip "_" key as it's for non-tech reasons, not actual technologies
-		if tech == "_" {
+		// Handle special keys for non-tech reasons
+		if tech == constants.ReasonKeyGlobal {
 			// Add "_" reasons directly without adding "_" as a tech
 			for _, reason := range reasons {
 				p.AddReason(reason)
+			}
+			continue
+		}
+
+		if tech == constants.ReasonKeyLicense {
+			// Add "_license" reasons directly without adding "_license" as a tech
+			for _, reason := range reasons {
+				p.AddLicenseReason(reason)
 			}
 			continue
 		}
@@ -405,6 +414,28 @@ func (p *Payload) AddReason(reason string) {
 		}
 		if !reasonExists {
 			p.Reason["_"] = append(p.Reason["_"], reason)
+		}
+	}
+}
+
+// AddLicenseReason adds a license-related reason to the "_license" key
+func (p *Payload) AddLicenseReason(reason string) {
+	if reason != "" {
+		// Initialize "_license" slice if not exists
+		if p.Reason[constants.ReasonKeyLicense] == nil {
+			p.Reason[constants.ReasonKeyLicense] = make([]string, 0)
+		}
+
+		// Check if reason already exists to avoid duplicates
+		reasonExists := false
+		for _, existing := range p.Reason[constants.ReasonKeyLicense] {
+			if existing == reason {
+				reasonExists = true
+				break
+			}
+		}
+		if !reasonExists {
+			p.Reason[constants.ReasonKeyLicense] = append(p.Reason[constants.ReasonKeyLicense], reason)
 		}
 	}
 }

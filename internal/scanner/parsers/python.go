@@ -180,7 +180,7 @@ func (p *PythonParser) addLicenseIfMatch(licenseText string, payload *types.Payl
 		}
 		payload.AddLicense(license)
 		reason := fmt.Sprintf("license detected: %s (from setup.py)", standardLicense)
-		payload.AddReason(reason)
+		payload.AddLicenseReason(reason)
 		return true
 	}
 
@@ -196,7 +196,7 @@ func (p *PythonParser) addLicenseIfMatch(licenseText string, payload *types.Payl
 			}
 			payload.AddLicense(license)
 			reason := fmt.Sprintf("license detected: %s (from setup.py)", licenseName)
-			payload.AddReason(reason)
+			payload.AddLicenseReason(reason)
 			return true
 		}
 	}

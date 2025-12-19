@@ -79,8 +79,8 @@ func (d *LicenseDetector) AddLicensesToPayload(payload *types.Payload, dirPath s
 			}
 
 			payload.Licenses = append(payload.Licenses, license)
-			// Add reason for backward compatibility
-			payload.AddReason(fmt.Sprintf("license detected: %s (confidence: %.2f, file: %s)",
+			// Add reason to _license category
+			payload.AddLicenseReason(fmt.Sprintf("license detected: %s (confidence: %.2f, file: %s)",
 				match.License, match.Confidence, match.File))
 		}
 	}
