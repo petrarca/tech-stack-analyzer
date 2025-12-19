@@ -1,6 +1,7 @@
 package progress
 
 import (
+	"sort"
 	"strings"
 	"time"
 )
@@ -93,16 +94,12 @@ func shortenPath(path string, maxLen int) string {
 	return path
 }
 
-// sortTimingsByDuration sorts timings by duration descending (partial sort for top N)
-func sortTimingsByDuration(timings []TimingEntry, topN int) []TimingEntry {
+// sortTimingsByDuration sorts timings by duration descending
+func sortTimingsByDuration(timings []TimingEntry, _ int) []TimingEntry {
 	sorted := make([]TimingEntry, len(timings))
 	copy(sorted, timings)
-	for i := 0; i < len(sorted)-1 && i < topN; i++ {
-		for j := 0; j < len(sorted)-i-1; j++ {
-			if sorted[j].Duration < sorted[j+1].Duration {
-				sorted[j], sorted[j+1] = sorted[j+1], sorted[j]
-			}
-		}
-	}
+	sort.Slice(sorted, func(i, j int) bool {
+		return sorted[i].Duration > sorted[j].Duration
+	})
 	return sorted
 }
