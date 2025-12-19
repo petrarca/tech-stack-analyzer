@@ -285,6 +285,14 @@ func (p *Payload) mergeReasons(reasons map[string][]string) {
 			continue
 		}
 
+		if tech == constants.ReasonKeyDocker {
+			// Add "_docker" reasons directly without adding "_docker" as a tech
+			for _, reason := range reasons {
+				p.AddDockerReason(reason)
+			}
+			continue
+		}
+
 		for _, reason := range reasons {
 			// Use AddTech to handle deduplication and proper merging
 			p.AddTech(tech, reason)
@@ -436,6 +444,28 @@ func (p *Payload) AddLicenseReason(reason string) {
 		}
 		if !reasonExists {
 			p.Reason[constants.ReasonKeyLicense] = append(p.Reason[constants.ReasonKeyLicense], reason)
+		}
+	}
+}
+
+// AddDockerReason adds a Docker-related reason to the "_docker" key
+func (p *Payload) AddDockerReason(reason string) {
+	if reason != "" {
+		// Initialize "_docker" slice if not exists
+		if p.Reason[constants.ReasonKeyDocker] == nil {
+			p.Reason[constants.ReasonKeyDocker] = make([]string, 0)
+		}
+
+		// Check if reason already exists to avoid duplicates
+		reasonExists := false
+		for _, existing := range p.Reason[constants.ReasonKeyDocker] {
+			if existing == reason {
+				reasonExists = true
+				break
+			}
+		}
+		if !reasonExists {
+			p.Reason[constants.ReasonKeyDocker] = append(p.Reason[constants.ReasonKeyDocker], reason)
 		}
 	}
 }
