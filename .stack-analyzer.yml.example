@@ -39,3 +39,10 @@ techs:
     reason: "Authentication provider"
   - tech: "stripe"
     reason: "Payment processing"
+
+# Scan behavior options (same as scan-config.yml scan section)
+scan:
+  primary_language_threshold: 0.05 # Minimum percentage for primary languages (default: 0.05 = 5%)
+  # Other scan options can be added here as needed
+  # debug: false
+  # verbose: false

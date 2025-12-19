@@ -20,14 +20,15 @@ type ScanOptions struct {
 	Aggregate   string `yaml:"aggregate,omitempty" json:"aggregate,omitempty" default:""`
 
 	// Scan behavior
-	ExcludePatterns       []string `yaml:"exclude_patterns,omitempty" json:"exclude_patterns,omitempty"`
-	Verbose               bool     `yaml:"verbose,omitempty" json:"verbose,omitempty" default:"false"`
-	Debug                 bool     `yaml:"debug,omitempty" json:"debug,omitempty" default:"false"`
-	TraceTimings          bool     `yaml:"trace_timings,omitempty" json:"trace_timings,omitempty" default:"false"`
-	TraceRules            bool     `yaml:"trace_rules,omitempty" json:"trace_rules,omitempty" default:"false"`
-	FilterRules           []string `yaml:"filter_rules,omitempty" json:"filter_rules,omitempty"`
-	NoCodeStats           bool     `yaml:"no_code_stats,omitempty" json:"no_code_stats,omitempty" default:"false"`
-	CodeStatsPerComponent bool     `yaml:"component_code_stats,omitempty" json:"component_code_stats,omitempty" default:"false"`
+	ExcludePatterns          []string `yaml:"exclude_patterns,omitempty" json:"exclude_patterns,omitempty"`
+	Verbose                  bool     `yaml:"verbose,omitempty" json:"verbose,omitempty" default:"false"`
+	Debug                    bool     `yaml:"debug,omitempty" json:"debug,omitempty" default:"false"`
+	TraceTimings             bool     `yaml:"trace_timings,omitempty" json:"trace_timings,omitempty" default:"false"`
+	TraceRules               bool     `yaml:"trace_rules,omitempty" json:"trace_rules,omitempty" default:"false"`
+	FilterRules              []string `yaml:"filter_rules,omitempty" json:"filter_rules,omitempty"`
+	NoCodeStats              bool     `yaml:"no_code_stats,omitempty" json:"no_code_stats,omitempty" default:"false"`
+	CodeStatsPerComponent    bool     `yaml:"component_code_stats,omitempty" json:"component_code_stats,omitempty" default:"false"`
+	PrimaryLanguageThreshold float64  `yaml:"primary_language_threshold,omitempty" json:"primary_language_threshold,omitempty" default:"0.05"`
 }
 
 // ScanConfigFile represents the external scan configuration file

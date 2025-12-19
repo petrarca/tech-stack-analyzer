@@ -139,7 +139,15 @@ func NewAnalyzer(enabled bool) Analyzer {
 // NewAnalyzerWithPerComponent creates an analyzer with per-component option
 func NewAnalyzerWithPerComponent(enabled bool, perComponent bool) Analyzer {
 	if enabled {
-		return newSCCAnalyzer(perComponent)
+		return newSCCAnalyzerWithOptions(perComponent, 0.05, 5) // Default values
+	}
+	return &noopAnalyzer{}
+}
+
+// NewAnalyzerWithOptions creates an analyzer with all custom options
+func NewAnalyzerWithOptions(enabled bool, perComponent bool, primaryThreshold float64, maxPrimaryLangs int) Analyzer {
+	if enabled {
+		return newSCCAnalyzerWithOptions(perComponent, primaryThreshold, maxPrimaryLangs)
 	}
 	return &noopAnalyzer{}
 }
@@ -167,6 +175,9 @@ type sccAnalyzer struct {
 	// Per-component tracking
 	perComponentEnabled bool                       // Whether per-component tracking is enabled
 	componentStats      map[string]*componentStats // Stats by component ID
+	// Primary language configuration
+	primaryThreshold float64 // Minimum percentage for primary languages
+	maxPrimaryLangs  int     // Maximum number of primary languages to show
 }
 
 // componentStats holds statistics for a single component
@@ -179,10 +190,17 @@ type componentStats struct {
 }
 
 func newSCCAnalyzer(perComponent bool) *sccAnalyzer {
+	return newSCCAnalyzerWithOptions(perComponent, 0.05, 5) // Default values
+}
+
+// newSCCAnalyzerWithOptions creates an analyzer with custom primary language settings
+func newSCCAnalyzerWithOptions(perComponent bool, primaryThreshold float64, maxPrimaryLangs int) *sccAnalyzer {
 	analyzer := &sccAnalyzer{
-		codeByLanguage:  make(map[string]*Stats),
-		otherByLanguage: make(map[string]*OtherStats),
-		byType:          make(map[string]*Stats),
+		codeByLanguage:   make(map[string]*Stats),
+		otherByLanguage:  make(map[string]*OtherStats),
+		byType:           make(map[string]*Stats),
+		primaryThreshold: primaryThreshold,
+		maxPrimaryLangs:  maxPrimaryLangs,
 	}
 
 	if perComponent {
@@ -300,20 +318,18 @@ func (a *sccAnalyzer) calculateMetrics(analyzed []LanguageStats) Metrics {
 	return kpis
 }
 
-// setPrimaryLanguages sets primary programming languages (max 5, ≥1% threshold)
+// setPrimaryLanguages sets primary programming languages (uses configurable threshold and max)
 func (a *sccAnalyzer) setPrimaryLanguages(kpis *Metrics, progLangs []LanguageStats, totalLines int64) {
 	if totalLines == 0 || len(progLangs) == 0 {
 		return
 	}
-	const maxLangs = 5
-	const minPct = 0.01 // 1% threshold
 
 	for i, ls := range progLangs {
-		if i >= maxLangs {
+		if i >= a.maxPrimaryLangs {
 			break
 		}
 		pct := round2(float64(ls.Lines) / float64(totalLines))
-		if pct < minPct {
+		if pct < a.primaryThreshold {
 			break // Languages are sorted by lines, so remaining will be smaller
 		}
 		kpis.PrimaryLanguages = append(kpis.PrimaryLanguages, PrimaryLanguage{

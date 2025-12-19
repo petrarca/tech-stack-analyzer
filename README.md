@@ -430,6 +430,12 @@ techs:
     reason: "Deployed on AWS ECS"
   - tech: "datadog"
     reason: "Monitoring via Datadog"
+
+# Scan behavior options
+scan:
+  primary_language_threshold: 0.05 # Minimum percentage for primary languages (default: 0.05 = 5%)
+  # debug: false
+  # verbose: false
 ```
 
 **Configuration Options:**
@@ -447,8 +453,13 @@ techs:
   
 - **`techs`** - Technologies to force-add to scan results
   - Useful for external dependencies (AWS, SaaS services)
-  - Each tech has optional `reason` field
-  - Added to root payload's `techs` array
+  - Manual documentation of deployment targets or platforms
+  
+- **`scan`** - Scan behavior configuration options
+  - **`primary_language_threshold`** - Minimum percentage (0.001-1.0) for a programming language to be considered primary
+    - Default: 0.05 (5%)
+    - Lower values show more languages, higher values show only dominant languages
+    - Example: 0.01 shows languages with ≥1% usage, 0.10 shows only languages with ≥10% usage
 
 **Benefits:**
 - **Version controlled** - Configuration lives with code

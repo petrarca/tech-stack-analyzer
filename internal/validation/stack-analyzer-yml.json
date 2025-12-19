@@ -77,6 +77,20 @@
             "minLength": 1,
             "maxLength": 100,
             "description": "Override random root ID for deterministic scans (e.g., 'my-project-2024')"
+        },
+        "scan": {
+            "type": "object",
+            "description": "Scan behavior configuration options",
+            "properties": {
+                "primary_language_threshold": {
+                    "type": "number",
+                    "minimum": 0.001,
+                    "maximum": 1,
+                    "default": 0.05,
+                    "description": "Minimum percentage (0.001-1.0) for a programming language to be considered primary (default: 0.05 = 5%)"
+                }
+            },
+            "additionalProperties": false
         }
     },
     "additionalProperties": false,
@@ -97,7 +111,10 @@
                 {"tech": "aws", "reason": "Deployed on AWS ECS"},
                 {"tech": "datadog", "reason": "Monitoring via Datadog"}
             ],
-            "root_id": "my-project-2024"
+            "root_id": "my-project-2024",
+            "scan": {
+                "primary_language_threshold": 0.05
+            }
         }
     ]
 }

@@ -18,15 +18,16 @@ type Settings struct {
 	Aggregate   string
 
 	// Scan behavior
-	ExcludePatterns       []string
-	Verbose               bool
-	Debug                 bool
-	TraceTimings          bool
-	TraceRules            bool
-	FilterRules           []string // Only use these rules (for debugging)
-	NoCodeStats           bool     // Disable code statistics (enabled by default)
-	CodeStatsPerComponent bool     // Enable per-component code statistics (disabled by default)
-	RootID                string   // Override random root ID for deterministic scans
+	ExcludePatterns          []string
+	Verbose                  bool
+	Debug                    bool
+	TraceTimings             bool
+	TraceRules               bool
+	FilterRules              []string // Only use these rules (for debugging)
+	NoCodeStats              bool     // Disable code statistics (enabled by default)
+	CodeStatsPerComponent    bool     // Enable per-component code statistics (disabled by default)
+	RootID                   string   // Override random root ID for deterministic scans
+	PrimaryLanguageThreshold float64  // Minimum percentage for primary languages (default 0.05 = 5%)
 
 	// Logging
 	LogLevel  slog.Level
@@ -37,20 +38,21 @@ type Settings struct {
 // DefaultSettings returns default configuration
 func DefaultSettings() *Settings {
 	return &Settings{
-		OutputFile:            "stack-analysis.json",
-		PrettyPrint:           true,
-		Aggregate:             "",
-		ExcludePatterns:       []string{},
-		Verbose:               false,
-		Debug:                 false,
-		TraceTimings:          false,
-		TraceRules:            false,
-		FilterRules:           []string{},
-		NoCodeStats:           false,           // Code stats enabled by default
-		CodeStatsPerComponent: false,           // Per-component code stats disabled by default
-		LogLevel:              slog.LevelError, // Changed from InfoLevel - only errors by default
-		LogFormat:             "text",
-		LogFile:               "",
+		OutputFile:               "stack-analysis.json",
+		PrettyPrint:              true,
+		Aggregate:                "",
+		ExcludePatterns:          []string{},
+		Verbose:                  false,
+		Debug:                    false,
+		TraceTimings:             false,
+		TraceRules:               false,
+		FilterRules:              []string{},
+		NoCodeStats:              false,           // Code stats enabled by default
+		CodeStatsPerComponent:    false,           // Per-component code stats disabled by default
+		LogLevel:                 slog.LevelError, // Changed from InfoLevel - only errors by default
+		LogFormat:                "text",
+		LogFile:                  "",
+		PrimaryLanguageThreshold: 0.05, // 5% threshold for primary languages
 	}
 }
 
