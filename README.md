@@ -1696,6 +1696,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ### Original Project
 This is a Go re-implementation of [specfy/stack-analyser](https://github.com/specfy/stack-analyser) by the original author. The original TypeScript implementation provided the foundation and inspiration for this project.
 
+### Industry Alignment
+For specific parser implementations, we reference [Google's deps.dev](https://deps.dev) project when designing our dependency data structures and analysis approaches. This alignment ensures compatibility and consistency with industry standards for open-source dependency analysis, enabling better integration with the broader software supply chain ecosystem.
+
 ### Extensions and Enhancements
 This Go implementation provides practical improvements focused on deployment simplicity:
 
