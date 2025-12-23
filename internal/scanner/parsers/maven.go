@@ -250,7 +250,7 @@ func (p *MavenParser) parseDependencyManagement(deps []MavenDependency, properti
 			// Only include BOM imports (scope=import and type=pom)
 			// Per Maven spec, BOM imports require both scope=import AND type=pom
 			// If type is not specified, it defaults to "jar", not "pom"
-			if dep.Scope == "import" && dep.Type == "pom" {
+			if dep.Scope == types.ScopeImport && dep.Type == "pom" {
 				dependencies = append(dependencies, types.Dependency{
 					Type:    "maven",
 					Name:    dep.GroupId + ":" + dep.ArtifactId,

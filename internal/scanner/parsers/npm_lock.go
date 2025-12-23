@@ -323,27 +323,27 @@ func determineScopeFromLockfile(
 ) string {
 	// Check if it's a peer dependency
 	if peerDeps[name] {
-		return "peer"
+		return types.ScopePeer
 	}
 
 	// Check if it's an optional dependency
 	if optionalDeps[name] || pkg.Optional {
-		return "optional"
+		return types.ScopeOptional
 	}
 
 	// Check if it's a development dependency
 	if devDeps[name] || pkg.Dev {
-		return "dev"
+		return types.ScopeDev
 	}
 
 	// Check if it's a production dependency
 	if prodDeps[name] {
-		return "prod"
+		return types.ScopeProd
 	}
 
 	// Default to production if not explicitly classified
 	// This is a reasonable default for transitive dependencies
-	return "prod"
+	return types.ScopeProd
 }
 
 // GetLockfileVersion detects the package-lock.json version format

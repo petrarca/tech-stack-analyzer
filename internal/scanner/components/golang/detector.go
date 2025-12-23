@@ -69,9 +69,21 @@ func (d *Detector) detectGoMod(file types.File, currentPath, basePath string, pr
 	// Set tech field to golang
 	payload.AddPrimaryTech("golang")
 
-	// Parse go.mod for dependencies using parser
+	// Parse go.mod for dependencies and module info using parser
 	goParser := parsers.NewGolangParser()
-	dependencies := goParser.ParseGoMod(string(content))
+	dependencies, modInfo := goParser.ParseGoModWithInfo(string(content))
+
+	// Add module info as component properties (following Maven/Docker pattern)
+	if modInfo.ModulePath != "" || modInfo.GoVersion != "" {
+		goInfo := make(map[string]interface{})
+		if modInfo.ModulePath != "" {
+			goInfo["module_path"] = modInfo.ModulePath
+		}
+		if modInfo.GoVersion != "" {
+			goInfo["go_version"] = modInfo.GoVersion
+		}
+		payload.Properties["golang"] = goInfo
+	}
 
 	// Add dependencies to payload
 	for _, dep := range dependencies {

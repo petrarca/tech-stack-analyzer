@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
 
 // DotNetParser handles .NET project file parsing (.csproj)
@@ -19,8 +21,10 @@ type DotNetProject struct {
 
 // DotNetPackage represents a NuGet package reference
 type DotNetPackage struct {
-	Name    string
-	Version string
+	Name     string
+	Version  string
+	Scope    string                 // prod, dev, build
+	Metadata map[string]interface{} // Additional package metadata
 }
 
 // XML structures for parsing .csproj files
@@ -42,12 +46,40 @@ type ItemGroup struct {
 }
 
 type PackageReference struct {
-	Include string `xml:"Include,attr"`
-	Version string `xml:"Version,attr"`
+	Include       string `xml:"Include,attr"`
+	Version       string `xml:"Version,attr"`
+	Condition     string `xml:"Condition,attr"`     // For conditional references (e.g., Debug/Release)
+	PrivateAssets string `xml:"PrivateAssets,attr"` // For build-time only dependencies
+	IncludeAssets string `xml:"IncludeAssets,attr"` // Asset inclusion control
+	ExcludeAssets string `xml:"ExcludeAssets,attr"` // Asset exclusion control
 }
 
 type ProjectReference struct {
 	Include string `xml:"Include,attr"`
+}
+
+// PackagesConfig represents packages.config file structure (legacy .NET Framework)
+type PackagesConfig struct {
+	XMLName  xml.Name  `xml:"packages"`
+	Packages []Package `xml:"package"`
+}
+
+type Package struct {
+	ID                    string `xml:"id,attr"`
+	Version               string `xml:"version,attr"`
+	TargetFramework       string `xml:"targetFramework,attr"`
+	DevelopmentDependency string `xml:"developmentDependency,attr"`
+}
+
+// DirectoryPackagesProps represents Directory.Packages.props file structure (central package management)
+type DirectoryPackagesProps struct {
+	XMLName    xml.Name    `xml:"Project"`
+	ItemGroups []ItemGroup `xml:"ItemGroup"`
+}
+
+type PackageVersion struct {
+	Include string `xml:"Include,attr"`
+	Version string `xml:"Version,attr"`
 }
 
 // Legacy .NET Framework project structures
@@ -109,8 +141,10 @@ func (p *DotNetParser) parseModernProject(project Project, content, filePath str
 		for _, pr := range ig.PackageReferences {
 			if pr.Include != "" {
 				result.Packages = append(result.Packages, DotNetPackage{
-					Name:    pr.Include,
-					Version: pr.Version,
+					Name:     pr.Include,
+					Version:  pr.Version,
+					Scope:    p.determineNuGetScope(pr),
+					Metadata: p.buildNuGetMetadata(pr),
 				})
 			}
 		}
@@ -143,8 +177,10 @@ func (p *DotNetParser) parseLegacyProject(project LegacyProject, content, filePa
 		for _, pr := range ig.PackageReferences {
 			if pr.Include != "" {
 				result.Packages = append(result.Packages, DotNetPackage{
-					Name:    pr.Include,
-					Version: pr.Version,
+					Name:     pr.Include,
+					Version:  pr.Version,
+					Scope:    p.determineNuGetScope(pr),
+					Metadata: p.buildNuGetMetadata(pr),
 				})
 			}
 		}
@@ -195,4 +231,101 @@ func (p *DotNetParser) IsLegacyFramework(framework string) bool {
 		strings.HasPrefix(framework, "net3") ||
 		strings.HasPrefix(framework, "net2") ||
 		strings.HasPrefix(framework, "net1")
+}
+
+// determineNuGetScope determines the scope of a NuGet package based on its attributes
+// Aligned with deps.dev patterns: regular (prod), dev, test, build
+func (p *DotNetParser) determineNuGetScope(pr PackageReference) string {
+	// Check for build-time only dependencies (PrivateAssets="All")
+	if pr.PrivateAssets == "All" || pr.PrivateAssets == "all" {
+		return types.ScopeBuild
+	}
+
+	// Check condition for Debug/Test configurations
+	condition := strings.ToLower(pr.Condition)
+	if strings.Contains(condition, "debug") || strings.Contains(condition, "test") {
+		return types.ScopeDev
+	}
+
+	// Default to prod (regular dependency)
+	return types.ScopeProd
+}
+
+// buildNuGetMetadata creates metadata map for NuGet packages aligned with deps.dev
+func (p *DotNetParser) buildNuGetMetadata(pr PackageReference) map[string]interface{} {
+	metadata := make(map[string]interface{})
+
+	// Add source file
+	metadata["source"] = ".csproj"
+
+	// Add PrivateAssets if set (build-time only)
+	if pr.PrivateAssets != "" {
+		metadata["private_assets"] = pr.PrivateAssets
+	}
+
+	// Add condition if set (conditional reference)
+	if pr.Condition != "" {
+		metadata["condition"] = pr.Condition
+	}
+
+	return metadata
+}
+
+// ParsePackagesConfig parses packages.config file and returns dependencies
+func (p *DotNetParser) ParsePackagesConfig(content string) []types.Dependency {
+	var dependencies []types.Dependency
+	var packagesConfig PackagesConfig
+
+	if err := xml.Unmarshal([]byte(content), &packagesConfig); err != nil {
+		return dependencies
+	}
+
+	for _, pkg := range packagesConfig.Packages {
+		if pkg.ID == "" {
+			continue
+		}
+
+		// Determine scope based on developmentDependency attribute
+		scope := types.ScopeProd
+		if pkg.DevelopmentDependency == "true" {
+			scope = types.ScopeDev
+		}
+
+		metadata := make(map[string]interface{})
+		metadata["source"] = "packages.config"
+		if pkg.TargetFramework != "" {
+			metadata["target_framework"] = pkg.TargetFramework
+		}
+
+		dependencies = append(dependencies, types.Dependency{
+			Type:     "nuget",
+			Name:     pkg.ID,
+			Version:  pkg.Version,
+			Scope:    scope,
+			Direct:   true,
+			Metadata: metadata,
+		})
+	}
+
+	return dependencies
+}
+
+// ParseDirectoryPackagesProps parses Directory.Packages.props file and returns package versions
+func (p *DotNetParser) ParseDirectoryPackagesProps(content string) map[string]string {
+	packageVersions := make(map[string]string)
+	var dirPackages DirectoryPackagesProps
+
+	if err := xml.Unmarshal([]byte(content), &dirPackages); err != nil {
+		return packageVersions
+	}
+
+	for _, ig := range dirPackages.ItemGroups {
+		for _, pv := range ig.PackageReferences {
+			if pv.Include != "" && pv.Version != "" {
+				packageVersions[pv.Include] = pv.Version
+			}
+		}
+	}
+
+	return packageVersions
 }

@@ -114,6 +114,9 @@ func TestDetector_Detect_BasicCsproj(t *testing.T) {
 	for _, dep := range payload.Dependencies {
 		depNames[dep.Name] = true
 		assert.Equal(t, "nuget", dep.Type, "All dependencies should be nuget type")
+		assert.True(t, dep.Direct, "All NuGet dependencies should be direct")
+		assert.NotEmpty(t, dep.Scope, "All NuGet dependencies should have a scope")
+		assert.NotNil(t, dep.Metadata, "All NuGet dependencies should have metadata")
 	}
 
 	assert.True(t, depNames["Microsoft.AspNetCore.App"], "Should have Microsoft.AspNetCore.App dependency")

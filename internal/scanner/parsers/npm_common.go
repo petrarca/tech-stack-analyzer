@@ -101,16 +101,16 @@ func (f *DependencyFilter) GetScope(name string) string {
 
 	// Return scope in priority order: peer > optional > dev > prod
 	if scopeInfo.peer {
-		return "peer"
+		return types.ScopePeer
 	}
 	if scopeInfo.optional {
-		return "optional"
+		return types.ScopeOptional
 	}
 	if scopeInfo.dev {
-		return "dev"
+		return types.ScopeDev
 	}
 	if scopeInfo.prod {
-		return "prod"
+		return types.ScopeProd
 	}
 
 	return ""
