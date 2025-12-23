@@ -75,9 +75,9 @@ func (d *Detector) detectDockerCompose(file types.File, currentPath, basePath st
 			continue
 		}
 
-		// Extract image name and version
-		imageName, imageVersion := d.parseImage(service.Image)
-		if imageName == "" {
+		// Create dependency using parser
+		dependency := composeParser.CreateDependency(service)
+		if dependency.Name == "" {
 			continue
 		}
 
@@ -88,7 +88,7 @@ func (d *Detector) detectDockerCompose(file types.File, currentPath, basePath st
 		}
 
 		// Match image name against dependency rules
-		matchedTechs := depDetector.MatchDependencies([]string{imageName}, "docker")
+		matchedTechs := depDetector.MatchDependencies([]string{dependency.Name}, "docker")
 
 		// Determine tech and reasons
 		var tech string
@@ -103,19 +103,13 @@ func (d *Detector) detectDockerCompose(file types.File, currentPath, basePath st
 			tech = "docker"
 		}
 		if len(reasons) == 0 {
-			reasons = []string{"matched: " + imageName}
+			reasons = []string{"matched: " + dependency.Name}
 		}
 
 		// Create child component
 		childPayload := types.NewPayloadWithPath(serviceName, relativeFilePath)
 		childPayload.AddPrimaryTech(tech)
-		childPayload.Dependencies = []types.Dependency{
-			{
-				Type:    "docker",
-				Name:    imageName,
-				Version: imageVersion,
-			},
-		}
+		childPayload.Dependencies = []types.Dependency{dependency}
 
 		// Add techs and reasons to child
 		for _, reason := range reasons {
@@ -155,17 +149,8 @@ func (d *Detector) detectDockerfile(file types.File, currentPath, basePath strin
 	// Set the file path in dockerfileInfo
 	dockerfileInfo.File = relativeFilePath
 
-	// Add base images as dependencies
-	dependencies := make([]types.Dependency, 0, len(dockerfileInfo.BaseImages))
-	for _, baseImage := range dockerfileInfo.BaseImages {
-		imageName, imageVersion := d.parseImage(baseImage)
-		dependencies = append(dependencies, types.Dependency{
-			Type:    "docker-image",
-			Name:    imageName,
-			Version: imageVersion,
-		})
-	}
-	payload.Dependencies = dependencies
+	// Create dependencies using parser
+	payload.Dependencies = parsers.NewDockerfileParser().CreateDependencies(dockerfileInfo)
 
 	// Add Dockerfile info to properties as array (Properties already initialized by NewPayloadWithPath)
 	payload.Properties["docker"] = []interface{}{dockerfileInfo}

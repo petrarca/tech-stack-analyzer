@@ -32,7 +32,7 @@ func (p *NodeJSParser) ParsePackageJSON(content []byte) (*PackageJSON, error) {
 
 // ExtractDependencies extracts all dependency names from package.json (dependencies + devDependencies)
 func (p *NodeJSParser) ExtractDependencies(pkg *PackageJSON) []string {
-	var dependencies []string
+	dependencies := make([]string, 0)
 
 	// Add regular dependencies
 	for name := range pkg.Dependencies {
@@ -57,7 +57,7 @@ func (p *NodeJSParser) GetPackageName(pkg *PackageJSON) string {
 
 // CreateDependencies creates a list of Dependency objects from package.json
 func (p *NodeJSParser) CreateDependencies(pkg *PackageJSON, depNames []string) []types.Dependency {
-	var dependencies []types.Dependency
+	dependencies := make([]types.Dependency, 0)
 
 	for _, name := range depNames {
 		// Determine version and scope in single pass
@@ -69,12 +69,12 @@ func (p *NodeJSParser) CreateDependencies(pkg *PackageJSON, depNames []string) [
 		}
 
 		dependencies = append(dependencies, types.Dependency{
-			Type:     "npm",
+			Type:     DependencyTypeNpm,
 			Name:     name,
 			Version:  version,
 			Scope:    scope,
 			Direct:   true,
-			Metadata: types.NewMetadata("package.json"),
+			Metadata: types.NewMetadata(MetadataSourcePackageJSON),
 		})
 	}
 

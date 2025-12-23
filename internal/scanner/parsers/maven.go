@@ -197,7 +197,7 @@ func (p *MavenParser) ParsePomXMLWithProvider(content string, pomDir string, pro
 		for _, dep := range profile.Dependencies.Dependencies {
 			if dep.GroupId != "" && dep.ArtifactId != "" {
 				dependencies = append(dependencies, types.Dependency{
-					Type:     "maven",
+					Type:     DependencyTypeMaven,
 					Name:     dep.GroupId + ":" + dep.ArtifactId,
 					Version:  p.resolveVersion(dep.Version, properties),
 					Scope:    mapMavenScope(dep.Scope),
@@ -212,7 +212,7 @@ func (p *MavenParser) ParsePomXMLWithProvider(content string, pomDir string, pro
 	for _, dep := range project.Dependencies.Dependencies {
 		if dep.GroupId != "" && dep.ArtifactId != "" {
 			dependencies = append(dependencies, types.Dependency{
-				Type:     "maven",
+				Type:     DependencyTypeMaven,
 				Name:     dep.GroupId + ":" + dep.ArtifactId,
 				Version:  p.resolveVersion(dep.Version, properties),
 				Scope:    mapMavenScope(dep.Scope),
@@ -252,7 +252,7 @@ func (p *MavenParser) parseDependencyManagement(deps []MavenDependency, properti
 			// If type is not specified, it defaults to "jar", not "pom"
 			if dep.Scope == types.ScopeImport && dep.Type == "pom" {
 				dependencies = append(dependencies, types.Dependency{
-					Type:    "maven",
+					Type:    DependencyTypeMaven,
 					Name:    dep.GroupId + ":" + dep.ArtifactId,
 					Version: p.resolveVersion(dep.Version, properties),
 					Scope:   types.ScopeImport,
@@ -308,13 +308,13 @@ func (p *MavenParser) buildMavenMetadata(dep MavenDependency) map[string]interfa
 // parsePluginDependencies extracts dependencies from Maven plugins (Step 2)
 // Plugin dependencies are build-time dependencies used by Maven plugins
 func (p *MavenParser) parsePluginDependencies(plugins []MavenPlugin, properties map[string]string) []types.Dependency {
-	var dependencies []types.Dependency
+	dependencies := make([]types.Dependency, 0)
 
 	for _, plugin := range plugins {
 		for _, dep := range plugin.Dependencies {
 			if dep.GroupId != "" && dep.ArtifactId != "" {
 				dependencies = append(dependencies, types.Dependency{
-					Type:     "maven",
+					Type:     DependencyTypeMaven,
 					Name:     dep.GroupId + ":" + dep.ArtifactId,
 					Version:  p.resolveVersion(dep.Version, properties),
 					Scope:    types.ScopeBuild, // Plugin dependencies are build-time

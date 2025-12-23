@@ -25,7 +25,7 @@ func (p *GolangParser) buildGoMetadata(depPath string, replaceMap map[string]str
 	metadata := make(map[string]interface{})
 
 	// Add source file
-	metadata["source"] = "go.mod"
+	metadata["source"] = MetadataSourceGoMod
 
 	// Add replace directive if this dependency is replaced
 	if replacement, exists := replaceMap[depPath]; exists {
@@ -37,7 +37,7 @@ func (p *GolangParser) buildGoMetadata(depPath string, replaceMap map[string]str
 
 // ParseGoModWithInfo parses go.mod and returns both dependencies and module info
 func (p *GolangParser) ParseGoModWithInfo(content string) ([]types.Dependency, *GoModInfo) {
-	var dependencies []types.Dependency
+	dependencies := make([]types.Dependency, 0)
 	info := &GoModInfo{}
 
 	// Parse the go.mod file using the official parser
@@ -73,7 +73,7 @@ func (p *GolangParser) ParseGoModWithInfo(content string) ([]types.Dependency, *
 		metadata := p.buildGoMetadata(req.Mod.Path, replaceMap)
 
 		dependencies = append(dependencies, types.Dependency{
-			Type:     "golang",
+			Type:     DependencyTypeGolang,
 			Name:     req.Mod.Path,
 			Version:  req.Mod.Version,
 			Scope:    types.ScopeProd, // Go modules default to production

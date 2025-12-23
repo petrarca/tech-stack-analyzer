@@ -27,7 +27,7 @@ func (p *PythonParser) ParsePyprojectTOML(content string) []types.Dependency {
 
 // ParseRequirementsTxt parses requirements.txt with full PEP 508 compliance
 func (p *PythonParser) ParseRequirementsTxt(content string) []types.Dependency {
-	var dependencies []types.Dependency
+	dependencies := make([]types.Dependency, 0)
 
 	for _, line := range strings.Split(content, "\n") {
 		line = strings.TrimSpace(line)
@@ -42,12 +42,12 @@ func (p *PythonParser) ParseRequirementsTxt(content string) []types.Dependency {
 
 		if dep.Name != "" {
 			dependencies = append(dependencies, types.Dependency{
-				Type:     "python",
+				Type:     DependencyTypePython,
 				Name:     p.canonPackageName(dep.Name),
 				Version:  p.resolveVersion(dep.Constraint),
 				Scope:    types.ScopeProd, // requirements.txt defaults to production
 				Direct:   true,
-				Metadata: types.NewMetadata("requirements.txt"),
+				Metadata: types.NewMetadata(MetadataSourceRequirementsTxt),
 			})
 		}
 	}
@@ -251,7 +251,7 @@ func (p *pyprojectParserEnhanced) parseDependencyLine(line string) {
 
 	if dep.Name != "" {
 		p.dependencies = append(p.dependencies, types.Dependency{
-			Type:       "python",
+			Type:       DependencyTypePython,
 			Name:       p.enhancedParser.canonPackageName(dep.Name),
 			Version:    p.enhancedParser.resolveVersion(dep.Constraint),
 			SourceFile: "pyproject.toml",

@@ -28,12 +28,12 @@ func ParsePackageJSONEnhanced(content []byte) []types.Dependency {
 		return nil
 	}
 
-	var dependencies []types.Dependency
+	dependencies := make([]types.Dependency, 0)
 
 	// Add production dependencies with semantic version constraints
 	for name, version := range packageJSON.Dependencies {
 		dependencies = append(dependencies, types.Dependency{
-			Type:       "npm",
+			Type:       DependencyTypeNpm,
 			Name:       name,
 			Version:    parseSemanticVersion(version),
 			SourceFile: "package.json",
@@ -44,7 +44,7 @@ func ParsePackageJSONEnhanced(content []byte) []types.Dependency {
 	// Add development dependencies with semantic version constraints
 	for name, version := range packageJSON.DevDependencies {
 		dependencies = append(dependencies, types.Dependency{
-			Type:       "npm",
+			Type:       DependencyTypeNpm,
 			Name:       name,
 			Version:    parseSemanticVersion(version),
 			SourceFile: "package.json",
@@ -55,7 +55,7 @@ func ParsePackageJSONEnhanced(content []byte) []types.Dependency {
 	// Add peer dependencies with semantic version constraints
 	for name, version := range packageJSON.PeerDependencies {
 		dependencies = append(dependencies, types.Dependency{
-			Type:       "npm",
+			Type:       DependencyTypeNpm,
 			Name:       name,
 			Version:    parseSemanticVersion(version),
 			SourceFile: "package.json",
@@ -66,7 +66,7 @@ func ParsePackageJSONEnhanced(content []byte) []types.Dependency {
 	// Add optional dependencies with semantic version constraints
 	for name, version := range packageJSON.OptionalDependencies {
 		dependencies = append(dependencies, types.Dependency{
-			Type:       "npm",
+			Type:       DependencyTypeNpm,
 			Name:       name,
 			Version:    parseSemanticVersion(version),
 			SourceFile: "package.json",

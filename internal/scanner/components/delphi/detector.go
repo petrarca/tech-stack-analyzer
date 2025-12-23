@@ -65,23 +65,13 @@ func (d *Detector) detectDelphiProject(file types.File, currentPath, basePath st
 		payload.AddTech(frameworkLower, "framework: "+project.Framework)
 	}
 
-	// Create dependencies list from packages
-	var dependencies []types.Dependency
-	var depNames []string
-	for _, pkg := range project.Packages {
-		dep := types.Dependency{
-			Type:    "delphi",
-			Name:    pkg,
-			Version: "",
-		}
-		dependencies = append(dependencies, dep)
-		depNames = append(depNames, pkg)
-	}
+	// Create dependencies using parser
+	dependencies := delphiParser.CreateDependencies(project)
 
 	// Match dependencies against rules
 	if len(dependencies) > 0 {
 		payload.Dependencies = dependencies
-		matchedTechs := depDetector.MatchDependencies(depNames, "delphi")
+		matchedTechs := depDetector.MatchDependencies(project.Packages, "delphi")
 		for tech, reasons := range matchedTechs {
 			for _, reason := range reasons {
 				payload.AddTech(tech, reason)

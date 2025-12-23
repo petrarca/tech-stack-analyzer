@@ -31,13 +31,16 @@ func (p *DenoParser) ParseDenoLock(content string) (string, []types.Dependency) 
 	version := denoLock.Version
 
 	// Extract dependencies from remote URLs
-	var dependencies []types.Dependency
+	dependencies := make([]types.Dependency, 0)
 
 	for url, hash := range denoLock.Remote {
 		dependencies = append(dependencies, types.Dependency{
-			Type:    "deno",
-			Name:    url,
-			Version: hash,
+			Type:     DependencyTypeDeno,
+			Name:     url,
+			Version:  hash,
+			Scope:    types.ScopeProd,
+			Direct:   true,
+			Metadata: types.NewMetadata(MetadataSourceDenoLock),
 		})
 	}
 

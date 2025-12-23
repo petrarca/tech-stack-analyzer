@@ -19,7 +19,7 @@ func NewRubyParser() *RubyParser {
 // Matches TypeScript logic: gem "<gem-name>", "<version>"
 // Updated to handle both single and double quotes, and gems without versions
 func (p *RubyParser) ParseGemfile(content string) []types.Dependency {
-	var dependencies []types.Dependency
+	dependencies := make([]types.Dependency, 0)
 
 	// Pattern for: gem 'name' or gem "name" (no version)
 	depRegexNoVersion := regexp.MustCompile(`gem ['"]([^'"]+)['"]`)
@@ -35,9 +35,12 @@ func (p *RubyParser) ParseGemfile(content string) []types.Dependency {
 			version := match[2]
 
 			dependencies = append(dependencies, types.Dependency{
-				Type:    "ruby",
-				Name:    gemName,
-				Version: version,
+				Type:     DependencyTypeRuby,
+				Name:     gemName,
+				Version:  version,
+				Scope:    types.ScopeProd,
+				Direct:   true,
+				Metadata: types.NewMetadata(MetadataSourceGemfile),
 			})
 			continue
 		}
@@ -47,9 +50,12 @@ func (p *RubyParser) ParseGemfile(content string) []types.Dependency {
 			gemName := match[1]
 
 			dependencies = append(dependencies, types.Dependency{
-				Type:    "ruby",
-				Name:    gemName,
-				Version: "latest",
+				Type:     DependencyTypeRuby,
+				Name:     gemName,
+				Version:  "latest",
+				Scope:    types.ScopeProd,
+				Direct:   true,
+				Metadata: types.NewMetadata(MetadataSourceGemfile),
 			})
 		}
 	}

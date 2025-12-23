@@ -4,6 +4,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
 
 // Compile Dockerfile parsing regexes once at package level for performance
@@ -80,4 +82,36 @@ func (p *DockerfileParser) ParseDockerfile(content string) *DockerfileInfo {
 	}
 
 	return info
+}
+
+// CreateDependencies creates dependency objects from Dockerfile base images
+func (p *DockerfileParser) CreateDependencies(info *DockerfileInfo) []types.Dependency {
+	if info == nil || len(info.BaseImages) == 0 {
+		return nil
+	}
+
+	dependencies := make([]types.Dependency, 0, len(info.BaseImages))
+	for _, baseImage := range info.BaseImages {
+		imageName, imageVersion := p.parseImage(baseImage)
+		dependencies = append(dependencies, types.Dependency{
+			Type:     DependencyTypeDocker,
+			Name:     imageName,
+			Version:  imageVersion,
+			Scope:    types.ScopeBuild,
+			Direct:   true,
+			Metadata: types.NewMetadata(MetadataSourceDockerfile),
+		})
+	}
+	return dependencies
+}
+
+// parseImage splits a Docker image reference into name and version
+func (p *DockerfileParser) parseImage(image string) (string, string) {
+	parts := strings.Split(image, ":")
+	name := parts[0]
+	version := "latest"
+	if len(parts) > 1 {
+		version = parts[1]
+	}
+	return name, version
 }

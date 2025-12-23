@@ -175,7 +175,7 @@ func (p *GradleParser) parseGradleDependency(line string) *types.Dependency {
 	}
 
 	return &types.Dependency{
-		Type:    "gradle",
+		Type:    DependencyTypeGradle,
 		Name:    dependencyName,
 		Version: version,
 		Scope:   scope,

@@ -38,17 +38,17 @@ func (p *PHPParser) ParseComposerJSON(content string) (string, string, []types.D
 	license := composerJSON.License
 
 	// Merge require and require-dev dependencies
-	var dependencies []types.Dependency
-	metadata := types.NewMetadata("composer.json")
+	dependencies := make([]types.Dependency, 0)
+	metadata := types.NewMetadata(MetadataSourceComposerJSON)
 
 	// Process production dependencies (nil-safe)
 	if composerJSON.Require != nil {
 		for name, version := range composerJSON.Require {
 			dependencies = append(dependencies, types.Dependency{
-				Type:     "php",
+				Type:     DependencyTypePHP,
 				Name:     name,
 				Version:  version,
-				Scope:    types.ScopeProd, // require section is production
+				Scope:    types.ScopeProd,
 				Direct:   true,
 				Metadata: metadata,
 			})
@@ -59,10 +59,10 @@ func (p *PHPParser) ParseComposerJSON(content string) (string, string, []types.D
 	if composerJSON.RequireDev != nil {
 		for name, version := range composerJSON.RequireDev {
 			dependencies = append(dependencies, types.Dependency{
-				Type:     "php",
+				Type:     DependencyTypePHP,
 				Name:     name,
 				Version:  version,
-				Scope:    types.ScopeDev, // require-dev section is development
+				Scope:    types.ScopeDev,
 				Direct:   true,
 				Metadata: metadata,
 			})

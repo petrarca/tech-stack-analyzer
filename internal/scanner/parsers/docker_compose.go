@@ -3,6 +3,8 @@ package parsers
 import (
 	"regexp"
 	"strings"
+
+	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
 
 // DockerComposeParser handles docker-compose.yml/yaml parsing
@@ -166,4 +168,28 @@ func (s *dockerComposeState) saveCurrentService() {
 		s.services = append(s.services, s.currentService)
 		s.currentService = DockerService{}
 	}
+}
+
+// CreateDependency creates a dependency object from a Docker Compose service
+func (p *DockerComposeParser) CreateDependency(service DockerService) types.Dependency {
+	imageName, imageVersion := p.parseImage(service.Image)
+	return types.Dependency{
+		Type:     DependencyTypeDocker,
+		Name:     imageName,
+		Version:  imageVersion,
+		Scope:    types.ScopeProd,
+		Direct:   true,
+		Metadata: types.NewMetadata(MetadataSourceDockerCompose),
+	}
+}
+
+// parseImage splits a Docker image reference into name and version
+func (p *DockerComposeParser) parseImage(image string) (string, string) {
+	parts := strings.Split(image, ":")
+	name := parts[0]
+	version := "latest"
+	if len(parts) > 1 {
+		version = parts[1]
+	}
+	return name, version
 }
