@@ -16,6 +16,29 @@ var (
 	propertyRefRegex       = regexp.MustCompile(`\$\{([^}]+)\}`)
 )
 
+// Profile activation defaults (aligned with deps.dev)
+// These can be overridden for specific environments
+const (
+	// DefaultJDKVersion for profile activation (following deps.dev pattern)
+	DefaultJDKVersion = "11.0.8"
+)
+
+var (
+	// DefaultOSActivation settings (following deps.dev pattern)
+	// Based on Linux/Unix/amd64 environment
+	DefaultOSActivation = struct {
+		Name    string
+		Family  string
+		Arch    string
+		Version string
+	}{
+		Name:    "linux",
+		Family:  "unix",
+		Arch:    "amd64",
+		Version: "5.10.0",
+	}
+)
+
 // MavenProject represents a parsed pom.xml structure
 type MavenProject struct {
 	XMLName              xml.Name                  `xml:"project"`
@@ -26,6 +49,8 @@ type MavenProject struct {
 	Dependencies         MavenDependencies         `xml:"dependencies"`
 	DependencyManagement MavenDependencyManagement `xml:"dependencyManagement"`
 	Profiles             []MavenProfile            `xml:"profiles>profile"`
+	Modules              []string                  `xml:"modules>module"`
+	Build                MavenBuild                `xml:"build"`
 }
 
 // MavenDependencies holds the list of dependencies
@@ -40,13 +65,33 @@ type MavenDependencyManagement struct {
 
 // MavenDependency represents a single Maven dependency
 type MavenDependency struct {
+	GroupId    string           `xml:"groupId"`
+	ArtifactId string           `xml:"artifactId"`
+	Version    string           `xml:"version"`
+	Scope      string           `xml:"scope,omitempty"`
+	Type       string           `xml:"type,omitempty"`       // pom, jar, war, ear, etc.
+	Classifier string           `xml:"classifier,omitempty"` // sources, javadoc, etc.
+	Optional   bool             `xml:"optional,omitempty"`
+	Exclusions []MavenExclusion `xml:"exclusions>exclusion"`
+}
+
+// MavenExclusion represents a dependency exclusion
+type MavenExclusion struct {
 	GroupId    string `xml:"groupId"`
 	ArtifactId string `xml:"artifactId"`
-	Version    string `xml:"version"`
-	Scope      string `xml:"scope,omitempty"`
-	Type       string `xml:"type,omitempty"`       // pom, jar, war, ear, etc.
-	Classifier string `xml:"classifier,omitempty"` // sources, javadoc, etc.
-	Optional   bool   `xml:"optional,omitempty"`
+}
+
+// MavenBuild represents the build section
+type MavenBuild struct {
+	Plugins []MavenPlugin `xml:"plugins>plugin"`
+}
+
+// MavenPlugin represents a Maven plugin
+type MavenPlugin struct {
+	GroupId      string            `xml:"groupId"`
+	ArtifactId   string            `xml:"artifactId"`
+	Version      string            `xml:"version"`
+	Dependencies []MavenDependency `xml:"dependencies>dependency"`
 }
 
 // MavenParent represents the parent POM reference
@@ -182,6 +227,10 @@ func (p *MavenParser) ParsePomXMLWithProvider(content string, pomDir string, pro
 		dependencies = append(dependencies, profileDepMgmt...)
 	}
 
+	// Process plugin dependencies (Step 2: Plugin Dependency Detection)
+	pluginDeps := p.parsePluginDependencies(project.Build.Plugins, properties)
+	dependencies = append(dependencies, pluginDeps...)
+
 	return dependencies
 }
 
@@ -202,6 +251,27 @@ func (p *MavenParser) parseDependencyManagement(deps []MavenDependency, properti
 					Name:    dep.GroupId + ":" + dep.ArtifactId,
 					Version: p.resolveVersion(dep.Version, properties),
 					Scope:   types.ScopeImport,
+				})
+			}
+		}
+	}
+
+	return dependencies
+}
+
+// parsePluginDependencies extracts dependencies from Maven plugins (Step 2)
+// Plugin dependencies are build-time dependencies used by Maven plugins
+func (p *MavenParser) parsePluginDependencies(plugins []MavenPlugin, properties map[string]string) []types.Dependency {
+	var dependencies []types.Dependency
+
+	for _, plugin := range plugins {
+		for _, dep := range plugin.Dependencies {
+			if dep.GroupId != "" && dep.ArtifactId != "" {
+				dependencies = append(dependencies, types.Dependency{
+					Type:    "maven",
+					Name:    dep.GroupId + ":" + dep.ArtifactId,
+					Version: p.resolveVersion(dep.Version, properties),
+					Scope:   types.ScopeBuild, // Plugin dependencies are build-time
 				})
 			}
 		}
@@ -400,29 +470,79 @@ func (p *MavenParser) getActiveProfiles(profiles []MavenProfile) []MavenProfile 
 }
 
 // isProfileActive checks if a profile should be activated based on its activation conditions
-// Following deps.dev pattern: simplified activation logic for static analysis
+// Following deps.dev pattern: check JDK, OS, property, and file conditions
+// Uses default JDK and OS settings aligned with deps.dev (JDK 11.0.8, Linux/Unix/amd64)
 func (p *MavenParser) isProfileActive(activation MavenActivation) bool {
-	// For static analysis, we use simplified activation logic
-	// In deps.dev, they check JDK, OS, property, and file conditions
-	// For our use case, we'll activate profiles with activeByDefault=true
-	// and skip complex runtime conditions (JDK version, OS detection, etc.)
+	activated := false
 
-	// Property-based activation: check if property name is set (without value check)
+	// JDK-based activation (Step 4: Enhanced Profile Activation)
+	if activation.JDK != "" {
+		// Simple version matching - check if default JDK matches
+		// In deps.dev, they use semver matching with constraints
+		// For static analysis, we use simple prefix matching
+		if strings.HasPrefix(DefaultJDKVersion, activation.JDK) {
+			activated = true
+		} else if activation.JDK == DefaultJDKVersion {
+			activated = true
+		} else {
+			// If JDK doesn't match, profile is not active
+			return false
+		}
+	}
+
+	// OS-based activation (Step 4: Enhanced Profile Activation)
+	if activation.OS.Name != "" || activation.OS.Family != "" || activation.OS.Arch != "" || activation.OS.Version != "" {
+		// Check OS conditions following deps.dev pattern
+		// All specified OS conditions must match
+		osMatch := true
+
+		if activation.OS.Name != "" {
+			osMatch = osMatch && matchOSCondition(activation.OS.Name, DefaultOSActivation.Name)
+		}
+		if activation.OS.Family != "" {
+			osMatch = osMatch && matchOSCondition(activation.OS.Family, DefaultOSActivation.Family)
+		}
+		if activation.OS.Arch != "" {
+			osMatch = osMatch && matchOSCondition(activation.OS.Arch, DefaultOSActivation.Arch)
+		}
+		if activation.OS.Version != "" {
+			osMatch = osMatch && matchOSCondition(activation.OS.Version, DefaultOSActivation.Version)
+		}
+
+		if !osMatch {
+			return false
+		}
+		activated = true
+	}
+
+	// Property-based activation: conservative approach for static analysis
 	if activation.Property.Name != "" {
-		// Simplified: treat any property-based activation as potentially active
-		// In a full implementation, this would check against system properties
-		return false // Conservative: don't activate property-based profiles without runtime info
+		// Without runtime property values, we can't reliably activate
+		return false
 	}
 
-	// File-based activation: skip for static analysis
+	// File-based activation: conservative approach for static analysis
 	if activation.File.Exists != "" || activation.File.Missing != "" {
-		return false // Conservative: don't activate file-based profiles without filesystem check
+		// Without filesystem access, we can't reliably activate
+		return false
 	}
 
-	// JDK and OS-based activation: skip for static analysis
-	if activation.JDK != "" || activation.OS.Name != "" || activation.OS.Family != "" {
-		return false // Conservative: don't activate environment-based profiles
+	return activated
+}
+
+// matchOSCondition checks if an OS condition matches the expected value
+// Supports negation with "!" prefix (following Maven spec)
+func matchOSCondition(condition, expected string) bool {
+	condition = strings.TrimSpace(condition)
+	expected = strings.ToLower(expected)
+
+	// Check for negation
+	if strings.HasPrefix(condition, "!") {
+		negated := strings.TrimPrefix(condition, "!")
+		negated = strings.ToLower(strings.TrimSpace(negated))
+		return negated != expected
 	}
 
-	return false
+	// Case-insensitive match
+	return strings.ToLower(condition) == expected
 }
