@@ -25,6 +25,7 @@ type MavenProject struct {
 	Parent               MavenParent               `xml:"parent"`
 	Dependencies         MavenDependencies         `xml:"dependencies"`
 	DependencyManagement MavenDependencyManagement `xml:"dependencyManagement"`
+	Profiles             []MavenProfile            `xml:"profiles>profile"`
 }
 
 // MavenDependencies holds the list of dependencies
@@ -34,7 +35,7 @@ type MavenDependencies struct {
 
 // MavenDependencyManagement holds the dependency management section
 type MavenDependencyManagement struct {
-	Dependencies []MavenDependency `xml:"dependency"`
+	Dependencies []MavenDependency `xml:"dependencies>dependency"`
 }
 
 // MavenDependency represents a single Maven dependency
@@ -54,6 +55,43 @@ type MavenParent struct {
 	ArtifactId   string `xml:"artifactId"`
 	Version      string `xml:"version"`
 	RelativePath string `xml:"relativePath"`
+}
+
+// MavenProfile represents a Maven build profile (aligned with deps.dev)
+type MavenProfile struct {
+	ID                   string                    `xml:"id"`
+	Activation           MavenActivation           `xml:"activation"`
+	Dependencies         MavenDependencies         `xml:"dependencies"`
+	DependencyManagement MavenDependencyManagement `xml:"dependencyManagement"`
+}
+
+// MavenActivation represents profile activation conditions
+type MavenActivation struct {
+	ActiveByDefault string                  `xml:"activeByDefault"`
+	JDK             string                  `xml:"jdk"`
+	OS              MavenActivationOS       `xml:"os"`
+	Property        MavenActivationProperty `xml:"property"`
+	File            MavenActivationFile     `xml:"file"`
+}
+
+// MavenActivationOS represents OS-based activation
+type MavenActivationOS struct {
+	Name    string `xml:"name"`
+	Family  string `xml:"family"`
+	Arch    string `xml:"arch"`
+	Version string `xml:"version"`
+}
+
+// MavenActivationProperty represents property-based activation
+type MavenActivationProperty struct {
+	Name  string `xml:"name"`
+	Value string `xml:"value"`
+}
+
+// MavenActivationFile represents file-based activation
+type MavenActivationFile struct {
+	Exists  string `xml:"exists"`
+	Missing string `xml:"missing"`
 }
 
 // MavenParser handles Maven-specific file parsing (pom.xml)
@@ -106,6 +144,22 @@ func (p *MavenParser) ParsePomXMLWithProvider(content string, pomDir string, pro
 	// 3. Add project coordinates (override all)
 	p.addProjectCoordinates(properties, project.GroupId, project.ArtifactId, project.Version)
 
+	// 4. Process profiles and merge active profiles (following deps.dev pattern)
+	activeProfiles := p.getActiveProfiles(project.Profiles)
+	for _, profile := range activeProfiles {
+		// Merge profile dependencies
+		for _, dep := range profile.Dependencies.Dependencies {
+			if dep.GroupId != "" && dep.ArtifactId != "" {
+				dependencies = append(dependencies, types.Dependency{
+					Type:    "maven",
+					Name:    dep.GroupId + ":" + dep.ArtifactId,
+					Version: p.resolveVersion(dep.Version, properties),
+					Scope:   mapMavenScope(dep.Scope),
+				})
+			}
+		}
+	}
+
 	// Build dependencies list from <dependencies> section
 	for _, dep := range project.Dependencies.Dependencies {
 		if dep.GroupId != "" && dep.ArtifactId != "" {
@@ -122,22 +176,34 @@ func (p *MavenParser) ParsePomXMLWithProvider(content string, pomDir string, pro
 	depMgmtDeps := p.parseDependencyManagement(project.DependencyManagement.Dependencies, properties)
 	dependencies = append(dependencies, depMgmtDeps...)
 
+	// Process profile dependency management
+	for _, profile := range activeProfiles {
+		profileDepMgmt := p.parseDependencyManagement(profile.DependencyManagement.Dependencies, properties)
+		dependencies = append(dependencies, profileDepMgmt...)
+	}
+
 	return dependencies
 }
 
 // parseDependencyManagement processes dependency management section
+// Following Maven semantics: only BOM imports (scope=import, type=pom) are actual dependencies
+// Regular dependencyManagement entries are just for version management, not dependencies
 func (p *MavenParser) parseDependencyManagement(deps []MavenDependency, properties map[string]string) []types.Dependency {
 	var dependencies []types.Dependency
 
 	for _, dep := range deps {
 		if dep.GroupId != "" && dep.ArtifactId != "" {
-			// Include BOM imports and dependency management entries
-			dependencies = append(dependencies, types.Dependency{
-				Type:    "maven",
-				Name:    dep.GroupId + ":" + dep.ArtifactId,
-				Version: p.resolveVersion(dep.Version, properties),
-				Scope:   mapMavenScope(dep.Scope),
-			})
+			// Only include BOM imports (scope=import and type=pom)
+			// Per Maven spec, BOM imports require both scope=import AND type=pom
+			// If type is not specified, it defaults to "jar", not "pom"
+			if dep.Scope == "import" && dep.Type == "pom" {
+				dependencies = append(dependencies, types.Dependency{
+					Type:    "maven",
+					Name:    dep.GroupId + ":" + dep.ArtifactId,
+					Version: p.resolveVersion(dep.Version, properties),
+					Scope:   types.ScopeImport,
+				})
+			}
 		}
 	}
 
@@ -305,4 +371,58 @@ func (p *MavenParser) resolveParentPath(pomDir, relativePath string) string {
 		relativePath = filepath.Join(relativePath, "pom.xml")
 	}
 	return filepath.Clean(filepath.Join(pomDir, relativePath))
+}
+
+// getActiveProfiles returns profiles that should be activated
+// Following deps.dev pattern: merge default profiles if no other profile is active
+func (p *MavenParser) getActiveProfiles(profiles []MavenProfile) []MavenProfile {
+	var activeProfiles []MavenProfile
+	var defaultProfiles []MavenProfile
+
+	for _, profile := range profiles {
+		// Check if profile is active by default
+		if strings.ToLower(strings.TrimSpace(profile.Activation.ActiveByDefault)) == "true" {
+			defaultProfiles = append(defaultProfiles, profile)
+		}
+
+		// Check other activation conditions
+		if p.isProfileActive(profile.Activation) {
+			activeProfiles = append(activeProfiles, profile)
+		}
+	}
+
+	// If no profiles are explicitly active, use default profiles
+	if len(activeProfiles) == 0 {
+		return defaultProfiles
+	}
+
+	return activeProfiles
+}
+
+// isProfileActive checks if a profile should be activated based on its activation conditions
+// Following deps.dev pattern: simplified activation logic for static analysis
+func (p *MavenParser) isProfileActive(activation MavenActivation) bool {
+	// For static analysis, we use simplified activation logic
+	// In deps.dev, they check JDK, OS, property, and file conditions
+	// For our use case, we'll activate profiles with activeByDefault=true
+	// and skip complex runtime conditions (JDK version, OS detection, etc.)
+
+	// Property-based activation: check if property name is set (without value check)
+	if activation.Property.Name != "" {
+		// Simplified: treat any property-based activation as potentially active
+		// In a full implementation, this would check against system properties
+		return false // Conservative: don't activate property-based profiles without runtime info
+	}
+
+	// File-based activation: skip for static analysis
+	if activation.File.Exists != "" || activation.File.Missing != "" {
+		return false // Conservative: don't activate file-based profiles without filesystem check
+	}
+
+	// JDK and OS-based activation: skip for static analysis
+	if activation.JDK != "" || activation.OS.Name != "" || activation.OS.Family != "" {
+		return false // Conservative: don't activate environment-based profiles
+	}
+
+	return false
 }
