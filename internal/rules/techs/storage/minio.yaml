@@ -1,0 +1,15 @@
+tech: minio
+name: MinIO
+dependencies:
+  - type: docker
+    name: minio/minio
+    example: minio/minio
+  - type: python
+    name: minio
+    example: minio
+  - type: npm
+    name: minio
+    example: minio
+  - type: golang
+    name: github.com/minio/minio-go/v7
+    example: github.com/minio/minio-go/v7

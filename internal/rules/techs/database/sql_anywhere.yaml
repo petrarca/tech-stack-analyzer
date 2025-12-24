@@ -1,0 +1,15 @@
+tech: sql_anywhere
+name: SQL Anywhere
+dependencies:
+  - type: docker
+    name: sap/sqlanywhere
+    example: sap/sqlanywhere
+  - type: npm
+    name: sqlanywhere
+    example: sqlanywhere
+  - type: python
+    name: sqlanywhere
+    example: sqlanywhere
+  - type: maven
+    name: com.sap.cloud.db.jdbc:ngdbc
+    example: com.sap.cloud.db.jdbc:ngdbc

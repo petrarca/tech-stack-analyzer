@@ -6,6 +6,16 @@
       "is_component": false,
       "technologies": [
         {
+          "name": "Cheshire Cat AI",
+          "tech": "cheshirecat",
+          "category": "ai"
+        },
+        {
+          "name": "LangChain",
+          "tech": "langchain",
+          "category": "ai"
+        },
+        {
           "name": "PydanticAI",
           "tech": "pydanticai",
           "category": "ai"
@@ -13,6 +23,11 @@
         {
           "name": "Pytorch",
           "tech": "pytorch",
+          "category": "ai"
+        },
+        {
+          "name": "RAGAS",
+          "tech": "ragas",
           "category": "ai"
         },
         {
@@ -332,6 +347,11 @@
           "name": "Apache Tomcat",
           "tech": "tomcat",
           "category": "appserver"
+        },
+        {
+          "name": "WebObjects",
+          "tech": "webobjects",
+          "category": "appserver"
         }
       ]
     },
@@ -438,12 +458,6 @@
           "category": "backend_framework"
         },
         {
-          "name": ".NET",
-          "tech": "dotnet",
-          "category": "backend_framework",
-          "is_primary_tech": true
-        },
-        {
           "name": "ElysiaJS",
           "tech": "elysiajs",
           "category": "backend_framework"
@@ -451,6 +465,11 @@
         {
           "name": "Express",
           "tech": "express",
+          "category": "backend_framework"
+        },
+        {
+          "name": "FastAPI",
+          "tech": "fastapi",
           "category": "backend_framework"
         },
         {
@@ -1584,6 +1603,11 @@
           "category": "database"
         },
         {
+          "name": "IBM DB2",
+          "tech": "db2",
+          "category": "database"
+        },
+        {
           "name": "DuckDB",
           "tech": "duckdb",
           "category": "database"
@@ -1855,6 +1879,11 @@
           "category": "database"
         },
         {
+          "name": "SQL Anywhere",
+          "tech": "sql_anywhere",
+          "category": "database"
+        },
+        {
           "name": "SQLite",
           "tech": "sqlite",
           "category": "database"
@@ -1964,12 +1993,6 @@
       "is_component": false,
       "technologies": [
         {
-          "name": "Delphi",
-          "tech": "delphi",
-          "category": "desktop_framework",
-          "is_primary_tech": true
-        },
-        {
           "name": "Dioxus",
           "tech": "dioxus",
           "category": "desktop_framework"
@@ -1982,6 +2005,11 @@
         {
           "name": "Iced",
           "tech": "iced",
+          "category": "desktop_framework"
+        },
+        {
+          "name": "JavaFX",
+          "tech": "javafx",
           "category": "desktop_framework"
         },
         {
@@ -2433,6 +2461,34 @@
           "name": "Terragrunt",
           "tech": "terragrunt",
           "category": "iac"
+        }
+      ]
+    },
+    {
+      "name": "ide",
+      "description": "Integrated development environments (Delphi, Visual Studio, PowerBuilder, etc.)",
+      "is_component": false,
+      "technologies": [
+        {
+          "name": "AcuCOBOL",
+          "tech": "acucobol",
+          "category": "ide"
+        },
+        {
+          "name": "Delphi",
+          "tech": "delphi",
+          "category": "ide",
+          "is_primary_tech": true
+        },
+        {
+          "name": "PowerBuilder",
+          "tech": "powerbuilder",
+          "category": "ide"
+        },
+        {
+          "name": "Uniface",
+          "tech": "uniface",
+          "category": "ide"
         }
       ]
     },
@@ -2956,6 +3012,11 @@
         {
           "name": "MAUI",
           "tech": "maui",
+          "category": "mobile_framework"
+        },
+        {
+          "name": "Xamarin",
+          "tech": "xamarin",
           "category": "mobile_framework"
         }
       ]
@@ -3561,13 +3622,7 @@
       "name": "platform",
       "description": "Low-code platforms, operating systems (Uniface, Windows, Linux)",
       "is_component": false,
-      "technologies": [
-        {
-          "name": "Uniface",
-          "tech": "uniface",
-          "category": "platform"
-        }
-      ]
+      "technologies": []
     },
     {
       "name": "proprietary",
@@ -3594,6 +3649,17 @@
         {
           "name": "Deno",
           "tech": "deno",
+          "category": "runtime"
+        },
+        {
+          "name": ".NET",
+          "tech": "dotnet",
+          "category": "runtime",
+          "is_primary_tech": true
+        },
+        {
+          "name": ".NET Core",
+          "tech": "dotnetcore",
           "category": "runtime"
         },
         {
@@ -4013,6 +4079,16 @@
         {
           "name": "Cloud Storage",
           "tech": "gcp.gcs",
+          "category": "storage"
+        },
+        {
+          "name": "HyperFile",
+          "tech": "hyperfile",
+          "category": "storage"
+        },
+        {
+          "name": "MinIO",
+          "tech": "minio",
           "category": "storage"
         },
         {
@@ -4650,6 +4726,11 @@
           "category": "web_framework"
         },
         {
+          "name": "InterSystems Zen",
+          "tech": "intersystems_zen",
+          "category": "web_framework"
+        },
+        {
           "name": "Lit",
           "tech": "litjs",
           "category": "web_framework"
@@ -4692,5 +4773,5 @@
       ]
     }
   ],
-  "count": 52
+  "count": 53
 }

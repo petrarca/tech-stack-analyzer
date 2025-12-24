@@ -3,6 +3,18 @@ categories:
       description: AI libraries and frameworks (LangChain, PyTorch, PydanticAI, etc.)
       iscomponent: false
       technologies:
+        - name: Cheshire Cat AI
+          tech: cheshirecat
+          category: ai
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: LangChain
+          tech: langchain
+          category: ai
+          description: ""
+          isprimarytech: null
+          properties: {}
         - name: PydanticAI
           tech: pydanticai
           category: ai
@@ -11,6 +23,12 @@ categories:
           properties: {}
         - name: Pytorch
           tech: pytorch
+          category: ai
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: RAGAS
+          tech: ragas
           category: ai
           description: ""
           isprimarytech: null
@@ -379,6 +397,12 @@ categories:
           description: ""
           isprimarytech: null
           properties: {}
+        - name: WebObjects
+          tech: webobjects
+          category: appserver
+          description: ""
+          isprimarytech: null
+          properties: {}
     - name: automation
       description: Automation tools
       iscomponent: true
@@ -495,12 +519,6 @@ categories:
           description: ""
           isprimarytech: null
           properties: {}
-        - name: .NET
-          tech: dotnet
-          category: backend_framework
-          description: ""
-          isprimarytech: true
-          properties: {}
         - name: ElysiaJS
           tech: elysiajs
           category: backend_framework
@@ -509,6 +527,12 @@ categories:
           properties: {}
         - name: Express
           tech: express
+          category: backend_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: FastAPI
+          tech: fastapi
           category: backend_framework
           description: ""
           isprimarytech: null
@@ -1825,6 +1849,12 @@ categories:
           description: ""
           isprimarytech: null
           properties: {}
+        - name: IBM DB2
+          tech: db2
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
         - name: DuckDB
           tech: duckdb
           category: database
@@ -2149,6 +2179,12 @@ categories:
           description: ""
           isprimarytech: null
           properties: {}
+        - name: SQL Anywhere
+          tech: sql_anywhere
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
         - name: SQLite
           tech: sqlite
           category: database
@@ -2271,12 +2307,6 @@ categories:
       description: Desktop frameworks (Qt, MFC, Win32, Electron, etc.)
       iscomponent: false
       technologies:
-        - name: Delphi
-          tech: delphi
-          category: desktop_framework
-          description: ""
-          isprimarytech: true
-          properties: {}
         - name: Dioxus
           tech: dioxus
           category: desktop_framework
@@ -2291,6 +2321,12 @@ categories:
           properties: {}
         - name: Iced
           tech: iced
+          category: desktop_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: JavaFX
+          tech: javafx
           category: desktop_framework
           description: ""
           isprimarytech: null
@@ -2810,6 +2846,34 @@ categories:
         - name: Terragrunt
           tech: terragrunt
           category: iac
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: ide
+      description: Integrated development environments (Delphi, Visual Studio, PowerBuilder, etc.)
+      iscomponent: false
+      technologies:
+        - name: AcuCOBOL
+          tech: acucobol
+          category: ide
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Delphi
+          tech: delphi
+          category: ide
+          description: ""
+          isprimarytech: true
+          properties: {}
+        - name: PowerBuilder
+          tech: powerbuilder
+          category: ide
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Uniface
+          tech: uniface
+          category: ide
           description: ""
           isprimarytech: null
           properties: {}
@@ -3403,6 +3467,12 @@ categories:
           properties: {}
         - name: MAUI
           tech: maui
+          category: mobile_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Xamarin
+          tech: xamarin
           category: mobile_framework
           description: ""
           isprimarytech: null
@@ -4090,13 +4160,7 @@ categories:
     - name: platform
       description: Low-code platforms, operating systems (Uniface, Windows, Linux)
       iscomponent: false
-      technologies:
-        - name: Uniface
-          tech: uniface
-          category: platform
-          description: ""
-          isprimarytech: null
-          properties: {}
+      technologies: []
     - name: proprietary
       description: 'In-house/internal technologies (naming: prop_<name> or prop_<org>_<name>)'
       iscomponent: false
@@ -4119,6 +4183,18 @@ categories:
           properties: {}
         - name: Deno
           tech: deno
+          category: runtime
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: .NET
+          tech: dotnet
+          category: runtime
+          description: ""
+          isprimarytech: true
+          properties: {}
+        - name: .NET Core
+          tech: dotnetcore
           category: runtime
           description: ""
           isprimarytech: null
@@ -4603,6 +4679,18 @@ categories:
           properties: {}
         - name: Cloud Storage
           tech: gcp.gcs
+          category: storage
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: HyperFile
+          tech: hyperfile
+          category: storage
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: MinIO
+          tech: minio
           category: storage
           description: ""
           isprimarytech: null
@@ -5337,6 +5425,12 @@ categories:
           description: ""
           isprimarytech: null
           properties: {}
+        - name: InterSystems Zen
+          tech: intersystems_zen
+          category: web_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
         - name: Lit
           tech: litjs
           category: web_framework
@@ -5385,4 +5479,4 @@ categories:
           description: ""
           isprimarytech: null
           properties: {}
-count: 52
+count: 53

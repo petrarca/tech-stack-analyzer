@@ -1,0 +1,15 @@
+tech: db2
+name: IBM DB2
+dependencies:
+  - type: docker
+    name: ibmcom/db2
+    example: ibmcom/db2
+  - type: python
+    name: ibm_db
+    example: ibm_db
+  - type: npm
+    name: ibm_db
+    example: ibm_db
+  - type: maven
+    name: com.ibm.db2/jcc
+    example: com.ibm.db2/jcc

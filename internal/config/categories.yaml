@@ -113,6 +113,10 @@ categories:
     description: "AI cloud services and APIs (OpenAI, Anthropic, AWS Bedrock, etc.)"
   
   # Development Tools - DO NOT create components
+  ide:
+    is_component: false
+    description: "Integrated development environments (Delphi, Visual Studio, PowerBuilder, etc.)"
+
   ai:
     is_component: false
     description: "AI libraries and frameworks (LangChain, PyTorch, PydanticAI, etc.)"

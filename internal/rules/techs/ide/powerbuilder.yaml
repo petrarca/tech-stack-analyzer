@@ -1,0 +1,7 @@
+tech: powerbuilder
+name: PowerBuilder
+dependencies:
+  - type: docker
+    name: Appeon/PowerBuilder
+    example: Appeon/PowerBuilder
+is_primary_tech: true

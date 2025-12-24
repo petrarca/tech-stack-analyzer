@@ -125,7 +125,8 @@ dependencies:
 2. Create YAML file
 3. Validate: `yamllint internal/rules/techs/{category}/{file}.yaml`
 4. Test: `task run -- /test/project`
-5. Run: `task fct`
+5. Generate taxonomy files: `task build:taxonomies`
+6. Run: `task fct`
 
 ## Adding Component Detectors
 
@@ -191,6 +192,7 @@ func TestDetector(t *testing.T) {
 - If we change structure of the output, `schemas/stack-analyzer-output.json` needs to be updated
 - After updating `schemas/stack-analyzer-output.json` schema, the example outputs shall be re-created using `task build:examples`
 - Add package-level documentation comment to all Go packages (required for godoc and code clarity)
+- When technology rules or categories are added or modified, generate taxonomy files with `task build:taxonomies`
 
 ### Security
 - No path traversal, no `exec.Command`, no hardcoded secrets
@@ -242,6 +244,7 @@ fix/issue-description
 - [ ] Docs updated if needed
 - [ ] No secrets or hardcoded paths
 - [ ] Conventional commit message
+- [ ] If technology rules or categories were modified, taxonomy files generated with `task build:taxonomies`
 
 ---
 

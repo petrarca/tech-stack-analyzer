@@ -1,0 +1,12 @@
+tech: webobjects
+name: WebObjects
+dependencies:
+  - type: maven
+    name: com.webobjects:JavaWebObjects
+    example: com.webobjects:JavaWebObjects
+  - type: maven
+    name: com.webobjects:JavaEOControl
+    example: com.webobjects:JavaEOControl
+  - type: maven
+    name: com.webobjects:JavaFoundation
+    example: com.webobjects:JavaFoundation

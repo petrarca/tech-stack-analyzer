@@ -1,0 +1,6 @@
+tech: intersystems_zen
+name: InterSystems Zen
+dependencies:
+  - type: maven
+    name: com.intersystems:zen
+    example: com.intersystems:zen
