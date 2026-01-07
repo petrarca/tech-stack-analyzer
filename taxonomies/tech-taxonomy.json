@@ -2472,7 +2472,8 @@
         {
           "name": "AcuCOBOL",
           "tech": "acucobol",
-          "category": "ide"
+          "category": "ide",
+          "is_primary_tech": true
         },
         {
           "name": "Delphi",
@@ -2483,12 +2484,14 @@
         {
           "name": "PowerBuilder",
           "tech": "powerbuilder",
-          "category": "ide"
+          "category": "ide",
+          "is_primary_tech": true
         },
         {
           "name": "Uniface",
           "tech": "uniface",
-          "category": "ide"
+          "category": "ide",
+          "is_primary_tech": true
         }
       ]
     },

@@ -2857,7 +2857,7 @@ categories:
           tech: acucobol
           category: ide
           description: ""
-          isprimarytech: null
+          isprimarytech: true
           properties: {}
         - name: Delphi
           tech: delphi
@@ -2869,13 +2869,13 @@ categories:
           tech: powerbuilder
           category: ide
           description: ""
-          isprimarytech: null
+          isprimarytech: true
           properties: {}
         - name: Uniface
           tech: uniface
           category: ide
           description: ""
-          isprimarytech: null
+          isprimarytech: true
           properties: {}
     - name: identity
       description: Identity & access management (Auth0, Okta, Keycloak, etc.)
