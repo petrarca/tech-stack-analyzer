@@ -204,6 +204,8 @@ func (d *Detector) matchAndAddTechs(dependencies []types.Dependency, depDetector
 		for _, reason := range reasons {
 			payload.AddTech(tech, reason)
 		}
+		// Check if this tech should be a primary tech
+		depDetector.AddPrimaryTechIfNeeded(payload, tech)
 	}
 }
 

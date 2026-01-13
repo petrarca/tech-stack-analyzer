@@ -71,6 +71,7 @@ func (d *Detector) Detect(files []types.File, currentPath, basePath string, prov
 				for _, reason := range reasons {
 					payload.AddTech(tech, reason)
 				}
+				depDetector.AddPrimaryTechIfNeeded(payload, tech)
 			}
 
 			payload.Dependencies = dependencies

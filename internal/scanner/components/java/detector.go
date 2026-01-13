@@ -211,6 +211,7 @@ func (d *Detector) detectPomXML(file types.File, currentPath, basePath string, p
 			for _, reason := range reasons {
 				payload.AddTech(tech, reason)
 			}
+			depDetector.AddPrimaryTechIfNeeded(payload, tech)
 		}
 
 		payload.Dependencies = dependencies
@@ -278,6 +279,7 @@ func (d *Detector) detectGradle(file types.File, currentPath, basePath string, p
 			for _, reason := range reasons {
 				payload.AddTech(tech, reason)
 			}
+			depDetector.AddPrimaryTechIfNeeded(payload, tech)
 		}
 
 		payload.Dependencies = dependencies

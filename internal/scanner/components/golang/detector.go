@@ -105,6 +105,7 @@ func (d *Detector) detectGoMod(file types.File, currentPath, basePath string, pr
 			for _, reason := range reasons {
 				payload.AddTech(tech, reason)
 			}
+			depDetector.AddPrimaryTechIfNeeded(payload, tech)
 		}
 	}
 

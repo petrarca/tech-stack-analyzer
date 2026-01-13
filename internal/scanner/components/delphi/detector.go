@@ -76,6 +76,7 @@ func (d *Detector) detectDelphiProject(file types.File, currentPath, basePath st
 			for _, reason := range reasons {
 				payload.AddTech(tech, reason)
 			}
+			depDetector.AddPrimaryTechIfNeeded(payload, tech)
 		}
 	}
 

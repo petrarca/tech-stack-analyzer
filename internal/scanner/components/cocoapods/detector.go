@@ -87,6 +87,7 @@ func (d *Detector) processPodfile(file types.File, currentPath, basePath string,
 		for _, reason := range reasons {
 			payload.AddTech(tech, reason)
 		}
+		depDetector.AddPrimaryTechIfNeeded(payload, tech)
 	}
 
 	// Add dependencies to payload
@@ -128,6 +129,7 @@ func (d *Detector) processPodfileLock(file types.File, currentPath, basePath str
 		for _, reason := range reasons {
 			payload.AddTech(tech, reason)
 		}
+		depDetector.AddPrimaryTechIfNeeded(payload, tech)
 	}
 
 	// Add dependencies to payload

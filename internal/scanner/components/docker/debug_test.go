@@ -52,6 +52,10 @@ func (m *MockDebugDependencyDetector) MatchDependencies(dependencies []string, d
 	return m.matchedTechs
 }
 
+func (m *MockDebugDependencyDetector) AddPrimaryTechIfNeeded(payload *types.Payload, tech string) {
+	// Mock implementation - do nothing
+}
+
 func TestDebug_Detection(t *testing.T) {
 	detector := &Detector{}
 

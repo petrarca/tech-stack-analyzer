@@ -76,6 +76,8 @@ func (d *ComponentDetector) detectPackageJSON(files []types.File, currentPath st
 		// Add detected technologies and create implicit components for them
 		for tech := range matchedTechs {
 			payload.AddTech(tech, "npm dependency matched")
+			// Check if this tech should be a primary tech
+			d.depDetector.AddPrimaryTechIfNeeded(payload, tech)
 			d.createImplicitComponentForTech(payload, tech, currentPath)
 		}
 
@@ -177,6 +179,8 @@ func (d *ComponentDetector) processPythonDependencies(payload *types.Payload, de
 	matchedTechs := d.depDetector.MatchDependencies(depNames, "python")
 	for tech := range matchedTechs {
 		payload.AddTech(tech, "python dependency matched")
+		// Check if this tech should be a primary tech
+		d.depDetector.AddPrimaryTechIfNeeded(payload, tech)
 		d.createImplicitComponentForTech(payload, tech, currentPath)
 	}
 

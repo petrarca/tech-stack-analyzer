@@ -9,3 +9,4 @@ extensions:
   - .tsx
 files:
   - tsconfig.json
+is_primary_tech: true

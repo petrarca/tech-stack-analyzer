@@ -56,6 +56,10 @@ func (m *MockDependencyDetector) MatchDependencies(dependencies []string, depTyp
 	return m.matchedTechs
 }
 
+func (m *MockDependencyDetector) AddPrimaryTechIfNeeded(payload *types.Payload, tech string) {
+	// Mock implementation - do nothing
+}
+
 func TestDetector_Name(t *testing.T) {
 	detector := &Detector{}
 	assert.Equal(t, "java", detector.Name())

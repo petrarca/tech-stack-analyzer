@@ -82,6 +82,7 @@ func (d *Detector) detectCargoToml(file types.File, currentPath, basePath string
 			for _, reason := range reasons {
 				payload.AddTech(tech, reason)
 			}
+			depDetector.AddPrimaryTechIfNeeded(payload, tech)
 		}
 
 		payload.Dependencies = dependencies

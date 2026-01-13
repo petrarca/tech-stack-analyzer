@@ -155,6 +155,7 @@ func (d *Detector) detectDotNetProject(file types.File, currentPath, basePath st
 			for _, reason := range reasons {
 				payload.AddTech(tech, reason)
 			}
+			depDetector.AddPrimaryTechIfNeeded(payload, tech)
 		}
 	}
 
@@ -206,6 +207,7 @@ func (d *Detector) detectPackagesConfig(file types.File, currentPath, basePath s
 			for _, reason := range reasons {
 				payload.AddTech(tech, reason)
 			}
+			depDetector.AddPrimaryTechIfNeeded(payload, tech)
 		}
 	}
 

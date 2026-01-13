@@ -17,12 +17,14 @@ type DependencyMatcher struct {
 // DependencyDetector handles dependency-based technology detection
 type DependencyDetector struct {
 	matchers map[string][]*DependencyMatcher // keyed by dependency type (npm, python, etc.)
+	rules    []types.Rule                    // Store rules for primary tech checking
 }
 
 // NewDependencyDetector creates a new dependency detector
 func NewDependencyDetector(rules []types.Rule) *DependencyDetector {
 	detector := &DependencyDetector{
 		matchers: make(map[string][]*DependencyMatcher),
+		rules:    rules,
 	}
 
 	// Compile all dependency patterns from rules
@@ -79,4 +81,17 @@ func (d *DependencyDetector) MatchDependencies(packages []string, depType string
 	}
 
 	return matched
+}
+
+// AddPrimaryTechIfNeeded checks if a tech should be primary and adds it if needed
+func (d *DependencyDetector) AddPrimaryTechIfNeeded(payload *types.Payload, tech string) {
+	// Find the rule for this tech
+	for i := range d.rules {
+		if d.rules[i].Tech == tech {
+			if ShouldAddPrimaryTech(d.rules[i]) {
+				payload.AddPrimaryTech(tech)
+			}
+			return
+		}
+	}
 }

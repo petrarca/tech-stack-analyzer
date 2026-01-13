@@ -15,4 +15,5 @@ type Detector interface {
 // DependencyDetector interface for matching dependencies
 type DependencyDetector interface {
 	MatchDependencies(dependencies []string, depType string) map[string][]string
+	AddPrimaryTechIfNeeded(payload *types.Payload, tech string)
 }

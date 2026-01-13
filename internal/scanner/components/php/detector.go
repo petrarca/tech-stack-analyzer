@@ -75,6 +75,7 @@ func (d *Detector) detectComposerJSON(file types.File, currentPath, basePath str
 			for _, reason := range reasons {
 				payload.AddTech(tech, reason)
 			}
+			depDetector.AddPrimaryTechIfNeeded(payload, tech)
 		}
 
 		payload.Dependencies = dependencies
