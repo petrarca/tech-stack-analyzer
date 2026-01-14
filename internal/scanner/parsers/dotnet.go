@@ -14,9 +14,11 @@ type DotNetParser struct{}
 
 // DotNetProject represents a parsed .NET project
 type DotNetProject struct {
-	Name      string
-	Framework string
-	Packages  []DotNetPackage
+	Name              string
+	PackageId         string // NuGet package ID (defaults to Name/AssemblyName if not specified)
+	Framework         string
+	Packages          []DotNetPackage
+	ProjectReferences []string // Paths to referenced projects
 }
 
 // DotNetPackage represents a NuGet package reference
@@ -38,6 +40,7 @@ type Project struct {
 type PropertyGroup struct {
 	TargetFramework string `xml:"TargetFramework"`
 	AssemblyName    string `xml:"AssemblyName"`
+	PackageId       string `xml:"PackageId"`
 }
 
 type ItemGroup struct {
@@ -126,17 +129,20 @@ func (p *DotNetParser) ParseCsproj(content, filePath string) DotNetProject {
 func (p *DotNetParser) parseModernProject(project Project, content, filePath string) DotNetProject {
 	var result DotNetProject
 
-	// Extract project name and framework from PropertyGroups
+	// Extract project name, package ID, and framework from PropertyGroups
 	for _, pg := range project.PropertyGroups {
 		if pg.AssemblyName != "" {
 			result.Name = pg.AssemblyName
+		}
+		if pg.PackageId != "" {
+			result.PackageId = pg.PackageId
 		}
 		if pg.TargetFramework != "" {
 			result.Framework = pg.TargetFramework
 		}
 	}
 
-	// Extract packages from ItemGroups
+	// Extract packages and project references from ItemGroups
 	for _, ig := range project.ItemGroups {
 		for _, pr := range ig.PackageReferences {
 			if pr.Include != "" {
@@ -148,11 +154,21 @@ func (p *DotNetParser) parseModernProject(project Project, content, filePath str
 				})
 			}
 		}
+		for _, projRef := range ig.ProjectReferences {
+			if projRef.Include != "" {
+				result.ProjectReferences = append(result.ProjectReferences, projRef.Include)
+			}
+		}
 	}
 
 	// If no AssemblyName found, try to extract from filename using regex
 	if result.Name == "" {
 		result.Name = p.extractProjectNameFromContent(content, filePath)
+	}
+
+	// If PackageId not specified, default to Name/AssemblyName
+	if result.PackageId == "" {
+		result.PackageId = result.Name
 	}
 
 	return result
@@ -162,17 +178,20 @@ func (p *DotNetParser) parseModernProject(project Project, content, filePath str
 func (p *DotNetParser) parseLegacyProject(project LegacyProject, content, filePath string) DotNetProject {
 	var result DotNetProject
 
-	// Extract project name and framework from PropertyGroups
+	// Extract project name, package ID, and framework from PropertyGroups
 	for _, pg := range project.PropertyGroups {
 		if pg.AssemblyName != "" {
 			result.Name = pg.AssemblyName
+		}
+		if pg.PackageId != "" {
+			result.PackageId = pg.PackageId
 		}
 		if pg.TargetFramework != "" {
 			result.Framework = pg.TargetFramework
 		}
 	}
 
-	// Extract packages from ItemGroups
+	// Extract packages and project references from ItemGroups
 	for _, ig := range project.ItemGroups {
 		for _, pr := range ig.PackageReferences {
 			if pr.Include != "" {
@@ -184,11 +203,21 @@ func (p *DotNetParser) parseLegacyProject(project LegacyProject, content, filePa
 				})
 			}
 		}
+		for _, projRef := range ig.ProjectReferences {
+			if projRef.Include != "" {
+				result.ProjectReferences = append(result.ProjectReferences, projRef.Include)
+			}
+		}
 	}
 
 	// If no AssemblyName found, try to extract from filename using regex
 	if result.Name == "" {
 		result.Name = p.extractProjectNameFromContent(content, filePath)
+	}
+
+	// If PackageId not specified, default to Name/AssemblyName
+	if result.PackageId == "" {
+		result.PackageId = result.Name
 	}
 
 	return result

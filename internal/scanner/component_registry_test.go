@@ -15,6 +15,7 @@ func TestComponentRegistry(t *testing.T) {
 	lib.Properties = map[string]interface{}{
 		"dotnet": map[string]interface{}{
 			"assembly_name": "MyCompany.SharedLib",
+			"package_id":    "MyCompany.SharedLib",
 			"framework":     "net8.0",
 		},
 	}

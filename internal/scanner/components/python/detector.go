@@ -441,9 +441,9 @@ func init() {
 	// Auto-register this detector
 	components.Register(&Detector{})
 
-	// Register pypi package provider
+	// Register Python package provider (dependency type is "python" not "pypi")
 	providers.Register(&providers.PackageProvider{
-		DependencyType:      "pypi",
+		DependencyType:      "python",
 		ExtractPackageNames: providers.SinglePropertyExtractor("python", "package_name"),
 	})
 }
