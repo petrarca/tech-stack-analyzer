@@ -151,6 +151,15 @@ func (d *Detector) detectPomXML(file types.File, currentPath, basePath string, p
 	// Extract project name using parser
 	mavenParser := parsers.NewMavenParser()
 	projectInfo := mavenParser.ExtractProjectInfo(string(content))
+
+	// Handle inheritance from parent
+	if projectInfo.GroupId == "" && projectInfo.Parent.GroupId != "" {
+		projectInfo.GroupId = projectInfo.Parent.GroupId
+	}
+	if projectInfo.Version == "" && projectInfo.Parent.Version != "" {
+		projectInfo.Version = projectInfo.Parent.Version
+	}
+
 	projectName := d.formatProjectName(projectInfo.GroupId, projectInfo.ArtifactId)
 	if projectName == "" {
 		projectName = filepath.Base(currentPath)
@@ -170,7 +179,6 @@ func (d *Detector) detectPomXML(file types.File, currentPath, basePath string, p
 	payload.AddPrimaryTech("java")
 
 	// Extract Maven project info and add as properties
-	projectInfo = mavenParser.ExtractProjectInfo(string(content))
 	if projectInfo.GroupId != "" || projectInfo.ArtifactId != "" {
 		mavenInfo := map[string]interface{}{
 			"group_id":    projectInfo.GroupId,

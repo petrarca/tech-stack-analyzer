@@ -445,5 +445,15 @@ func init() {
 	providers.Register(&providers.PackageProvider{
 		DependencyType:      "python",
 		ExtractPackageNames: providers.SinglePropertyExtractor("python", "package_name"),
+		MatchFunc: func(componentPkgName, dependencyName string) bool {
+			// Normalize names: lowercase and replace underscores/dots with dashes (PEP 503 style)
+			normalize := func(name string) string {
+				name = strings.ToLower(name)
+				name = strings.ReplaceAll(name, "_", "-")
+				name = strings.ReplaceAll(name, ".", "-")
+				return name
+			}
+			return normalize(componentPkgName) == normalize(dependencyName)
+		},
 	})
 }
