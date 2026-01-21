@@ -243,9 +243,6 @@
                         "commit": {
                             "type": "string"
                         },
-                        "is_dirty": {
-                            "type": "boolean"
-                        },
                         "remote_url": {
                             "type": "string"
                         }

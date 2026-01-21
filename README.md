@@ -222,7 +222,6 @@ The scanner outputs a hierarchical JSON structure showing detected technologies,
   "git": {
     "branch": "main",
     "commit": "a1b2c3d",
-    "is_dirty": false,
     "remote_url": "https://github.com/user/repo.git"
   },
   "childs": [
@@ -239,7 +238,6 @@ The scanner outputs a hierarchical JSON structure showing detected technologies,
       "git": {
         "branch": "develop",
         "commit": "def5678",
-        "is_dirty": true,
         "remote_url": "https://github.com/company/backend.git"
       }
     }
@@ -273,7 +271,6 @@ The scanner outputs a hierarchical JSON structure showing detected technologies,
     {
       "branch": "main",
       "commit": "abc1234",
-      "is_dirty": false,
       "remote_url": "https://github.com/user/project.git"
     }
   ]
@@ -1026,7 +1023,6 @@ The `metadata` field (present only in the root payload) provides information abo
   "git": {
     "branch": "main",
     "commit": "a1b2c3d",
-    "is_dirty": true,
     "remote_url": "https://github.com/user/repo.git"
   }
 }
@@ -1050,7 +1046,6 @@ The `git` field (present only in the root payload) provides git repository infor
 
 - **branch**: Current branch name
 - **commit**: Short commit hash (7 characters)
-- **is_dirty**: Whether there are uncommitted changes
 - **remote_url**: Origin remote URL
 
 #### Properties Field
@@ -1191,13 +1186,11 @@ Use the `--aggregate` flag to get a simplified, rolled-up view of your entire co
     {
       "branch": "main",
       "commit": "def5678",
-      "is_dirty": true,
       "remote_url": "https://github.com/company/project.git"
     },
     {
       "branch": "develop", 
       "commit": "abc1234",
-      "is_dirty": false,
       "remote_url": "https://github.com/company/frontend.git"
     }
   ]

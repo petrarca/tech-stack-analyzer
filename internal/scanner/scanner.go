@@ -110,12 +110,16 @@ func NewScannerWithOptionsAndRootID(path string, excludePatterns []string, verbo
 // NewScannerWithOptionsAndLogger creates a new scanner with all options including logger
 func NewScannerWithOptionsAndLogger(path string, excludePatterns []string, verbose bool, useTreeView bool, traceTimings bool, traceRules bool, codeStats CodeStatsAnalyzer, logger *slog.Logger, rootID string, mergedConfig *config.ScanConfig) (*Scanner, error) {
 	// Create provider for the target path (like TypeScript's FSProvider)
+	tInit := time.Now()
 	provider := provider.NewFSProvider(path)
 
 	// Initialize all scanner components
-	components, err := initializeScannerComponents(provider, path)
+	components, err := initializeScannerComponents(provider, path, logger)
 	if err != nil {
 		return nil, err
+	}
+	if logger != nil {
+		logger.Debug("Scanner initialization completed", "duration", time.Since(tInit))
 	}
 
 	// Create progress reporter
@@ -227,33 +231,53 @@ type scannerComponents struct {
 }
 
 // initializeScannerComponents handles common initialization logic
-func initializeScannerComponents(provider types.Provider, path string) (*scannerComponents, error) {
+func initializeScannerComponents(provider types.Provider, path string, logger *slog.Logger) (*scannerComponents, error) {
 	// Load rules (simple, not lazy loaded - like TypeScript's loadAllRules)
+	t1 := time.Now()
 	loadedRules, err := rules.LoadEmbeddedRules()
 	if err != nil {
 		return nil, fmt.Errorf("failed to load rules: %w", err)
 	}
+	if logger != nil {
+		logger.Debug("Loaded embedded rules", "count", len(loadedRules), "duration", time.Since(t1))
+	}
 
 	// Load types configuration
+	t2 := time.Now()
 	categoriesConfig, err := config.LoadCategoriesConfig()
 	if err != nil {
 		return nil, fmt.Errorf("failed to load categories config: %w", err)
 	}
 	SetCategoriesConfig(categoriesConfig)
+	if logger != nil {
+		logger.Debug("Loaded categories config", "duration", time.Since(t2))
+	}
 
 	// Initialize all detectors
+	t3 := time.Now()
 	depDetector := NewDependencyDetector(loadedRules)
 	compDetector := NewComponentDetector(depDetector, provider, loadedRules)
 	dotenvDetector := parsers.NewDotenvDetector(provider, loadedRules)
 	licenseDetector := license.NewLicenseDetector()
+	if logger != nil {
+		logger.Debug("Initialized detectors", "duration", time.Since(t3))
+	}
 
 	// Build matchers from rules (like TypeScript's loadAllRules)
+	t4 := time.Now()
 	matchers.BuildFileMatchersFromRules(loadedRules)
+	if logger != nil {
+		logger.Debug("Built file matchers", "duration", time.Since(t4))
+	}
 
 	// Build content matchers from rules
+	t5 := time.Now()
 	contentMatcher := matchers.NewContentMatcherRegistry()
 	if err := contentMatcher.BuildFromRules(loadedRules); err != nil {
 		return nil, fmt.Errorf("failed to build content matchers: %w", err)
+	}
+	if logger != nil {
+		logger.Debug("Built content matchers", "duration", time.Since(t5))
 	}
 
 	return &scannerComponents{
@@ -291,13 +315,17 @@ func (s *Scanner) Scan() (*types.Payload, error) {
 
 	// Set git information on payload BEFORE recursion starts
 	// This ensures child components can check against parent git info
+	t1 := time.Now()
 	payload.Git = git.GetGitInfo(basePath)
+	slog.Debug("Retrieved git info", "duration", time.Since(t1))
 
 	// Start recursion from base path (like TypeScript's payload.recurse(provider, provider.basePath))
+	slog.Debug("Starting directory recursion", "path", basePath)
 	err := s.recurse(payload, basePath)
 	if err != nil {
 		return nil, err
 	}
+	slog.Debug("Completed directory recursion")
 
 	// Set scan duration
 	scanMeta.SetDuration(time.Since(startTime))
@@ -530,13 +558,18 @@ func (s *Scanner) processFile(ctx *types.Payload, dirPath string, fileName strin
 
 // recurse follows the exact TypeScript implementation pattern
 func (s *Scanner) recurse(payload *types.Payload, filePath string) error {
+	tEnter := time.Now()
 	// Report entering directory
 	s.progress.EnterDirectory(filePath)
 	defer s.progress.LeaveDirectory(filePath)
 
 	// Load .gitignore patterns for this directory and push to stack
 	// This implements proper gitignore hierarchy: patterns only apply to current dir and subdirs
+	tGitignore := time.Now()
 	hasGitignore := s.gitignoreStack.LoadAndPushGitignore(filePath)
+	if time.Since(tGitignore) > 100*time.Millisecond {
+		slog.Debug("Gitignore loading slow", "path", filePath, "duration", time.Since(tGitignore))
+	}
 
 	// Report gitignore context for debugging
 	if hasGitignore {
@@ -552,13 +585,16 @@ func (s *Scanner) recurse(payload *types.Payload, filePath string) error {
 	}
 
 	// Get files in current directory (like TypeScript's provider.listDir)
+	t1 := time.Now()
 	files, err := s.provider.ListDir(filePath)
 	if err != nil {
 		return err
 	}
+	slog.Debug("Listed directory", "path", filePath, "file_count", len(files), "duration", time.Since(t1))
 
 	// Filter files to exclude those matching ignore patterns
 	// This ensures rule matching doesn't see excluded files
+	t2 := time.Now()
 	filteredFiles := make([]types.File, 0, len(files))
 	for _, file := range files {
 		if file.Type == "file" && s.shouldExcludeFileStackBased(file.Name, filePath) {
@@ -566,16 +602,24 @@ func (s *Scanner) recurse(payload *types.Payload, filePath string) error {
 		}
 		filteredFiles = append(filteredFiles, file)
 	}
+	if len(files) != len(filteredFiles) {
+		slog.Debug("Filtered files", "path", filePath, "before", len(files), "after", len(filteredFiles), "duration", time.Since(t2))
+	}
 
 	// Start timing for folder file processing
 	s.progress.FolderFileProcessingStart(filePath)
 
 	// Apply rules to detect technologies (like TypeScript's ruleComponents loop)
 	// This might return a different context if a component was detected
+	t3 := time.Now()
 	ctx := s.applyRules(payload, filteredFiles, filePath)
+	if time.Since(t3) > 100*time.Millisecond {
+		slog.Debug("Applied rules (slow)", "path", filePath, "duration", time.Since(t3))
+	}
 
 	// Check if this directory is a git repository and set git info
 	// Only set git info if it's in a different repository than the parent context
+	tGit := time.Now()
 	if ctx.Git == nil {
 		if gitInfo := s.getGitInfo(filePath); gitInfo != nil {
 			// Only add git info if this directory is in a different repository than the parent context
@@ -589,13 +633,24 @@ func (s *Scanner) recurse(payload *types.Payload, filePath string) error {
 			}
 		}
 	}
+	if time.Since(tGit) > 100*time.Millisecond {
+		slog.Debug("Git info retrieval slow", "path", filePath, "duration", time.Since(tGit))
+	}
 
 	// Detect licenses from LICENSE files in this directory
 	// This adds file-based license detection (MIT, Apache-2.0, etc.) from LICENSE files
+	tLicense := time.Now()
 	s.licenseDetector.AddLicensesToPayload(ctx, filePath)
+	if time.Since(tLicense) > 100*time.Millisecond {
+		slog.Debug("License detection slow", "path", filePath, "duration", time.Since(tLicense))
+	}
 
 	// End timing for folder file processing
 	s.progress.FolderFileProcessingEnd(filePath)
+
+	if time.Since(tEnter) > 500*time.Millisecond {
+		slog.Debug("Directory processing slow", "path", filePath, "total_duration", time.Since(tEnter))
+	}
 
 	// Process each file/directory (exactly like TypeScript's loop)
 	for _, file := range filteredFiles {

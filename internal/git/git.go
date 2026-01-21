@@ -13,7 +13,6 @@ import (
 type GitInfo struct {
 	Branch    string `json:"branch,omitempty"`
 	Commit    string `json:"commit,omitempty"`
-	IsDirty   bool   `json:"is_dirty"`
 	RemoteURL string `json:"remote_url,omitempty"`
 }
 
@@ -75,11 +74,8 @@ func GetGitInfoWithRoot(path string) (*GitInfo, string) {
 		}
 	}
 
-	// Get worktree status to check if dirty (expensive operation)
-	status, err := worktree.Status()
-	if err == nil {
-		gitInfo.IsDirty = !status.IsClean()
-	}
+	// PERFORMANCE: Skipping worktree.Status() check - can take 20+ seconds on large repos
+	// IsDirty field was removed as it wasn't used in any analysis or output
 
 	// Get remote URL (origin)
 	remoteConfig, err := repo.Config()

@@ -3,11 +3,10 @@ package git
 import (
 	"bufio"
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
-
-	"log/slog"
 
 	"github.com/bmatcuk/doublestar/v4"
 	"github.com/petrarca/tech-stack-analyzer/internal/progress"
@@ -67,7 +66,7 @@ func (gl *gitignoreLogger) logError(path string, err error) {
 
 func (gl *gitignoreLogger) logLoaded(path string, patterns []string) {
 	if gl.logger != nil {
-		gl.logger.Debug("Loaded patterns from file", "path", path, "patterns", patterns, "count", len(patterns))
+		gl.logger.Debug("Loaded patterns from file", "path", path, "count", len(patterns))
 	}
 }
 
