@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
+	"github.com/stretchr/testify/require"
 )
 
 func TestComponentRegistry(t *testing.T) {
@@ -42,22 +43,14 @@ func TestComponentRegistry(t *testing.T) {
 
 	// Test lookup via byDependencyType map
 	found := registry.byDependencyType["nuget"]["MyCompany.SharedLib"]
-	if found == nil {
-		t.Fatal("Expected to find MyCompany.SharedLib in registry")
-	}
-	if found.ID != "lib-id" {
-		t.Errorf("Expected lib-id, got %s", found.ID)
-	}
+	require.NotNil(t, found, "Expected to find MyCompany.SharedLib in registry")
+	require.Equal(t, "lib-id", found.ID)
 
 	// Test findMatchingComponent
 	scanner := &Scanner{}
 	matched := scanner.findMatchingComponent(app.Dependencies[0], registry)
-	if matched == nil {
-		t.Fatal("Expected to find matching component for dependency")
-	}
-	if matched.ID != "lib-id" {
-		t.Errorf("Expected lib-id, got %s", matched.ID)
-	}
+	require.NotNil(t, matched, "Expected to find matching component for dependency")
+	require.Equal(t, "lib-id", matched.ID)
 }
 
 func TestComponentRegistryMaven(t *testing.T) {
@@ -79,12 +72,8 @@ func TestComponentRegistryMaven(t *testing.T) {
 
 	// Test lookup with groupId:artifactId via byDependencyType map
 	found := registry.byDependencyType["maven"]["com.example:my-library"]
-	if found == nil {
-		t.Fatal("Expected to find com.example:my-library in registry")
-	}
-	if found.ID != "lib-id" {
-		t.Errorf("Expected lib-id, got %s", found.ID)
-	}
+	require.NotNil(t, found, "Expected to find com.example:my-library in registry")
+	require.Equal(t, "lib-id", found.ID)
 }
 
 func TestComponentRegistryNpmNodejs(t *testing.T) {
@@ -104,10 +93,6 @@ func TestComponentRegistryNpmNodejs(t *testing.T) {
 
 	// Test lookup via byDependencyType map
 	found := registry.byDependencyType["npm"]["my-awesome-package"]
-	if found == nil {
-		t.Fatal("Expected to find my-awesome-package in registry")
-	}
-	if found.ID != "pkg-id" {
-		t.Errorf("Expected pkg-id, got %s", found.ID)
-	}
+	require.NotNil(t, found, "Expected to find my-awesome-package in registry")
+	require.Equal(t, "pkg-id", found.ID)
 }

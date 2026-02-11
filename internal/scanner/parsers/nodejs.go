@@ -47,14 +47,6 @@ func (p *NodeJSParser) ExtractDependencies(pkg *PackageJSON) []string {
 	return dependencies
 }
 
-// GetPackageName returns the package name with a fallback if empty
-func (p *NodeJSParser) GetPackageName(pkg *PackageJSON) string {
-	if pkg.Name != "" {
-		return pkg.Name
-	}
-	return "nodejs-component"
-}
-
 // CreateDependencies creates a list of Dependency objects from package.json
 func (p *NodeJSParser) CreateDependencies(pkg *PackageJSON, depNames []string) []types.Dependency {
 	dependencies := make([]types.Dependency, 0)

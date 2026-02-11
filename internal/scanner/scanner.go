@@ -30,6 +30,7 @@ import (
 	_ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/deno"
 	_ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/docker"
 	_ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/dotnet"
+	_ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/githubactions"
 	_ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/golang"
 	_ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/java"
 	_ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/nodejs"
@@ -45,7 +46,6 @@ type Scanner struct {
 	provider        types.Provider
 	rules           []types.Rule
 	depDetector     *DependencyDetector
-	compDetector    *ComponentDetector
 	dotenvDetector  *parsers.DotenvDetector
 	licenseDetector *license.LicenseDetector
 	langDetector    *LanguageDetector
@@ -172,7 +172,6 @@ func NewScannerWithOptionsAndLogger(path string, excludePatterns []string, verbo
 		provider:        provider,
 		rules:           components.rules,
 		depDetector:     components.depDetector,
-		compDetector:    components.compDetector,
 		dotenvDetector:  components.dotenvDetector,
 		licenseDetector: components.licenseDetector,
 		langDetector:    NewLanguageDetector(),
@@ -224,7 +223,6 @@ func (s *Scanner) SetUseLockFiles(use bool) {
 type scannerComponents struct {
 	rules           []types.Rule
 	depDetector     *DependencyDetector
-	compDetector    *ComponentDetector
 	dotenvDetector  *parsers.DotenvDetector
 	licenseDetector *license.LicenseDetector
 	contentMatcher  *matchers.ContentMatcherRegistry
@@ -256,7 +254,6 @@ func initializeScannerComponents(provider types.Provider, path string, logger *s
 	// Initialize all detectors
 	t3 := time.Now()
 	depDetector := NewDependencyDetector(loadedRules)
-	compDetector := NewComponentDetector(depDetector, provider, loadedRules)
 	dotenvDetector := parsers.NewDotenvDetector(provider, loadedRules)
 	licenseDetector := license.NewLicenseDetector()
 	if logger != nil {
@@ -283,7 +280,6 @@ func initializeScannerComponents(provider types.Provider, path string, logger *s
 	return &scannerComponents{
 		rules:           loadedRules,
 		depDetector:     depDetector,
-		compDetector:    compDetector,
 		dotenvDetector:  dotenvDetector,
 		licenseDetector: licenseDetector,
 		contentMatcher:  contentMatcher,
@@ -684,13 +680,10 @@ func (s *Scanner) recurse(payload *types.Payload, filePath string) error {
 func (s *Scanner) applyRules(payload *types.Payload, files []types.File, currentPath string) *types.Payload {
 	ctx := payload
 
-	// 1. Component-based detection
+	// 1. Component-based detection (all plugin detectors including GitHub Actions)
 	ctx = s.detectComponents(payload, ctx, files, currentPath)
 
-	// 2. GitHub Actions detection
-	s.detectGitHubActions(payload, files, currentPath)
-
-	// 3. Dotenv detection
+	// 2. Dotenv detection
 	s.detectDotenv(ctx, files, currentPath)
 
 	// 4. File and extension-based detection (includes JSON schema via content matchers)
@@ -763,11 +756,6 @@ func (s *Scanner) addNamedComponent(payload, component *types.Payload, currentPa
 		s.findImplicitComponentByTech(component, tech, currentPath, true)
 	}
 	return component
-}
-
-func (s *Scanner) detectGitHubActions(payload *types.Payload, files []types.File, currentPath string) {
-	githubActionsComponents := s.compDetector.DetectGitHubActionsComponent(files, currentPath, s.provider.GetBasePath())
-	s.processDetectedComponent(payload, githubActionsComponents, currentPath)
 }
 
 func (s *Scanner) detectDotenv(ctx *types.Payload, files []types.File, currentPath string) {

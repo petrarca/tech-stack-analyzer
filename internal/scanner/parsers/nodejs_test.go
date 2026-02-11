@@ -200,45 +200,6 @@ func TestExtractDependencies(t *testing.T) {
 	}
 }
 
-func TestGetPackageName(t *testing.T) {
-	parser := NewNodeJSParser()
-
-	tests := []struct {
-		name         string
-		packageJSON  *PackageJSON
-		expectedName string
-	}{
-		{
-			name: "package with name",
-			packageJSON: &PackageJSON{
-				Name: "my-app",
-			},
-			expectedName: "my-app",
-		},
-		{
-			name: "package with empty name",
-			packageJSON: &PackageJSON{
-				Name: "",
-			},
-			expectedName: "nodejs-component",
-		},
-		{
-			name: "package with whitespace name",
-			packageJSON: &PackageJSON{
-				Name: "   ",
-			},
-			expectedName: "   ",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := parser.GetPackageName(tt.packageJSON)
-			assert.Equal(t, tt.expectedName, result, "Should return correct package name")
-		})
-	}
-}
-
 func TestCreateDependencies(t *testing.T) {
 	parser := NewNodeJSParser()
 
@@ -354,9 +315,8 @@ func TestNodeJSParser_Integration(t *testing.T) {
 	depNames := parser.ExtractDependencies(pkg)
 	assert.Len(t, depNames, 4, "Should extract 4 dependencies")
 
-	// Get package name
-	name := parser.GetPackageName(pkg)
-	assert.Equal(t, "integration-test", name, "Should get correct package name")
+	// Verify package name
+	assert.Equal(t, "integration-test", pkg.Name, "Should have correct package name")
 
 	// Create dependency objects
 	dependencies := parser.CreateDependencies(pkg, depNames)
