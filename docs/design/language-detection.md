@@ -44,7 +44,7 @@ lang, safe := enry.GetLanguageByExtension(filename)
 - `.js` → JavaScript (safe: true)
 - `.py` → Python (safe: true)
 - `.go` → Go (safe: true)
-- `.md` → GCC Machine Description (safe: false) ⚠️
+- `.md` → GCC Machine Description (safe: false) -- Note: ambiguous
 
 **Performance:** O(1) hash map lookup, no file reading required.
 
@@ -99,11 +99,11 @@ if lang == "" {
 ### Performance Impact
 
 **Before optimization:**
-- All `.md` files detected as "GCC Machine Description" ❌
+- All `.md` files detected as "GCC Machine Description" (incorrect)
 - No content reading (fast but inaccurate)
 
 **After optimization:**
-- `.md` files correctly detected as "Markdown" ✅
+- `.md` files correctly detected as "Markdown" (correct)
 - Content reading only for ambiguous extensions (~1% of files)
 - Minimal performance impact (<5ms per ambiguous file)
 
@@ -313,10 +313,10 @@ jq '.languages | has("Markdown")' stack-analysis.json
 ## Summary
 
 The language detection system provides:
-- ✅ **1500+ languages** via GitHub Linguist
-- ✅ **Accurate detection** with content analysis for ambiguous extensions
-- ✅ **High performance** with smart fallback strategy
-- ✅ **Modular design** for testability and maintainability
-- ✅ **Minimal overhead** (~1% of files require content reading)
+- **1500+ languages** via GitHub Linguist
+- **Accurate detection** with content analysis for ambiguous extensions
+- **High performance** with smart fallback strategy
+- **Modular design** for testability and maintainability
+- **Minimal overhead** (~1% of files require content reading)
 
 This ensures accurate language statistics while maintaining excellent performance.

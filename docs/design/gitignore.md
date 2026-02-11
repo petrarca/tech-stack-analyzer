@@ -75,21 +75,21 @@ loader.PopGitignore()
 
 ## Key Features
 
-### ✅ Proper Hierarchy
+### Proper Hierarchy
 - Patterns only apply to their directory and subdirectories
 - Maintains git's precedence rules
 
-### ✅ Multiple Sources
+### Multiple Sources
 - CLI arguments
 - Configuration files
 - `.gitignore` files
 - `.git/info/exclude` (personal)
 
-### ✅ Performance
+### Performance
 - Stack-based O(1) push/pop operations
 - Efficient pattern matching with doublestar
 
-### ✅ Robustness
+### Robustness
 - Handles git worktrees and submodules
 - Graceful fallback for non-git repos
 - Detailed logging for debugging

@@ -10,9 +10,9 @@ Improve separation between user output, progress information, and developer logg
 
 | Channel | Current Usage | Issues |
 |---------|--------------|--------|
-| **stdout** | JSON results (when no `-o` flag) | ✓ Correct - pipeable |
-| **stderr** | Logrus logs + Verbose progress | ✗ Mixed purposes |
-| **files** | JSON output (with `-o` flag) | ✓ Works |
+| **stdout** | JSON results (when no `-o` flag) | Correct - pipeable |
+| **stderr** | Logrus logs + Verbose progress | Mixed purposes |
+| **files** | JSON output (with `-o` flag) | Works |
 
 ### Current Problems
 
@@ -77,21 +77,21 @@ fmt.Println(tech)
 ### Piping Examples
 
 ```bash
-# ✓ Works: Pipe JSON to jq (no noise)
+# Works: Pipe JSON to jq (no noise)
 stack-analyzer scan /path | jq '.techs'
 
-# ✓ Works: Pipe with verbose (progress to stderr, data to stdout)
+# Works: Pipe with verbose (progress to stderr, data to stdout)
 stack-analyzer scan --verbose /path | jq '.techs'
 # stderr shows: [SCAN] Starting: /path...
 # stdout pipes: {"techs": [...]}
 
-# ✓ Works: Debug logs to file, data to stdout
+# Works: Debug logs to file, data to stdout
 stack-analyzer scan --log-level=debug --log-file=debug.log /path | jq
 
-# ✓ Works: Suppress all stderr
+# Works: Suppress all stderr
 stack-analyzer scan --verbose /path 2>/dev/null | jq
 
-# ✓ Works: Capture both streams
+# Works: Capture both streams
 stack-analyzer scan --verbose /path 2>progress.log | jq > results.json
 ```
 
@@ -120,10 +120,10 @@ Location: `internal/cmd/info.go`
 
 | Line | Current Code | Category | Action |
 |------|-------------|----------|--------|
-| 80 | `fmt.Fprintf(os.Stderr, "Error...")` | Error | ✓ Correct |
-| 122-128 | `fmt.Printf("=== %s ===\n", title)` | User output | ✓ Correct (stdout) |
-| 165 | `fmt.Println(tech)` | User output | ✓ Correct (stdout) |
-| 210 | `fmt.Println(string(output))` | User output | ✓ Correct (stdout) |
+| 80 | `fmt.Fprintf(os.Stderr, "Error...")` | Error | Correct |
+| 122-128 | `fmt.Printf("=== %s ===\n", title)` | User output | Correct (stdout) |
+| 165 | `fmt.Println(tech)` | User output | Correct (stdout) |
+| 210 | `fmt.Println(string(output))` | User output | Correct (stdout) |
 
 #### 1.3 Audit log.* Calls
 
@@ -131,7 +131,7 @@ Location: `cmd/convert-rules/main.go`
 
 | Usage | Category | Action |
 |-------|----------|--------|
-| `log.Printf("✓ %s -> %s", ...)` | User progress | Keep (utility script) |
+| `log.Printf("[OK] %s -> %s", ...)` | User progress | Keep (utility script) |
 | `log.Fatalf("Conversion failed: %v", err)` | Error | Keep (utility script) |
 
 **Decision**: `convert-rules` is a utility script, not the main CLI. Keep simple logging.
@@ -506,26 +506,26 @@ Rationale:
 ### Examples
 
 ```go
-// ✓ Good: Debug log
+// Good: Debug log
 logger.Debug("Detected component", "name", name, "tech", tech)
 
-// ✓ Good: User message
+// Good: User message
 fmt.Fprintf(os.Stderr, "Writing results to %s\n", outputFile)
 
-// ✓ Good: Progress
+// Good: Progress
 s.progress.ComponentDetected(name, tech, path)
 
-// ✓ Good: Non-fatal error
+// Good: Non-fatal error
 logger.Error("Failed to read file", "path", path, "error", err)
 s.progress.Error("Failed to read file", err)
 
-// ✗ Bad: Info level
+// Bad: Info level
 logger.Info("Starting scan")  // DON'T USE
 
-// ✗ Bad: User message to stdout (breaks piping)
+// Bad: User message to stdout (breaks piping)
 fmt.Println("Starting scan...")  // Use stderr or progress
 
-// ✗ Bad: Fatal for non-fatal error
+// Bad: Fatal for non-fatal error
 logger.Fatal("Failed to read file")  // Use Error instead
 ```
 ```
@@ -581,13 +581,13 @@ stack-analyzer scan --log-level=trace --log-file=trace.log /path
 
 ## Implementation Checklist
 
-### Phase 1: Audit ✅
+### Phase 1: Audit (Completed)
 - [x] Audit logger.Info() calls
 - [x] Audit fmt.Print* calls
 - [x] Audit log.* calls
 - [x] Categorize each output statement
 
-### Phase 2: Settings ✅
+### Phase 2: Settings (Completed)
 - [x] Remove Info from valid log levels
 - [x] Add Error level support
 - [x] Add LogFile field to Settings
@@ -595,7 +595,7 @@ stack-analyzer scan --log-level=trace --log-file=trace.log /path
 - [x] Add --log-file flag
 - [x] Update default log level to Error
 
-### Phase 3: Progress ✅
+### Phase 3: Progress (Completed)
 - [x] Add EventScanInitializing
 - [x] Add EventFileWriting
 - [x] Add EventFileWritten
@@ -603,7 +603,7 @@ stack-analyzer scan --log-level=trace --log-file=trace.log /path
 - [x] Update SimpleHandler
 - [x] Update TreeHandler
 
-### Phase 4: Migration ✅
+### Phase 4: Migration (Completed)
 - [x] Remove line 80-83 (Starting message)
 - [x] Migrate line 127-131 (Initializing)
 - [x] Migrate line 141 (Scanning file)
@@ -611,7 +611,7 @@ stack-analyzer scan --log-level=trace --log-file=trace.log /path
 - [x] Migrate line 165-170 (File output messages)
 - [x] Add support for `-o -` as stdout shorthand
 
-### Phase 5: Testing ✅
+### Phase 5: Testing (Completed)
 - [x] Test piping: `stack-analyzer scan -o - /path | jq`
 - [x] Test verbose piping: `stack-analyzer scan --verbose -o - /path | jq`
 - [x] Test log file: `--log-level=debug --log-file=debug.log`
@@ -619,7 +619,7 @@ stack-analyzer scan --log-level=trace --log-file=trace.log /path
 - [x] Test combined: `--verbose --log-level=debug --log-file=debug.log`
 - [x] Test default behavior (writes to file)
 
-### Phase 6: Documentation ✅
+### Phase 6: Documentation (Completed)
 - [x] Update README.md with output/logging section
 - [x] Add piping examples to README
 - [x] Update flag descriptions
@@ -628,14 +628,14 @@ stack-analyzer scan --log-level=trace --log-file=trace.log /path
 
 ## Success Criteria
 
-1. ✅ `stack-analyzer scan /path | jq` works without noise
-2. ✅ `stack-analyzer scan --verbose /path | jq` shows progress on stderr, pipes data
-3. ✅ `--log-level=debug` enables debug logs
-4. ✅ `--log-file=debug.log` writes logs to file
-5. ✅ No Info level logs exist
-6. ✅ All user messages go to stderr or stdout appropriately
-7. ✅ Progress package handles all verbose output
-8. ✅ Documentation is clear and complete
+1. DONE: `stack-analyzer scan /path | jq` works without noise
+2. DONE: `stack-analyzer scan --verbose /path | jq` shows progress on stderr, pipes data
+3. DONE: `--log-level=debug` enables debug logs
+4. DONE: `--log-file=debug.log` writes logs to file
+5. DONE: No Info level logs exist
+6. DONE: All user messages go to stderr or stdout appropriately
+7. DONE: Progress package handles all verbose output
+8. DONE: Documentation is clear and complete
 
 ## Migration Timeline
 
@@ -649,18 +649,18 @@ stack-analyzer scan --log-level=trace --log-file=trace.log /path
 ## Questions to Resolve
 
 1. **Should we show "Writing results to X" without --verbose?**
-   - ✅ **DECISION**: Option C - Show only final confirmation (like curl)
+   - **DECISION**: Option C - Show only final confirmation (like curl)
    - Implementation: `fmt.Fprintf(os.Stderr, "Results written to %s\n", settings.OutputFile)`
    - Rationale: User feedback without being verbose
 
 2. **Should errors always go to stderr even without --verbose?**
-   - ✅ **DECISION**: Yes, always show errors
+   - **DECISION**: Yes, always show errors
    - Rationale: Users need to see errors
 
 3. **Default log level?**
-   - ✅ **DECISION**: `error` (only errors and fatal)
+   - **DECISION**: `error` (only errors and fatal)
    - Rationale: Clean output by default, debug on demand
 
 4. **Should we add --quiet flag to suppress stderr?**
-   - ✅ **DECISION**: No, use `2>/dev/null` instead
+   - **DECISION**: No, use `2>/dev/null` instead
    - Rationale: Unix philosophy - don't reinvent shell features

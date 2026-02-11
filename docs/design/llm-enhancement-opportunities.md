@@ -47,13 +47,13 @@ After evaluating integrated vs. post-processing approaches for LLM enhancement, 
 
 | Criterion | Post-Processing | Integrated |
 |-----------|-----------------|------------|
-| **Performance** | ✅ No impact on scan speed | ❌ Adds latency to every scan |
-| **Cost Control** | ✅ Explicit, user-initiated | ⚠️ May incur unexpected API costs |
-| **Determinism** | ✅ Base scan always deterministic | ⚠️ Results may vary with LLM |
-| **Offline Capability** | ✅ Core scanner works offline | ❌ Requires connectivity |
-| **Separation of Concerns** | ✅ Clean architecture | ⚠️ Tightly coupled |
-| **Debugging** | ✅ Clear two-phase debugging | ⚠️ Mixed responsibility |
-| **Zero-Dependency Philosophy** | ✅ Preserves single binary | ❌ Requires LLM integration |
+| **Performance** | Yes: No impact on scan speed | No: Adds latency to every scan |
+| **Cost Control** | Yes: Explicit, user-initiated | Warning: May incur unexpected API costs |
+| **Determinism** | Yes: Base scan always deterministic | Warning: Results may vary with LLM |
+| **Offline Capability** | Yes: Core scanner works offline | No: Requires connectivity |
+| **Separation of Concerns** | Yes: Clean architecture | Warning: Tightly coupled |
+| **Debugging** | Yes: Clear two-phase debugging | Warning: Mixed responsibility |
+| **Zero-Dependency Philosophy** | Yes: Preserves single binary | No: Requires LLM integration |
 
 ### Two-Phase Architecture
 
@@ -114,7 +114,7 @@ stack-analyzer enhance analysis.json --dry-run  # Preview enhancement targets
 
 ## Use Case Categories
 
-### 🎯 High-Impact Use Cases
+### High-Impact Use Cases
 
 #### 1. Ambiguous Technology Disambiguation
 
@@ -777,7 +777,7 @@ Validation Output:
 File: tests/fixtures/mock-react-component.js
 Content: import React from 'react'
 
-Detection: React ✓ (FALSE POSITIVE - it's a test fixture)
+Detection: React [MATCH] (FALSE POSITIVE - it's a test fixture)
 ```
 
 **LLM Enhancement:**
@@ -1419,7 +1419,7 @@ stack-analyzer enhance analysis.json \
 
 ## Where NOT to Use LLM
 
-### ❌ Inappropriate Use Cases
+### Inappropriate Use Cases
 
 1. **Primary Detection Logic**
    - Don't replace rule-based matching
@@ -1442,7 +1442,7 @@ stack-analyzer enhance analysis.json \
    - Pattern matching
    - Basic categorization
 
-### ✅ Appropriate Use Cases
+### Appropriate Use Cases
 
 1. **Post-Scan Analysis** (once per project)
 2. **Ambiguous Cases** (< 5% of detections)
@@ -1537,15 +1537,15 @@ Annual cost (1000 repos, monthly scans):
 
 ### Option 2: Full LLM
 - All detection via LLM
-- ❌ Too slow, too expensive
-- ❌ Non-deterministic results
-- ❌ Requires API access
+- Too slow, too expensive
+- Non-deterministic results
+- Requires API access
 
 ### Option 3: ML Classification
 - Train custom models for detection
-- ❌ Requires training data
-- ❌ Model maintenance burden
-- ❌ Less flexible than LLM
+- Requires training data
+- Model maintenance burden
+- Less flexible than LLM
 
 **Verdict:** Hybrid approach maximizes value while maintaining performance and reliability.
 
@@ -1582,11 +1582,11 @@ Quarter 4 (Months 10-12):
 LLM enhancement represents a strategic opportunity to add high-value contextual analysis while maintaining the core strength of fast, rule-based detection. By focusing on ambiguous cases, higher-order insights, and user experience improvements, we can differentiate the Tech Stack Analyzer in the market while staying true to its zero-dependency, single-binary philosophy.
 
 **Key Principles:**
-- ✅ LLM enhances, never replaces, rule-based detection
-- ✅ Opt-in features with clear value proposition
-- ✅ Privacy and cost consciousness built-in
-- ✅ Focus on actionable insights, not just detection
-- ✅ Enterprise-ready with local deployment options
+- LLM enhances, never replaces, rule-based detection
+- Opt-in features with clear value proposition
+- Privacy and cost consciousness built-in
+- Focus on actionable insights, not just detection
+- Enterprise-ready with local deployment options
 
 **Next Steps:**
 1. Prototype Phase 1 with single use case

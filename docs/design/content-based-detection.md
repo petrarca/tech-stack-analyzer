@@ -83,16 +83,16 @@ content:
 
 ```
 Phase 1: Extension/File Detection
-  .py file exists → python detected ✓
-  package.json exists → nodejs detected ✓
+  .py file exists → python detected
+  package.json exists → nodejs detected
 
 Phase 2: Content Detection (INDEPENDENT)
-  .cpp file with Q_OBJECT → qt detected ✓
-  .cpp file with #include <afx → mfc detected ✓
-  CMakeLists.txt with Qt6:: → qt detected ✓
+  .cpp file with Q_OBJECT → qt detected
+  .cpp file with #include <afx → mfc detected
+  CMakeLists.txt with Qt6:: → qt detected
 
 Phase 3: Dependency Detection (INDEPENDENT)
-  "react" in package.json → react detected ✓
+  "react" in package.json → react detected
 
 All results combined (OR)
 ```
@@ -131,7 +131,7 @@ for tech, reasons := range matches {
 
 ## When to Use Content Detection
 
-### ✅ Perfect Use Cases
+### Perfect Use Cases
 
 **Distinguish Similar Technologies:**
 - **MFC vs Qt vs Pure C++** in `.cpp/.h` files
@@ -153,17 +153,17 @@ for tech, reasons := range matches {
 - **CMake with Boost**: `find_package(Boost)`
 - **Makefile patterns**: Specific compiler flags
 
-### ❌ Don't Use For
+### Don't Use For
 
 **Already Definitive Detection:**
-- ✗ Package dependencies (npm, pip, maven) - use `dependencies` field
-- ✗ Unique config files (`.pro`, `.ui`) - use `extensions` field
-- ✗ Specific filenames (`package.json`) - use `files` field
+- Package dependencies (npm, pip, maven) - use `dependencies` field
+- Unique config files (`.pro`, `.ui`) - use `extensions` field
+- Specific filenames (`package.json`) - use `files` field
 
 **Performance Concerns:**
-- ✗ Very large files (>10MB) - content reading is expensive
-- ✗ Binary files - regex won't work
-- ✗ Redundant validation - if extension is sufficient
+- Very large files (>10MB) - content reading is expensive
+- Binary files - regex won't work
+- Redundant validation - if extension is sufficient
 
 ## Performance Characteristics
 
@@ -213,9 +213,9 @@ content:
     extensions: [.cpp, .h, .hpp]
 ```
 **Behavior:**
-- `.cpp` with `#include <afxwin.h>` → MFC detected ✓
-- `.cpp` without MFC patterns → MFC NOT detected ✓
-- Pure C++ project → No false positives ✓
+- `.cpp` with `#include <afxwin.h>` → MFC detected
+- `.cpp` without MFC patterns → MFC NOT detected
+- Pure C++ project → No false positives
 
 ### Qt Detection (Hybrid)
 ```yaml
@@ -234,10 +234,10 @@ content:
     files: [CMakeLists.txt]
 ```
 **Behavior:**
-- `.pro` file → Qt detected ✓ (extension match)
-- `.cpp` with `Q_OBJECT` → Qt detected ✓ (content match)
-- `CMakeLists.txt` with `Qt6::` → Qt detected ✓ (content match)
-- Pure C++ project → Qt NOT detected ✓
+- `.pro` file → Qt detected (extension match)
+- `.cpp` with `Q_OBJECT` → Qt detected (content match)
+- `CMakeLists.txt` with `Qt6::` → Qt detected (content match)
+- Pure C++ project → Qt NOT detected
 
 ### OpenGL Detection
 ```yaml
@@ -319,12 +319,12 @@ func (r *ContentMatcherRegistry) BuildFromRules(rules []types.Rule) error {
 
 Comprehensive test coverage in `internal/scanner/matchers/content_test.go`:
 
-- ✅ Pattern compilation and matching
-- ✅ Extension-based filtering
-- ✅ File-specific matching
-- ✅ Rule validation (requires extensions/files)
-- ✅ Multiple pattern matching
-- ✅ Fallback to top-level extensions
+- Pattern compilation and matching
+- Extension-based filtering
+- File-specific matching
+- Rule validation (requires extensions/files)
+- Multiple pattern matching
+- Fallback to top-level extensions
 
 Run tests:
 ```bash
@@ -336,13 +336,13 @@ task test  # Run all tests
 
 ### 1. Always Specify Restrictions
 
-❌ **Bad** - No restrictions (would check every file):
+**Bad** - No restrictions (would check every file):
 ```yaml
 content:
   - pattern: 'some_pattern'  # WHERE to check?
 ```
 
-✓ **Good** - Explicit restrictions:
+**Good** - Explicit restrictions:
 ```yaml
 content:
   - pattern: 'some_pattern'
@@ -351,13 +351,13 @@ content:
 
 ### 2. Use Specific Patterns
 
-❌ **Bad** - Too broad:
+**Bad** - Too broad:
 ```yaml
 content:
   - pattern: 'include'  # Matches too much
 ```
 
-✓ **Good** - Specific:
+**Good** - Specific:
 ```yaml
 content:
   - pattern: '#include\s+<afx'  # MFC-specific
@@ -365,14 +365,14 @@ content:
 
 ### 3. Prefer File-Specific Over Extension
 
-❌ **Less efficient** - Check all `.txt` files:
+**Less efficient** - Check all `.txt` files:
 ```yaml
 content:
   - pattern: 'Qt6::'
     extensions: [.txt]
 ```
 
-✓ **More efficient** - Check specific file:
+**More efficient** - Check specific file:
 ```yaml
 content:
   - pattern: 'Qt6::'
@@ -381,13 +381,13 @@ content:
 
 ### 4. Use Word Boundaries
 
-❌ **Bad** - Partial matches:
+**Bad** - Partial matches:
 ```yaml
 content:
   - pattern: 'useState'  # Matches "myuseState"
 ```
 
-✓ **Good** - Exact matches:
+**Good** - Exact matches:
 ```yaml
 content:
   - pattern: '\buseState\b'  # Only "useState"
@@ -402,8 +402,8 @@ content:
 ./scanner scan --trace-rules /path/to/project
 
 # Output:
-│  └─ ✓ MATCHED: qt - content matched: Q_OBJECT (in widget.cpp)
-│  └─ ✓ MATCHED: mfc - content matched: #include\s+<afx (in MainFrame.h)
+│  └─ MATCHED: qt - content matched: Q_OBJECT (in widget.cpp)
+│  └─ MATCHED: mfc - content matched: #include\s+<afx (in MainFrame.h)
 ```
 
 ### Test Specific Rules
@@ -426,10 +426,10 @@ Potential improvements (not yet implemented):
 ## Summary
 
 Content-based detection provides:
-- ✅ **Independent detection** - Not tied to extensions
-- ✅ **O(1) performance** - Hash map lookups
-- ✅ **No false positives** - Precise pattern matching
-- ✅ **Flexible restrictions** - Extensions or specific files
-- ✅ **Easy to extend** - Just add YAML rules
+- **Independent detection** - Not tied to extensions
+- **O(1) performance** - Hash map lookups
+- **No false positives** - Precise pattern matching
+- **Flexible restrictions** - Extensions or specific files
+- **Easy to extend** - Just add YAML rules
 
 This enables accurate detection of technologies that share common file extensions, preventing false positives while maintaining excellent performance.

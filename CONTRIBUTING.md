@@ -2,7 +2,7 @@
 
 Thank you for your interest in contributing to the Tech Stack Analyzer! This document provides guidelines and information to help you get started.
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -39,7 +39,7 @@ Thank you for your interest in contributing to the Tech Stack Analyzer! This doc
    task fct  # Format, Check, Test
    ```
 
-## 🏗️ Development Workflow
+## Development Workflow
 
 ### 1. Create a Feature Branch
 
@@ -95,9 +95,9 @@ git push origin feature/your-feature-name
 # Create pull request
 ```
 
-## 📋 Contribution Types
+## Contribution Types
 
-### 🐛 Bug Fixes
+### Bug Fixes
 
 1. **Create an issue** describing the bug with:
    - Clear reproduction steps
@@ -108,7 +108,7 @@ git push origin feature/your-feature-name
 3. **Fix the bug** ensuring all tests pass
 4. **Update documentation** if behavior changes
 
-### ✨ New Features
+### New Features
 
 1. **Discuss in an issue** before implementing
 2. **Design the feature** considering:
@@ -121,14 +121,14 @@ git push origin feature/your-feature-name
    - Integration tests for end-to-end behavior
    - Benchmarks for performance-critical code
 
-### 🔧 Technology Rules
+### Technology Rules
 
 Adding support for new technologies is highly encouraged!
 
 #### Rule Structure
 
 ```yaml
-# internal/rules/core/category/technology.yaml
+# internal/rules/techs/category/technology.yaml
 tech: technology-id
 name: Human Readable Name
 type: category
@@ -151,7 +151,7 @@ detect:
 #### Rule Categories
 
 ```
-internal/rules/core/
+internal/rules/techs/
 ├── ai/                   # AI/ML frameworks and services
 ├── analytics/            # Analytics and monitoring platforms
 ├── application/          # Application frameworks
@@ -171,7 +171,7 @@ internal/rules/core/
 4. **Test against real projects** using the technology
 5. **Update documentation** if adding new category
 
-### 🧩 Component Detectors
+### Component Detectors
 
 Component detectors analyze project-specific files and configurations.
 
@@ -182,8 +182,8 @@ Component detectors analyze project-specific files and configurations.
 package technology
 
 import (
-    "tech-stack-analyzer/internal/scanner/components"
-    "tech-stack-analyzer/internal/types"
+    "github.com/petrarca/tech-stack-analyzer/internal/scanner/components"
+    "github.com/petrarca/tech-stack-analyzer/internal/types"
 )
 
 type Detector struct{}
@@ -192,8 +192,10 @@ func (d *Detector) Name() string {
     return "technology"
 }
 
-func (d *Detector) Detect(files []types.File, providers ...types.Provider) ([]*types.Payload, error) {
+func (d *Detector) Detect(files []types.File, currentPath, basePath string,
+    provider types.Provider, depDetector components.DependencyDetector) []*types.Payload {
     // Implementation
+    return nil
 }
 
 func init() {
@@ -209,7 +211,7 @@ func init() {
 4. **Create parser if needed** in `internal/scanner/parsers/`
 5. **Register in scanner** by importing in `internal/scanner/scanner.go`
 
-## 📏 Code Style Guidelines
+## Code Style Guidelines
 
 ### Go Code Style
 
@@ -303,7 +305,7 @@ func TestScanner_Scan(t *testing.T) {
 }
 ```
 
-## 📝 Commit Message Guidelines
+## Commit Message Guidelines
 
 Use conventional commit format:
 
@@ -345,7 +347,7 @@ pre-computed lookup tables. Results in 10x performance
 improvement for large repositories.
 ```
 
-## 🧪 Testing Strategy
+## Testing Strategy
 
 ### Test Categories
 
@@ -391,7 +393,7 @@ testdata/
     └── requirements.txt
 ```
 
-## 🚀 Performance Guidelines
+## Performance Guidelines
 
 ### Performance Considerations
 
@@ -429,7 +431,7 @@ go test -memprofile=mem.prof -bench=. ./...
 go test -cpuprofile=cpu.prof -bench=. ./...
 ```
 
-## 📋 Pull Request Process
+## Pull Request Process
 
 ### Before Submitting
 
@@ -485,7 +487,7 @@ Brief description of changes and motivation.
 4. **Performance review** for performance changes
 5. **Documentation review** for user-facing changes
 
-## 🐛 Issue Reporting
+## Issue Reporting
 
 ### Bug Reports
 
@@ -504,7 +506,7 @@ Use the bug report template with:
 - **Alternative approaches** considered
 - **Additional context** and requirements
 
-## 🤝 Community Guidelines
+## Community Guidelines
 
 ### Code of Conduct
 
@@ -526,7 +528,7 @@ Contributors are recognized in:
 - Release notes for significant contributions
 - Annual contributor highlights
 
-## 📚 Resources
+## Resources
 
 ### Development Tools
 
@@ -543,10 +545,10 @@ Contributors are recognized in:
 
 ### Project Documentation
 
-- **[Architecture Overview](docs/architecture.md)**: System design
-- **[Rule Development](docs/rule-development.md)**: Writing technology rules
-- **[Component Detectors](docs/component-detectors.md)**: Adding detectors
+- **[Scanner Architecture](docs/design/scanner-architecture.md)**: System design and scanning flow
+- **[Detector Reference](docs/design/detector-implementation.md)**: Component detector details
+- **[Content Detection](docs/design/content-based-detection.md)**: Content-based detection patterns
 
 ---
 
-Thank you for contributing to the Tech Stack Analyzer! Your contributions help make technology stack analysis faster and more comprehensive for everyone. 🚀
+Thank you for contributing to the Tech Stack Analyzer! Your contributions help make technology stack analysis faster and more comprehensive for everyone.

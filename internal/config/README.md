@@ -28,7 +28,7 @@ type Settings struct {
 | `--pretty` | `STACK_ANALYZER_PRETTY` | true | Pretty print JSON output |
 | `--exclude-dir` | `STACK_ANALYZER_EXCLUDE_DIRS` | (none) | Comma-separated directories to exclude |
 | `--aggregate` | `STACK_ANALYZER_AGGREGATE` | (none) | Aggregate fields to include |
-| `--log-level` | `STACK_ANALYZER_LOG_LEVEL` | info | Log level: trace, debug, info, warn, error, fatal, panic |
+| `--log-level` | `STACK_ANALYZER_LOG_LEVEL` | error | Log level: trace, debug, error, fatal |
 | `--log-format` | `STACK_ANALYZER_LOG_FORMAT` | text | Log format: text or json |
 
 ## Examples
@@ -92,7 +92,5 @@ STACK_ANALYZER_LOG_LEVEL=debug STACK_ANALYZER_LOG_FORMAT=json \
 
 ## Future Enhancements
 
-- Configuration file support (JSON/YAML)
 - Profile-based settings
-- Project-specific `.stack-analyzer.yml` files
 - Global user configuration in `~/.config/stack-analyzer/`

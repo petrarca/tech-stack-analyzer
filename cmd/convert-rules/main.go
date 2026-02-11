@@ -136,7 +136,7 @@ func (c *Converter) ConvertAll(limit int, dryRun bool) error {
 	for _, file := range ruleFiles {
 		rule, err := c.extractRuleFromFile(file)
 		if err != nil {
-			log.Printf("✗ Error extracting from %s: %v", filepath.Base(file), err)
+			log.Printf("[ERR] Error extracting from %s: %v", filepath.Base(file), err)
 			errors++
 			continue
 		}
@@ -148,7 +148,7 @@ func (c *Converter) ConvertAll(limit int, dryRun bool) error {
 
 		if !dryRun {
 			if err := c.writeRuleToFile(rule, file); err != nil {
-				log.Printf("✗ Error writing rule from %s: %v", filepath.Base(file), err)
+				log.Printf("[ERR] Error writing rule from %s: %v", filepath.Base(file), err)
 				errors++
 				continue
 			}
@@ -157,7 +157,7 @@ func (c *Converter) ConvertAll(limit int, dryRun bool) error {
 		category := c.getCategoryForType(rule.Type)
 		c.stats[category]++
 		converted++
-		log.Printf("✓ %s -> %s/%s.yaml", filepath.Base(file), category, rule.Tech)
+		log.Printf("[OK] %s -> %s/%s.yaml", filepath.Base(file), category, rule.Tech)
 	}
 
 	log.Printf("Conversion complete: %d converted, %d errors, target: %s", converted, errors, c.targetDir)

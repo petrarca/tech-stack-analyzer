@@ -11,18 +11,18 @@ A technology stack analyzer written in Go, re-implementing [specfy/stack-analyse
 
 The Tech Stack Analyzer is designed to be the **fastest way to understand what technologies and dependencies your codebase uses**. We focus on speed and accuracy while leaving specialized analysis to dedicated tools:
 
-- **✅ Fast Dependency Detection** - Identify technologies, frameworks, and dependencies in seconds
-- **✅ Zero Dependencies** - Single binary deployment, no runtime requirements  
-- **✅ Technology Inventory** - Complete overview of your stack for documentation and planning
-- **❌ Deep License Analysis** - Use specialized license compliance tools with our output
-- **❌ Security Scanning** - Use dedicated vulnerability scanners with our dependency list
-- **❌ File-level Analysis** - Use specialized tools for deep code analysis
+- **Fast Dependency Detection** - Identify technologies, frameworks, and dependencies in seconds
+- **Zero Dependencies** - Single binary deployment, no runtime requirements  
+- **Technology Inventory** - Complete overview of your stack for documentation and planning
+- **Deep License Analysis** - Use specialized license compliance tools with our output (not covered)
+- **Security Scanning** - Use dedicated vulnerability scanners with our dependency list (not covered)
+- **File-level Analysis** - Use specialized tools for deep code analysis (not covered)
 
 **Integration Approach:** Our structured output serves as the perfect input for license compliance tools, vulnerability scanners, and software composition analysis (SCA) platforms.
 
 ## Use Cases
 
-### 🚀 Primary Use Cases - What We Excel At:
+### Primary Use Cases - What We Excel At:
 
 **Technology Inventory & Documentation**
 - Generate comprehensive technology stack documentation
@@ -42,7 +42,7 @@ The Tech Stack Analyzer is designed to be the **fastest way to understand what t
 - Skill gap analysis based on detected technologies
 - Training needs assessment
 
-### 🔧 Integration Examples:
+### Integration Examples:
 
 **License Compliance Pipeline:**
 ```bash
@@ -96,7 +96,7 @@ The Tech Stack Analyzer automatically detects technologies, frameworks, database
 
 **Lock File Support:** The analyzer automatically uses lock files to extract exact resolved versions instead of version ranges:
 - **Node.js** - `package-lock.json`, `pnpm-lock.yaml`, `yarn.lock` → falls back to `package.json`
-- **Python** - `uv.lock`, `poetry.lock` → falls back to `pyproject.toml`
+- **Python** - `uv.lock`, `poetry.lock` → falls back to `pyproject.toml`, `requirements.txt`, `setup.py`
 - **Rust** - `Cargo.lock` → falls back to `Cargo.toml`
 - **Go** - `go.mod` (already contains exact versions)
 
@@ -824,9 +824,9 @@ content:
 ```
 
 **Behavior:**
-- `.cpp` file with `#include <afx` → Content pattern matches → **MFC detected** ✅
-- `.cpp` file without MFC patterns → No content matches → **MFC not detected** ❌
-- Pure C++ project → No MFC patterns → **MFC not detected** ❌ (no false positives!)
+- `.cpp` file with `#include <afx` → Content pattern matches → **MFC detected**
+- `.cpp` file without MFC patterns → No content matches → **MFC not detected**
+- Pure C++ project → No MFC patterns → **MFC not detected** (no false positives!)
 
 **Hybrid Detection** (Extension + Content):
 ```yaml
@@ -844,10 +844,10 @@ content:
 ```
 
 **Behavior:**
-- `.pro` file → Extension matches → **Qt detected** ✅ (no content check)
-- `.cpp` file with `Q_OBJECT` → Content pattern matches → **Qt detected** ✅
-- `.cpp` file without Qt patterns → No content matches → **Qt not detected** ❌
-- `CMakeLists.txt` with `Qt6::` → Content pattern matches → **Qt detected** ✅
+- `.pro` file → Extension matches → **Qt detected** (no content check)
+- `.cpp` file with `Q_OBJECT` → Content pattern matches → **Qt detected**
+- `.cpp` file without Qt patterns → No content matches → **Qt not detected**
+- `CMakeLists.txt` with `Qt6::` → Content pattern matches → **Qt detected**
 
 **File-Specific Patterns:**
 ```yaml
@@ -862,9 +862,9 @@ content:
 ```
 
 **Behavior:**
-- `CMakeLists.txt` with `Qt6::` → Content pattern matches → **Qt detected** ✅
-- `other_file.txt` with `Qt6::` → Wrong filename → **Qt not detected** ❌
-- `CMakeLists.txt` without Qt patterns → No content matches → **Qt not detected** ❌
+- `CMakeLists.txt` with `Qt6::` → Content pattern matches → **Qt detected**
+- `other_file.txt` with `Qt6::` → Wrong filename → **Qt not detected**
+- `CMakeLists.txt` without Qt patterns → No content matches → **Qt not detected**
 
 #### Use Cases
 
@@ -1323,7 +1323,7 @@ tech-stack-analyzer/
 #### 2. Component Detectors (`internal/scanner/components/`)
 Each detector handles specific project types:
 - **Node.js** - package.json, npm/yarn detection
-- **Python** - pyproject.toml, pip detection  
+- **Python** - pyproject.toml, requirements.txt, setup.py detection  
 - **.NET** - .csproj files, NuGet packages
 - **Java/Kotlin** - Maven/Gradle detection
 - **Docker** - docker-compose.yml services
@@ -1491,10 +1491,10 @@ This field provides fine-grained control over the relationship between component
 
 | Configuration | Component Created | Primary Tech | Use Case |
 |---------------|------------------|--------------|----------|
-| `is_component: true` (no `is_primary_tech`) | ✅ | ✅ | Default behavior (languages, databases) |
-| `is_component: true, is_primary_tech: false` | ✅ | ❌ | Build tools with organization (CMake, Make) |
-| `is_component: false, is_primary_tech: true` | ❌ | ✅ | Simple primary tech without components |
-| `is_component: false` (no `is_primary_tech`) | ❌ | ❌ | Regular detection (most tools, frameworks) |
+| `is_component: true` (no `is_primary_tech`) | Yes | Yes | Default behavior (languages, databases) |
+| `is_component: true, is_primary_tech: false` | Yes | No | Build tools with organization (CMake, Make) |
+| `is_component: false, is_primary_tech: true` | No | Yes | Simple primary tech without components |
+| `is_component: false` (no `is_primary_tech`) | No | No | Regular detection (most tools, frameworks) |
 
 **`dotenv`** - Array of environment variable prefixes
 ```yaml
@@ -1655,8 +1655,8 @@ internal/rules/core/
 package newtech
 
 import (
-    "tech-stack-analyzer/internal/scanner/components"
-    "tech-stack-analyzer/internal/types"
+    "github.com/petrarca/tech-stack-analyzer/internal/scanner/components"
+    "github.com/petrarca/tech-stack-analyzer/internal/types"
 )
 
 type Detector struct{}
@@ -1665,7 +1665,8 @@ func (d *Detector) Name() string {
     return "newtech"
 }
 
-func (d *Detector) Detect(files []types.File, ...) []*types.Payload {
+func (d *Detector) Detect(files []types.File, currentPath, basePath string,
+    provider types.Provider, depDetector components.DependencyDetector) []*types.Payload {
     // Implementation here
 }
 
@@ -1692,7 +1693,7 @@ func (p *NewTechParser) ParseConfig(content string) NewTechConfig {
 ```go
 // internal/scanner/scanner.go
 import (
-    _ "tech-stack-analyzer/internal/scanner/components/newtech"
+    _ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/newtech"
 )
 ```
 
