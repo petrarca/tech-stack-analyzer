@@ -217,7 +217,9 @@ dependencies = [
 
 	// Setup mock dependency detector
 	depDetector := &MockDependencyDetector{
-		matchedTechs: map[string][]string{},
+		matchedTechs: map[string][]string{
+			"flask": {"matched dependency: flask"},
+		},
 	}
 
 	// Create file list
@@ -225,14 +227,96 @@ dependencies = [
 		{Name: "pyproject.toml", Path: "/project/pyproject.toml"},
 	}
 
-	// Test detection
-	results := detector.Detect(files, "/project", "/project", provider, depDetector)
+	// Test detection - should fall back to directory name
+	results := detector.Detect(files, "/project", "/mock", provider, depDetector)
 
-	// Verify no results due to missing name
-	assert.Empty(t, results, "Should not detect project without name")
+	require.Len(t, results, 1, "Should detect project using directory name as fallback")
+	payload := results[0]
+	assert.Equal(t, "project", payload.Name, "Should use directory name when pyproject.toml has no name")
+	assert.Contains(t, payload.Tech, "python", "Should have python as primary tech")
+	assert.Contains(t, payload.Techs, "flask", "Should detect flask from dependencies")
+	assert.Len(t, payload.Dependencies, 1, "Should have 1 dependency")
 }
 
-func TestDetector_Detect_NoPyProjectToml(t *testing.T) {
+func TestDetector_Detect_RequirementsTxtOnly(t *testing.T) {
+	detector := &Detector{}
+
+	reqContent := `flask==2.3.0
+requests==2.31.0
+redis==5.0.0
+`
+	// Setup mock provider
+	provider := &MockProvider{
+		files: map[string]string{
+			"/project/requirements.txt": reqContent,
+		},
+	}
+
+	// Setup mock dependency detector
+	depDetector := &MockDependencyDetector{
+		matchedTechs: map[string][]string{
+			"flask": {"matched dependency: flask"},
+		},
+	}
+
+	// Create file list with requirements.txt but no pyproject.toml
+	files := []types.File{
+		{Name: "app.py", Path: "/project/app.py"},
+		{Name: "requirements.txt", Path: "/project/requirements.txt"},
+	}
+
+	// Test detection - should detect from requirements.txt
+	results := detector.Detect(files, "/project", "/mock", provider, depDetector)
+
+	require.Len(t, results, 1, "Should detect Python component from requirements.txt")
+
+	payload := results[0]
+	assert.Equal(t, "project", payload.Name, "Should use directory name as component name")
+	assert.Contains(t, payload.Tech, "python", "Should have python as primary tech")
+	assert.Contains(t, payload.Techs, "flask", "Should detect flask from dependencies")
+	assert.Len(t, payload.Dependencies, 3, "Should have 3 dependencies (flask, requests, redis)")
+
+	depNames := make(map[string]bool)
+	for _, dep := range payload.Dependencies {
+		depNames[dep.Name] = true
+		assert.Equal(t, "python", dep.Type, "All dependencies should be python type")
+	}
+	assert.True(t, depNames["flask"], "Should have flask dependency")
+	assert.True(t, depNames["requests"], "Should have requests dependency")
+	assert.True(t, depNames["redis"], "Should have redis dependency")
+}
+
+func TestDetector_Detect_SetupPyOnly(t *testing.T) {
+	detector := &Detector{}
+
+	// Setup mock provider - setup.py exists but we don't parse it
+	provider := &MockProvider{
+		files: map[string]string{},
+	}
+
+	// Setup mock dependency detector
+	depDetector := &MockDependencyDetector{
+		matchedTechs: map[string][]string{},
+	}
+
+	// Create file list with only setup.py
+	files := []types.File{
+		{Name: "setup.py", Path: "/project/setup.py"},
+		{Name: "app.py", Path: "/project/app.py"},
+	}
+
+	// Test detection - should detect basic Python project from setup.py
+	results := detector.Detect(files, "/project", "/mock", provider, depDetector)
+
+	require.Len(t, results, 1, "Should detect Python component from setup.py")
+
+	payload := results[0]
+	assert.Equal(t, "project", payload.Name, "Should use directory name as component name")
+	assert.Contains(t, payload.Tech, "python", "Should have python as primary tech")
+	assert.Empty(t, payload.Dependencies, "Should have no dependencies (setup.py not parsed)")
+}
+
+func TestDetector_Detect_NoPythonFiles(t *testing.T) {
 	detector := &Detector{}
 
 	// Setup mock provider
@@ -245,17 +329,62 @@ func TestDetector_Detect_NoPyProjectToml(t *testing.T) {
 		matchedTechs: map[string][]string{},
 	}
 
-	// Create file list with no pyproject.toml
+	// Create file list with no Python project files
 	files := []types.File{
 		{Name: "app.py", Path: "/project/app.py"},
-		{Name: "requirements.txt", Path: "/project/requirements.txt"},
+		{Name: "README.md", Path: "/project/README.md"},
 	}
 
 	// Test detection
 	results := detector.Detect(files, "/project", "/project", provider, depDetector)
 
 	// Verify no results
-	assert.Empty(t, results, "Should not detect any Python components without pyproject.toml")
+	assert.Empty(t, results, "Should not detect any Python components without project files")
+}
+
+func TestDetector_Detect_PyProjectTakesPriorityOverRequirementsTxt(t *testing.T) {
+	detector := &Detector{}
+
+	pyprojectContent := `[project]
+name = "my-app"
+version = "1.0.0"
+dependencies = [
+    "django>=4.0.0",
+]`
+
+	reqContent := `flask==2.3.0
+requests==2.31.0
+`
+
+	// Setup mock provider with both files
+	provider := &MockProvider{
+		files: map[string]string{
+			"/project/pyproject.toml":   pyprojectContent,
+			"/project/requirements.txt": reqContent,
+		},
+	}
+
+	// Setup mock dependency detector
+	depDetector := &MockDependencyDetector{
+		matchedTechs: map[string][]string{
+			"django": {"matched dependency: django"},
+		},
+	}
+
+	// Create file list with both files
+	files := []types.File{
+		{Name: "pyproject.toml", Path: "/project/pyproject.toml"},
+		{Name: "requirements.txt", Path: "/project/requirements.txt"},
+	}
+
+	// Test detection - pyproject.toml should take priority
+	results := detector.Detect(files, "/project", "/mock", provider, depDetector)
+
+	require.Len(t, results, 1, "Should detect exactly one component (pyproject.toml wins)")
+
+	payload := results[0]
+	assert.Equal(t, "my-app", payload.Name, "Should use pyproject.toml name, not directory name")
+	assert.Contains(t, payload.Techs, "django", "Should detect django from pyproject.toml deps")
 }
 
 func TestDetector_Detect_EmptyFilesList(t *testing.T) {

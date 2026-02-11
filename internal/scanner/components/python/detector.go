@@ -21,73 +21,161 @@ func (d *Detector) Name() string {
 	return "python"
 }
 
-// Detect scans for Python projects (pyproject.toml - supports Poetry, uv, and other PEP 518 tools)
+// Detect scans for Python projects with priority-based detection:
+// Priority 1: pyproject.toml (supports Poetry, uv, and other PEP 518 tools)
+// Priority 2: requirements.txt (PEP 508 compliant dependency parsing)
+// Priority 3: setup.py (basic detection, no dependency parsing)
+//
+// If pyproject.toml is found and successfully parsed, lower-priority files are skipped.
 func (d *Detector) Detect(files []types.File, currentPath, basePath string, provider types.Provider, depDetector components.DependencyDetector) []*types.Payload {
-	var payloads []*types.Payload
+	// Scan files to determine what's available
+	hasPyprojectToml := false
+	hasRequirementsTxt := false
+	hasSetupPy := false
 
 	for _, file := range files {
-		if file.Name != "pyproject.toml" {
-			continue
+		switch file.Name {
+		case "pyproject.toml":
+			hasPyprojectToml = true
+		case "requirements.txt":
+			hasRequirementsTxt = true
+		case "setup.py":
+			hasSetupPy = true
 		}
-
-		// Read pyproject.toml
-		content, err := provider.ReadFile(filepath.Join(currentPath, file.Name))
-		if err != nil {
-			continue
-		}
-
-		// Extract project name
-		projectName := extractProjectName(string(content))
-		if projectName == "" {
-			continue
-		}
-
-		// Create payload with specific file path
-		relativeFilePath, _ := filepath.Rel(basePath, filepath.Join(currentPath, file.Name))
-		if relativeFilePath == "." {
-			relativeFilePath = "/"
-		} else {
-			relativeFilePath = "/" + relativeFilePath
-		}
-
-		payload := types.NewPayloadWithPath(projectName, relativeFilePath)
-		payload.SetComponentType("python")
-
-		// Set tech field to python
-		payload.AddPrimaryTech("python")
-
-		// Store package name in properties for inter-component dependency tracking
-		payload.SetComponentProperty("python", "package_name", projectName)
-
-		// Parse dependencies using lock file priority system
-		dependencies := extractDependenciesWithPriority(currentPath, projectName, string(content), provider)
-
-		// Extract dependency names for tech matching
-		var depNames []string
-		for _, dep := range dependencies {
-			depNames = append(depNames, dep.Name)
-		}
-
-		// Match dependencies against rules
-		if len(dependencies) > 0 {
-			matchedTechs := depDetector.MatchDependencies(depNames, "python")
-			for tech, reasons := range matchedTechs {
-				for _, reason := range reasons {
-					payload.AddTech(tech, reason)
-				}
-				depDetector.AddPrimaryTechIfNeeded(payload, tech)
-			}
-
-			payload.Dependencies = dependencies
-		}
-
-		// Detect license
-		detectLicense(string(content), payload)
-
-		payloads = append(payloads, payload)
 	}
 
-	return payloads
+	// Priority 1: pyproject.toml
+	if hasPyprojectToml {
+		if payload := d.detectFromPyprojectToml(currentPath, basePath, provider, depDetector); payload != nil {
+			return []*types.Payload{payload}
+		}
+	}
+
+	// Priority 2: requirements.txt (only if pyproject.toml didn't produce a component)
+	if hasRequirementsTxt {
+		if payload := d.detectFromRequirementsTxt(currentPath, basePath, provider, depDetector); payload != nil {
+			return []*types.Payload{payload}
+		}
+	}
+
+	// Priority 3: setup.py (only if neither pyproject.toml nor requirements.txt produced a component)
+	if hasSetupPy {
+		if payload := d.detectFromSetupPy(currentPath, basePath); payload != nil {
+			return []*types.Payload{payload}
+		}
+	}
+
+	return nil
+}
+
+// detectFromPyprojectToml creates a component from pyproject.toml.
+// Falls back to directory name if no [project] or [tool.poetry] name is found.
+func (d *Detector) detectFromPyprojectToml(currentPath, basePath string, provider types.Provider, depDetector components.DependencyDetector) *types.Payload {
+	content, err := provider.ReadFile(filepath.Join(currentPath, "pyproject.toml"))
+	if err != nil {
+		return nil
+	}
+
+	// Extract project name, falling back to directory name
+	projectName := extractProjectName(string(content))
+	if projectName == "" {
+		projectName = dirName(currentPath, basePath)
+	}
+
+	relativeFilePath := relativePath(basePath, currentPath, "pyproject.toml")
+	payload := types.NewPayloadWithPath(projectName, relativeFilePath)
+	payload.SetComponentType("python")
+	payload.AddPrimaryTech("python")
+
+	// Store package name in properties for inter-component dependency tracking
+	payload.SetComponentProperty("python", "package_name", projectName)
+
+	// Parse dependencies using lock file priority system
+	dependencies := extractDependenciesWithPriority(currentPath, projectName, string(content), provider)
+	d.matchAndAddDependencies(payload, dependencies, depDetector)
+
+	// Detect license
+	detectLicense(string(content), payload)
+
+	return payload
+}
+
+// detectFromRequirementsTxt creates a component from requirements.txt.
+// Uses the directory name as the component name and parses PEP 508 dependencies.
+func (d *Detector) detectFromRequirementsTxt(currentPath, basePath string, provider types.Provider, depDetector components.DependencyDetector) *types.Payload {
+	content, err := provider.ReadFile(filepath.Join(currentPath, "requirements.txt"))
+	if err != nil {
+		return nil
+	}
+
+	projectName := dirName(currentPath, basePath)
+	relativeFilePath := relativePath(basePath, currentPath, "requirements.txt")
+
+	payload := types.NewPayloadWithPath(projectName, relativeFilePath)
+	payload.SetComponentType("python")
+	payload.AddPrimaryTech("python")
+	payload.SetComponentProperty("python", "package_name", projectName)
+
+	// Parse requirements.txt using the PEP 508 compliant parser
+	parser := parsers.NewPythonParser()
+	dependencies := parser.ParseRequirementsTxt(string(content))
+	d.matchAndAddDependencies(payload, dependencies, depDetector)
+
+	return payload
+}
+
+// detectFromSetupPy creates a basic component from setup.py.
+// Does not parse dependencies (setup.py is executable Python, not statically parseable).
+func (d *Detector) detectFromSetupPy(currentPath, basePath string) *types.Payload {
+	projectName := dirName(currentPath, basePath)
+	relativeFilePath := relativePath(basePath, currentPath, "setup.py")
+
+	payload := types.NewPayloadWithPath(projectName, relativeFilePath)
+	payload.SetComponentType("python")
+	payload.AddPrimaryTech("python")
+	payload.SetComponentProperty("python", "package_name", projectName)
+
+	return payload
+}
+
+// matchAndAddDependencies matches dependencies against rules and adds them to the payload.
+func (d *Detector) matchAndAddDependencies(payload *types.Payload, dependencies []types.Dependency, depDetector components.DependencyDetector) {
+	if len(dependencies) == 0 {
+		return
+	}
+
+	var depNames []string
+	for _, dep := range dependencies {
+		depNames = append(depNames, dep.Name)
+	}
+
+	matchedTechs := depDetector.MatchDependencies(depNames, "python")
+	for tech, reasons := range matchedTechs {
+		for _, reason := range reasons {
+			payload.AddTech(tech, reason)
+		}
+		depDetector.AddPrimaryTechIfNeeded(payload, tech)
+	}
+
+	payload.Dependencies = dependencies
+}
+
+// dirName extracts the directory name to use as a fallback component name.
+// For the root scan path, returns "main".
+func dirName(currentPath, basePath string) string {
+	if currentPath == basePath {
+		return "main"
+	}
+	return filepath.Base(currentPath)
+}
+
+// relativePath computes the relative file path for payload display.
+func relativePath(basePath, currentPath, fileName string) string {
+	relativeFilePath, _ := filepath.Rel(basePath, filepath.Join(currentPath, fileName))
+	if relativeFilePath == "." {
+		return "/"
+	}
+	return "/" + relativeFilePath
 }
 
 // extractProjectName extracts the project name from pyproject.toml

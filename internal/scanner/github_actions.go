@@ -40,7 +40,12 @@ func (d *ComponentDetector) processWorkflowFile(file types.File, currentPath, ba
 		return nil
 	}
 
-	relativeFilePath := d.getRelativeFilePath(basePath, currentPath, file.Name)
+	relativeFilePath, _ := filepath.Rel(basePath, filepath.Join(currentPath, file.Name))
+	if relativeFilePath == "." {
+		relativeFilePath = "/"
+	} else {
+		relativeFilePath = "/" + relativeFilePath
+	}
 	payload := types.NewPayloadWithPath("virtual", relativeFilePath)
 
 	// Create dependencies using parser
