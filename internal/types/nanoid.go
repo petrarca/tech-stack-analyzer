@@ -8,7 +8,7 @@ import (
 	"math/big"
 )
 
-// Alphabet matches the TypeScript nanoid alphabet
+// Alphabet used for nanoid generation (alphanumeric)
 const alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 
 // GenerateRootID generates a unique 12-character random ID for root/main components.

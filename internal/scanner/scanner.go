@@ -41,7 +41,7 @@ import (
 	_ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/terraform"
 )
 
-// Scanner handles the scanning logic (like TypeScript's Payload.recurse)
+// Scanner handles the recursive directory scanning and technology detection logic
 type Scanner struct {
 	provider        types.Provider
 	rules           []types.Rule
@@ -87,7 +87,7 @@ type CodeStatsAnalyzer interface {
 	IsPerComponentEnabled() bool
 }
 
-// NewScanner creates a new scanner (mirroring TypeScript's analyser function)
+// NewScanner creates a new scanner with the given options
 func NewScanner(path string) (*Scanner, error) {
 	return NewScannerWithOptions(path, nil, false, false, false, false, nil)
 }
@@ -109,7 +109,7 @@ func NewScannerWithOptionsAndRootID(path string, excludePatterns []string, verbo
 
 // NewScannerWithOptionsAndLogger creates a new scanner with all options including logger
 func NewScannerWithOptionsAndLogger(path string, excludePatterns []string, verbose bool, useTreeView bool, traceTimings bool, traceRules bool, codeStats CodeStatsAnalyzer, logger *slog.Logger, rootID string, mergedConfig *config.ScanConfig) (*Scanner, error) {
-	// Create provider for the target path (like TypeScript's FSProvider)
+	// Create provider for the target path
 	tInit := time.Now()
 	provider := provider.NewFSProvider(path)
 
@@ -230,7 +230,7 @@ type scannerComponents struct {
 
 // initializeScannerComponents handles common initialization logic
 func initializeScannerComponents(provider types.Provider, path string, logger *slog.Logger) (*scannerComponents, error) {
-	// Load rules (simple, not lazy loaded - like TypeScript's loadAllRules)
+	// Load embedded YAML rules
 	t1 := time.Now()
 	loadedRules, err := rules.LoadEmbeddedRules()
 	if err != nil {
@@ -260,7 +260,7 @@ func initializeScannerComponents(provider types.Provider, path string, logger *s
 		logger.Debug("Initialized detectors", "duration", time.Since(t3))
 	}
 
-	// Build matchers from rules (like TypeScript's loadAllRules)
+	// Build file matchers from rules
 	t4 := time.Now()
 	matchers.BuildFileMatchersFromRules(loadedRules)
 	if logger != nil {
@@ -286,7 +286,7 @@ func initializeScannerComponents(provider types.Provider, path string, logger *s
 	}, nil
 }
 
-// Scan performs analysis following the original TypeScript pattern
+// Scan performs the main analysis of the target directory
 func (s *Scanner) Scan() (*types.Payload, error) {
 	basePath := s.provider.GetBasePath()
 
@@ -303,7 +303,7 @@ func (s *Scanner) Scan() (*types.Payload, error) {
 	scanMeta := metadata.NewScanMetadata(basePath, spec.Version)
 	startTime := time.Now()
 
-	// Create main payload like in TypeScript: new Payload({ name: 'main', folderPath: '/' })
+	// Create root payload for the scan
 	payload := types.NewPayloadWithPath("main", "/")
 
 	// Configured techs are handled in cmd with validation
@@ -315,7 +315,7 @@ func (s *Scanner) Scan() (*types.Payload, error) {
 	payload.Git = git.GetGitInfo(basePath)
 	slog.Debug("Retrieved git info", "duration", time.Since(t1))
 
-	// Start recursion from base path (like TypeScript's payload.recurse(provider, provider.basePath))
+	// Start recursive directory scanning from base path
 	slog.Debug("Starting directory recursion", "path", basePath)
 	err := s.recurse(payload, basePath)
 	if err != nil {
@@ -552,7 +552,7 @@ func (s *Scanner) processFile(ctx *types.Payload, dirPath string, fileName strin
 	}
 }
 
-// recurse follows the exact TypeScript implementation pattern
+// recurse scans a directory recursively, detecting technologies and components
 func (s *Scanner) recurse(payload *types.Payload, filePath string) error {
 	tEnter := time.Now()
 	// Report entering directory
@@ -580,7 +580,7 @@ func (s *Scanner) recurse(payload *types.Payload, filePath string) error {
 		}()
 	}
 
-	// Get files in current directory (like TypeScript's provider.listDir)
+	// Get files in current directory
 	t1 := time.Now()
 	files, err := s.provider.ListDir(filePath)
 	if err != nil {
@@ -605,7 +605,7 @@ func (s *Scanner) recurse(payload *types.Payload, filePath string) error {
 	// Start timing for folder file processing
 	s.progress.FolderFileProcessingStart(filePath)
 
-	// Apply rules to detect technologies (like TypeScript's ruleComponents loop)
+	// Apply rules to detect technologies
 	// This might return a different context if a component was detected
 	t3 := time.Now()
 	ctx := s.applyRules(payload, filteredFiles, filePath)
@@ -648,14 +648,14 @@ func (s *Scanner) recurse(payload *types.Payload, filePath string) error {
 		slog.Debug("Directory processing slow", "path", filePath, "total_duration", time.Since(tEnter))
 	}
 
-	// Process each file/directory (exactly like TypeScript's loop)
+	// Process each file/directory
 	for _, file := range filteredFiles {
 		if file.Type == "file" {
 			s.processFile(ctx, filePath, file.Name)
 			continue
 		}
 
-		// Skip ignored directories (like TypeScript's IGNORED_DIVE_PATHS)
+		// Skip ignored directories
 		// Use stack-based gitignore checking for proper hierarchy
 		if s.shouldIgnoreDirectoryStackBased(file.Name, filePath) {
 			continue
@@ -676,7 +676,7 @@ func (s *Scanner) recurse(payload *types.Payload, filePath string) error {
 	return nil
 }
 
-// applyRules applies rules to detect technologies (following TypeScript's pattern exactly)
+// applyRules applies all detection rules to the current directory's files
 func (s *Scanner) applyRules(payload *types.Payload, files []types.File, currentPath string) *types.Payload {
 	ctx := payload
 
@@ -929,7 +929,7 @@ func (s *Scanner) findImplicitComponentByTech(payload *types.Payload, tech strin
 }
 
 // findImplicitComponent creates a child component for technologies that are not in the notAComponent set
-// This replicates the TypeScript findImplicitComponent logic
+// findImplicitComponent creates a child component for rules that define component creation
 func (s *Scanner) findImplicitComponent(payload *types.Payload, rule types.Rule, currentPath string, addEdges bool) {
 	// Check if this rule should create a component
 	// Uses is_component field if set, otherwise uses type-based logic
@@ -937,8 +937,7 @@ func (s *Scanner) findImplicitComponent(payload *types.Payload, rule types.Rule,
 		return
 	}
 
-	// Create a new child component (like TypeScript lines 47-54)
-	// CRITICAL FIX: Use parent's path, not currentPath (like TypeScript: folderPath: pl.path)
+	// Create a new child component using parent's path (not currentPath)
 	component := types.NewPayload(rule.Name, payload.Path)
 
 	// NEW: Check is_primary_tech field to determine if we should add primary tech

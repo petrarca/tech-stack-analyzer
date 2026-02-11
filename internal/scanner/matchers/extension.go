@@ -64,7 +64,7 @@ func createExtensionMatcherForRule(rule types.Rule) ExtensionMatcher {
 }
 
 // MatchExtensions runs all extension matchers and returns matched techs
-// Returns a map of tech -> reasons (like original TypeScript)
+// Returns a map of tech -> reasons
 func MatchExtensions(files []types.File) map[string][]string {
 	matched := make(map[string][]string)
 

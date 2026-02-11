@@ -162,7 +162,7 @@ func globToRegex(glob string) string {
 }
 
 // MatchFiles runs all file matchers and returns matched techs
-// Returns a map of tech -> reasons (like original TypeScript)
+// Returns a map of tech -> reasons
 func MatchFiles(files []types.File, currentPath, basePath string) map[string][]string {
 	matched := make(map[string][]string)
 

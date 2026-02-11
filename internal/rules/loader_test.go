@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
+	"github.com/stretchr/testify/require"
 )
 
 func TestLoadEmbeddedRules(t *testing.T) {
@@ -27,21 +28,11 @@ func TestLoadEmbeddedRules(t *testing.T) {
 		}
 	}
 
-	if cargoRule == nil {
-		t.Fatal("Cargo rule not found")
-	}
+	require.NotNil(t, cargoRule, "Cargo rule not found")
+	require.Equal(t, "package_manager", cargoRule.Type, "Cargo rule type should be 'package_manager'")
+	require.NotNil(t, cargoRule.Files, "Cargo rule should have file patterns")
 
-	// Verify cargo rule has expected properties
-	if cargoRule.Type != "package_manager" {
-		t.Errorf("Expected cargo rule type to be 'package_manager', got '%s'", cargoRule.Type)
-	}
-
-	// Check for expected files
-	if cargoRule.Files == nil {
-		t.Fatal("Cargo rule should have file patterns")
-	}
-
-	t.Logf("✅ Cargo rule test passed")
+	t.Logf("Cargo rule test passed")
 	t.Logf("   - Total rules loaded: %d", len(rules))
 	t.Logf("   - Cargo rule type: %s", cargoRule.Type)
 }
@@ -62,5 +53,5 @@ func TestRuleStructure(t *testing.T) {
 		}
 	}
 
-	t.Logf("✅ Rule structure validation passed for %d rules", len(rules))
+	t.Logf("Rule structure validation passed for %d rules", len(rules))
 }

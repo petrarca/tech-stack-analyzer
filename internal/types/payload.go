@@ -59,15 +59,14 @@ type License struct {
 	OriginalLicense string  `json:"original_license,omitempty"` // Original license before normalization
 }
 
-// MarshalJSON customizes Edge JSON serialization to match TypeScript (target as ID string)
+// MarshalJSON customizes Edge JSON serialization (target as ID string)
 func (e Edge) MarshalJSON() ([]byte, error) {
-	// Like TypeScript: serialize target as just the ID string
 	targetID := ""
 	if e.Target != nil {
 		targetID = e.Target.ID
 	}
 
-	// Create a map to match the exact TypeScript format
+	// Serialize edge with target as ID reference
 	edgeMap := map[string]interface{}{
 		"target": targetID,
 	}
@@ -186,9 +185,9 @@ func (p *Payload) assignChildIDs(rootID string) {
 	}
 }
 
-// AddChild adds a child payload with deduplication (following TypeScript's addChild logic exactly)
+// AddChild adds a child payload with deduplication
 func (p *Payload) AddChild(service *Payload) *Payload {
-	// Check for existing component to merge (like TypeScript lines 130-138)
+	// Check for existing component to merge
 	var exist *Payload
 	for _, child := range p.Childs {
 		// we only merge if a tech is similar otherwise it's too easy to get a false-positive
@@ -206,7 +205,7 @@ func (p *Payload) AddChild(service *Payload) *Payload {
 	}
 
 	if exist != nil {
-		// Merge with existing component (like TypeScript lines 155-175)
+		// Merge with existing component
 		// Log all paths where it was found
 		for _, path := range service.Path {
 			exist.AddPath(path)
@@ -249,9 +248,9 @@ func hasOverlappingPath(paths1, paths2 []string) bool {
 	return false
 }
 
-// AddPath adds a path to the payload (like TypeScript Set.add)
+// AddPath adds a path to the payload, deduplicating entries
 func (p *Payload) AddPath(path string) {
-	// Check for duplicate (like TypeScript Set behavior)
+	// Check for duplicate
 	for _, existing := range p.Path {
 		if existing == path {
 			return // Already exists, don't add duplicate
@@ -265,7 +264,7 @@ func (p *Payload) AddLanguageWithCount(language string, count int) {
 	p.Languages[language] += count
 }
 
-// Combine merges another payload into this one (following TypeScript's combine method)
+// Combine merges another payload into this one
 func (p *Payload) Combine(other *Payload) {
 	p.mergePaths(other.Path)
 	p.mergeLanguages(other.Languages)
@@ -575,9 +574,9 @@ func (p *Payload) HasPrimaryTech(tech string) bool {
 	return false
 }
 
-// AddLicense adds a license to the payload (like TypeScript addLicenses)
+// AddLicense adds a license to the payload, deduplicating by name
 func (p *Payload) AddLicense(license License) {
-	// Avoid duplicates (like TypeScript Set behavior)
+	// Avoid duplicates
 	for _, existing := range p.Licenses {
 		if existing.LicenseName == license.LicenseName {
 			return
@@ -587,7 +586,7 @@ func (p *Payload) AddLicense(license License) {
 	p.Licenses = append(p.Licenses, license)
 }
 
-// AddEdges adds an edge to another payload (like TypeScript addEdges)
+// AddEdges adds an edge to another payload
 func (p *Payload) AddEdges(target *Payload) {
 	edge := Edge{
 		Target: target,
