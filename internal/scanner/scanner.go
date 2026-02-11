@@ -680,16 +680,16 @@ func (s *Scanner) recurse(payload *types.Payload, filePath string) error {
 func (s *Scanner) applyRules(payload *types.Payload, files []types.File, currentPath string) *types.Payload {
 	ctx := payload
 
-	// 1. Component-based detection (all plugin detectors including GitHub Actions)
+	// 1. Component-based detection (all plugin detectors)
 	ctx = s.detectComponents(payload, ctx, files, currentPath)
 
-	// 2. Dotenv detection
+	// 2. Dotenv detection (matches .env.example variables against rule patterns)
 	s.detectDotenv(ctx, files, currentPath)
 
-	// 4. File and extension-based detection (includes JSON schema via content matchers)
+	// 3. File and extension-based detection (includes JSON schema via content matchers)
 	matchedTechs := s.detectByFilesAndExtensions(ctx, files, currentPath)
 
-	// 6. File-based rule detection
+	// 4. File-based rule detection
 	s.detectByRuleFiles(ctx, files, matchedTechs)
 
 	return ctx

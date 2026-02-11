@@ -22,7 +22,7 @@ func NewDotenvDetector(provider types.Provider, rules []types.Rule) *DotenvDetec
 }
 
 // DetectInDotEnv detects technologies from .env.example files
-// Returns a virtual payload with the specific file path (like TypeScript: folderPath: file.fp)
+// Returns a virtual payload that gets merged into the parent
 func (d *DotenvDetector) DetectInDotEnv(files []types.File, currentPath string, basePath string) *types.Payload {
 	file := d.findDotenvFile(files)
 	if file == nil {

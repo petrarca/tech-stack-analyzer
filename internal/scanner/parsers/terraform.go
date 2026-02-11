@@ -86,22 +86,6 @@ func (p *TerraformParser) ParseTerraformLock(content string) []TerraformProvider
 	return providers
 }
 
-// ParseTerraformResource parses .tf files and extracts resource types (legacy - returns strings)
-func (p *TerraformParser) ParseTerraformResource(content string) []string {
-	resources := p.ParseTerraformResources(content)
-	resourceSet := make(map[string]bool)
-	var resourceTypes []string
-
-	for _, resource := range resources {
-		if !resourceSet[resource.Type] {
-			resourceTypes = append(resourceTypes, resource.Type)
-			resourceSet[resource.Type] = true
-		}
-	}
-
-	return resourceTypes
-}
-
 // ParseTerraformResources parses .tf files and extracts full resource information
 func (p *TerraformParser) ParseTerraformResources(content string) []TerraformResource {
 	parser := hclparse.NewParser()

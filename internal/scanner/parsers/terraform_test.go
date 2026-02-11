@@ -128,7 +128,7 @@ provider "registry.terraform.io/azurerm/azurerm" {
 	}
 }
 
-func TestParseTerraformResource(t *testing.T) {
+func TestParseTerraformResources(t *testing.T) {
 	parser := NewTerraformParser()
 
 	tests := []struct {
@@ -172,7 +172,7 @@ resource "aws_vpc" "main" {
 resource "aws_vpc" "secondary" {
   cidr_block = "10.1.0.0/16"
 }`,
-			expectedResources: []string{"aws_instance", "aws_vpc"},
+			expectedResources: []string{"aws_instance", "aws_instance", "aws_vpc", "aws_vpc"},
 		},
 		{
 			name: "terraform resources with data sources",
@@ -253,7 +253,7 @@ resource "aws_instance" "db" {
   ami           = "ami-87654321"
   instance_type = var.instance_type
 }`,
-			expectedResources: []string{"aws_instance"},
+			expectedResources: []string{"aws_instance", "aws_instance"},
 		},
 		{
 			name: "terraform resources with outputs",
@@ -303,18 +303,18 @@ resource "aws_instance" "db" {
   ami           = "ami-87654321"
   instance_type = "t3.small"
 }`,
-			expectedResources: []string{"aws_instance", "aws_vpc"},
+			expectedResources: []string{"aws_instance", "aws_vpc", "aws_instance"},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			resources := parser.ParseTerraformResource(tt.content)
+			resources := parser.ParseTerraformResources(tt.content)
 
 			require.Len(t, resources, len(tt.expectedResources), "Should return correct number of resources")
 
 			for i, expectedResource := range tt.expectedResources {
-				assert.Equal(t, expectedResource, resources[i], "Should return correct resource type")
+				assert.Equal(t, expectedResource, resources[i].Type, "Should return correct resource type")
 			}
 		})
 	}
@@ -538,14 +538,14 @@ output "web_instance_id" {
   value       = aws_instance.web.id
 }`
 
-	resources := parser.ParseTerraformResource(terraformConfig)
+	resources := parser.ParseTerraformResources(terraformConfig)
 
 	assert.Len(t, resources, 5) // aws_security_group, aws_instance, kubernetes_namespace, kubernetes_deployment, random_password
 
 	// Create resource set for verification
 	resourceSet := make(map[string]bool)
 	for _, resource := range resources {
-		resourceSet[resource] = true
+		resourceSet[resource.Type] = true
 	}
 
 	// Verify key resources
@@ -604,10 +604,10 @@ resource "aws_instance" "web" {
   ami = "ami-12345678"
 }`
 
-		resources := parser.ParseTerraformResource(content)
+		resources := parser.ParseTerraformResources(content)
 		// Should only parse the resource with labels
 		assert.Len(t, resources, 1)
-		assert.Equal(t, "aws_instance", resources[0])
+		assert.Equal(t, "aws_instance", resources[0].Type)
 	})
 
 	// Test with complex provider names
