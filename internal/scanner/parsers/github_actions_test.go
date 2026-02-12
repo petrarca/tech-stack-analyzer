@@ -582,14 +582,19 @@ func TestExtractFromServices(t *testing.T) {
 			result := parser.extractFromServices(tt.services)
 			assert.Equal(t, len(tt.expected), len(result), "Number of dependencies should match")
 
-			for i, expectedDep := range tt.expected {
-				if i < len(result) {
-					assert.Equal(t, expectedDep.Type, result[i].Type, "Dependency type should match")
-					assert.Equal(t, expectedDep.Name, result[i].Name, "Dependency name should match")
-					assert.Equal(t, expectedDep.Version, result[i].Version, "Dependency version should match")
-					assert.Equal(t, expectedDep.Scope, result[i].Scope, "Dependency scope should match")
-					assert.Equal(t, expectedDep.Direct, result[i].Direct, "Dependency direct flag should match")
-					assert.Equal(t, expectedDep.Metadata, result[i].Metadata, "Dependency metadata should match")
+			// Build lookup by name since map iteration order is non-deterministic
+			resultByName := make(map[string]types.Dependency, len(result))
+			for _, dep := range result {
+				resultByName[dep.Name] = dep
+			}
+			for _, expectedDep := range tt.expected {
+				actualDep, found := resultByName[expectedDep.Name]
+				if assert.True(t, found, "Expected dependency %q not found in results", expectedDep.Name) {
+					assert.Equal(t, expectedDep.Type, actualDep.Type, "Dependency type should match for %s", expectedDep.Name)
+					assert.Equal(t, expectedDep.Version, actualDep.Version, "Dependency version should match for %s", expectedDep.Name)
+					assert.Equal(t, expectedDep.Scope, actualDep.Scope, "Dependency scope should match for %s", expectedDep.Name)
+					assert.Equal(t, expectedDep.Direct, actualDep.Direct, "Dependency direct flag should match for %s", expectedDep.Name)
+					assert.Equal(t, expectedDep.Metadata, actualDep.Metadata, "Dependency metadata should match for %s", expectedDep.Name)
 				}
 			}
 		})
