@@ -1,8 +1,23 @@
 # .stack-analyzer.yml - Tech Stack Analyzer Configuration
 # Place this file in the root of your project to customize the scan behavior
+#
+# You can also specify a custom config file path to override this default:
+#   stack-analyzer scan --config /path/to/custom-config.yml /path/to/project
+
+# Alternatively, you can set ANY configuration via command line using inline JSON:
+#   stack-analyzer scan --config '{
+#     "properties": {
+#       "product-key": "cgm-albis"
+#     },
+#     "exclude": ["test-dir", "*.log"],
+#     "techs": [
+#       {"tech": "aws", "reason": "CI/CD"}
+#     ]
+#   }' /path/to/project
 
 # Custom properties added to metadata.properties in scan output
 # Use this to document project context, ownership, or deployment information
+# 
 properties:
   product: "My Product Name"
   team: "Platform Engineering"
