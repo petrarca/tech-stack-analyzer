@@ -3,6 +3,7 @@ package git
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"net/url"
 	"path/filepath"
 	"strings"
 
@@ -82,7 +83,7 @@ func GetGitInfoWithRoot(path string) (*GitInfo, string) {
 	if err == nil {
 		if origin := remoteConfig.Remotes["origin"]; origin != nil {
 			if len(origin.URLs) > 0 {
-				gitInfo.RemoteURL = origin.URLs[0]
+				gitInfo.RemoteURL = sanitizeRemoteURL(origin.URLs[0])
 			}
 		}
 	}
@@ -139,6 +140,31 @@ func normalizeRemoteURL(url string) string {
 	url = strings.TrimSuffix(url, "/")
 
 	return url
+}
+
+// sanitizeRemoteURL removes credentials (userinfo) from a git remote URL
+// to prevent tokens and passwords from leaking into scan output.
+// Examples:
+//   - https://oauth2:token@git.example.com/repo.git -> https://git.example.com/repo.git
+//   - https://user:pass@github.com/org/repo.git    -> https://github.com/org/repo.git
+//   - git@github.com:org/repo.git                   -> git@github.com:org/repo.git (SSH, no change)
+func sanitizeRemoteURL(rawURL string) string {
+	// SSH URLs (git@host:path) don't contain credential tokens
+	if strings.HasPrefix(rawURL, "git@") {
+		return rawURL
+	}
+
+	parsed, err := url.Parse(rawURL)
+	if err != nil {
+		return rawURL
+	}
+
+	// Remove userinfo (credentials) from the URL
+	if parsed.User != nil {
+		parsed.User = nil
+	}
+
+	return parsed.String()
 }
 
 // GenerateRootIDFromPath generates a deterministic root ID from absolute path
