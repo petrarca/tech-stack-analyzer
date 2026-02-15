@@ -92,8 +92,8 @@ services:
 	t.Logf("Number of results: %d", len(results))
 	if len(results) > 0 {
 		payload := results[0]
-		t.Logf("Number of children: %d", len(payload.Childs))
-		for i, child := range payload.Childs {
+		t.Logf("Number of children: %d", len(payload.Children))
+		for i, child := range payload.Children {
 			t.Logf("Child %d: Name=%s, Tech=%v", i, child.Name, child.Tech)
 		}
 	}

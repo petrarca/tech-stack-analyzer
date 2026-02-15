@@ -27,7 +27,7 @@ func attachComponentCodeStats(payload *types.Payload, analyzer codestats.Analyze
 	}
 
 	// Recursively attach to child components (NOT the root - it keeps global stats)
-	for _, child := range payload.Childs {
+	for _, child := range payload.Children {
 		attachComponentCodeStatsRecursive(child, analyzer)
 	}
 }
@@ -55,7 +55,7 @@ func attachComponentCodeStatsRecursive(payload *types.Payload, analyzer codestat
 	}
 
 	// Recursively attach to child components
-	for _, child := range payload.Childs {
+	for _, child := range payload.Children {
 		attachComponentCodeStatsRecursive(child, analyzer)
 	}
 }

@@ -27,7 +27,7 @@ type Payload struct {
 	Reason           map[string][]string    `json:"reason"`                      // Maps technology to detection reasons, "_" for non-tech reasons
 	Dependencies     []Dependency           `json:"dependencies"`
 	Properties       map[string]interface{} `json:"properties,omitempty"`
-	Childs           []*Payload             `json:"childs"` // Changed from Children to Childs
+	Children         []*Payload             `json:"children"`
 	Edges            []Edge                 `json:"edges"`
 	ComponentRefs    []ComponentRef         `json:"component_refs,omitempty"` // Inter-component references (outgoing - components this component depends on)
 	CodeStats        interface{}            `json:"code_stats,omitempty"`
@@ -89,7 +89,7 @@ func NewPayload(name string, paths []string) *Payload {
 		Techs:         make([]string, 0),
 		Languages:     make(map[string]int),
 		Dependencies:  make([]Dependency, 0),
-		Childs:        make([]*Payload, 0),
+		Children:      make([]*Payload, 0),
 		Edges:         make([]Edge, 0),
 		ComponentRefs: make([]ComponentRef, 0),
 		Licenses:      make([]License, 0),
@@ -172,7 +172,7 @@ func (p *Payload) AssignIDs(rootID string) {
 
 // assignChildIDs recursively assigns deterministic IDs to children
 func (p *Payload) assignChildIDs(rootID string) {
-	for _, child := range p.Childs {
+	for _, child := range p.Children {
 		// Use first path for ID generation
 		var relativePath string
 		if len(child.Path) > 0 {
@@ -189,7 +189,7 @@ func (p *Payload) assignChildIDs(rootID string) {
 func (p *Payload) AddChild(service *Payload) *Payload {
 	// Check for existing component to merge
 	var exist *Payload
-	for _, child := range p.Childs {
+	for _, child := range p.Children {
 		// we only merge if a tech is similar otherwise it's too easy to get a false-positive
 		if len(child.Tech) == 0 && len(service.Tech) == 0 {
 			continue
@@ -231,7 +231,7 @@ func (p *Payload) AddChild(service *Payload) *Payload {
 	}
 
 	// Add new child if no duplicate found
-	p.Childs = append(p.Childs, service)
+	p.Children = append(p.Children, service)
 	return service
 }
 

@@ -141,10 +141,10 @@ provider "registry.terraform.io/cloudflare/cloudflare" {
 	assert.True(t, depNames["registry.terraform.io/cloudflare/cloudflare"], "Should have Cloudflare provider")
 
 	// Check child components - note: all providers get children created, not just matched ones
-	assert.Len(t, payload.Childs, 3, "Should have 3 child components (all providers get children)")
+	assert.Len(t, payload.Children, 3, "Should have 3 child components (all providers get children)")
 
 	childNames := make(map[string]*types.Payload)
-	for _, child := range payload.Childs {
+	for _, child := range payload.Children {
 		childNames[child.Name] = child
 	}
 
@@ -223,10 +223,10 @@ resource "azurerm_resource_group" "main" {
 	assert.Equal(t, "/main.tf", payload.Path[0])
 
 	// Check child components - note: all resources get children created, not just matched ones
-	assert.Len(t, payload.Childs, 3, "Should have 3 child components (all resources get children)")
+	assert.Len(t, payload.Children, 3, "Should have 3 child components (all resources get children)")
 
 	childNames := make(map[string]*types.Payload)
-	for _, child := range payload.Childs {
+	for _, child := range payload.Children {
 		childNames[child.Name] = child
 	}
 
@@ -294,13 +294,13 @@ func TestDetector_Detect_BothLockAndTfFiles(t *testing.T) {
 	lockPayload := results[0]
 	assert.Equal(t, "virtual", lockPayload.Name)
 	assert.Equal(t, "/.terraform.lock.hcl", lockPayload.Path[0])
-	assert.Len(t, lockPayload.Childs, 1, "Lock file should have 1 child component")
+	assert.Len(t, lockPayload.Children, 1, "Lock file should have 1 child component")
 
 	// Second should be resource file component
 	tfPayload := results[1]
 	assert.Equal(t, "virtual", tfPayload.Name)
 	assert.Equal(t, "/main.tf", tfPayload.Path[0])
-	assert.Len(t, tfPayload.Childs, 1, "Resource file should have 1 child component")
+	assert.Len(t, tfPayload.Children, 1, "Resource file should have 1 child component")
 }
 
 func TestDetector_Detect_EmptyTerraformLock(t *testing.T) {
@@ -515,7 +515,7 @@ provider "registry.terraform.io/unknown/unknown" {
 	payload := results[0]
 	assert.Equal(t, "virtual", payload.Name)
 	assert.Len(t, payload.Dependencies, 2, "Should have 2 dependencies")
-	assert.Empty(t, payload.Childs, "Should have no child components when no matches")
+	assert.Empty(t, payload.Children, "Should have no child components when no matches")
 }
 
 func TestDetector_Detect_LargeTfFile(t *testing.T) {

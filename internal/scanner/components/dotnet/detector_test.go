@@ -128,7 +128,7 @@ func TestDetector_Detect_BasicCsproj(t *testing.T) {
 	assert.True(t, depNames["Newtonsoft.Json"], "Should have Newtonsoft.Json dependency")
 
 	// Verify no child components exist (unified with Java behavior)
-	assert.Empty(t, payload.Childs, "Should have no child components (unified with Java)")
+	assert.Empty(t, payload.Children, "Should have no child components (unified with Java)")
 
 	// Verify techs are added to parent component
 	assert.Contains(t, payload.Techs, "dotnet", "Parent should have dotnet tech")
@@ -425,7 +425,7 @@ func TestDetector_Detect_NoDependencies(t *testing.T) {
 	assert.Equal(t, "NoDepsApp", payload.Name)
 	assert.Contains(t, payload.Tech, "dotnet", "Should have dotnet as primary tech")
 	assert.Empty(t, payload.Dependencies, "Should have no dependencies")
-	assert.Empty(t, payload.Childs, "Should have no child components")
+	assert.Empty(t, payload.Children, "Should have no child components")
 }
 
 func TestDetector_Detect_NoMatchingDependencies(t *testing.T) {
@@ -470,5 +470,5 @@ func TestDetector_Detect_NoMatchingDependencies(t *testing.T) {
 	assert.Equal(t, "NoMatchApp", payload.Name)
 	assert.Contains(t, payload.Tech, "dotnet", "Should have dotnet as primary tech")
 	assert.Len(t, payload.Dependencies, 2, "Should have 2 dependencies")
-	assert.Empty(t, payload.Childs, "Should have no child components when no matches")
+	assert.Empty(t, payload.Children, "Should have no child components when no matches")
 }

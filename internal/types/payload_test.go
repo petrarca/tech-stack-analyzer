@@ -8,9 +8,9 @@ import (
 
 func TestPayload_AddChild(t *testing.T) {
 	payload := &Payload{
-		ID:     "root",
-		Name:   "Root Component",
-		Childs: []*Payload{},
+		ID:       "root",
+		Name:     "Root Component",
+		Children: []*Payload{},
 	}
 
 	child1 := &Payload{
@@ -25,14 +25,14 @@ func TestPayload_AddChild(t *testing.T) {
 
 	// Add first child
 	payload.AddChild(child1)
-	assert.Len(t, payload.Childs, 1, "Should have 1 child after adding first")
-	assert.Equal(t, child1, payload.Childs[0], "First child should be the one we added")
+	assert.Len(t, payload.Children, 1, "Should have 1 child after adding first")
+	assert.Equal(t, child1, payload.Children[0], "First child should be the one we added")
 
 	// Add second child
 	payload.AddChild(child2)
-	assert.Len(t, payload.Childs, 2, "Should have 2 children after adding second")
-	assert.Equal(t, child1, payload.Childs[0], "First child should still be there")
-	assert.Equal(t, child2, payload.Childs[1], "Second child should be the one we added")
+	assert.Len(t, payload.Children, 2, "Should have 2 children after adding second")
+	assert.Equal(t, child1, payload.Children[0], "First child should still be there")
+	assert.Equal(t, child2, payload.Children[1], "Second child should be the one we added")
 }
 
 func TestPayload_AddPrimaryTech(t *testing.T) {
@@ -276,7 +276,7 @@ func TestPayload_Combine(t *testing.T) {
 		Dependencies: []Dependency{
 			{Type: "npm", Name: "express"},
 		},
-		Childs: []*Payload{
+		Children: []*Payload{
 			{ID: "child1", Name: "Child 1"},
 		},
 	}
@@ -289,7 +289,7 @@ func TestPayload_Combine(t *testing.T) {
 		Dependencies: []Dependency{
 			{Type: "npm", Name: "lodash"},
 		},
-		Childs: []*Payload{
+		Children: []*Payload{
 			{ID: "child2", Name: "Child 2"},
 		},
 	}
@@ -309,8 +309,8 @@ func TestPayload_Combine(t *testing.T) {
 	assert.Len(t, payload.Dependencies, 2)
 
 	// Children merging behavior may vary - check that it doesn't decrease
-	assert.GreaterOrEqual(t, len(payload.Childs), 1, "Should have at least original children")
-	t.Logf("Children after combine: %v", payload.Childs)
+	assert.GreaterOrEqual(t, len(payload.Children), 1, "Should have at least original children")
+	t.Logf("Children after combine: %v", payload.Children)
 }
 
 // Helper method to clone a payload for testing
@@ -328,10 +328,10 @@ func (p *Payload) clone() *Payload {
 		copy(clone.Dependencies, p.Dependencies)
 	}
 
-	if p.Childs != nil {
-		clone.Childs = make([]*Payload, len(p.Childs))
-		for i, child := range p.Childs {
-			clone.Childs[i] = child.clone()
+	if p.Children != nil {
+		clone.Children = make([]*Payload, len(p.Children))
+		for i, child := range p.Children {
+			clone.Children[i] = child.clone()
 		}
 	}
 

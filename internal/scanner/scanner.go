@@ -371,7 +371,7 @@ func (s *Scanner) countFilesAndComponents(payload *types.Payload) (int, int) {
 
 	componentCount := 1 // Current component (payload node)
 
-	for _, child := range payload.Childs {
+	for _, child := range payload.Children {
 		childFiles, childComponents := s.countFilesAndComponents(child)
 		fileCount += childFiles
 		componentCount += childComponents
@@ -390,7 +390,7 @@ func (s *Scanner) countLanguages(payload *types.Payload) int {
 	}
 
 	// Recursively collect from child components
-	for _, child := range payload.Childs {
+	for _, child := range payload.Children {
 		// We need to get the actual language names from the child
 		s.collectLanguages(child, languages)
 	}
@@ -404,7 +404,7 @@ func (s *Scanner) collectLanguages(payload *types.Payload, languages map[string]
 		languages[lang] = true
 	}
 
-	for _, child := range payload.Childs {
+	for _, child := range payload.Children {
 		s.collectLanguages(child, languages)
 	}
 }
@@ -425,7 +425,7 @@ func (s *Scanner) countTechs(payload *types.Payload) (int, int) {
 	}
 
 	// Recursively collect from child components
-	for _, child := range payload.Childs {
+	for _, child := range payload.Children {
 		s.collectTechs(child, primaryTechs, allTechs)
 	}
 
@@ -443,7 +443,7 @@ func (s *Scanner) collectTechs(payload *types.Payload, primaryTechs, allTechs ma
 		allTechs[tech] = true
 	}
 
-	for _, child := range payload.Childs {
+	for _, child := range payload.Children {
 		s.collectTechs(child, primaryTechs, allTechs)
 	}
 }
@@ -735,7 +735,7 @@ func (s *Scanner) detectComponents(payload, ctx *types.Payload, files []types.Fi
 }
 
 func (s *Scanner) mergeVirtualPayload(target, virtual *types.Payload, currentPath string) {
-	for _, child := range virtual.Childs {
+	for _, child := range virtual.Children {
 		target.AddChild(child)
 	}
 	target.Combine(virtual)

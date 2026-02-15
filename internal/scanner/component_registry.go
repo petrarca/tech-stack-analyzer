@@ -44,7 +44,7 @@ func (s *Scanner) buildComponentRegistry(payload *types.Payload, registry *Compo
 	registry.Register(payload)
 
 	// Recursively register child components
-	for _, child := range payload.Childs {
+	for _, child := range payload.Children {
 		s.buildComponentRegistry(child, registry)
 	}
 }
@@ -76,7 +76,7 @@ func (s *Scanner) resolveComponentRefsRecursive(payload *types.Payload, registry
 	}
 
 	// Recursively process child components
-	for _, child := range payload.Childs {
+	for _, child := range payload.Children {
 		s.resolveComponentRefsRecursive(child, registry)
 	}
 }

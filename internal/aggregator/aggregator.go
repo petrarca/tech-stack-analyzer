@@ -109,7 +109,7 @@ func (a *Aggregator) collectPrimaryTechsRecursive(payload *types.Payload, techSe
 	}
 
 	// Recursively process children
-	for _, child := range payload.Childs {
+	for _, child := range payload.Children {
 		a.collectPrimaryTechsRecursive(child, techSet)
 	}
 }
@@ -144,7 +144,7 @@ func (a *Aggregator) collectTechsRecursive(payload *types.Payload, techSet map[s
 	}
 
 	// Recursively process children
-	for _, child := range payload.Childs {
+	for _, child := range payload.Children {
 		a.collectTechsRecursive(child, techSet)
 	}
 }
@@ -172,7 +172,7 @@ func (a *Aggregator) collectReasonsRecursive(payload *types.Payload, reasons map
 	}
 
 	// Recursively process children
-	for _, child := range payload.Childs {
+	for _, child := range payload.Children {
 		a.collectReasonsRecursive(child, reasons)
 	}
 }
@@ -192,7 +192,7 @@ func (a *Aggregator) collectLanguagesRecursive(payload *types.Payload, languages
 	}
 
 	// Recursively process children
-	for _, child := range payload.Childs {
+	for _, child := range payload.Children {
 		a.collectLanguagesRecursive(child, languages)
 	}
 }
@@ -220,7 +220,7 @@ func (a *Aggregator) collectLicensesRecursive(payload *types.Payload, licenseSet
 	}
 
 	// Recursively process children
-	for _, child := range payload.Childs {
+	for _, child := range payload.Children {
 		a.collectLicensesRecursive(child, licenseSet)
 	}
 }
@@ -262,7 +262,7 @@ func (a *Aggregator) collectDependenciesRecursive(payload *types.Payload, depMap
 	}
 
 	// Recursively process children
-	for _, child := range payload.Childs {
+	for _, child := range payload.Children {
 		a.collectDependenciesRecursive(child, depMap)
 	}
 }
@@ -304,7 +304,7 @@ func (a *Aggregator) collectGitRecursive(payload *types.Payload, gitMap map[stri
 	}
 
 	// Recursively process children
-	for _, child := range payload.Childs {
+	for _, child := range payload.Children {
 		a.collectGitRecursive(child, gitMap)
 	}
 }

@@ -191,7 +191,7 @@
                     },
                     "description": "Inter-component references (outgoing - components this component depends on)"
                 },
-                "childs": {
+                "children": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/full"

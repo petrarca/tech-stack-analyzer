@@ -224,7 +224,7 @@ The scanner outputs a hierarchical JSON structure showing detected technologies,
     "commit": "a1b2c3d",
     "remote_url": "https://github.com/user/repo.git"
   },
-  "childs": [
+  "children": [
     {
       "id": "backend",
       "name": "backend", 
@@ -280,7 +280,7 @@ The scanner outputs a hierarchical JSON structure showing detected technologies,
 **Key Fields:**
 - `tech` - Primary technologies (creates components)
 - `techs` - All detected technologies (components + tools/libraries)
-- `childs` - Nested components (sub-projects, services)
+- `children` - Nested components (sub-projects, services)
 - `dependencies` - Package dependencies with versions
 - `code_stats` - Code statistics (lines, code, comments, blanks, complexity)
 - `git` - Git repository information (branch, commit, dirty status, remote URL)
@@ -408,7 +408,7 @@ Enable per-component code statistics with `--component-code-stats` to get detail
   "code_stats": {
     "total": { "lines": 253628, "code": 200321, "files": 4916 }
   },
-  "childs": [
+  "children": [
     {
       "name": "module-api",
       "tech": ["java"],
@@ -953,7 +953,7 @@ The scanner outputs a hierarchical JSON structure representing the detected tech
 - **licenses**: Array of detected licenses in this component
 - **dependencies**: Array of detected dependencies with format `[type, name, version, scope, direct, metadata]` (always 6 elements)
 - **component_dependencies**: Array of component-level dependencies (e.g., Docker base images, parent Maven modules) with format `[type, name, version, scope, metadata]` (always 5 elements)
-- **childs**: Array of nested components (sub-projects, services, etc.)
+- **children**: Array of nested components (sub-projects, services, etc.)
 - **edges**: Array of relationships between components (e.g., service → database connections); created for architectural components like databases, SaaS services, and monitoring tools, but not for hosting/cloud providers
 - **reason**: Object mapping technologies to detection reasons, with "_" key for non-tech reasons (licenses, base images, etc.)
 - **properties**: Object containing tech-specific metadata (Docker, Terraform, Kubernetes, etc.)
@@ -1143,7 +1143,7 @@ This is common in projects with:
     ["npm", "express", "^4.18.0", "prod", true, {"source": "package-lock.json"}],
     ["npm", "pg", "^8.8.0", "prod", true, {"source": "package-lock.json"}]
   ],
-  "childs": [
+  "children": [
     {
       "id": "def456",
       "name": "frontend",

@@ -112,11 +112,11 @@ services:
 	assert.Equal(t, "/docker-compose.yml", payload.Path[0])
 
 	// Should have 3 child services
-	assert.Len(t, payload.Childs, 3, "Should have 3 child services")
+	assert.Len(t, payload.Children, 3, "Should have 3 child services")
 
 	// Check child services
 	serviceNames := make(map[string]*types.Payload)
-	for _, child := range payload.Childs {
+	for _, child := range payload.Children {
 		serviceNames[child.Name] = child
 	}
 
@@ -180,9 +180,9 @@ services:
 	payload := results[0]
 	assert.Equal(t, "virtual", payload.Name)
 	assert.Equal(t, "/docker-compose.yaml", payload.Path[0])
-	assert.Len(t, payload.Childs, 1, "Should have 1 child service")
+	assert.Len(t, payload.Children, 1, "Should have 1 child service")
 
-	child := payload.Childs[0]
+	child := payload.Children[0]
 	assert.Equal(t, "app", child.Name)
 	assert.Contains(t, child.Tech, "docker", "Should fallback to docker tech")
 	assert.Equal(t, "node", child.Dependencies[0].Name)
@@ -224,7 +224,7 @@ services:
 
 	payload := results[0]
 	assert.Equal(t, "/docker-compose.override.yml", payload.Path[0])
-	assert.Len(t, payload.Childs, 1, "Should have 1 child service")
+	assert.Len(t, payload.Children, 1, "Should have 1 child service")
 }
 
 func TestDetector_Detect_NoDockerComposeFiles(t *testing.T) {
@@ -366,9 +366,9 @@ services:
 	require.Len(t, results, 1, "Should detect one Docker compose project")
 
 	payload := results[0]
-	assert.Len(t, payload.Childs, 1, "Should have 1 child service (skipped env var)")
+	assert.Len(t, payload.Children, 1, "Should have 1 child service (skipped env var)")
 
-	child := payload.Childs[0]
+	child := payload.Children[0]
 	assert.Equal(t, "db", child.Name, "Should only have db service (env var skipped)")
 }
 
@@ -407,9 +407,9 @@ services:
 	require.Len(t, results, 1, "Should detect one Docker compose project")
 
 	payload := results[0]
-	assert.Len(t, payload.Childs, 1, "Should have 1 child service")
+	assert.Len(t, payload.Children, 1, "Should have 1 child service")
 
-	child := payload.Childs[0]
+	child := payload.Children[0]
 	assert.Equal(t, "my-nginx-server", child.Name, "Should use container_name instead of service name")
 }
 
