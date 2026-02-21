@@ -85,13 +85,17 @@ var (
 )
 
 var scanCmd = &cobra.Command{
-	Use:   "scan [path]",
-	Short: "Scan a project or file for technology stack",
-	Long: `Scan analyzes a project directory or single file to detect technologies,
+	Use:   "scan [path...]",
+	Short: "Scan one or more projects for technology stack",
+	Long: `Scan analyzes one or more project directories or single files to detect technologies,
 frameworks, databases, and services used in your codebase.
+
+When multiple paths are provided, they are scanned independently and the results
+are merged into a single output as if they were all in one project.
 
 Examples:
   stack-analyzer scan /path/to/project
+  stack-analyzer scan /path/to/project1 /path/to/project2
   stack-analyzer scan /path/to/pom.xml
   stack-analyzer scan --config scan-config.yml /path/to/project
   stack-analyzer scan --config '{"scan":{"output":{"file":"$BUILD_DIR/scan-results.json"},"properties":{"build":"'$BUILD_NUMBER'"}}}' /path/to/project
@@ -99,8 +103,7 @@ Examples:
   stack-analyzer scan --aggregate all /path/to/project
   stack-analyzer scan --exclude vendor,node_modules /path/to/project
   stack-analyzer scan --exclude "**/__tests__/**" --exclude "*.log" /path/to/project`,
-	Args: cobra.MaximumNArgs(1),
-	Run:  runScan,
+	Run: runScan,
 }
 
 func init() {
@@ -169,13 +172,8 @@ func configureLogging(cmd *cobra.Command) *slog.Logger {
 	return settings.ConfigureLogger()
 }
 
-// resolveScanPath resolves and validates the scan path from args
-func resolveScanPath(args []string, logger *slog.Logger) (absPath string, isFile bool) {
-	path := "."
-	if len(args) > 0 {
-		path = args[0]
-	}
-
+// resolveScanPath resolves and validates a single scan path
+func resolveScanPath(path string, logger *slog.Logger) (absPath string, isFile bool) {
 	path = strings.TrimSpace(path)
 	absPath, err := filepath.Abs(path)
 	if err != nil {
@@ -189,12 +187,6 @@ func resolveScanPath(args []string, logger *slog.Logger) (absPath string, isFile
 		os.Exit(1)
 	}
 	return absPath, !fileInfo.IsDir()
-}
-
-// resolveSingleScanPath resolves a single scan path, handling both config and args
-func resolveSingleScanPath(configPath string, args []string, logger *slog.Logger) (absPath string, isFile bool) {
-	// Use traditional args-based resolution (ignore configPath since we removed multi-path)
-	return resolveScanPath(args, logger)
 }
 
 // configureExcludePatterns processes exclude patterns from command flags
@@ -212,13 +204,23 @@ func runScan(cmd *cobra.Command, args []string) {
 	// Load and merge scan configuration
 	scanConfig = loadAndMergeScanConfig(logger)
 
-	// Single path scan - use command line argument or default to current directory
-	runSinglePathScan("", args, cmd, logger)
+	// Default to current directory if no args provided
+	if len(args) == 0 {
+		args = []string{"."}
+	}
+
+	if len(args) == 1 {
+		// Single path scan
+		runSinglePathScan(args[0], cmd, logger)
+	} else {
+		// Multi-path scan: scan each path and merge into one result
+		runMultiPathScan(args, cmd, logger)
+	}
 }
 
 // runSinglePathScan executes a single path scan with all the logic
-func runSinglePathScan(configPath string, args []string, cmd *cobra.Command, logger *slog.Logger) {
-	absPath, isFile := resolveSingleScanPath(configPath, args, logger)
+func runSinglePathScan(path string, cmd *cobra.Command, logger *slog.Logger) {
+	absPath, isFile := resolveScanPath(path, logger)
 	configureExcludePatterns(cmd)
 
 	// Setup and validate scan settings
@@ -235,6 +237,44 @@ func runSinglePathScan(configPath string, args []string, cmd *cobra.Command, log
 
 	// Generate and write output
 	generateAndWriteOutput(payload, logger)
+}
+
+// runMultiPathScan scans multiple paths and merges results into a single output
+func runMultiPathScan(paths []string, cmd *cobra.Command, logger *slog.Logger) {
+	configureExcludePatterns(cmd)
+	setupScanSettings(logger)
+
+	// Create a root payload that will contain all scan results
+	rootPayload := types.NewPayloadWithPath("main", "/")
+
+	for _, path := range paths {
+		absPath, isFile := resolveScanPath(path, logger)
+
+		// Load project config and merge with scan config
+		_, mergedConfig := loadAndMergeProjectConfig(absPath, logger)
+
+		// Run scanner for this path
+		result := runScanner(absPath, isFile, mergedConfig, logger)
+
+		// Enhance payload with configuration data
+		enhanceSinglePayload(result, mergedConfig)
+
+		if p, ok := result.(*types.Payload); ok {
+			// Merge the scanned payload into the root
+			rootPayload.Combine(p)
+
+			// Add children from the scanned payload to the root
+			for _, child := range p.Children {
+				rootPayload.AddChild(child)
+			}
+		}
+	}
+
+	// Assign IDs to the merged tree
+	rootPayload.AssignIDs(settings.RootID)
+
+	// Generate and write output
+	generateAndWriteOutput(rootPayload, logger)
 }
 
 // loadAndMergeScanConfig loads scan configuration and merges with settings
