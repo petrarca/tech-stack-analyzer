@@ -7,6 +7,7 @@ AI coding agents: Follow these rules strictly when working on Tech Stack Analyze
 **Tech Stack Analyzer** is a Go implementation focusing on **zero-dependency deployment** - a single binary without Node.js runtime. This is the main value proposition, not performance.
 
 ### Key Principles
+
 - **Zero Dependencies**: Single binary deployment is the primary benefit
 - **Realistic Claims**: Never exaggerate performance
 - **Modular Architecture**: Component-based detector system
@@ -43,6 +44,9 @@ After building with `task build`, the scanner binary is available at `./bin/stac
 # Basic scan (outputs to stack-analysis.json)
 ./bin/stack-analyzer scan /path/to/project
 
+# Scan multiple directories (merged into one output)
+./bin/stack-analyzer scan /path/to/project1 /path/to/project2
+
 # Scan with custom output file
 ./bin/stack-analyzer scan -o /tmp/output.json /path/to/project
 
@@ -60,6 +64,7 @@ After building with `task build`, the scanner binary is available at `./bin/stac
 ```
 
 **Common use cases:**
+
 - Test on local project: `./bin/stack-analyzer scan -o /tmp/scan.json /path/to/project`
 - Quick test during development: `task run -- /path/to/project`
 - Production scan: `./bin/stack-analyzer scan -o results.json --exclude "node_modules" /project`
@@ -94,12 +99,14 @@ exclude:
 ## Before Making Repository Public
 
 ### Never Commit
+
 - `.env*`, `*.key`, `*.pem` - Secrets and credentials
 - `.DS_Store`, `Thumbs.db` - OS files
 - `bin/`, `dist/` - Build artifacts
 - Personal notes with sensitive context
 
 ### Pre-Publication Checklist
+
 - [ ] Review `.gitignore` completeness
 - [ ] Scan for secrets: `git grep -i "password\|api_key\|secret\|token"`
 - [ ] Verify LICENSE file
@@ -109,6 +116,7 @@ exclude:
 ## Adding Technology Rules
 
 Create YAML in `internal/rules/techs/{category}/`:
+
 ```yaml
 tech: "technology-name"
 name: "Display Name"
@@ -121,6 +129,7 @@ dependencies:
 ```
 
 **Process:**
+
 1. Choose category (32 available: `ai/`, `analytics/`, `application/`, `automation/`, `build/`, `ci/`, `cloud/`, `cms/`, `collaboration/`, `communication/`, `crm/`, `database/`, `etl/`, `framework/`, `hosting/`, `infrastructure/`, `language/`, `misc/`, `monitoring/`, `network/`, `notification/`, `payment/`, `queue/`, `runtime/`, `saas/`, `security/`, `ssg/`, `storage/`, `test/`, `tool/`, `ui/`, `validation/`)
 2. Create YAML file
 3. Validate: `yamllint internal/rules/techs/{category}/{file}.yaml`
@@ -133,6 +142,7 @@ dependencies:
 All detectors are plugins under `internal/scanner/components/{tech}/`. See `docs/design/scanner-architecture.md` for the full architecture and `docs/design/detector-implementation.md` for the detector reference.
 
 Create `internal/scanner/components/{tech}/detector.go`:
+
 ```go
 package mytech
 
@@ -159,11 +169,13 @@ func init() {
 ```
 
 Add blank import in `internal/scanner/scanner.go`:
+
 ```go
 _ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/mytech"
 ```
 
 **Process:**
+
 1. Create detector package with `detector.go` and `detector_test.go`
 2. Implement `Detector` interface (Name + Detect)
 3. Register via `init()` with `components.Register()`
@@ -182,6 +194,7 @@ go test -run TestName ./path        # Specific test
 ```
 
 Write table-driven tests:
+
 ```go
 func TestDetector(t *testing.T) {
     tests := []struct {
@@ -204,11 +217,13 @@ func TestDetector(t *testing.T) {
 ## Critical Rules
 
 ### NEVER Claim
+
 - "Parallel processing" - implementation is sequential
 - "Faster than original" - without benchmarks
 - "Production-ready"/"Enterprise-grade" - marketing fluff
 
 ### ALWAYS
+
 - Use provider interface for file operations (never direct file access)
 - Handle errors gracefully
 - Run `task fct` before committing
@@ -222,6 +237,7 @@ func TestDetector(t *testing.T) {
 - No emojis in code, comments, test output, or documentation
 
 ### Security
+
 - No path traversal, no `exec.Command`, no hardcoded secrets
 - Validate all inputs, sanitize user data
 - Use provider interface exclusively
@@ -229,6 +245,7 @@ func TestDetector(t *testing.T) {
 ## Performance Claims
 
 Only claim improvements with:
+
 ```bash
 go test -bench=. -benchmem ./internal/scanner/
 go test -cpuprofile=cpu.out -bench=.

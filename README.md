@@ -167,6 +167,9 @@ The analyzer uses a command-based interface powered by [Cobra](https://github.co
 # Scan specific directory (automatically uses project's .gitignore files)
 ./bin/stack-analyzer scan /path/to/project
 
+# Scan multiple directories (merged into one output)
+./bin/stack-analyzer scan /path/to/project1 /path/to/project2
+
 # Save results to custom file
 ./bin/stack-analyzer scan /path/to/project --output results.json
 

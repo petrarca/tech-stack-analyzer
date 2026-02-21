@@ -10,7 +10,6 @@ permissions:
 
 jobs:
   test:
-    if: github.repository == 'petrarca/tech-stack-analyzer'
     name: Test before release
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -47,7 +46,6 @@ jobs:
         run: go test -race -count=1 ./...
 
   release:
-    if: github.repository == 'petrarca/tech-stack-analyzer'
     name: Release
     needs: test
     runs-on: ubuntu-latest
