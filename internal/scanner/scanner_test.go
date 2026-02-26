@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/petrarca/tech-stack-analyzer/internal/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -473,4 +474,102 @@ func TestScanner_GetGitInfo_NonGitDirectory(t *testing.T) {
 	cachedRoot, exists := scanner.gitRootCache[tempDir]
 	assert.True(t, exists, "Path should be cached")
 	assert.Empty(t, cachedRoot, "Cached root should be empty for non-git dir")
+}
+
+func TestScanner_IsIncludedPath(t *testing.T) {
+	// Create temporary directory structure
+	tempDir, err := os.MkdirTemp("", "scanner-include-test")
+	require.NoError(t, err)
+	defer os.RemoveAll(tempDir)
+
+	// Create subdirectories
+	for _, dir := range []string{"proj1", "proj2", "proj3", "proj1/src"} {
+		err = os.MkdirAll(filepath.Join(tempDir, dir), 0755)
+		require.NoError(t, err)
+	}
+
+	s, err := NewScanner(tempDir)
+	require.NoError(t, err)
+
+	t.Run("no include paths means everything included", func(t *testing.T) {
+		s.SetIncludePaths(nil)
+		assert.True(t, s.isIncludedPath(filepath.Join(tempDir, "proj1")))
+		assert.True(t, s.isIncludedPath(filepath.Join(tempDir, "proj3")))
+	})
+
+	t.Run("include paths filter directories", func(t *testing.T) {
+		s.SetIncludePaths([]string{"proj1", "proj2"})
+
+		// Included paths
+		assert.True(t, s.isIncludedPath(filepath.Join(tempDir, "proj1")), "proj1 should be included")
+		assert.True(t, s.isIncludedPath(filepath.Join(tempDir, "proj2")), "proj2 should be included")
+
+		// Child of included path
+		assert.True(t, s.isIncludedPath(filepath.Join(tempDir, "proj1", "src")), "proj1/src should be included (child)")
+
+		// Not included
+		assert.False(t, s.isIncludedPath(filepath.Join(tempDir, "proj3")), "proj3 should not be included")
+
+		// Root itself should be included (ancestor of include paths)
+		assert.True(t, s.isIncludedPath(tempDir), "root should be included (ancestor)")
+	})
+}
+
+func TestScanner_MultiPathScan(t *testing.T) {
+	// Create temporary directory structure simulating multi-path scan
+	tempDir, err := os.MkdirTemp("", "scanner-multipath-test")
+	require.NoError(t, err)
+	defer os.RemoveAll(tempDir)
+
+	// Create proj1 with package.json (Node.js)
+	proj1Dir := filepath.Join(tempDir, "proj1")
+	err = os.MkdirAll(proj1Dir, 0755)
+	require.NoError(t, err)
+	err = os.WriteFile(filepath.Join(proj1Dir, "package.json"), []byte(`{"name": "proj1", "dependencies": {"express": "4.18.0"}}`), 0644)
+	require.NoError(t, err)
+
+	// Create proj2 with go.mod (Go)
+	proj2Dir := filepath.Join(tempDir, "proj2")
+	err = os.MkdirAll(proj2Dir, 0755)
+	require.NoError(t, err)
+	err = os.WriteFile(filepath.Join(proj2Dir, "go.mod"), []byte("module example.com/proj2\n\ngo 1.21\n"), 0644)
+	require.NoError(t, err)
+	err = os.WriteFile(filepath.Join(proj2Dir, "main.go"), []byte("package main\n\nfunc main() {}\n"), 0644)
+	require.NoError(t, err)
+
+	// Create proj3 with requirements.txt (Python) - should NOT be scanned
+	proj3Dir := filepath.Join(tempDir, "proj3")
+	err = os.MkdirAll(proj3Dir, 0755)
+	require.NoError(t, err)
+	err = os.WriteFile(filepath.Join(proj3Dir, "requirements.txt"), []byte("flask==2.0.1\n"), 0644)
+	require.NoError(t, err)
+
+	// Create scanner rooted at common parent with include paths for proj1 and proj2 only
+	s, err := NewScanner(tempDir)
+	require.NoError(t, err)
+	s.SetIncludePaths([]string{"proj1", "proj2"})
+
+	result, err := s.Scan()
+	require.NoError(t, err)
+	require.NotNil(t, result)
+
+	// Collect all detected techs recursively
+	allTechs := collectAllTechs(result)
+
+	// proj1 (Node.js) and proj2 (Go) should be detected
+	t.Logf("Detected techs: %v", allTechs)
+
+	// proj3 (Python/Flask) should NOT be detected since it was excluded by include paths
+	assert.NotContains(t, allTechs, "flask", "proj3 techs should not be detected")
+	assert.NotContains(t, allTechs, "python", "proj3 techs should not be detected")
+}
+
+// collectAllTechs recursively collects all tech identifiers from a payload tree
+func collectAllTechs(p *types.Payload) []string {
+	techs := make([]string, 0)
+	techs = append(techs, p.Techs...)
+	for _, child := range p.Children {
+		techs = append(techs, collectAllTechs(child)...)
+	}
+	return techs
 }

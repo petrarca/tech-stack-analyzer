@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"net/url"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/go-git/go-git/v5"
@@ -167,17 +168,53 @@ func sanitizeRemoteURL(rawURL string) string {
 	return parsed.String()
 }
 
+// GenerateRootIDFromMultiPaths generates a deterministic root ID for a multi-path scan.
+// It hashes the common root together with the sorted list of direct subfolder names,
+// so different subsets of paths produce different IDs while the same set is stable.
+// The subPaths must be the relative subfolder names (not full paths).
+// If the common root is a git repo with a remote URL, the git-based identity is used
+// as the base instead of the filesystem path, ensuring portability across machines.
+func GenerateRootIDFromMultiPaths(commonRoot string, subPaths []string) string {
+	// Sort subPaths for deterministic output regardless of argument order
+	sorted := make([]string, len(subPaths))
+	copy(sorted, subPaths)
+	sort.Strings(sorted)
+
+	// Try git-based identity first (portable across machines)
+	gitInfo, repoRoot := GetGitInfoWithRoot(commonRoot)
+	var base string
+	if gitInfo != nil && gitInfo.RemoteURL != "" {
+		base = normalizeRemoteURL(gitInfo.RemoteURL)
+		// If commonRoot is a subdirectory of the repo, include the relative path
+		if repoRoot != "" && repoRoot != commonRoot {
+			rel, err := filepath.Rel(repoRoot, commonRoot)
+			if err == nil && rel != "." {
+				base += ":" + rel
+			}
+		}
+	} else {
+		// Fallback to absolute path
+		base = filepath.Clean(commonRoot)
+	}
+
+	// Append sorted subfolder names
+	content := base
+	for _, sub := range sorted {
+		content += ":" + sub
+	}
+
+	hash := sha256.Sum256([]byte(content))
+	return hex.EncodeToString(hash[:])[:20]
+}
+
 // GenerateRootIDFromPath generates a deterministic root ID from absolute path
 // Used when git repository is not available
 func GenerateRootIDFromPath(basePath string) string {
-	// Ensure we have absolute path
-	absPath := basePath
-	if !filepath.IsAbs(basePath) {
-		absPath = filepath.Join(basePath) // This will make it relative to current dir
+	// Ensure we have an absolute, clean path
+	absPath, err := filepath.Abs(basePath)
+	if err != nil {
+		absPath = filepath.Clean(basePath)
 	}
-
-	// Normalize path for consistency across platforms
-	absPath = filepath.Clean(absPath)
 
 	hash := sha256.Sum256([]byte(absPath))
 	return hex.EncodeToString(hash[:])[:20]

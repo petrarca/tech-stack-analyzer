@@ -51,6 +51,7 @@ type Scanner struct {
 	langDetector    *LanguageDetector
 	contentMatcher  *matchers.ContentMatcherRegistry
 	excludePatterns []string
+	includePaths    []string // When set, only these relative paths under the root are scanned
 	progress        *progress.Progress
 	codeStats       CodeStatsAnalyzer
 	gitignoreStack  *git.StackBasedLoader
@@ -219,6 +220,56 @@ func (s *Scanner) SetUseLockFiles(use bool) {
 	s.useLockFiles = use
 }
 
+// SetIncludePaths restricts scanning to only the specified relative paths under the root.
+// When set, only directories whose path relative to the scan root starts with one of these
+// prefixes are recursed into. This enables multi-path scanning: the scanner is rooted at
+// a common parent directory, and only the specified subtrees are scanned.
+// All paths must be relative; absolute paths are rejected.
+func (s *Scanner) SetIncludePaths(paths []string) {
+	for _, p := range paths {
+		if filepath.IsAbs(p) {
+			panic(fmt.Sprintf("SetIncludePaths: expected relative path, got absolute: %q", p))
+		}
+	}
+	s.includePaths = paths
+}
+
+// isIncludedPath checks whether a directory should be entered based on includePaths.
+// Returns true if:
+// - includePaths is not set (no filtering)
+// - the directory's relative path matches or is a prefix/child of an include path
+func (s *Scanner) isIncludedPath(dirPath string) bool {
+	if len(s.includePaths) == 0 {
+		return true
+	}
+
+	basePath := s.provider.GetBasePath()
+	relPath, err := filepath.Rel(basePath, dirPath)
+	if err != nil {
+		return true // On error, allow entry
+	}
+	relPath = filepath.Clean(relPath)
+
+	for _, inc := range s.includePaths {
+		inc = filepath.Clean(inc)
+		// Exact match: this directory IS an include path
+		if relPath == inc {
+			return true
+		}
+		// Child: this directory is inside an include path (e.g. inc="proj1", rel="proj1/src")
+		if strings.HasPrefix(relPath, inc+string(filepath.Separator)) {
+			return true
+		}
+		// Parent: this directory is an ancestor of an include path (e.g. rel="proj", inc="proj/src")
+		// Also allow the scan root itself ("." relative to basePath) unconditionally,
+		// as recurse() starts there before any directory filtering applies.
+		if relPath == "." || strings.HasPrefix(inc, relPath+string(filepath.Separator)) {
+			return true
+		}
+	}
+	return false
+}
+
 // scannerComponents holds all initialized scanner components
 type scannerComponents struct {
 	rules           []types.Rule
@@ -309,8 +360,9 @@ func (s *Scanner) Scan() (*types.Payload, error) {
 	// Configured techs are handled in cmd with validation
 	// Do not add them here to avoid duplication
 
-	// Set git information on payload BEFORE recursion starts
-	// This ensures child components can check against parent git info
+	// Set git information on payload BEFORE recursion starts.
+	// This ensures child components can compare their repo against the root repo
+	// to detect nested git repos (see recurse -> getGitInfo usage).
 	t1 := time.Now()
 	payload.Git = git.GetGitInfo(basePath)
 	slog.Debug("Retrieved git info", "duration", time.Since(t1))
@@ -341,9 +393,6 @@ func (s *Scanner) Scan() (*types.Payload, error) {
 
 	// Set output format
 	scanMeta.SetFormat("full")
-
-	// Set git information directly on payload
-	payload.Git = git.GetGitInfo(basePath)
 
 	// Attach metadata to root payload
 	payload.Metadata = scanMeta
@@ -655,14 +704,13 @@ func (s *Scanner) recurse(payload *types.Payload, filePath string) error {
 			continue
 		}
 
-		// Skip ignored directories
-		// Use stack-based gitignore checking for proper hierarchy
-		if s.shouldIgnoreDirectoryStackBased(file.Name, filePath) {
+		// Skip ignored or non-included directories
+		subPath := filepath.Join(filePath, file.Name)
+		if s.shouldSkipDirectory(file.Name, filePath, subPath) {
 			continue
 		}
 
 		// Recurse into subdirectories
-		subPath := filepath.Join(filePath, file.Name)
 		if err := s.recurse(ctx, subPath); err != nil {
 			// Continue processing other directories even if one fails
 			continue
@@ -1005,6 +1053,18 @@ func (s *Scanner) shouldExcludeFileStackBased(fileName, currentPath string) bool
 		return true
 	}
 
+	return false
+}
+
+// shouldSkipDirectory combines gitignore/exclude checks with include-path filtering.
+// A directory is skipped if it matches exclude patterns OR is not in the include paths.
+func (s *Scanner) shouldSkipDirectory(name, parentPath, fullPath string) bool {
+	if s.shouldIgnoreDirectoryStackBased(name, parentPath) {
+		return true
+	}
+	if !s.isIncludedPath(fullPath) {
+		return true
+	}
 	return false
 }
 

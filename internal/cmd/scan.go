@@ -12,6 +12,7 @@ import (
 	"github.com/petrarca/tech-stack-analyzer/internal/aggregator"
 	"github.com/petrarca/tech-stack-analyzer/internal/codestats"
 	"github.com/petrarca/tech-stack-analyzer/internal/config"
+	gitpkg "github.com/petrarca/tech-stack-analyzer/internal/git"
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner"
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
 	"github.com/spf13/cobra"
@@ -85,21 +86,25 @@ var (
 )
 
 var scanCmd = &cobra.Command{
-	Use:   "scan [path]",
+	Use:   "scan [path...]",
 	Short: "Scan a project or file for technology stack",
-	Long: `Scan analyzes a project directory or single file to detect technologies,
-frameworks, databases, and services used in your codebase.
+	Long: `Scan analyzes a project directory, single file, or multiple directories to detect
+technologies, frameworks, databases, and services used in your codebase.
+
+When multiple paths are specified, they are scanned as a single unified project.
+All paths must share a common parent directory (e.g., /myprojects/proj1 /myprojects/proj2).
 
 Examples:
   stack-analyzer scan /path/to/project
   stack-analyzer scan /path/to/pom.xml
+  stack-analyzer scan /path/to/proj1 /path/to/proj2
   stack-analyzer scan --config scan-config.yml /path/to/project
   stack-analyzer scan --config '{"scan":{"output":{"file":"$BUILD_DIR/scan-results.json"},"properties":{"build":"'$BUILD_NUMBER'"}}}' /path/to/project
   stack-analyzer scan --aggregate techs,languages /path/to/project
   stack-analyzer scan --aggregate all /path/to/project
   stack-analyzer scan --exclude vendor,node_modules /path/to/project
   stack-analyzer scan --exclude "**/__tests__/**" --exclude "*.log" /path/to/project`,
-	Args: cobra.MaximumNArgs(1),
+	Args: cobra.ArbitraryArgs,
 	Run:  runScan,
 }
 
@@ -184,17 +189,15 @@ func resolveScanPath(args []string, logger *slog.Logger) (absPath string, isFile
 	}
 
 	fileInfo, err := os.Stat(absPath)
-	if os.IsNotExist(err) {
-		logger.Error("Path does not exist", "path", absPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			logger.Error("Path does not exist", "path", absPath)
+		} else {
+			logger.Error("Cannot access path", "path", absPath, "error", err)
+		}
 		os.Exit(1)
 	}
 	return absPath, !fileInfo.IsDir()
-}
-
-// resolveSingleScanPath resolves a single scan path, handling both config and args
-func resolveSingleScanPath(configPath string, args []string, logger *slog.Logger) (absPath string, isFile bool) {
-	// Use traditional args-based resolution (ignore configPath since we removed multi-path)
-	return resolveScanPath(args, logger)
 }
 
 // configureExcludePatterns processes exclude patterns from command flags
@@ -212,13 +215,18 @@ func runScan(cmd *cobra.Command, args []string) {
 	// Load and merge scan configuration
 	scanConfig = loadAndMergeScanConfig(logger)
 
-	// Single path scan - use command line argument or default to current directory
-	runSinglePathScan("", args, cmd, logger)
+	if len(args) > 1 {
+		// Multi-path scan
+		runMultiPathScan(args, cmd, logger)
+	} else {
+		// Single path scan - use command line argument or default to current directory
+		runSinglePathScan(args, cmd, logger)
+	}
 }
 
 // runSinglePathScan executes a single path scan with all the logic
-func runSinglePathScan(configPath string, args []string, cmd *cobra.Command, logger *slog.Logger) {
-	absPath, isFile := resolveSingleScanPath(configPath, args, logger)
+func runSinglePathScan(args []string, cmd *cobra.Command, logger *slog.Logger) {
+	absPath, isFile := resolveScanPath(args, logger)
 	configureExcludePatterns(cmd)
 
 	// Setup and validate scan settings
@@ -229,6 +237,223 @@ func runSinglePathScan(configPath string, args []string, cmd *cobra.Command, log
 
 	// Initialize and run scanner
 	payload := runScanner(absPath, isFile, mergedConfig, logger)
+
+	// Enhance payload with configuration data
+	enhanceSinglePayload(payload, mergedConfig)
+
+	// Generate and write output
+	generateAndWriteOutput(payload, logger)
+}
+
+// computeCommonParent computes the deepest common parent directory of the given absolute paths.
+// All paths must be absolute. Returns the common parent path.
+func computeCommonParent(paths []string) string {
+	if len(paths) == 0 {
+		return "."
+	}
+	if len(paths) == 1 {
+		return paths[0]
+	}
+
+	// Split all paths into components
+	splitPaths := make([][]string, len(paths))
+	for i, p := range paths {
+		splitPaths[i] = strings.Split(filepath.Clean(p), string(filepath.Separator))
+	}
+
+	// Find common prefix across all split paths
+	common := splitPaths[0]
+	for _, sp := range splitPaths[1:] {
+		minLen := len(common)
+		if len(sp) < minLen {
+			minLen = len(sp)
+		}
+		matchLen := 0
+		for j := 0; j < minLen; j++ {
+			if common[j] != sp[j] {
+				break
+			}
+			matchLen++
+		}
+		common = common[:matchLen]
+	}
+
+	if len(common) == 0 {
+		return string(filepath.Separator)
+	}
+
+	result := strings.Join(common, string(filepath.Separator))
+	// On Unix, absolute paths start with "/" but Split gives "" as first element
+	if result == "" {
+		return string(filepath.Separator)
+	}
+	return result
+}
+
+// isSystemRoot returns true if the path is a filesystem root or a well-known system directory
+// that should not be used as a scan root.
+func isSystemRoot(path string) bool {
+	cleaned := filepath.Clean(path)
+	systemRoots := []string{
+		"/",
+		"/home",
+		"/Users",
+		"/tmp",
+		"/var",
+		"/opt",
+		"/usr",
+	}
+	for _, root := range systemRoots {
+		if cleaned == root {
+			return true
+		}
+	}
+	return false
+}
+
+// resolveMultiScanPaths validates and resolves multiple scan paths.
+// Returns the common parent, relative subfolder names, and absolute paths.
+func resolveMultiScanPaths(args []string, logger *slog.Logger) (commonParent string, relPaths []string, absPaths []string) {
+	absPaths = make([]string, 0, len(args))
+	for _, arg := range args {
+		arg = strings.TrimSpace(arg)
+		abs, err := filepath.Abs(arg)
+		if err != nil {
+			logger.Error("Invalid path", "path", arg, "error", err)
+			os.Exit(1)
+		}
+		info, err := os.Stat(abs)
+		if os.IsNotExist(err) {
+			logger.Error("Path does not exist", "path", abs)
+			os.Exit(1)
+		}
+		if err != nil {
+			logger.Error("Cannot access path", "path", abs, "error", err)
+			os.Exit(1)
+		}
+		if !info.IsDir() {
+			logger.Error("Multi-path scan requires directories, not files", "path", abs)
+			os.Exit(1)
+		}
+		absPaths = append(absPaths, abs)
+	}
+
+	commonParent = computeCommonParent(absPaths)
+
+	if isSystemRoot(commonParent) {
+		fmt.Fprintf(os.Stderr, "Error: the specified paths share only %q as common parent.\n", commonParent)
+		fmt.Fprintf(os.Stderr, "Multi-path scanning requires paths that share a project-level common parent.\n")
+		os.Exit(1)
+	}
+
+	relPaths = make([]string, 0, len(absPaths))
+	for _, abs := range absPaths {
+		rel, err := filepath.Rel(commonParent, abs)
+		if err != nil {
+			logger.Error("Cannot compute relative path", "base", commonParent, "target", abs, "error", err)
+			os.Exit(1)
+		}
+		relPaths = append(relPaths, rel)
+	}
+
+	// Warn when one input path is an ancestor of another. In that case the ancestor
+	// becomes the common parent itself (rel == "."), so the include-path filter only
+	// recurses into the explicit descendant sub-paths — not all children of the ancestor.
+	// Users who want the full ancestor tree should just scan the ancestor alone.
+	for i, a := range absPaths {
+		for j, b := range absPaths {
+			if i == j {
+				continue
+			}
+			if strings.HasPrefix(b+string(filepath.Separator), a+string(filepath.Separator)) {
+				fmt.Fprintf(os.Stderr, "Warning: %q is an ancestor of %q; only the explicitly listed sub-paths will be scanned under it.\n", a, b)
+			}
+		}
+	}
+
+	return commonParent, relPaths, absPaths
+}
+
+// runMultiPathScan orchestrates scanning multiple directories as a single unified project.
+// It computes a common parent, creates one scanner rooted there with include-path filtering,
+// and generates a multi-path-aware root ID.
+func runMultiPathScan(args []string, cmd *cobra.Command, logger *slog.Logger) {
+	commonParent, relPaths, absPaths := resolveMultiScanPaths(args, logger)
+	configureExcludePatterns(cmd)
+	setupScanSettings(logger)
+
+	// Load project config from the common parent
+	_, mergedConfig := loadAndMergeProjectConfig(commonParent, logger)
+
+	// Determine root ID for multi-path scan
+	rootID := settings.RootID
+	if rootID == "" {
+		rootID = gitpkg.GenerateRootIDFromMultiPaths(commonParent, relPaths)
+	}
+
+	// Show scan start message
+	fmt.Fprintf(os.Stderr, "Scanning %d paths under: %s\n", len(absPaths), commonParent)
+	for _, p := range absPaths {
+		fmt.Fprintf(os.Stderr, "  - %s\n", p)
+	}
+
+	logger.Debug("Multi-path scan",
+		"common_parent", commonParent,
+		"include_paths", relPaths,
+		"root_id", rootID,
+	)
+
+	// Create code stats analyzer
+	codeStatsAnalyzer := codestats.NewAnalyzerWithOptions(
+		!settings.NoCodeStats,
+		settings.CodeStatsPerComponent,
+		settings.PrimaryLanguageThreshold,
+		5,
+	)
+
+	// Create scanner rooted at common parent with include-path filtering
+	s, err := scanner.NewScannerWithOptionsAndLogger(
+		commonParent,
+		settings.ExcludePatterns,
+		settings.Verbose,
+		settings.Debug,
+		settings.TraceTimings,
+		settings.TraceRules,
+		codeStatsAnalyzer,
+		logger,
+		rootID,
+		mergedConfig,
+	)
+	if err != nil {
+		logger.Error("Failed to create scanner", "error", err)
+		os.Exit(1)
+	}
+
+	// Set include paths so only specified subdirectories are scanned
+	s.SetIncludePaths(relPaths)
+
+	// Run the scan
+	payload, err := s.Scan()
+	if err != nil {
+		logger.Error("Failed to scan", "error", err)
+		os.Exit(1)
+	}
+
+	// Attach code stats
+	if codeStatsAnalyzer.IsEnabled() {
+		stats := codeStatsAnalyzer.GetStats()
+		payload.CodeStats = stats
+
+		if cs, ok := stats.(*codestats.CodeStats); ok {
+			if cs.ByType.Programming != nil && cs.ByType.Programming.Metrics != nil {
+				payload.PrimaryLanguages = convertPrimaryLanguages(cs.ByType.Programming.Metrics.PrimaryLanguages)
+			}
+		}
+
+		if codeStatsAnalyzer.IsPerComponentEnabled() {
+			attachComponentCodeStats(payload, codeStatsAnalyzer)
+		}
+	}
 
 	// Enhance payload with configuration data
 	enhanceSinglePayload(payload, mergedConfig)
@@ -398,6 +623,9 @@ func runScanner(absPath string, isFile bool, mergedConfig *config.ScanConfig, lo
 
 // enhanceSinglePayload adds configuration data to the payload
 func enhanceSinglePayload(payload interface{}, mergedConfig *config.ScanConfig) {
+	if mergedConfig == nil {
+		return
+	}
 	// Add merged config properties to payload metadata
 	if p, ok := payload.(*types.Payload); ok && len(mergedConfig.Properties) > 0 {
 		if p.Properties == nil {

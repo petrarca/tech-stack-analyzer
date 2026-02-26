@@ -1,6 +1,10 @@
 package git
 
-import "testing"
+import (
+	"crypto/sha256"
+	"encoding/hex"
+	"testing"
+)
 
 func TestSanitizeRemoteURL(t *testing.T) {
 	tests := []struct {
@@ -106,4 +110,92 @@ func TestNormalizeRemoteURL(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestGenerateRootIDFromMultiPaths_OrderIndependence(t *testing.T) {
+	// Verify that argument order does not affect the result (sort is applied internally)
+	cases := []struct {
+		name     string
+		pathsA   []string
+		pathsB   []string
+		wantSame bool
+	}{
+		{"reverse order same result", []string{"proj2", "proj1"}, []string{"proj1", "proj2"}, true},
+		{"three elements shuffled", []string{"c", "a", "b"}, []string{"a", "b", "c"}, true},
+		{"different sets differ", []string{"proj1", "proj2"}, []string{"proj1", "proj3"}, false},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			id1 := GenerateRootIDFromMultiPaths("/tmp/nonexistent-root", tc.pathsA)
+			id2 := GenerateRootIDFromMultiPaths("/tmp/nonexistent-root", tc.pathsB)
+			if tc.wantSame && id1 != id2 {
+				t.Errorf("expected same ID for %v vs %v, got %q vs %q", tc.pathsA, tc.pathsB, id1, id2)
+			}
+			if !tc.wantSame && id1 == id2 {
+				t.Errorf("expected different IDs for %v vs %v, got same %q", tc.pathsA, tc.pathsB, id1)
+			}
+		})
+	}
+}
+
+func TestGenerateRootIDFromMultiPaths(t *testing.T) {
+	// Helper to compute expected hash
+	hashOf := func(content string) string {
+		h := sha256.Sum256([]byte(content))
+		return hex.EncodeToString(h[:])[:20]
+	}
+
+	t.Run("deterministic for same inputs", func(t *testing.T) {
+		id1 := GenerateRootIDFromMultiPaths("/tmp/nonexistent-root", []string{"proj1", "proj2"})
+		id2 := GenerateRootIDFromMultiPaths("/tmp/nonexistent-root", []string{"proj1", "proj2"})
+		if id1 != id2 {
+			t.Errorf("same inputs produced different IDs: %q vs %q", id1, id2)
+		}
+	})
+
+	t.Run("order independent", func(t *testing.T) {
+		id1 := GenerateRootIDFromMultiPaths("/tmp/nonexistent-root", []string{"proj2", "proj1"})
+		id2 := GenerateRootIDFromMultiPaths("/tmp/nonexistent-root", []string{"proj1", "proj2"})
+		if id1 != id2 {
+			t.Errorf("different order produced different IDs: %q vs %q", id1, id2)
+		}
+	})
+
+	t.Run("different subsets produce different IDs", func(t *testing.T) {
+		id1 := GenerateRootIDFromMultiPaths("/tmp/nonexistent-root", []string{"proj1", "proj2"})
+		id2 := GenerateRootIDFromMultiPaths("/tmp/nonexistent-root", []string{"proj1", "proj3"})
+		if id1 == id2 {
+			t.Errorf("different subsets produced same ID: %q", id1)
+		}
+	})
+
+	t.Run("different roots produce different IDs", func(t *testing.T) {
+		id1 := GenerateRootIDFromMultiPaths("/tmp/rootA", []string{"proj1", "proj2"})
+		id2 := GenerateRootIDFromMultiPaths("/tmp/rootB", []string{"proj1", "proj2"})
+		if id1 == id2 {
+			t.Errorf("different roots produced same ID: %q", id1)
+		}
+	})
+
+	t.Run("path-based hash content matches expected format", func(t *testing.T) {
+		// For a non-git directory, the hash should be based on the path + sorted subfolder names
+		// /tmp/nonexistent-root:proj1:proj2
+		id := GenerateRootIDFromMultiPaths("/tmp/nonexistent-root", []string{"proj2", "proj1"})
+		expected := hashOf("/tmp/nonexistent-root:proj1:proj2")
+		if id != expected {
+			t.Errorf("got %q, want %q (hash of %q)", id, expected, "/tmp/nonexistent-root:proj1:proj2")
+		}
+	})
+
+	t.Run("returns 20 character hex string", func(t *testing.T) {
+		id := GenerateRootIDFromMultiPaths("/tmp/nonexistent-root", []string{"a", "b"})
+		if len(id) != 20 {
+			t.Errorf("ID length = %d, want 20", len(id))
+		}
+		// Verify it's valid hex
+		_, err := hex.DecodeString(id)
+		if err != nil {
+			t.Errorf("ID %q is not valid hex: %v", id, err)
+		}
+	})
 }
