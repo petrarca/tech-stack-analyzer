@@ -1,0 +1,21 @@
+tech: coveralls
+name: Coveralls
+dependencies:
+  - type: githubAction
+    name: coverallsapp/github-action
+    example: coverallsapp/github-action
+  - type: npm
+    name: node-coveralls
+    example: node-coveralls
+  - type: golang
+    name: goveralls
+    example: goveralls
+  - type: npm
+    name: php-coveralls
+    example: php-coveralls
+  - type: ruby
+    name: coveralls
+    example: coveralls
+  - type: ruby
+    name: coveralls_reborn
+    example: coveralls_reborn

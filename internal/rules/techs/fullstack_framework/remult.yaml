@@ -1,0 +1,6 @@
+tech: remult
+name: Remult
+dependencies:
+  - type: npm
+    name: remult
+    example: remult

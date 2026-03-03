@@ -1,0 +1,26 @@
+tech: sonarqube
+name: SonarQube
+dependencies:
+  - type: docker
+    name: sonarqube
+    example: sonarqube
+  - type: nuget
+    name: /^SonarAnalyzer\.CSharp.*$/
+    example: SonarAnalyzer.CSharp
+  - type: nuget
+    name: dotnet-sonarscanner
+    example: dotnet-sonarscanner
+  - type: nuget
+    name: /^MSBuild.SonarQube.*$/
+    example: MSBuild.SonarQube.Runner.Tool
+  - type: npm
+    name: sonarqube-scanner
+    example: sonarqube-scanner
+  - type: npm
+    name: "@sonar/scan"
+    example: "@sonar/scan"
+  - type: maven
+    name: org.sonarsource.scanner.maven:sonar-maven-plugin
+    example: org.sonarsource.scanner.maven:sonar-maven-plugin
+files:
+  - .sonar-project.properties

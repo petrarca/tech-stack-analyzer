@@ -1,0 +1,5 @@
+tech: terragrunt
+name: Terragrunt
+files:
+  - terragrunt.hcl
+  - terragrunt.hcl.json

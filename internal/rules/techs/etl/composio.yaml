@@ -1,0 +1,11 @@
+tech: composio
+name: Composio
+dotenv:
+  - COMPOSIO_
+dependencies:
+  - type: npm
+    name: composio-core
+    example: composio-core
+  - type: python
+    name: composio-core
+    example: composio-core

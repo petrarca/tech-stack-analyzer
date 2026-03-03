@@ -1,0 +1,23 @@
+tech: valkey
+name: Valkey
+dotenv:
+  - VALKEY_
+dependencies:
+  - type: python
+    name: valkey-glide
+    example: valkey-glide
+  - type: python
+    name: valkey
+    example: valkey
+  - type: npm
+    name: "@valkey/valkey-glide"
+    example: "@valkey/valkey-glide"
+  - type: npm
+    name: iovalkey
+    example: iovalkey
+  - type: golang
+    name: github.com/valkey-io/valkey-glide/go
+    example: github.com/valkey-io/valkey-glide/go
+  - type: golang
+    name: github.com/valkey-io/valkey-go
+    example: github.com/valkey-io/valkey-go

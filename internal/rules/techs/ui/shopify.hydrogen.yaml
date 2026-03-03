@@ -1,0 +1,6 @@
+tech: shopify.hydrogen
+name: Shopify Hydrogen
+dependencies:
+  - type: npm
+    name: "@shopify/hydrogen"
+    example: "@shopify/hydrogen"

@@ -1,0 +1,6 @@
+tech: ovh.kubernetes
+name: OVH Kubernetes
+dependencies:
+  - type: terraform.resource
+    name: ovh_cloud_project_kube
+    example: ovh_cloud_project_kube

@@ -1,0 +1,14 @@
+tech: os_macos
+name: macOS
+dotenv:
+  - MACOS
+files:
+  - "*.xcodeproj"
+  - "Podfile"
+dependencies:
+  - type: swift
+    name: Cocoa
+    example: Cocoa
+  - type: swift
+    name: AppKit
+    example: AppKit

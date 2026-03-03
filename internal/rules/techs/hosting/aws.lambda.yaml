@@ -1,0 +1,39 @@
+tech: aws.lambda
+name: AWS Lambda
+dependencies:
+  - type: npm
+    name: is-lambda
+    example: is-lambda
+  - type: npm
+    name: "@aws-cdk/aws-lambda"
+    example: "@aws-cdk/aws-lambda"
+  - type: npm
+    name: "@types/aws-lambda"
+    example: "@types/aws-lambda"
+  - type: npm
+    name: "@aws-sdk/client-lambda"
+    example: "@aws-sdk/client-lambda"
+  - type: npm
+    name: aws-lambda
+    example: aws-lambda
+  - type: npm
+    name: "@opentelemetry/instrumentation-aws-lambda"
+    example: "@opentelemetry/instrumentation-aws-lambda"
+  - type: rust
+    name: aws-sdk-lambda
+    example: aws-sdk-lambda
+  - type: rust
+    name: lambda_runtime
+    example: lambda_runtime
+  - type: ruby
+    name: aws-sdk-lambda
+    example: aws-sdk-lambda
+  - type: golang
+    name: github.com/aws/aws-sdk-go-v2/service/lambda
+    example: github.com/aws/aws-sdk-go-v2/service/lambda
+  - type: php
+    name: async-aws/lambda
+    example: async-aws/lambda
+  - type: githubAction
+    name: appleboy/lambda-action
+    example: appleboy/lambda-action

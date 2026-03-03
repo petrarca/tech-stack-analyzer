@@ -1,0 +1,12 @@
+tech: simpleicons
+name: Simple Icons
+dependencies:
+  - type: npm
+    name: "@icons-pack/react-simple-icons"
+    example: "@icons-pack/react-simple-icons"
+  - type: npm
+    name: simple-icons
+    example: simple-icons
+  - type: npm
+    name: "@iconify/json/simple-icons"
+    example: "@iconify/json/simple-icons"

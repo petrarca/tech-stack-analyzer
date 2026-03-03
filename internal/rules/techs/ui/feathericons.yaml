@@ -1,0 +1,12 @@
+tech: feathericons
+name: Feather Icons
+dependencies:
+  - type: npm
+    name: feather-icons
+    example: feather-icons
+  - type: npm
+    name: react-feather
+    example: react-feather
+  - type: npm
+    name: react-native-feather
+    example: react-native-feather

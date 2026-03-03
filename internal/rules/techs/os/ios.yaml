@@ -1,0 +1,14 @@
+tech: os_ios
+name: iOS
+dotenv:
+  - IOS
+files:
+  - "*.xcodeproj"
+  - "Info.plist"
+dependencies:
+  - type: swift
+    name: UIKit
+    example: UIKit
+  - type: swift
+    name: SwiftUI
+    example: SwiftUI

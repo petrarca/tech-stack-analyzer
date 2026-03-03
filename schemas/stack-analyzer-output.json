@@ -1,0 +1,532 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Tech Stack Analyzer Output",
+    "type": "object",
+    "anyOf": [
+        {
+            "$ref": "#/definitions/full"
+        },
+        {
+            "$ref": "#/definitions/aggregated"
+        }
+    ],
+    "definitions": {
+        "dependency": {
+            "type": "array",
+            "description": "Dependency in array format [type, name, version, scope, direct, {metadata}]. Always 6 elements for consistency.",
+            "minItems": 6,
+            "maxItems": 6,
+            "items": [
+                {
+                    "type": "string",
+                    "description": "Dependency type (e.g., 'golang', 'npm', 'python', 'cargo', 'maven', 'gradle')"
+                },
+                {
+                    "type": "string",
+                    "description": "Dependency name (e.g., module path, package name, crate name)"
+                },
+                {
+                    "type": "string",
+                    "description": "Version or version range (e.g., 'v1.2.3', '^1.2.3', 'latest', or empty string if no version available)"
+                },
+                {
+                    "type": "string",
+                    "description": "Dependency scope ('prod', 'dev', 'test', 'build', 'optional', 'peer', 'import', 'system'). Empty string '' if unknown.",
+                    "enum": ["prod", "dev", "test", "build", "optional", "peer", "import", "system", ""]
+                },
+                {
+                    "type": "boolean",
+                    "description": "Direct dependency (true = declared in manifest, false = transitive/pulled in by other dependencies)"
+                },
+                {
+                    "type": "object",
+                    "description": "Package-specific metadata (source file, type, classifier, exclusions, peer, optional, bundled, etc.)",
+                    "additionalProperties": true
+                }
+            ],
+            "examples": [
+                ["golang", "github.com/user/module", "v1.2.3", "prod", true, {}],
+                ["maven", "junit:junit", "4.13.2", "dev", true, {"type": "jar"}],
+                ["npm", "lodash", "4.17.21", "prod", true, {"source": "package-lock.json"}],
+                ["npm", "react", "18.2.0", "prod", true, {"source": "package-lock.json", "peer": true}],
+                ["npm", "accepts", "1.3.8", "prod", false, {"source": "package-lock.json"}],
+                ["maven", "spring-boot-starter-web", "2.7.0", "prod", true, {"type": "jar", "exclusions": ["spring-boot-starter-tomcat"]}]
+            ]
+        },
+        "license": {
+            "type": "object",
+            "description": "Structured license entity for knowledge graph integration",
+            "properties": {
+                "license_name": {
+                    "type": "string",
+                    "description": "Primary SPDX identifier (e.g., 'MIT', 'Apache-2.0')"
+                },
+                "detection_type": {
+                    "type": "string",
+                    "enum": ["direct", "normalized", "toml_parsed", "file_based", "expression_parsed"],
+                    "description": "How the license was detected"
+                },
+                "source_file": {
+                    "type": "string",
+                    "description": "Where the license was detected (e.g., 'package.json', 'pyproject.toml', 'LICENSE')"
+                },
+                "confidence": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "Detection confidence (0.0-1.0)"
+                },
+                "original_license": {
+                    "type": "string",
+                    "description": "Original license before normalization (optional)"
+                }
+            },
+            "required": [
+                "license_name",
+                "detection_type",
+                "source_file",
+                "confidence"
+            ],
+            "additionalProperties": false
+        },
+        "properties": {
+            "type": "object",
+            "description": "Arbitrary properties map",
+            "additionalProperties": true
+        },
+        "primary_language": {
+            "type": "object",
+            "description": "Primary programming language with percentage",
+            "properties": {
+                "language": {
+                    "type": "string",
+                    "description": "Programming language name"
+                },
+                "pct": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "Percentage of total lines (0.0-1.0)"
+                }
+            },
+            "required": ["language", "pct"],
+            "additionalProperties": false
+        },
+        "full": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "type": {
+                    "type": "string",
+                    "description": "Type of component (e.g., 'maven', 'nodejs', 'python', 'dotnet')"
+                },
+                "tech": {
+                    "anyOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ]
+                },
+                "techs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "languages": {
+                    "type": "object",
+                    "patternProperties": {
+                        "^[A-Za-z0-9_\\-]+$": {
+                            "type": "integer"
+                        }
+                    }
+                },
+                "primary_languages": {
+                    "type": "array",
+                    "description": "Top programming languages by lines of code (max 5, ≥1% threshold)",
+                    "items": {
+                        "$ref": "#/definitions/primary_language"
+                    }
+                },
+                "dependencies": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dependency"
+                    },
+                    "description": "List of dependencies detected in this component"
+                },
+                "component_refs": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "target_id": {
+                                "type": "string",
+                                "description": "Component ID being depended on"
+                            },
+                            "package_name": {
+                                "type": "string",
+                                "description": "Package name that created the link"
+                            }
+                        },
+                        "required": ["target_id", "package_name"],
+                        "additionalProperties": false
+                    },
+                    "description": "Inter-component references (outgoing - components this component depends on)"
+                },
+                "children": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/full"
+                    }
+                },
+                "edges": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "target": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "target"
+                        ]
+                    }
+                },
+                "licenses": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/license"
+                    }
+                },
+                "reason": {
+                    "type": "object",
+                    "patternProperties": {
+                        "^[_a-z0-9\\-]+$": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "properties": {
+                    "$ref": "#/definitions/properties"
+                },
+                "code_stats": {
+                    "type": "object"
+                },
+                "git": {
+                    "type": "object",
+                    "properties": {
+                        "branch": {
+                            "type": "string"
+                        },
+                        "commit": {
+                            "type": "string"
+                        },
+                        "remote_url": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "metadata": {
+                    "type": "object",
+                    "description": "Scan execution metadata matching ScanMetadata struct",
+                    "properties": {
+                        "format": {
+                            "type": "string",
+                            "enum": ["full", "aggregated"],
+                            "description": "Output format type"
+                        },
+                        "source": {
+                            "type": "string",
+                            "description": "Tool that created this file"
+                        },
+                        "timestamp": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "ISO 8601 timestamp of when the scan was performed (RFC3339 format)"
+                        },
+                        "scan_path": {
+                            "type": "string",
+                            "description": "Absolute path that was scanned"
+                        },
+                        "specVersion": {
+                            "type": "string",
+                            "pattern": "^\\d+\\.\\d+$",
+                            "description": "Output format specification version"
+                        },
+                        "duration_ms": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Scan duration in milliseconds"
+                        },
+                        "file_count": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Total number of files processed"
+                        },
+                        "component_count": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Number of components detected"
+                        },
+                        "language_count": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Number of distinct programming languages detected"
+                        },
+                        "tech_count": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Number of primary technologies detected"
+                        },
+                        "techs_count": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Number of all detected technologies"
+                        },
+                        "properties": {
+                            "$ref": "#/definitions/properties"
+                        }
+                    },
+                    "required": [
+                        "format",
+                        "timestamp",
+                        "scan_path",
+                        "specVersion"
+                    ],
+                    "additionalProperties": false
+                }
+            }
+        },
+        "aggregated": {
+            "type": "object",
+            "properties": {
+                "metadata": {
+                    "type": "object",
+                    "description": "Scan execution metadata matching ScanMetadata struct",
+                    "properties": {
+                        "format": {
+                            "type": "string",
+                            "enum": ["full", "aggregated"],
+                            "description": "Output format type"
+                        },
+                        "source": {
+                            "type": "string",
+                            "description": "Tool that created this file"
+                        },
+                        "timestamp": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "ISO 8601 timestamp of when the scan was performed (RFC3339 format)"
+                        },
+                        "scan_path": {
+                            "type": "string",
+                            "description": "Absolute path that was scanned"
+                        },
+                        "specVersion": {
+                            "type": "string",
+                            "pattern": "^\\d+\\.\\d+$",
+                            "description": "Output format specification version"
+                        },
+                        "duration_ms": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Scan duration in milliseconds"
+                        },
+                        "file_count": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Total number of files processed"
+                        },
+                        "component_count": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Number of components detected"
+                        },
+                        "language_count": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Number of distinct programming languages detected"
+                        },
+                        "tech_count": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Number of primary technologies detected"
+                        },
+                        "techs_count": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Number of all detected technologies"
+                        },
+                        "properties": {
+                            "$ref": "#/definitions/properties"
+                        }
+                    },
+                    "required": [
+                        "format",
+                        "timestamp",
+                        "scan_path",
+                        "specVersion"
+                    ],
+                    "additionalProperties": false
+                },
+                "git": {
+                    "type": "array",
+                    "items": {
+                        "type": "object"
+                    }
+                },
+                "tech": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "techs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "reason": {
+                    "type": "object"
+                },
+                "languages": {
+                    "type": "object"
+                },
+                "primary_languages": {
+                    "type": "array",
+                    "description": "Top programming languages by lines of code (max 5, ≥1% threshold)",
+                    "items": {
+                        "$ref": "#/definitions/primary_language"
+                    }
+                },
+                "licenses_aggregated": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Unique license names (aggregated view)"
+                },
+                "dependencies": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dependency"
+                    },
+                    "description": "List of all dependencies detected across the entire project"
+                },
+                "code_stats": {
+                    "type": "object"
+                },
+                "properties": {
+                    "type": "object",
+                    "description": "Technology-specific properties extracted during scanning",
+                    "patternProperties": {
+                        "^[a-z0-9_\\-]+$": {
+                            "type": "array",
+                            "items": {
+                                "oneOf": [
+                                    {
+                                        "type": "object",
+                                        "title": "Docker Properties",
+                                        "description": "Dockerfile analysis results - matches DockerfileInfo struct",
+                                        "properties": {
+                                            "file": {
+                                                "type": "string",
+                                                "description": "Dockerfile path"
+                                            },
+                                            "base_images": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                },
+                                                "description": "Base Docker images"
+                                            },
+                                            "exposed_ports": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "integer"
+                                                },
+                                                "description": "Exposed ports"
+                                            },
+                                            "multi_stage": {
+                                                "type": "boolean",
+                                                "description": "Multi-stage build detected"
+                                            },
+                                            "stages": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                },
+                                                "description": "Build stage names"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "object",
+                                        "title": "Terraform Properties",
+                                        "description": "Terraform configuration analysis - matches TerraformInfo struct",
+                                        "properties": {
+                                            "file": {
+                                                "type": "string",
+                                                "description": "Terraform file path"
+                                            },
+                                            "providers": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                },
+                                                "description": "Cloud providers used"
+                                            },
+                                            "resources_by_provider": {
+                                                "type": "object",
+                                                "description": "Resource count by provider"
+                                            },
+                                            "resources_by_category": {
+                                                "type": "object",
+                                                "description": "Resource count by category"
+                                            },
+                                            "total_resources": {
+                                                "type": "integer",
+                                                "description": "Total number of resources"
+                                            }
+                                        },
+                                        "additionalProperties": false
+                                    },
+                                    {
+                                        "type": "object",
+                                        "title": "Generic Properties",
+                                        "description": "Other technology-specific properties",
+                                        "additionalProperties": true
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

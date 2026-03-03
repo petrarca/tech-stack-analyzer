@@ -1,0 +1,6 @@
+tech: elasticcloud
+name: Elastic Cloud
+dependencies:
+  - type: terraform
+    name: registry.terraform.io/elastic/ec
+    example: registry.terraform.io/elastic/ec

@@ -1,0 +1,12 @@
+tech: mattermost
+name: Mattermost
+dependencies:
+  - type: npm
+    name: mattermost-client
+    example: mattermost-client
+  - type: npm
+    name: "@mattermost/client"
+    example: "@mattermost/client"
+  - type: npm
+    name: hubot-matteruser
+    example: hubot-matteruser

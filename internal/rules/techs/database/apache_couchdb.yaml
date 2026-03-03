@@ -1,0 +1,9 @@
+tech: apache_couchdb
+name: Apache CouchDB
+dependencies:
+  - type: docker
+    name: apache/couchdb
+    example: apache/couchdb
+  - type: php
+    name: doctrine/couchdb
+    example: doctrine/couchdb

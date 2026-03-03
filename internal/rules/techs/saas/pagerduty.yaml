@@ -1,0 +1,23 @@
+tech: pagerduty
+name: Pagerduty
+dotenv:
+  - PAGERDUTY_
+dependencies:
+  - type: npm
+    name: "@pagerduty/pdjs"
+    example: "@pagerduty/pdjs"
+  - type: terraform
+    name: registry.terraform.io/PagerDuty/pagerduty
+    example: registry.terraform.io/PagerDuty/pagerduty
+  - type: rust
+    name: pagerduty-rs
+    example: pagerduty-rs
+  - type: ruby
+    name: pagerduty
+    example: pagerduty
+  - type: php
+    name: adilbaig/pagerduty
+    example: adilbaig/pagerduty
+  - type: npm
+    name: "@pulumi/pagerduty"
+    example: "@pulumi/pagerduty"

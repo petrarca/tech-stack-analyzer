@@ -1,0 +1,14 @@
+tech: helm
+name: Helm
+dependencies:
+  - type: terraform
+    name: registry.terraform.io/hashicorp/helm
+    example: registry.terraform.io/hashicorp/helm
+  - type: ruby
+    name: helm-rb
+    example: helm-rb
+  - type: githubAction
+    name: azure/setup-helm
+    example: azure/setup-helm
+files:
+  - Chart.yaml

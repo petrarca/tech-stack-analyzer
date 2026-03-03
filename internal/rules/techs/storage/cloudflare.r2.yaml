@@ -1,0 +1,6 @@
+tech: cloudflare.r2
+name: Cloudflare R2
+dependencies:
+  - type: npm
+    name: node-cloudflare-r2
+    example: node-cloudflare-r2

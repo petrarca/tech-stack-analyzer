@@ -1,0 +1,11 @@
+tech: teamcity
+name: TeamCity
+content:
+  # TeamCity configuration files (not Qt headers)
+  - type: regex
+    pattern: buildType|teamcity\.server\.url|teamcity\.buildType\.id
+    files: [teamcity.xml, build.xml]
+  # TeamCity project files
+  - type: regex
+    pattern: name=".*TeamCity.*"|<TeamCity|teamcity-agent
+    files: [teamcity.xml, build.xml]

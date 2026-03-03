@@ -1,0 +1,9 @@
+tech: apachetika
+name: Tika
+dependencies:
+  - type: docker
+    name: apache/tika
+    example: apache/tika
+  - type: python
+    name: tika
+    example: tika

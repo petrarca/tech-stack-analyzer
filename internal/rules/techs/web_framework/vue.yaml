@@ -1,0 +1,12 @@
+tech: vue
+name: Vue.js
+dependencies:
+  - type: npm
+    name: vue
+    example: vue
+  - type: npm
+    name: /^@vue/.*/
+    example: "@vue/tsconfig"
+  - type: npm
+    name: vue-tsc
+    example: vue-tsc

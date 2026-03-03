@@ -1,0 +1,5488 @@
+categories:
+    - name: ai
+      description: AI libraries and frameworks (LangChain, PyTorch, PydanticAI, etc.)
+      iscomponent: false
+      technologies:
+        - name: Cheshire Cat AI
+          tech: cheshirecat
+          category: ai
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: LangChain
+          tech: langchain
+          category: ai
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: PydanticAI
+          tech: pydanticai
+          category: ai
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Pytorch
+          tech: pytorch
+          category: ai
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: RAGAS
+          tech: ragas
+          category: ai
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Tensorflow
+          tech: tensorflow
+          category: ai
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: ai_service
+      description: AI cloud services and APIs (OpenAI, Anthropic, AWS Bedrock, etc.)
+      iscomponent: true
+      technologies:
+        - name: Anthropic
+          tech: anthropic
+          category: ai_service
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS Bedrock
+          tech: aws.bedrock
+          category: ai_service
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS Comprehend
+          tech: aws.comprehend
+          category: ai_service
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS Polly
+          tech: aws.polly
+          category: ai_service
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS Rekognition
+          tech: aws.rekognition
+          category: ai_service
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS SageMaker
+          tech: aws.sagemaker
+          category: ai_service
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS Transcribe
+          tech: aws.transcribe
+          category: ai_service
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS Translate
+          tech: aws.translate
+          category: ai_service
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Azure Openai
+          tech: azure.openai
+          category: ai_service
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Cohere AI
+          tech: cohereai
+          category: ai_service
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Deepseek
+          tech: deepseek
+          category: ai_service
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Cloud AI Platform
+          tech: gcp.aiplatform
+          category: ai_service
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Cloud Dialogflow
+          tech: gcp.dialogflow
+          category: ai_service
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Cloud Language
+          tech: gcp.language
+          category: ai_service
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Cloud Speech
+          tech: gcp.speech
+          category: ai_service
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Google Translate
+          tech: gcp.translate
+          category: ai_service
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Vertex AI
+          tech: gcp.vertex
+          category: ai_service
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Cloud Vision
+          tech: gcp.vision
+          category: ai_service
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Gemini AI
+          tech: geminiai
+          category: ai_service
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Groq
+          tech: groq
+          category: ai_service
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Hugging Face
+          tech: huggingface
+          category: ai_service
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Mistral AI
+          tech: mistralai
+          category: ai_service
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Ollama
+          tech: ollama
+          category: ai_service
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Openai
+          tech: openai
+          category: ai_service
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Perplexity AI
+          tech: perplexityai
+          category: ai_service
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Replicate
+          tech: replicate
+          category: ai_service
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Vercel AI
+          tech: vercel.ai
+          category: ai_service
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: X AI
+          tech: xai
+          category: ai_service
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: analytics
+      description: Analytics platforms (Google Analytics, Mixpanel, etc.)
+      iscomponent: true
+      technologies:
+        - name: Adobe Analytics
+          tech: adobe.analytics
+          category: analytics
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Amplitude Analytics
+          tech: amplitude
+          category: analytics
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Databuddy
+          tech: databuddy
+          category: analytics
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Datafast
+          tech: datafast
+          category: analytics
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Fathom
+          tech: fathom
+          category: analytics
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Google Analytics
+          tech: google.analytics
+          category: analytics
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Hotjar
+          tech: hotjar
+          category: analytics
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Koala Analytics
+          tech: koalaanalytics
+          category: analytics
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: LogSnag
+          tech: logsnag
+          category: analytics
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Matomo
+          tech: matomo
+          category: analytics
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Mixpanel
+          tech: mixpanel
+          category: analytics
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Pirsch Analytics
+          tech: pirschanalytics
+          category: analytics
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Plausible
+          tech: plausible
+          category: analytics
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: PostHog
+          tech: posthog
+          category: analytics
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Segment
+          tech: segment
+          category: analytics
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Simple Analytics
+          tech: simpleanalytics
+          category: analytics
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Tinybird
+          tech: tinybird
+          category: analytics
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Vercel Analytics
+          tech: vercel.analytics
+          category: analytics
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: api
+      description: API protocols and specifications (GraphQL, REST, gRPC, etc.)
+      iscomponent: false
+      technologies:
+        - name: Apache Thrift
+          tech: apache_thrift
+          category: api
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: GraphQL
+          tech: graphql
+          category: api
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: gRPC
+          tech: grpc
+          category: api
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Kong
+          tech: kong
+          category: api
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: OpenAPI/Swagger
+          tech: openapi_spec
+          category: api
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Postgrest
+          tech: postgrest
+          category: api
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: SOAP
+          tech: soap
+          category: api
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Socket.io
+          tech: socketio
+          category: api
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: TRPC
+          tech: trpc
+          category: api
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: appserver
+      description: Application servers (JBoss, Tomcat, WebLogic, etc.)
+      iscomponent: true
+      technologies:
+        - name: JBoss / WildFly
+          tech: jboss
+          category: appserver
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Apache Tomcat
+          tech: tomcat
+          category: appserver
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: WebObjects
+          tech: webobjects
+          category: appserver
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: automation
+      description: Automation tools
+      iscomponent: true
+      technologies:
+        - name: Apify
+          tech: apify
+          category: automation
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS Step Functions
+          tech: aws.sfn
+          category: automation
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Browserbase
+          tech: browerbase
+          category: automation
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Browser Use
+          tech: browseruse
+          category: automation
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Crawl4AI
+          tech: crawl4ai
+          category: automation
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Firecrawl
+          tech: firecrawl
+          category: automation
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Inngest
+          tech: inngest
+          category: automation
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: n8n
+          tech: n8n
+          category: automation
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Playwright
+          tech: playwright
+          category: automation
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Prefect
+          tech: prefect
+          category: automation
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Puppeteer
+          tech: puppeteer
+          category: automation
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Selenium
+          tech: selenium
+          category: automation
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: backend_framework
+      description: Backend frameworks (Django, Spring, Express, NestJS, etc.)
+      iscomponent: false
+      technologies:
+        - name: AdonisJS
+          tech: adonisjs
+          category: backend_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Api Platform
+          tech: apiplatform
+          category: backend_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: ASP
+          tech: asp
+          category: backend_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: ASP.NET
+          tech: aspnet
+          category: backend_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Autofac
+          tech: autofac
+          category: backend_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Django
+          tech: django
+          category: backend_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: ElysiaJS
+          tech: elysiajs
+          category: backend_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Express
+          tech: express
+          category: backend_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: FastAPI
+          tech: fastapi
+          category: backend_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Fastify
+          tech: fastify
+          category: backend_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: HonoJS
+          tech: honojs
+          category: backend_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Koa
+          tech: koa
+          category: backend_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Ktor
+          tech: ktor
+          category: backend_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Laravel
+          tech: laravel
+          category: backend_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: NestJS
+          tech: nestjs
+          category: backend_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Quarkus
+          tech: quarkus
+          category: backend_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Rails
+          tech: rails
+          category: backend_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Spring Framework
+          tech: spring
+          category: backend_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Spring Boot
+          tech: springboot
+          category: backend_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Symfony
+          tech: symfony
+          category: backend_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Yii2
+          tech: yii2
+          category: backend_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: build
+      description: Build tools (Maven, Gradle, etc.)
+      iscomponent: false
+      technologies:
+        - name: Babel
+          tech: babel
+          category: build
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: CMake
+          tech: cmake
+          category: build
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Esbuild
+          tech: esbuild
+          category: build
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Gradle
+          tech: gradle
+          category: build
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Make
+          tech: make
+          category: build
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Apache Maven
+          tech: maven
+          category: build
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: MSIX
+          tech: msix
+          category: build
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: NX
+          tech: nxjs
+          category: build
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Parcel
+          tech: parceljs
+          category: build
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Rolldown
+          tech: rolldown
+          category: build
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Rollup
+          tech: rollup
+          category: build
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Rspack
+          tech: rspack
+          category: build
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: SWC
+          tech: swc
+          category: build
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Turborepo
+          tech: turborepo
+          category: build
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Vite
+          tech: vite
+          category: build
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Webpack
+          tech: webpack
+          category: build
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: cicd
+      description: CI/CD tools (GitHub Actions, Jenkins, CircleCI, etc.)
+      iscomponent: false
+      technologies:
+        - name: AppVeyor
+          tech: appveyor
+          category: cicd
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Bitbucket Pipelines
+          tech: atlassian.bitbucketpipelines
+          category: cicd
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS Code Build
+          tech: aws.codebuild
+          category: cicd
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS Code Pipeline
+          tech: aws.codepipeline
+          category: cicd
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AzureCI
+          tech: azure.ci
+          category: cicd
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Browserstack
+          tech: browserstack
+          category: cicd
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: CircleCI
+          tech: circleci
+          category: cicd
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: CirrusCI
+          tech: cirrusci
+          category: cicd
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: CloudBees Codeship
+          tech: cloudbees.codeship
+          category: cicd
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Code Climate
+          tech: codeclimate
+          category: cicd
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Codecov
+          tech: codecov
+          category: cicd
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: CodeSandboxCI
+          tech: codesandboxci
+          category: cicd
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Concourse CI
+          tech: concourseci
+          category: cicd
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Coveralls
+          tech: coveralls
+          category: cicd
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: CypressCI
+          tech: cypressci
+          category: cicd
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Deepsource
+          tech: deepsource
+          category: cicd
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Dependabot
+          tech: dependabot
+          category: cicd
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Depot.dev
+          tech: depotdev
+          category: cicd
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: DroneCI
+          tech: droneci
+          category: cicd
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Cloud Build
+          tech: gcp.cloudbuild
+          category: cicd
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Github Actions
+          tech: github.actions
+          category: cicd
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: GitHub CodeQL
+          tech: github.codeql
+          category: cicd
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Gitlab CI
+          tech: gitlab.ci
+          category: cicd
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Jenkins
+          tech: jenkins
+          category: cicd
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: NX Cloud
+          tech: nxcloud
+          category: cicd
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: RelativeCI
+          tech: relativeci
+          category: cicd
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Renovate
+          tech: renovate
+          category: cicd
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: SonarCloud
+          tech: sonarcloud
+          category: cicd
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: SonarQube
+          tech: sonarqube
+          category: cicd
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: StyleCI
+          tech: styleci
+          category: cicd
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: TeamCity
+          tech: teamcity
+          category: cicd
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: TravisCI
+          tech: travisci
+          category: cicd
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Truffle Security
+          tech: trufflesecurity
+          category: cicd
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: TrustSource
+          tech: trustsource
+          category: cicd
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: cloud
+      description: Cloud providers (AWS, GCP, Azure, etc.)
+      iscomponent: true
+      technologies:
+        - name: Adobe
+          tech: adobe
+          category: cloud
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Akamai
+          tech: akamai
+          category: cloud
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Alibaba Cloud
+          tech: alibabacloud
+          category: cloud
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Apple
+          tech: apple
+          category: cloud
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Atlassian
+          tech: atlassian
+          category: cloud
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS
+          tech: aws
+          category: cloud
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Azure
+          tech: azure
+          category: cloud
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: CloudBees
+          tech: cloudbees
+          category: cloud
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Cloudflare
+          tech: cloudflare
+          category: cloud
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Dokku
+          tech: dokku
+          category: cloud
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Equinix
+          tech: equinix
+          category: cloud
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Firebase
+          tech: firebase
+          category: cloud
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Flyio
+          tech: flyio
+          category: cloud
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: GCP
+          tech: gcp
+          category: cloud
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Google
+          tech: google
+          category: cloud
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Heroku
+          tech: heroku
+          category: cloud
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Hetzner
+          tech: hetzner
+          category: cloud
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Hostinger
+          tech: hostinger
+          category: cloud
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: IBM Cloud
+          tech: ibmcloud
+          category: cloud
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Microsoft
+          tech: microsoft
+          category: cloud
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Netlify
+          tech: netlify
+          category: cloud
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Nextcloud
+          tech: nextcloud
+          category: cloud
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: OpenStack
+          tech: openstack
+          category: cloud
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Oracle Cloud
+          tech: oraclecloud
+          category: cloud
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: OVH
+          tech: ovh
+          category: cloud
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Qovery
+          tech: qovery
+          category: cloud
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Railway
+          tech: railway
+          category: cloud
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Scaleway
+          tech: scaleway
+          category: cloud
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Supabase
+          tech: supabase
+          category: cloud
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Tencent Cloud
+          tech: tencentcloud
+          category: cloud
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Upstash
+          tech: upstash
+          category: cloud
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Vercel
+          tech: vercel
+          category: cloud
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: cms
+      description: Content management systems
+      iscomponent: true
+      technologies:
+        - name: Adobe Commerce Cloud
+          tech: adobe.commercecloud
+          category: cms
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Adobe Experience Manager
+          tech: adobe.experiencemanager
+          category: cms
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: BigCommerce
+          tech: bigcommerce
+          category: cms
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Commercetools
+          tech: commercetools
+          category: cms
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Contentful
+          tech: contentful
+          category: cms
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Dato CMS
+          tech: datocms
+          category: cms
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Discourse
+          tech: discourse
+          category: cms
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Drupal
+          tech: drupal
+          category: cms
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Fabric
+          tech: fabric
+          category: cms
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Ghost
+          tech: ghost
+          category: cms
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Gitbook
+          tech: gitbook
+          category: cms
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Joomla!
+          tech: joomla
+          category: cms
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Kentico
+          tech: kentico
+          category: cms
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Magento
+          tech: magento
+          category: cms
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Payload
+          tech: payloadcms
+          category: cms
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Prestashop
+          tech: prestashop
+          category: cms
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Sanity
+          tech: sanity
+          category: cms
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Shopify
+          tech: shopify
+          category: cms
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Sitecore
+          tech: sitecore
+          category: cms
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Sitecore XM cloud
+          tech: sitecore.xmlcloud
+          category: cms
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Squarespace
+          tech: squarespace
+          category: cms
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Storyblok
+          tech: storyblok
+          category: cms
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Strapi
+          tech: strapi
+          category: cms
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Webflow
+          tech: webflow
+          category: cms
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: WooCommerce
+          tech: woocommerce
+          category: cms
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Wordpress
+          tech: wordpress
+          category: cms
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: codequality
+      description: Code quality and static analysis tools (ESLint, Prettier, Sonarlint, RuboCop, etc.)
+      iscomponent: false
+      technologies:
+        - name: Biome JS
+          tech: biomejs
+          category: codequality
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Eslint
+          tech: eslint
+          category: codequality
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: GolangCI Lint
+          tech: golangcilint
+          category: codequality
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: OxLint
+          tech: oxlint
+          category: codequality
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: PHPStan
+          tech: phpstan
+          category: codequality
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Prettier
+          tech: prettier
+          category: codequality
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Rubocop
+          tech: rubocop
+          category: codequality
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: SonarLint
+          tech: sonarlint
+          category: codequality
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Stylelint
+          tech: stylelint
+          category: codequality
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: collaboration
+      description: Collaboration platforms
+      iscomponent: true
+      technologies:
+        - name: Airtable
+          tech: airtable
+          category: collaboration
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Asana
+          tech: asana
+          category: collaboration
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Confluence
+          tech: atlassian.confluence
+          category: collaboration
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Jira
+          tech: atlassian.jira
+          category: collaboration
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Atlassian OpsGenie
+          tech: atlassian.opsgenie
+          category: collaboration
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Atlassian Trello
+          tech: atlassian.trello
+          category: collaboration
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Cal.com
+          tech: calcom
+          category: collaboration
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Calendly
+          tech: calendly
+          category: collaboration
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: ClickUp
+          tech: clickup
+          category: collaboration
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Crowdin
+          tech: crowdin
+          category: collaboration
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Google Calendar
+          tech: google.calendar
+          category: collaboration
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Google Chat
+          tech: google.chat
+          category: collaboration
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Google Docs
+          tech: google.docs
+          category: collaboration
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Google Drive
+          tech: google.drive
+          category: collaboration
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Google Forms
+          tech: google.forms
+          category: collaboration
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Gmail
+          tech: google.gmail
+          category: collaboration
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Google Keep
+          tech: google.keep
+          category: collaboration
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Google Meet
+          tech: google.meet
+          category: collaboration
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Google Sheets
+          tech: google.sheets
+          category: collaboration
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Google Slides
+          tech: google.slides
+          category: collaboration
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Google Tasks
+          tech: google.tasks
+          category: collaboration
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Linear
+          tech: linear
+          category: collaboration
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: OneDrive
+          tech: microsoft.onedrive
+          category: collaboration
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Miro
+          tech: miro
+          category: collaboration
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Monday
+          tech: monday
+          category: collaboration
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Notion
+          tech: notion
+          category: collaboration
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: communication
+      description: Communication tools (Slack, Discord, etc.)
+      iscomponent: true
+      technologies:
+        - name: Aircall
+          tech: aircall
+          category: communication
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Discord
+          tech: discord
+          category: communication
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Facebook
+          tech: facebook
+          category: communication
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Freshdesk
+          tech: freshdesk
+          category: communication
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Instagram
+          tech: instagram
+          category: communication
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Intercom
+          tech: intercom
+          category: communication
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Linkedin
+          tech: linkedin
+          category: communication
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Mattermost
+          tech: mattermost
+          category: communication
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Reddit
+          tech: reddit
+          category: communication
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Slack
+          tech: slack
+          category: communication
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Telegram
+          tech: telegram
+          category: communication
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Twitch
+          tech: twitch
+          category: communication
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: X
+          tech: twitter
+          category: communication
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: WhatsApp
+          tech: whatsapp
+          category: communication
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Wikipedia
+          tech: wikipedia
+          category: communication
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Youtube
+          tech: youtube
+          category: communication
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Zendesk
+          tech: zendesk
+          category: communication
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Zoom
+          tech: zoom
+          category: communication
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: containerization
+      description: Container tools (Docker, Podman, containerd)
+      iscomponent: true
+      technologies:
+        - name: Docker
+          tech: docker
+          category: containerization
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: crm
+      description: CRM systems
+      iscomponent: true
+      technologies:
+        - name: HubSpot
+          tech: hubspot
+          category: crm
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Klaviyo
+          tech: klaviyo
+          category: crm
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Salesforce
+          tech: salesforce
+          category: crm
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Twenty CRM
+          tech: twentycrm
+          category: crm
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: database
+      description: Database systems (PostgreSQL, MongoDB, Redis, etc.)
+      iscomponent: true
+      technologies:
+        - name: Algolia
+          tech: algolia
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Apache Cassandra
+          tech: apache_cassandra
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Apache CouchDB
+          tech: apache_couchdb
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Apache Hadoop
+          tech: apache_hadoop
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Apache Hive
+          tech: apache_hive
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Apache Iceberg
+          tech: apache_iceberg
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Apache Solr
+          tech: apache_solr
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Apache Spark
+          tech: apache_spark
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS Athena
+          tech: aws.athena
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS Cloudsearch
+          tech: aws.cloudsearch
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS Document DB
+          tech: aws.documentdb
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS DynamoDB
+          tech: aws.dynamodb
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS ElastiCache
+          tech: aws.elasticache
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS MemoryDB
+          tech: aws.memorydb
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS Neptune
+          tech: aws.neptune
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS Opensearch
+          tech: aws.opensearch
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS RDS
+          tech: aws.rds
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS Redshift
+          tech: aws.redshift
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS Timestream
+          tech: aws.timestream
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Azure Cosmos DB
+          tech: azure.cosmosdb
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Azure MariaDB
+          tech: azure.mariadb
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Azure MySQL
+          tech: azure.mysql
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Azure Postgres
+          tech: azure.postgres
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Azure Redis
+          tech: azure.redis
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Azure SQL
+          tech: azure.sql
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: ChromaDB
+          tech: chromadb
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: ClickHouse
+          tech: clickhouse
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: CockroachDB
+          tech: cockroachdb
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Codebase
+          tech: codebase
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Convex
+          tech: convexdb
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Couchbase
+          tech: couchbase
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: CrateDB
+          tech: cratedb
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: c-tree
+          tech: ctree
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Datastax
+          tech: datastax
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: IBM DB2
+          tech: db2
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: DuckDB
+          tech: duckdb
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Elasticsearch
+          tech: elasticsearch
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: FastObjects
+          tech: fastobjects
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Firebase Firestore
+          tech: firebase.firestore
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Firebird
+          tech: firebird
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: FoxPro
+          tech: foxpro
+          category: database
+          description: ""
+          isprimarytech: true
+          properties: {}
+        - name: Cloud BigQuery
+          tech: gcp.bigquery
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Cloud BigTable
+          tech: gcp.bigtable
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Cloud Datastore
+          tech: gcp.datastore
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Cloud Memorystore
+          tech: gcp.memorystore
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Cloud Spanner
+          tech: gcp.spanner
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Cloud SQL
+          tech: gcp.sql
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: H2 Database
+          tech: h2
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: InfluxDB
+          tech: influxdb
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: InterSystems Cache
+          tech: intersystems_cache
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: libSQL
+          tech: libsql
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: LiteDB
+          tech: litedb
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: MariaDB
+          tech: mariadb
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Meilisearch
+          tech: meilisearch
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Meilisearch Cloud
+          tech: meilisearchcloud
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Memcached
+          tech: memcached
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: MilvusDB
+          tech: milvusdb
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: MongoDB
+          tech: mongodb
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Microsoft Access
+          tech: msaccess
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: MS SQL
+          tech: mssql
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Mysql
+          tech: mysql
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Neo4j
+          tech: neo4j
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: NeonDB
+          tech: neondb
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Oceanbase
+          tech: oceanbase
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Oracle Database
+          tech: oracle
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: OVH Database
+          tech: ovh.database
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Percona
+          tech: percona
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: PgVector
+          tech: pgvector
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Pick Database
+          tech: pick
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Pinecone
+          tech: pinecone
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: PlanetScale
+          tech: planetscale
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Postgres
+          tech: postgresql
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Qdrant
+          tech: qdrant
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Qovery Database
+          tech: qovery.database
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: QuestDB
+          tech: questdb
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Railway MongoDB
+          tech: railway.mongodb
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Railway MySQL
+          tech: railway.mysql
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Railway Postgres
+          tech: railway.postgres
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Railway Redis
+          tech: railway.redis
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Redis
+          tech: redis
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Replit Database
+          tech: replit.database
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Replit Postgres
+          tech: replit.postgres
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: RethinkDB
+          tech: rethinkdb
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Rocket UniVerse
+          tech: rocket_universe
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: SAP ASE
+          tech: sap_ase
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Scaleway Database
+          tech: scaleway.database
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Scaleway DocumentDB
+          tech: scaleway.documentdb
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Scaleway Redis
+          tech: scaleway.redis
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Snowflake
+          tech: snowflake
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: SQL Anywhere
+          tech: sql_anywhere
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: SQLite
+          tech: sqlite
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: SqlWindows/SQLBase
+          tech: sqlwindows
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Supabase Postgres
+          tech: supabase.postgres
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: SurrealDB
+          tech: surrealdb
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Swiftype
+          tech: swiftype
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: TDengine
+          tech: tdengine
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: TiDB
+          tech: tidb
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: TimescaleDB
+          tech: timescaledb
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Turso
+          tech: tursodb
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Typesense
+          tech: typesense
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Typesense Cloud
+          tech: typesensecloud
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Upstash Redis
+          tech: upstash.redis
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Valkey
+          tech: valkey
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Vercel Blob
+          tech: vercel.blob
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Vercel KV
+          tech: vercel.kv
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Vercel Postgres
+          tech: vercel.postgres
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: VictoriaMetrics
+          tech: victoriametrics
+          category: database
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: dbmigration
+      description: Database migration tools (Flyway, Liquibase, etc.)
+      iscomponent: false
+      technologies:
+        - name: Flyway
+          tech: flyway
+          category: dbmigration
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Liquibase
+          tech: liquibase
+          category: dbmigration
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: desktop_framework
+      description: Desktop frameworks (Qt, MFC, Win32, Electron, etc.)
+      iscomponent: false
+      technologies:
+        - name: Dioxus
+          tech: dioxus
+          category: desktop_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Electron
+          tech: electron
+          category: desktop_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Iced
+          tech: iced
+          category: desktop_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: JavaFX
+          tech: javafx
+          category: desktop_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Microsoft Foundation Class Library
+          tech: mfc
+          category: desktop_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Qt Framework
+          tech: qt
+          category: desktop_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Java Swing
+          tech: swing
+          category: desktop_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Tauri
+          tech: tauri
+          category: desktop_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: VCL
+          tech: vcl
+          category: desktop_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Win32 API
+          tech: win32
+          category: desktop_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Windows Presentation Foundation
+          tech: wpf
+          category: desktop_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: etl
+      description: ETL tools
+      iscomponent: true
+      technologies:
+        - name: Airbyte
+          tech: airbyte
+          category: etl
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Apache Airflow
+          tech: apache_airflow
+          category: etl
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Apache Flink
+          tech: apache_flink
+          category: etl
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Apache Storm
+          tech: apache_storm
+          category: etl
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Apideck
+          tech: apideck
+          category: etl
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS Glue
+          tech: aws.glue
+          category: etl
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Composio
+          tech: composio
+          category: etl
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Databricks
+          tech: databricks
+          category: etl
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Dataiku
+          tech: dataiku
+          category: etl
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Cloud Dataflow
+          tech: gcp.dataflow
+          category: etl
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Cloud Dataproc
+          tech: gcp.dataproc
+          category: etl
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Integration.app
+          tech: integrationapp
+          category: etl
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Logstash
+          tech: logstash
+          category: etl
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Merge.dev
+          tech: mergedev
+          category: etl
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Nango
+          tech: nango
+          category: etl
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Tray.ai
+          tech: trayio
+          category: etl
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Paragon
+          tech: useparagon
+          category: etl
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: fullstack_framework
+      description: Full-stack frameworks (Next.js, Nuxt, Remix, etc.)
+      iscomponent: false
+      technologies:
+        - name: Blitzjs
+          tech: blitzjs
+          category: fullstack_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Meteor
+          tech: meteorjs
+          category: fullstack_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Next.js
+          tech: nextjs
+          category: fullstack_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Nuxt.js
+          tech: nuxtjs
+          category: fullstack_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: RedwoodJs
+          tech: redwoodjs
+          category: fullstack_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Remix
+          tech: remixrun
+          category: fullstack_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Remult
+          tech: remult
+          category: fullstack_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: SvelteKit
+          tech: sveltekit
+          category: fullstack_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Tanstack Start
+          tech: tanstackstart
+          category: fullstack_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Wasp
+          tech: wasp
+          category: fullstack_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: healthcare
+      description: Healthcare standards and systems (FHIR, HL7, DICOM, etc.)
+      iscomponent: false
+      technologies:
+        - name: FHIR
+          tech: fhir
+          category: healthcare
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: OpenEHR
+          tech: openehr
+          category: healthcare
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: hosting
+      description: Hosting platforms (Vercel, Netlify, AWS, etc.)
+      iscomponent: true
+      technologies:
+        - name: AWS Amplify Hosting
+          tech: aws.amplifyhosting
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS Api Gateway
+          tech: aws.apigateway
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS Compute
+          tech: aws.ec2
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS Container
+          tech: aws.ecs
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS Kubernetes
+          tech: aws.eks
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS Fargate
+          tech: aws.fargate
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS Lambda
+          tech: aws.lambda
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS Lightsail
+          tech: aws.lightsail
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Azure Kubernetes
+          tech: azure.aks
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Azure Functions
+          tech: azure.functions
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Azure Static Web Apps
+          tech: azure.staticwebapps
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Cloudflare Pages
+          tech: cloudflare.pages
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Cloudflare Workers
+          tech: cloudflare.workers
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Deno Deploy
+          tech: denodeploy
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: DigitalOcean
+          tech: digitalocean
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Elastic Cloud
+          tech: elasticcloud
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Expo.dev
+          tech: expodev
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Fastly
+          tech: fastly
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Google App Engine
+          tech: gcp.appengine
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Cloud Run
+          tech: gcp.cloudrun
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Cloud Functions
+          tech: gcp.functions
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Google Compute
+          tech: gcp.gce
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Google Kubernetes
+          tech: gcp.gke
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Cloud Tasks
+          tech: gcp.tasks
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Github Pages
+          tech: github.pages
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Koyeb
+          tech: koyeb
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: MongoDB Atlas
+          tech: mongodbatlas
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: OVH Dedicated Server
+          tech: ovh.dedicated
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: OVH Kubernetes
+          tech: ovh.kubernetes
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: OVH VPS
+          tech: ovh.vps
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Platform.sh
+          tech: platformsh
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Qovery Cluster
+          tech: qovery.cluster
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Render
+          tech: render
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Replit
+          tech: replit
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Scaleway Container
+          tech: scaleway.container
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Scaleway Elastic Metal
+          tech: scaleway.elasticmetal
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Scaleway Function
+          tech: scaleway.function
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Scaleway Kubernetes
+          tech: scaleway.kubernetes
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Supabase Functions
+          tech: supabase.functions
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Vercel Edge
+          tech: vercel.edge
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Vercel Functions
+          tech: vercel.functions
+          category: hosting
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: iac
+      description: Infrastructure as Code tools (Terraform, Pulumi, etc.)
+      iscomponent: false
+      technologies:
+        - name: Ansible
+          tech: ansible
+          category: iac
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS CloudFormation
+          tech: aws.cloudformation
+          category: iac
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Chef
+          tech: chef
+          category: iac
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Pulumi
+          tech: pulumi
+          category: iac
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Terraform
+          tech: terraform
+          category: iac
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Terragrunt
+          tech: terragrunt
+          category: iac
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: ide
+      description: Integrated development environments (Delphi, Visual Studio, PowerBuilder, etc.)
+      iscomponent: false
+      technologies:
+        - name: AcuCOBOL
+          tech: acucobol
+          category: ide
+          description: ""
+          isprimarytech: true
+          properties: {}
+        - name: Delphi
+          tech: delphi
+          category: ide
+          description: ""
+          isprimarytech: true
+          properties: {}
+        - name: PowerBuilder
+          tech: powerbuilder
+          category: ide
+          description: ""
+          isprimarytech: true
+          properties: {}
+        - name: Uniface
+          tech: uniface
+          category: ide
+          description: ""
+          isprimarytech: true
+          properties: {}
+    - name: identity
+      description: Identity & access management (Auth0, Okta, Keycloak, etc.)
+      iscomponent: true
+      technologies:
+        - name: Auth0
+          tech: auth0
+          category: identity
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS Cognito
+          tech: aws.cognito
+          category: identity
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Betterauth
+          tech: betterauth
+          category: identity
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Clerk
+          tech: clerk
+          category: identity
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Connect2ID
+          tech: connect2id
+          category: identity
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Frontegg
+          tech: frontegg
+          category: identity
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Fusionauth
+          tech: fusionauth
+          category: identity
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Hanko
+          tech: hanko
+          category: identity
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Keycloak
+          tech: keycloak
+          category: identity
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Kinde
+          tech: kinde
+          category: identity
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Logto
+          tech: logtoio
+          category: identity
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Okta
+          tech: okta
+          category: identity
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Ory
+          tech: orysh
+          category: identity
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: PropelAuth
+          tech: propelauth
+          category: identity
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Stytch
+          tech: stytch
+          category: identity
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Supabase Auth
+          tech: supabase.auth
+          category: identity
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: SuperTokens
+          tech: supertokens
+          category: identity
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: WorkOS
+          tech: workos
+          category: identity
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: language
+      description: Programming languages (Python, JavaScript, etc.)
+      iscomponent: false
+      technologies:
+        - name: Ada
+          tech: ada
+          category: language
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: APL
+          tech: apl
+          category: language
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWK
+          tech: awk
+          category: language
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Bash
+          tech: bash
+          category: language
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: C
+          tech: c
+          category: language
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Cache ObjectScript
+          tech: cache_objectscript
+          category: language
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Clojure
+          tech: clojure
+          category: language
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: COBOL
+          tech: cobol
+          category: language
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: CoffeeScript
+          tech: coffeescript
+          category: language
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: C++
+          tech: cplusplus
+          category: language
+          description: ""
+          isprimarytech: true
+          properties: {}
+        - name: C#
+          tech: csharp
+          category: language
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: CSS
+          tech: css
+          category: language
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Dart
+          tech: dart
+          category: language
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Elixir
+          tech: elixir
+          category: language
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: GLSL
+          tech: glsl
+          category: language
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Golang
+          tech: golang
+          category: language
+          description: ""
+          isprimarytech: true
+          properties: {}
+        - name: Groovy
+          tech: groovy
+          category: language
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Haskell
+          tech: haskell
+          category: language
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Java
+          tech: java
+          category: language
+          description: ""
+          isprimarytech: true
+          properties: {}
+        - name: JavaScript
+          tech: javascript
+          category: language
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: JSX
+          tech: jsx
+          category: language
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Kotlin
+          tech: kotlin
+          category: language
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Lua
+          tech: lua
+          category: language
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: MATLAB
+          tech: matlab
+          category: language
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: MUMPS
+          tech: mumps
+          category: language
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Objective-C
+          tech: objectivec
+          category: language
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Perl
+          tech: perl
+          category: language
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: PHP
+          tech: php
+          category: language
+          description: ""
+          isprimarytech: true
+          properties: {}
+        - name: Python
+          tech: python
+          category: language
+          description: ""
+          isprimarytech: true
+          properties: {}
+        - name: R
+          tech: r
+          category: language
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Ruby
+          tech: ruby
+          category: language
+          description: ""
+          isprimarytech: true
+          properties: {}
+        - name: Rust
+          tech: rust
+          category: language
+          description: ""
+          isprimarytech: true
+          properties: {}
+        - name: Scala
+          tech: scala
+          category: language
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: SCSS
+          tech: scss
+          category: language
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Swift
+          tech: swift
+          category: language
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Typescript
+          tech: typescript
+          category: language
+          description: ""
+          isprimarytech: true
+          properties: {}
+        - name: VB.NET
+          tech: vbnet
+          category: language
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Visual Basic .NET
+          tech: visualbasicnet
+          category: language
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: XSLT
+          tech: xslt
+          category: language
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Zig
+          tech: zig
+          category: language
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: library
+      description: Utility libraries (JSON processing, validation, cryptography, etc.)
+      iscomponent: false
+      technologies:
+        - name: BouncyCastle
+          tech: bouncycastle
+          category: library
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Chilkat
+          tech: chilkat
+          category: library
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: EffectJS
+          tech: effectjs
+          category: library
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Jackson
+          tech: jackson
+          category: library
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: JodaTime
+          tech: jodatime
+          category: library
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Joi
+          tech: joijs
+          category: library
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: libphonenumber
+          tech: libphonenumber
+          category: library
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Newtonsoft.Json
+          tech: newtonsoftjson
+          category: library
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: NodaTime
+          tech: nodatime
+          category: library
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: OpenSSL
+          tech: openssl
+          category: library
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: POI
+          tech: poi
+          category: library
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: RxJS
+          tech: rxjs
+          category: library
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Superstruct
+          tech: superstruct
+          category: library
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Zod
+          tech: zod
+          category: library
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: logging
+      description: Logging libraries (Log4j, Logback, SLF4J, etc.)
+      iscomponent: false
+      technologies:
+        - name: Log4j
+          tech: log4j
+          category: logging
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Logback
+          tech: logback
+          category: logging
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Loguru
+          tech: loguru
+          category: logging
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Microsoft Logger
+          tech: mslogger
+          category: logging
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: SLF4J
+          tech: slf4j
+          category: logging
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: messaging
+      description: Message brokers and queues (Kafka, RabbitMQ, SQS, etc.)
+      iscomponent: true
+      technologies:
+        - name: Apache Kafka
+          tech: apache_kafka
+          category: messaging
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS Kafka
+          tech: aws.kafka
+          category: messaging
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS Kinesis
+          tech: aws.kinesis
+          category: messaging
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS ActiveMQ
+          tech: aws.mq
+          category: messaging
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS SQS
+          tech: aws.sqs
+          category: messaging
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Celery
+          tech: celery
+          category: messaging
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: PubSub
+          tech: gcp.pubsub
+          category: messaging
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Nats
+          tech: nats
+          category: messaging
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: RabbitMQ
+          tech: rabbitmq
+          category: messaging
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Scaleway M&Q
+          tech: scaleway.mq
+          category: messaging
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Supabase Realtime
+          tech: supabase.realtime
+          category: messaging
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Upstash Kafka
+          tech: upstash.kafka
+          category: messaging
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Upstash QStash
+          tech: upstash.qstash
+          category: messaging
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: mobile_framework
+      description: Mobile frameworks (React Native, Flutter, Swift, Kotlin, etc.)
+      iscomponent: false
+      technologies:
+        - name: Cordova
+          tech: apacheCordova
+          category: mobile_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Capacitor
+          tech: capacitorjs
+          category: mobile_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: ExpoJS
+          tech: expojs
+          category: mobile_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Ionic
+          tech: ionic
+          category: mobile_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: MAUI
+          tech: maui
+          category: mobile_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Xamarin
+          tech: xamarin
+          category: mobile_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: monitoring
+      description: Monitoring services (Datadog, Sentry, etc.)
+      iscomponent: true
+      technologies:
+        - name: AppSignal
+          tech: appsignal
+          category: monitoring
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS Cloudwatch
+          tech: aws.cloudwatch
+          category: monitoring
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Better Stack
+          tech: betterstack
+          category: monitoring
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Blackfire
+          tech: blackfire
+          category: monitoring
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Bugsnag
+          tech: bugsnag
+          category: monitoring
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Datadog
+          tech: datadog
+          category: monitoring
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Dynatrace
+          tech: dynatrace
+          category: monitoring
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Cloud Logging
+          tech: gcp.logging
+          category: monitoring
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Grafana
+          tech: grafana
+          category: monitoring
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Healthchecks.io
+          tech: healthchecksio
+          category: monitoring
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Honeybadger
+          tech: honeybadger
+          category: monitoring
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: HyperDX
+          tech: hyperdx
+          category: monitoring
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Kibana
+          tech: kibana
+          category: monitoring
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: New Relic
+          tech: newrelic
+          category: monitoring
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: OnlineOrNot
+          tech: onlineornot
+          category: monitoring
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: OpenTelemetry
+          tech: opentelemetry
+          category: monitoring
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Papertrail
+          tech: papertrail
+          category: monitoring
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Pingdom
+          tech: pingdom
+          category: monitoring
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Prometheus
+          tech: prometheus
+          category: monitoring
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Rollbar
+          tech: rollbar
+          category: monitoring
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Scout APM
+          tech: scoutapm
+          category: monitoring
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Sentry
+          tech: sentry
+          category: monitoring
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Signoz
+          tech: signoz
+          category: monitoring
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Telegraf
+          tech: telegraf
+          category: monitoring
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Uptime Kuma
+          tech: uptimekuma
+          category: monitoring
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Zipkin
+          tech: zipkin
+          category: monitoring
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: network
+      description: Network services
+      iscomponent: true
+      technologies:
+        - name: Caddy
+          tech: caddy
+          category: network
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Consul
+          tech: consul
+          category: network
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Google DNS
+          tech: gcp.dns
+          category: network
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: HAProxy
+          tech: haproxy
+          category: network
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: HTTPD
+          tech: httpd
+          category: network
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Nginx
+          tech: nginx
+          category: network
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Traefik
+          tech: traefik
+          category: network
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: YARP
+          tech: yarp
+          category: network
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: notification
+      description: Notification services (SendGrid, Twilio, etc.)
+      iscomponent: true
+      technologies:
+        - name: AWS Simple Email Service
+          tech: aws.ses
+          category: notification
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS Notification Service
+          tech: aws.sns
+          category: notification
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Beehiiv
+          tech: beehiiv
+          category: notification
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Brevo
+          tech: brevo
+          category: notification
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: ClickSend
+          tech: clicksend
+          category: notification
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: ifttt
+          tech: ifttt
+          category: notification
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Mailchimp
+          tech: mailchimp
+          category: notification
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Mailgun
+          tech: mailgun
+          category: notification
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Mailjet
+          tech: mailjet
+          category: notification
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Novy
+          tech: novu
+          category: notification
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Resend
+          tech: resend
+          category: notification
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Sendgrid
+          tech: sendgrid
+          category: notification
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Twilio
+          tech: twilio
+          category: notification
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Zapier
+          tech: zapier
+          category: notification
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: orchestration
+      description: Container orchestration (Kubernetes, Docker Swarm, Nomad)
+      iscomponent: true
+      technologies:
+        - name: Helm
+          tech: helm
+          category: orchestration
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Kubernetes
+          tech: kubernetes
+          category: orchestration
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Zookeeper
+          tech: zookeeper
+          category: orchestration
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: orm
+      description: Object-relational mappers (SQLAlchemy, Prisma, etc.)
+      iscomponent: false
+      technologies:
+        - name: Diesel
+          tech: dieselrs
+          category: orm
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Doctrine
+          tech: doctrinephp
+          category: orm
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Drizzle ORM
+          tech: drizzleorm
+          category: orm
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Entity Framework
+          tech: entityframework
+          category: orm
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Exposed
+          tech: exposed
+          category: orm
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: ent.
+          tech: goent
+          category: orm
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: GORM
+          tech: gorm
+          category: orm
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Hibernate
+          tech: hibernate
+          category: orm
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: JPA
+          tech: jpa
+          category: orm
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Knex
+          tech: knex
+          category: orm
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Kysely
+          tech: kysely
+          category: orm
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Prisma
+          tech: prisma
+          category: orm
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Sequelize
+          tech: sequelize
+          category: orm
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Sequel
+          tech: sequelruby
+          category: orm
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: SQLAlchemy
+          tech: sqlalchemy
+          category: orm
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: TypeORM
+          tech: typeorm
+          category: orm
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: os
+      description: Operating systems like Linux, MacOS, ...
+      iscomponent: true
+      technologies:
+        - name: Android
+          tech: os_android
+          category: os
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: IBM Power
+          tech: os_ibm_power
+          category: os
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: iOS
+          tech: os_ios
+          category: os
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Linux
+          tech: os_linux
+          category: os
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: macOS
+          tech: os_macos
+          category: os
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: VMware
+          tech: os_vmware
+          category: os
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Windows
+          tech: os_windows
+          category: os
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Windows Server
+          tech: os_windows_server
+          category: os
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: package_manager
+      description: Package managers (npm, pip, cargo, maven)
+      iscomponent: false
+      technologies:
+        - name: asdf
+          tech: asdf
+          category: package_manager
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AtlasGo
+          tech: atlasgo
+          category: package_manager
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Bundler
+          tech: bundler
+          category: package_manager
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Cargo
+          tech: cargo
+          category: package_manager
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: CocoaPods
+          tech: cocoapods
+          category: package_manager
+          description: ""
+          isprimarytech: true
+          properties: {}
+        - name: Conan
+          tech: conan
+          category: package_manager
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: goenv
+          tech: goenv
+          category: package_manager
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: npm
+          tech: npm
+          category: package_manager
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: NuGet
+          tech: nuget
+          category: package_manager
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: nvm
+          tech: nvm
+          category: package_manager
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Composer
+          tech: phpcomposer
+          category: package_manager
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: phpenv
+          tech: phpenv
+          category: package_manager
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: pipenv
+          tech: pipenv
+          category: package_manager
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: pnpm
+          tech: pnpm
+          category: package_manager
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Poetry
+          tech: poetry
+          category: package_manager
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: rubyenv
+          tech: rubyenv
+          category: package_manager
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: unplugin
+          tech: unplugin
+          category: package_manager
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Yarn
+          tech: yarn
+          category: package_manager
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: payment
+      description: Payment processors (Stripe, PayPal, etc.)
+      iscomponent: true
+      technologies:
+        - name: Adyen
+          tech: adyen
+          category: payment
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Chargebee
+          tech: chargebee
+          category: payment
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Google Pay
+          tech: google.pay
+          category: payment
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Intuit
+          tech: intuit
+          category: payment
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Klarna
+          tech: klarna
+          category: payment
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Lemon Squeezy
+          tech: lemonsqueezy
+          category: payment
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Paddle
+          tech: paddle
+          category: payment
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Paypal
+          tech: paypal
+          category: payment
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Paystack
+          tech: paystack
+          category: payment
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Polar
+          tech: polarsh
+          category: payment
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: RevenueCat
+          tech: revenuecat
+          category: payment
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Square
+          tech: squareup
+          category: payment
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Stripe
+          tech: stripe
+          category: payment
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Use Autumn
+          tech: useautumn
+          category: payment
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Zuora
+          tech: zuora
+          category: payment
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: platform
+      description: Low-code platforms, operating systems (Uniface, Windows, Linux)
+      iscomponent: false
+      technologies: []
+    - name: proprietary
+      description: 'In-house/internal technologies (naming: prop_<name> or prop_<org>_<name>)'
+      iscomponent: false
+      technologies:
+        - name: Example Proprietary Technology
+          tech: prop_example
+          category: proprietary
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: runtime
+      description: Runtime environments (Node.js runtime, Python runtime, etc.)
+      iscomponent: false
+      technologies:
+        - name: Bun
+          tech: bunsh
+          category: runtime
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Deno
+          tech: deno
+          category: runtime
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: .NET
+          tech: dotnet
+          category: runtime
+          description: ""
+          isprimarytech: true
+          properties: {}
+        - name: .NET Core
+          tech: dotnetcore
+          category: runtime
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: NodeJS
+          tech: nodejs
+          category: runtime
+          description: ""
+          isprimarytech: true
+          properties: {}
+    - name: saas
+      description: SaaS platforms
+      iscomponent: true
+      technologies:
+        - name: Apple Maps
+          tech: apple.maps
+          category: saas
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Atlassian Bitbucket
+          tech: atlassian.bitbucket
+          category: saas
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Bing Maps
+          tech: azure.maps
+          category: saas
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Box
+          tech: box
+          category: saas
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Cloudinary
+          tech: cloudinary
+          category: saas
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Docusign
+          tech: docusign
+          category: saas
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Dropbox
+          tech: dropbox
+          category: saas
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Figma
+          tech: figma
+          category: saas
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Google Maps
+          tech: gcp.maps
+          category: saas
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: GitHub
+          tech: github
+          category: saas
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: HERE Maps
+          tech: heremaps
+          category: saas
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Hypertune
+          tech: hypertune
+          category: saas
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Lago
+          tech: lago
+          category: saas
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: LaunchDarkly
+          tech: launchdarkly
+          category: saas
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: LogRocket
+          tech: logrocket
+          category: saas
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Mapbox
+          tech: mapbox
+          category: saas
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Metabase
+          tech: metabase
+          category: saas
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Optimizely
+          tech: optimizely
+          category: saas
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Pagerduty
+          tech: pagerduty
+          category: saas
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: PlaceKit
+          tech: placekit
+          category: saas
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Postman
+          tech: postman
+          category: saas
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Postmark
+          tech: postmark
+          category: saas
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Prisma Cloud
+          tech: prismacloud
+          category: saas
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: SAP
+          tech: sap
+          category: saas
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: SAS
+          tech: sas
+          category: saas
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: ServiceNow
+          tech: servicenow
+          category: saas
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Split
+          tech: splitio
+          category: saas
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Splunk
+          tech: splunk
+          category: saas
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Spotify
+          tech: spotify
+          category: saas
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Tailscale
+          tech: tailscale
+          category: saas
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Veriff
+          tech: veriff
+          category: saas
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Vialink
+          tech: vialink
+          category: saas
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Orb
+          tech: withorb
+          category: saas
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Wolfram Alpha
+          tech: wolframalpha
+          category: saas
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Yousign
+          tech: yousign
+          category: saas
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: security
+      description: Security services
+      iscomponent: true
+      technologies:
+        - name: AWS Kms
+          tech: aws.kms
+          category: security
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS Secrets Manager
+          tech: aws.secretsmanager
+          category: security
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Checkov
+          tech: checkov
+          category: security
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: DataDome
+          tech: datadome
+          category: security
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Cloud KMS
+          tech: gcp.kms
+          category: security
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Cloud Secret Manager
+          tech: gcp.secretmanager
+          category: security
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: GitGuardian
+          tech: gitguardian
+          category: security
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Vault
+          tech: hashicorp_vault
+          category: security
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Infisical
+          tech: infisical
+          category: security
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Scaleway Secret Manager
+          tech: scaleway.secretmanager
+          category: security
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Snyk
+          tech: snyk
+          category: security
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Sqreen
+          tech: sqreen
+          category: security
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Wiz
+          tech: wiz
+          category: security
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: ssg
+      description: Static site generators (when used as main tech)
+      iscomponent: true
+      technologies:
+        - name: Assemble
+          tech: assemble
+          category: ssg
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Astro
+          tech: astro
+          category: ssg
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Fern
+          tech: builtwithfern
+          category: ssg
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Docsify
+          tech: docsify
+          category: ssg
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Docusaurus
+          tech: docusaurus
+          category: ssg
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Eleventy
+          tech: eleventy
+          category: ssg
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: FumaDocs
+          tech: fumadocs
+          category: ssg
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Gatsby
+          tech: gatsby
+          category: ssg
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Gridsome
+          tech: gridsome
+          category: ssg
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: HexoJS
+          tech: hexojs
+          category: ssg
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Hugo
+          tech: hugo
+          category: ssg
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Jekyll
+          tech: jekyll
+          category: ssg
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Mintlify
+          tech: mintlify
+          category: ssg
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: MkDocs
+          tech: mkdocs
+          category: ssg
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Read The Docs
+          tech: readthedocs
+          category: ssg
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Slate
+          tech: slatedocs
+          category: ssg
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: VitePress
+          tech: vitepress
+          category: ssg
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: VuePress
+          tech: vuepress
+          category: ssg
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: storage
+      description: Storage services (S3, Cloudinary, etc.)
+      iscomponent: true
+      technologies:
+        - name: AWS CloudFront
+          tech: aws.cloudfront
+          category: storage
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS Block Storage
+          tech: aws.ebs
+          category: storage
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS Container Registry
+          tech: aws.ecr
+          category: storage
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS File System
+          tech: aws.efs
+          category: storage
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS Glacier
+          tech: aws.glacier
+          category: storage
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AWS S3
+          tech: aws.s3
+          category: storage
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Azure Storage
+          tech: azure.storage
+          category: storage
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Cloudflare R2
+          tech: cloudflare.r2
+          category: storage
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Cloud Artifact Registry
+          tech: gcp.artifactregistry
+          category: storage
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Cloud Container Registry
+          tech: gcp.containerregistry
+          category: storage
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Cloud Storage
+          tech: gcp.gcs
+          category: storage
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: HyperFile
+          tech: hyperfile
+          category: storage
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: MinIO
+          tech: minio
+          category: storage
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: OVH Storage
+          tech: ovh.storage
+          category: storage
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Scaleway Storage
+          tech: scaleway.storage
+          category: storage
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Supabase Storage
+          tech: supabase.storage
+          category: storage
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: test
+      description: Testing frameworks (Jest, Pytest, JUnit, Mocha, etc.)
+      iscomponent: false
+      technologies:
+        - name: AssertJ
+          tech: assertj
+          category: test
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Bogus
+          tech: bogus
+          category: test
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Coverlet
+          tech: coverlet
+          category: test
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: JaCoCo
+          tech: jacoco
+          category: test
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Jest
+          tech: jest
+          category: test
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: jsdom
+          tech: jsdom
+          category: test
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: JUnit
+          tech: junit
+          category: test
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: JUnit 5
+          tech: junit5
+          category: test
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Grafana K6
+          tech: k6
+          category: test
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Lighthouse
+          tech: lighthouse
+          category: test
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Mocha
+          tech: mochajs
+          category: test
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Mockito
+          tech: mockito
+          category: test
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Moq
+          tech: moq
+          category: test
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: NUnit
+          tech: nunit
+          category: test
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: PHP Pest
+          tech: phppest
+          category: test
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: PHPUnit
+          tech: phpunit
+          category: test
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Rest Assured
+          tech: rest-assured
+          category: test
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Storybook
+          tech: storybook
+          category: test
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Testing Library
+          tech: testinglibrary
+          category: test
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: TestNG
+          tech: testng
+          category: test
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Vitest
+          tech: vitest
+          category: test
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: tool
+      description: General development tools
+      iscomponent: false
+      technologies:
+        - name: Adminer
+          tech: adminer
+          category: tool
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Tika
+          tech: apachetika
+          category: tool
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Bytebase
+          tech: bytebase
+          category: tool
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Lego
+          tech: goacmelego
+          category: tool
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Innovasys
+          tech: innovasys
+          category: tool
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Mailhog
+          tech: mailhog
+          category: tool
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: MapStruct
+          tech: mapstruct
+          category: tool
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: MCP
+          tech: mcp
+          category: tool
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Mongo Express
+          tech: mongoexpress
+          category: tool
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: picocli
+          tech: picocli
+          category: tool
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: React Email
+          tech: reactemail
+          category: tool
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Serde
+          tech: serde
+          category: tool
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Teamspeak
+          tech: teamspeak
+          category: tool
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Twig
+          tech: twigphp
+          category: tool
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Ultracite
+          tech: ultracite
+          category: tool
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Vale
+          tech: vale
+          category: tool
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: ui
+      description: UI components and frameworks (MUI, shadcn, Qt, MFC)
+      iscomponent: false
+      technologies:
+        - name: Angular Material
+          tech: angular-material
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Ant Design
+          tech: antd
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Ant Design Icons
+          tech: antdicons
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AriaKit UI
+          tech: ariakitui
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Ark UI
+          tech: arkui
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Base UI
+          tech: baseui
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Bootstrap
+          tech: bootstrap
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Bootstrap Icons
+          tech: bootstrapicons
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: CEF4Delphi
+          tech: cef4delphi
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Chakra UI
+          tech: chakraui
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: CodeMirror
+          tech: codemirror
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: ComponentOne
+          tech: componentone
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: D3.js
+          tech: d3js
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: daisyUI
+          tech: daisyui
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: DevExpress
+          tech: devexpress
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Feather Icons
+          tech: feathericons
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Fluent UI
+          tech: fluentui
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Font Awesome
+          tech: fontawesome
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Gradio
+          tech: gradio
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Headless UI
+          tech: headlessui
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Heroicons
+          tech: heroicons
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Hero UI
+          tech: heroui
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: HugeIcons
+          tech: hugeicons
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Ionicons
+          tech: ionicons
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: jQuery
+          tech: jquery
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: jQuery UI
+          tech: jqueryui
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Lexical Editor
+          tech: lexicaleditor
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Lord Icon
+          tech: lordicon
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Lucide Icons
+          tech: lucideicons
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Mantine UI
+          tech: mantineui
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Material Design Icons
+          tech: materialdesignicons
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Material UI
+          tech: materialui
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Monaco Editor
+          tech: monacoeditor
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: MUI Icons
+          tech: muiicons
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Phaser
+          tech: phaserjs
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Phosphor Icons
+          tech: phosphoreicons
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Radix Icons
+          tech: radixicons
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Radix UI
+          tech: radixui
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: React
+          tech: react
+          category: ui
+          description: ""
+          isprimarytech: true
+          properties: {}
+        - name: React Icons
+          tech: reacticons
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: React Router
+          tech: reactrouterdom
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Refine
+          tech: refinedev
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Reka UI
+          tech: rekaui
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Remix Icons
+          tech: remixicons
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Remix Router
+          tech: remixrouter
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Sandpack
+          tech: sandpackeditor
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Shadcn
+          tech: shadcn
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Shopify Hydrogen
+          tech: shopify.hydrogen
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Simple Icons
+          tech: simpleicons
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Svelte
+          tech: svelte
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Tabler
+          tech: tablericons
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Tailwind
+          tech: tailwind
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: TanStack Router
+          tech: tanstackrouter
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Tiptap
+          tech: tiptap
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: UmiJS
+          tech: umijs
+          category: ui
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: unmapped
+      description: 'Technologies from external sources not in official taxonomy (naming: unmapped_<tech>)'
+      iscomponent: false
+      technologies:
+        - name: Unknown Technology
+          tech: unmapped_unknown
+          category: unmapped
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: validation
+      description: Validation libraries
+      iscomponent: false
+      technologies:
+        - name: ArkType
+          tech: arktype
+          category: validation
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: JSON Schema
+          tech: jsonschema
+          category: validation
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Pydantic
+          tech: pydantic
+          category: validation
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: TypeBox
+          tech: typebox
+          category: validation
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Valibot
+          tech: valibot
+          category: validation
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: vcs
+      description: Version control systems (Git, SVN, Mercurial, etc.)
+      iscomponent: false
+      technologies:
+        - name: Bazaar
+          tech: bazaar
+          category: vcs
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: CVS
+          tech: cvs
+          category: vcs
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Git
+          tech: git
+          category: vcs
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Gitea
+          tech: gitea
+          category: vcs
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: GitHub
+          tech: github
+          category: vcs
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Gitlab
+          tech: gitlab
+          category: vcs
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Mercurial
+          tech: mercurial
+          category: vcs
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Perforce Helix
+          tech: perforce
+          category: vcs
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Subversion
+          tech: svn
+          category: vcs
+          description: ""
+          isprimarytech: null
+          properties: {}
+    - name: web_framework
+      description: Web frameworks (React, Vue, Angular, Svelte, etc.)
+      iscomponent: false
+      technologies:
+        - name: Alpine.js
+          tech: alpinejs
+          category: web_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Angular
+          tech: angular
+          category: web_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: AngularJS
+          tech: angularjs
+          category: web_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Ember
+          tech: emberjs
+          category: web_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Ext JS
+          tech: extjs
+          category: web_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: HTMX
+          tech: htmx
+          category: web_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Inferno
+          tech: infernojs
+          category: web_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: InterSystems Zen
+          tech: intersystems_zen
+          category: web_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Lit
+          tech: litjs
+          category: web_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Mithril
+          tech: mithriljs
+          category: web_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Preact
+          tech: preactjs
+          category: web_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Qwik
+          tech: qwikjs
+          category: web_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Solid js
+          tech: solidjs
+          category: web_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Stencil
+          tech: stenciljs
+          category: web_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Svelte
+          tech: svelte
+          category: web_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Vue.js
+          tech: vue
+          category: web_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Vue
+          tech: vuejs
+          category: web_framework
+          description: ""
+          isprimarytech: null
+          properties: {}
+count: 53

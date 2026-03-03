@@ -1,0 +1,4 @@
+tech: cloudbees.codeship
+name: CloudBees Codeship
+files:
+  - codeship-services.yml

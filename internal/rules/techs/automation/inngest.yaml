@@ -1,0 +1,14 @@
+tech: inngest
+name: Inngest
+dotenv:
+  - INNGEST_
+dependencies:
+  - type: npm
+    name: inngest
+    example: inngest
+  - type: golang
+    name: github.com/inngest/inngestgo
+    example: github.com/inngest/inngestgo
+  - type: python
+    name: inngest
+    example: inngest

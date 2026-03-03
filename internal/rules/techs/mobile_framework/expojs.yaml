@@ -1,0 +1,6 @@
+tech: expojs
+name: ExpoJS
+dependencies:
+  - type: npm
+    name: expo
+    example: expo

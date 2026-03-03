@@ -1,0 +1,9 @@
+tech: mariadb
+name: MariaDB
+dependencies:
+  - type: npm
+    name: mariadb
+    example: mariadb
+  - type: ruby
+    name: tencentcloud-sdk-mariadb
+    example: tencentcloud-sdk-mariadb

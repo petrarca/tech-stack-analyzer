@@ -1,0 +1,21 @@
+tech: rust
+name: Rust
+is_primary_tech: true
+dependencies:
+  - type: docker
+    name: rust
+    example: rust
+  - type: docker
+    name: cimg/rust
+    example: cimg/rust
+  - type: docker
+    name: circleci/rust
+    example: circleci/rust
+  - type: docker
+    name: rustlang/rust
+    example: rustlang/rust
+files:
+  - Cargo.toml
+extensions:
+  - .rs
+  - .rs.in

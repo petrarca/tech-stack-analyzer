@@ -1,0 +1,6 @@
+tech: consul
+name: Consul
+dependencies:
+  - type: docker
+    name: consul
+    example: consul

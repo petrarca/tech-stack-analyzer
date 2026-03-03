@@ -1,0 +1,12 @@
+tech: withorb
+name: Orb
+dependencies:
+  - type: python
+    name: orb-billing
+    example: orb-billing
+  - type: npm
+    name: orb-billing
+    example: orb-billing
+  - type: golang
+    name: github.com/orbcorp/orb-go
+    example: github.com/orbcorp/orb-go

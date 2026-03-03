@@ -1,0 +1,6 @@
+tech: gcp.gke
+name: Google Kubernetes
+dependencies:
+  - type: githubAction
+    name: google-github-actions/get-gke-credentials
+    example: google-github-actions/get-gke-credentials

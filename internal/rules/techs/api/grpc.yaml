@@ -1,0 +1,46 @@
+tech: grpc
+name: gRPC
+extensions:
+  - .proto
+content:
+  - pattern: 'syntax\s*=\s*"proto[23]"'
+  - pattern: 'package\s+\w+;'
+  - pattern: 'service\s+\w+\s*{'
+  - pattern: 'rpc\s+\w+\s*\('
+dependencies:
+  - type: npm
+    name: "@grpc/grpc-js"
+    example: "@grpc/grpc-js"
+  - type: npm
+    name: "@grpc/proto-loader"
+    example: "@grpc/proto-loader"
+  - type: npm
+    name: "grpc"
+    example: "grpc"
+  - type: python
+    name: "grpcio"
+    example: "grpcio"
+  - type: python
+    name: "grpcio-tools"
+    example: "grpcio-tools"
+  - type: nuget
+    name: "Grpc"
+    example: "Grpc"
+  - type: nuget
+    name: "Grpc.Tools"
+    example: "Grpc.Tools"
+  - type: maven
+    name: "io.grpc:grpc-netty"
+    example: "io.grpc:grpc-netty"
+  - type: maven
+    name: "io.grpc:grpc-protobuf"
+    example: "io.grpc:grpc-protobuf"
+  - type: maven
+    name: "io.grpc:grpc-stub"
+    example: "io.grpc:grpc-stub"
+  - type: go
+    name: "google.golang.org/grpc"
+    example: "google.golang.org/grpc"
+  - type: go
+    name: "google.golang.org/protobuf"
+    example: "google.golang.org/protobuf"

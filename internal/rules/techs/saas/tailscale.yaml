@@ -1,0 +1,12 @@
+tech: tailscale
+name: Tailscale
+dependencies:
+  - type: githubAction
+    name: tailscale/github-action
+    example: tailscale/github-action
+  - type: githubAction
+    name: tailscale/gitops-acl-action
+    example: tailscale/gitops-acl-action
+  - type: npm
+    name: "@pulumi/tailscale"
+    example: "@pulumi/tailscale"

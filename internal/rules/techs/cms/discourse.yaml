@@ -1,0 +1,9 @@
+tech: discourse
+name: Discourse
+dependencies:
+  - type: docker
+    name: bitnami/discourse
+    example: bitnami/discourse
+  - type: docker
+    name: discourse/base
+    example: discourse/base

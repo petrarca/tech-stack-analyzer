@@ -1,0 +1,9 @@
+tech: gcp.sql
+name: Cloud SQL
+dependencies:
+  - type: npm
+    name: "@google-cloud/cloud-sql-connector"
+    example: "@google-cloud/cloud-sql-connector"
+  - type: php
+    name: google/cloud-sql-admin
+    example: google/cloud-sql-admin

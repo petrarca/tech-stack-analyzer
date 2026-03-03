@@ -1,0 +1,63 @@
+# .stack-analyzer.yml - Tech Stack Analyzer Configuration
+# Place this file in the root of your project to customize the scan behavior
+#
+# You can also specify a custom config file path to override this default:
+#   stack-analyzer scan --config /path/to/custom-config.yml /path/to/project
+
+# Alternatively, you can set ANY configuration via command line using inline JSON:
+#   stack-analyzer scan --config '{
+#     "properties": {
+#       "product-key": "cgm-albis"
+#     },
+#     "exclude": ["test-dir", "*.log"],
+#     "techs": [
+#       {"tech": "aws", "reason": "CI/CD"}
+#     ]
+#   }' /path/to/project
+
+# Custom properties added to metadata.properties in scan output
+# Use this to document project context, ownership, or deployment information
+# 
+properties:
+  product: "My Product Name"
+  team: "Platform Engineering"
+  owner: "engineering@company.com"
+  # Add any custom key-value pairs relevant to your project
+
+# Files and directories to exclude from scanning
+# Supports glob patterns (**, *, ?)
+exclude:
+  # Directories
+  - "node_modules"
+  - "vendor"
+  - "dist"
+  - "build"
+  - ".git"
+  
+  # File patterns
+  - "*.log"
+  - "*.tmp"
+  
+  # Glob patterns (relative to project root)
+  - "**/__tests__/**"
+  - "**/*.test.js"
+  - "**/test/**"
+
+# Technologies to add to the scan results (even if not auto-detected)
+# Useful for documenting external dependencies, deployment targets, or SaaS services
+techs:
+  - tech: "aws"
+    reason: "Deployed on AWS ECS"
+  - tech: "datadog"
+    reason: "Monitoring via Datadog"
+  - tech: "auth0"
+    reason: "Authentication provider"
+  - tech: "stripe"
+    reason: "Payment processing"
+
+# Scan behavior options (same as scan-config.yml scan section)
+scan:
+  primary_language_threshold: 0.05 # Minimum percentage for primary languages (default: 0.05 = 5%)
+  # Other scan options can be added here as needed
+  # debug: false
+  # verbose: false

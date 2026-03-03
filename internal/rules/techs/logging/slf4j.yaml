@@ -1,0 +1,6 @@
+tech: slf4j
+name: SLF4J
+dependencies:
+  - type: maven
+    name: /^org\.slf4j:.*$/
+    example: org.slf4j:slf4j-api

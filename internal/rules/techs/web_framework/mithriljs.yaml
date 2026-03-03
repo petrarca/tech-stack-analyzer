@@ -1,0 +1,6 @@
+tech: mithriljs
+name: Mithril
+dependencies:
+  - type: npm
+    name: mithril
+    example: mithril

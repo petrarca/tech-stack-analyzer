@@ -1,0 +1,6 @@
+tech: poi
+name: POI
+dependencies:
+  - type: maven
+    name: /^org\.apache\.poi:.*$/
+    example: org.apache.poi:poi

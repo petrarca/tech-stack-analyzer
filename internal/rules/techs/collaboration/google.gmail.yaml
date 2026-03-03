@@ -1,0 +1,9 @@
+tech: google.gmail
+name: Gmail
+dependencies:
+  - type: npm
+    name: "@googleapis/gmail"
+    example: "@googleapis/gmail"
+  - type: ruby
+    name: google-apis-gmail_v1
+    example: google-apis-gmail_v1

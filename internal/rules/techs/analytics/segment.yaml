@@ -1,0 +1,23 @@
+tech: segment
+name: Segment
+dotenv:
+  - SEGMENT_
+dependencies:
+  - type: npm
+    name: analytics-node
+    example: analytics-node
+  - type: python
+    name: analytics-python
+    example: analytics-python
+  - type: ruby
+    name: segment-analytics
+    example: segment-analytics
+  - type: php
+    name: segmentio/analytics-php
+    example: segmentio/analytics-php
+  - type: golang
+    name: github.com/segmentio/analytics-go
+    example: github.com/segmentio/analytics-go
+  - type: npm
+    name: "@analytics/segment"
+    example: "@analytics/segment"

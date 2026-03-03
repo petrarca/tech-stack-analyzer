@@ -1,0 +1,6 @@
+tech: coverlet
+name: Coverlet
+dependencies:
+  - type: nuget
+    name: /^coverlet\..*/
+    example: coverlet.collector

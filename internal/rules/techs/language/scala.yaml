@@ -1,0 +1,4 @@
+tech: scala
+name: Scala
+extensions:
+  - .scala

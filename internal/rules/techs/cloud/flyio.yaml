@@ -1,0 +1,11 @@
+tech: flyio
+name: Flyio
+dependencies:
+  - type: terraform
+    name: registry.terraform.io/fly-apps/fly
+    example: registry.terraform.io/fly-apps/fly
+  - type: githubAction
+    name: superfly/flyctl-actions/setup-flyctl
+    example: superfly/flyctl-actions/setup-flyctl
+files:
+  - fly.toml

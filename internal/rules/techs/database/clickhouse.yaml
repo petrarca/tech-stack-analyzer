@@ -1,0 +1,33 @@
+tech: clickhouse
+name: ClickHouse
+dependencies:
+  - type: docker
+    name: clickhouse/clickhouse-server
+    example: clickhouse/clickhouse-server
+  - type: golang
+    name: github.com/ClickHouse/clickhouse-go
+    example: github.com/ClickHouse/clickhouse-go
+  - type: golang
+    name: github.com/ClickHouse/clickhouse-go/v2
+    example: github.com/ClickHouse/clickhouse-go/v2
+  - type: terraform
+    name: registry.terraform.io/ClickHouse/clickhouse
+    example: registry.terraform.io/ClickHouse/clickhouse
+  - type: php
+    name: smi2/phpclickhouse
+    example: smi2/phpclickhouse
+  - type: php
+    name: glushkovds/phpclickhouse-laravel
+    example: glushkovds/phpclickhouse-laravel
+  - type: python
+    name: clickhouse-connect
+    example: clickhouse-connect
+  - type: rust
+    name: clickhouse
+    example: clickhouse
+  - type: ruby
+    name: clickhouse-activerecord
+    example: clickhouse-activerecord
+  - type: terraform.resource
+    name: airbyte_destination_clickhouse
+    example: airbyte_destination_clickhouse

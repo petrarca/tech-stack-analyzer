@@ -1,0 +1,9 @@
+tech: checkov
+name: Checkov
+dependencies:
+  - type: githubAction
+    name: bridgecrewio/checkov-action
+    example: bridgecrewio/checkov-action
+  - type: docker
+    name: bridgecrew/checkov
+    example: bridgecrew/checkov

@@ -1,0 +1,8 @@
+tech: beehiiv
+name: Beehiiv
+dotenv:
+  - BEEHIIV_
+dependencies:
+  - type: npm
+    name: "@beehiiv/sdk"
+    example: "@beehiiv/sdk"

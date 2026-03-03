@@ -1,0 +1,4 @@
+tech: github.actions
+name: Github Actions
+files:
+  - .github/workflows

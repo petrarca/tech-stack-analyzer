@@ -1,0 +1,18 @@
+tech: rethinkdb
+name: RethinkDB
+dependencies:
+  - type: docker
+    name: rethinkdb
+    example: rethinkdb
+  - type: npm
+    name: rethinkdb
+    example: rethinkdb
+  - type: php
+    name: danielmewes/php-rql
+    example: danielmewes/php-rql
+  - type: ruby
+    name: rethinkdb
+    example: rethinkdb
+  - type: golang
+    name: github.com/rethinkdb/rethinkdb-go
+    example: github.com/rethinkdb/rethinkdb-go

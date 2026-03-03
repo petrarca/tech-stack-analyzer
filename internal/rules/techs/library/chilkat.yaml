@@ -1,0 +1,21 @@
+tech: chilkat
+name: Chilkat
+dependencies:
+  - type: nuget
+    name: Chilkat
+    example: Chilkat
+  - type: maven
+    name: com.chilkatsoft:chilkat
+    example: com.chilkatsoft:chilkat
+  - type: python
+    name: chilkat
+    example: chilkat
+  - type: npm
+    name: chilkat
+    example: chilkat
+  - type: ruby
+    name: chilkat
+    example: chilkat
+  - type: go
+    name: github.com/nicpottier/chilkat
+    example: github.com/nicpottier/chilkat

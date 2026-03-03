@@ -1,0 +1,12 @@
+tech: supabase.storage
+name: Supabase Storage
+dependencies:
+  - type: npm
+    name: "@supabase/storage-js"
+    example: "@supabase/storage-js"
+  - type: docker
+    name: bitnami/supabase-storage
+    example: bitnami/supabase-storage
+  - type: docker
+    name: supabase/storage-api
+    example: supabase/storage-api

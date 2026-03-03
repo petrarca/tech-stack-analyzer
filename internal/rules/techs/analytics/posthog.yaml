@@ -1,0 +1,29 @@
+tech: posthog
+name: PostHog
+dotenv:
+  - POSTHOG_
+dependencies:
+  - type: npm
+    name: posthog-js
+    example: posthog-js
+  - type: golang
+    name: github.com/posthog/posthog-go
+    example: github.com/posthog/posthog-go
+  - type: npm
+    name: posthog-node
+    example: posthog-node
+  - type: php
+    name: posthog/posthog-php
+    example: posthog/posthog-php
+  - type: ruby
+    name: posthog-ruby
+    example: posthog-ruby
+  - type: rust
+    name: posthog-rs
+    example: posthog-rs
+  - type: npm
+    name: posthog-react-native
+    example: posthog-react-native
+  - type: python
+    name: posthog
+    example: posthog

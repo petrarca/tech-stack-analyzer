@@ -1,0 +1,5 @@
+tech: azure.ci
+name: AzureCI
+files:
+  - azure-pipelines.yml
+  - azure-pipelines.yaml

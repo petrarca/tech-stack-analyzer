@@ -1,0 +1,33 @@
+tech: datocms
+name: Dato CMS
+dependencies:
+  - type: npm
+    name: datocms-structured-text-utils
+    example: datocms-structured-text-utils
+  - type: npm
+    name: "@datocms/cma-client"
+    example: "@datocms/cma-client"
+  - type: npm
+    name: "@datocms/cma-client-node"
+    example: "@datocms/cma-client-node"
+  - type: npm
+    name: datocms-client
+    example: datocms-client
+  - type: npm
+    name: "@datocms/cli"
+    example: "@datocms/cli"
+  - type: npm
+    name: vue-datocms
+    example: vue-datocms
+  - type: npm
+    name: react-datocms
+    example: react-datocms
+  - type: npm
+    name: datocms-react-ui
+    example: datocms-react-ui
+  - type: npm
+    name: datocms-plugin-sdk
+    example: datocms-plugin-sdk
+  - type: npm
+    name: gatsby-source-datocms
+    example: gatsby-source-datocms

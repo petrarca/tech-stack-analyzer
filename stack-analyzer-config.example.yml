@@ -1,0 +1,92 @@
+# scan-config.yml - Tech Stack Analyzer Scan Configuration
+# Use with: stack-analyzer scan --config scan-config.yml
+#
+# CONFIGURATION PRECEDENCE (highest to lowest):
+# 1. CLI arguments (flags) - Always take precedence
+# 2. This scan-config.yml - Overrides project config and defaults
+# 3. .stack-analyzer.yml - Project-specific config (merged with scan config)
+# 4. Environment variables - Provide defaults for unset values
+# 5. Built-in defaults - Used when nothing else is specified
+
+# Custom properties added to metadata.properties in scan output
+# Use this to document project context, ownership, or deployment information
+# (Consistent with .stack-analyzer.yml)
+properties:
+  product: "My Product Name"
+  team: "Platform Engineering"
+  owner: "engineering@company.com"
+  environment: "production"
+  version: "1.2.3"
+  # Add any custom key-value pairs relevant to your project
+
+# Files and directories to exclude from scanning
+# Supports glob patterns (**, *, ?)
+# (Consistent with .stack-analyzer.yml, matches --exclude flag)
+exclude:
+  # Directories
+  - "node_modules"
+  - "vendor"
+  - "dist"
+  - "build"
+  - ".git"
+  
+  # File patterns
+  - "*.log"
+  - "*.tmp"
+  
+  # Glob patterns (relative to project root)
+  - "**/__tests__/**"
+  - "**/*.test.js"
+  - "**/test/**"
+
+# Technologies to add to the scan results (even if not auto-detected)
+# Useful for documenting external dependencies, deployment targets, or SaaS services
+# (Consistent with .stack-analyzer.yml)
+techs:
+  - tech: "aws"
+    reason: "Deployed on AWS ECS"
+  - tech: "datadog"
+    reason: "Monitoring via Datadog"
+  - tech: "auth0"
+    reason: "Authentication provider"
+  - tech: "stripe"
+    reason: "Payment processing"
+
+# Scan configuration (flat CLI options matching --flags)
+scan:
+  output_file: "results.json"      # Matches --output flag
+  pretty: true                     # Matches --pretty flag
+  aggregate: "techs,languages"     # Matches --aggregate flag
+  verbose: false                   # Matches --verbose flag
+  debug: true                      # Matches --debug flag
+  no_code_stats: false             # Matches --no-code-stats flag
+  component_code_stats: true       # Matches --component-code-stats flag
+  trace_timings: false             # Matches --trace-timings flag
+  trace_rules: false               # Matches --trace-rules flag
+  filter_rules:                    # Matches --rules flag
+    - "nodejs"
+    - "python"
+    - "docker"
+  primary_language_threshold: 0.05 # Minimum percentage for primary languages (default: 0.05 = 5%)
+
+# Example usage scenarios:
+#
+# 1. Developer workflow:
+#    stack-analyzer scan --config scan-config.yml /path/to/project
+#
+# 2. CI/CD pipeline with inline JSON:
+#    stack-analyzer scan --config '{"scan":{"output":{"file":"$BUILD_DIR/scan-results.json"},"properties":{"build":"'$BUILD_NUMBER'"}}}' /path/to/project
+#
+# 3. Config overrides (CLI flags take precedence):
+#    stack-analyzer scan --config scan-config.yml --verbose --output custom.json /path/to/project
+#
+# 4. Multiple repositories (simple approach):
+#    for repo in repo1 repo2 repo3; do
+#      stack-analyzer scan --config scan-config.yml $repo --output $repo-analysis.json
+#    done
+#
+# PRECEDENCE EXAMPLES:
+# - CLI flag --debug=true overrides scan-config debug: false
+# - scan-config output.file overrides .stack-analyzer.yml output  
+# - .stack-analyzer.yml properties merge with scan-config properties
+# - Environment variable STACK_ANALYZER_DEBUG provides default when no config sets debug

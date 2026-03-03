@@ -1,0 +1,7 @@
+tech: exposed
+name: Exposed
+dependencies:
+  - type: maven
+    name: /^org\.jetbrains\.exposed:/
+  - type: gradle
+    name: /^org\.jetbrains\.exposed:/

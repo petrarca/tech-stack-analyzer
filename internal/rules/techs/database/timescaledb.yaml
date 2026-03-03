@@ -1,0 +1,12 @@
+tech: timescaledb
+name: TimescaleDB
+dependencies:
+  - type: docker
+    name: timescale/timescaledb-ha
+    example: timescale/timescaledb-ha
+  - type: docker
+    name: timescale/timescaledb
+    example: timescale/timescaledb
+  - type: terraform
+    name: registry.terraform.io/timescale/timescale
+    example: registry.terraform.io/timescale/timescale

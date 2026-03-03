@@ -1,0 +1,6 @@
+tech: koalaanalytics
+name: Koala Analytics
+dependencies:
+  - type: npm
+    name: "@getkoala/browser"
+    example: "@getkoala/browser"

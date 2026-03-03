@@ -1,0 +1,36 @@
+tech: langchain
+name: LangChain
+dependencies:
+  - type: python
+    name: langchain
+    example: langchain
+  - type: python
+    name: langchain-core
+    example: langchain-core
+  - type: python
+    name: langchain-community
+    example: langchain-community
+  - type: python
+    name: langchain-openai
+    example: langchain-openai
+  - type: python
+    name: langchain-anthropic
+    example: langchain-anthropic
+  - type: python
+    name: langgraph
+    example: langgraph
+  - type: npm
+    name: langchain
+    example: langchain
+  - type: npm
+    name: "@langchain/core"
+    example: "@langchain/core"
+  - type: npm
+    name: "@langchain/community"
+    example: "@langchain/community"
+  - type: npm
+    name: "@langchain/openai"
+    example: "@langchain/openai"
+  - type: npm
+    name: "@langchain/anthropic"
+    example: "@langchain/anthropic"

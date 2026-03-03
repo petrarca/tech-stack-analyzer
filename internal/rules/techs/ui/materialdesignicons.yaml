@@ -1,0 +1,6 @@
+tech: materialdesignicons
+name: Material Design Icons
+dependencies:
+  - type: npm
+    name: "@iconify-json/mdi"
+    example: "@iconify-json/mdi"

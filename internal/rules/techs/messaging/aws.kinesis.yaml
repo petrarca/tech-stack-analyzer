@@ -1,0 +1,33 @@
+tech: aws.kinesis
+name: AWS Kinesis
+dependencies:
+  - type: npm
+    name: "@aws-sdk/client-kinesis"
+    example: "@aws-sdk/client-kinesis"
+  - type: npm
+    name: "@aws-sdk/client-firehose"
+    example: "@aws-sdk/client-firehose"
+  - type: npm
+    name: "@aws-cdk/aws-kinesis"
+    example: "@aws-cdk/aws-kinesis"
+  - type: npm
+    name: "@aws-cdk/aws-firehose"
+    example: "@aws-cdk/aws-firehose"
+  - type: rust
+    name: aws-sdk-kinesis
+    example: aws-sdk-kinesis
+  - type: rust
+    name: aws-sdk-firehose
+    example: aws-sdk-firehose
+  - type: ruby
+    name: aws-sdk-kinesis
+    example: aws-sdk-kinesis
+  - type: ruby
+    name: aws-sdk-firehose
+    example: aws-sdk-firehose
+  - type: golang
+    name: github.com/aws/aws-sdk-go-v2/service/kinesis
+    example: github.com/aws/aws-sdk-go-v2/service/kinesis
+  - type: golang
+    name: github.com/aws/aws-sdk-go-v2/service/firehose
+    example: github.com/aws/aws-sdk-go-v2/service/firehose

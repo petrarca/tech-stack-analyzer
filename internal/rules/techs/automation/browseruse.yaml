@@ -1,0 +1,6 @@
+tech: browseruse
+name: Browser Use
+dependencies:
+  - type: python
+    name: browser-use
+    example: browser-use

@@ -1,0 +1,42 @@
+tech: keycloak
+name: Keycloak
+dotenv:
+  - KEYCLOAK_
+  - KEYCLOAK_
+dependencies:
+  - type: maven
+    name: org.keycloak:keycloak-core
+    example: org.keycloak:keycloak-core
+  - type: maven
+    name: org.keycloak:keycloak-spring-boot-starter
+    example: org.keycloak:keycloak-spring-boot-starter
+  - type: maven
+    name: org.keycloak:keycloak-admin-client
+    example: org.keycloak:keycloak-admin-client
+  - type: npm
+    name: keycloak-js
+    example: keycloak-js
+  - type: npm
+    name: "@keycloak/keycloak-admin-client"
+    example: "@keycloak/keycloak-admin-client"
+  - type: python
+    name: python-keycloak
+    example: python-keycloak
+  - type: python
+    name: keycloak
+    example: keycloak
+  - type: ruby
+    name: keycloak-admin
+    example: keycloak-admin
+  - type: go
+    name: github.com/keycloak/keycloak-go
+    example: github.com/keycloak/keycloak-go
+  - type: terraform
+    name: registry.terraform.io/mrparkers/keycloak
+    example: registry.terraform.io/mrparkers/keycloak
+  - type: docker
+    name: quay.io/keycloak/keycloak
+    example: quay.io/keycloak/keycloak
+  - type: docker
+    name: keycloak/keycloak
+    example: keycloak/keycloak

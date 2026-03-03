@@ -1,0 +1,15 @@
+tech: alibabacloud
+name: Alibaba Cloud
+dependencies:
+  - type: terraform
+    name: registry.terraform.io/aliyun/alicloud
+    example: registry.terraform.io/aliyun/alicloud
+  - type: php
+    name: alibabacloud/sdk
+    example: alibabacloud/sdk
+  - type: php
+    name: alibabacloud/client
+    example: alibabacloud/client
+  - type: githubAction
+    name: aliyun/acr-login
+    example: aliyun/acr-login

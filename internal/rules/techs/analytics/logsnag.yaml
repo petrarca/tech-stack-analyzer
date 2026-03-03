@@ -1,0 +1,8 @@
+tech: logsnag
+name: LogSnag
+dotenv:
+  - LOGSNAG_
+dependencies:
+  - type: npm
+    name: logsnag
+    example: logsnag

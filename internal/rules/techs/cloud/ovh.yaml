@@ -1,0 +1,17 @@
+tech: ovh
+name: OVH
+dotenv:
+  - OVH_
+dependencies:
+  - type: terraform
+    name: registry.terraform.io/ovh/ovh
+    example: registry.terraform.io/ovh/ovh
+  - type: npm
+    name: "@ovh-api/api"
+    example: "@ovh-api/api"
+  - type: npm
+    name: "@ovhcloud/pulumi-ovh"
+    example: "@ovhcloud/pulumi-ovh"
+  - type: php
+    name: ovh/ovh
+    example: ovh/ovh

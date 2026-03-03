@@ -1,0 +1,17 @@
+tech: firecrawl
+name: Firecrawl
+dotenv:
+  - FIRECRAWL_
+dependencies:
+  - type: php
+    name: "@mendable/firecrawl-js"
+    example: "@mendable/firecrawl-js"
+  - type: python
+    name: firecrawl-py
+    example: firecrawl-py
+  - type: golang
+    name: github.com/mendableai/firecrawl-go
+    example: github.com/mendableai/firecrawl-go
+  - type: rust
+    name: firecrawl
+    example: firecrawl

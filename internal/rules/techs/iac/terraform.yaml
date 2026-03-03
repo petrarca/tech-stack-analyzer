@@ -1,0 +1,25 @@
+tech: terraform
+name: Terraform
+dependencies:
+  - type: githubAction
+    name: hashicorp/setup-terraform
+    example: hashicorp/setup-terraform
+  - type: githubAction
+    name: hashicorp/terraform-cdk-action
+    example: hashicorp/terraform-cdk-action
+  - type: npm
+    name: cdktf
+    example: cdktf
+  - type: golang
+    name: github.com/hashicorp/terraform-plugin-sdk/v2
+    example: github.com/hashicorp/terraform-plugin-sdk/v2
+  - type: python
+    name: cdktf
+    example: cdktf
+files:
+  - .terraform
+  - .terraform.lock.hcl
+  - main.tf
+  - variables.tf
+extensions:
+  - .tf

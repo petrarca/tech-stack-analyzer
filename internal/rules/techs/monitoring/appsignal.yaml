@@ -1,0 +1,33 @@
+tech: appsignal
+name: AppSignal
+dependencies:
+  - type: npm
+    name: appsignal
+    example: appsignal
+  - type: ruby
+    name: appsignal
+    example: appsignal
+  - type: python
+    name: appsignal
+    example: appsignal
+  - type: npm
+    name: "@appsignal/nodejs"
+    example: "@appsignal/nodejs"
+  - type: npm
+    name: "@appsignal/javascript"
+    example: "@appsignal/javascript"
+  - type: npm
+    name: "@appsignal/react"
+    example: "@appsignal/react"
+  - type: npm
+    name: "@appsignal/angular"
+    example: "@appsignal/angular"
+  - type: npm
+    name: "@appsignal/vue"
+    example: "@appsignal/vue"
+  - type: npm
+    name: "@appsignal/ember"
+    example: "@appsignal/ember"
+  - type: docker
+    name: appsignal/collector
+    example: appsignal/collector

@@ -1,0 +1,8 @@
+tech: useautumn
+name: Use Autumn
+dotenv:
+  - AUTUMN_
+dependencies:
+  - type: npm
+    name: autumn-js
+    example: autumn-js

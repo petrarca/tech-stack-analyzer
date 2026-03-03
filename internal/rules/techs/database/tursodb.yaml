@@ -1,0 +1,8 @@
+tech: tursodb
+name: Turso
+dotenv:
+  - TURSO_
+dependencies:
+  - type: npm
+    name: "@tursodatabase/api"
+    example: "@tursodatabase/api"

@@ -1,0 +1,15 @@
+tech: stytch
+name: Stytch
+dependencies:
+  - type: npm
+    name: stytch
+    example: stytch
+  - type: python
+    name: stytch
+    example: stytch
+  - type: golang
+    name: github.com/stytchauth/stytch-go/v16
+    example: github.com/stytchauth/stytch-go/v16
+  - type: ruby
+    name: stytch
+    example: stytch

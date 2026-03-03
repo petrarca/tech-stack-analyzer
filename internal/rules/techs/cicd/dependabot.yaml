@@ -1,0 +1,6 @@
+tech: dependabot
+name: Dependabot
+dependencies:
+  - type: githubAction
+    name: ahmadnassri/action-dependabot-auto-merge
+    example: ahmadnassri/action-dependabot-auto-merge

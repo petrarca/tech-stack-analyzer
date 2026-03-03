@@ -1,0 +1,15 @@
+tech: cypressci
+name: CypressCI
+dependencies:
+  - type: npm
+    name: cypress
+    example: cypress
+  - type: npm
+    name: gatsby-cypress
+    example: gatsby-cypress
+  - type: ruby
+    name: cypress-on-rails
+    example: cypress-on-rails
+  - type: githubAction
+    name: cypress-io/github-action
+    example: cypress-io/github-action

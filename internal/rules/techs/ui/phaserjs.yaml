@@ -1,0 +1,6 @@
+tech: phaserjs
+name: Phaser
+dependencies:
+  - type: npm
+    name: phaser
+    example: phaser

@@ -1,0 +1,22 @@
+tech: devexpress
+name: DevExpress
+dependencies:
+  # .NET / NuGet
+  - type: nuget
+    name: /^DevExpress\./
+  - type: nuget
+    name: /^DevExtreme\./
+  # npm (DevExtreme for web)
+  - type: npm
+    name: devextreme
+  - type: npm
+    name: devextreme-react
+  - type: npm
+    name: devextreme-angular
+  - type: npm
+    name: devextreme-vue
+  # Delphi packages (dx* and cx* prefixes)
+  - type: delphi
+    name: /^dx/
+  - type: delphi
+    name: /^cx/

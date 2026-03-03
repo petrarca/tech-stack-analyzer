@@ -1,0 +1,6 @@
+tech: javascript
+name: JavaScript
+extensions:
+  - .js
+  - .mjs
+  - .cjs

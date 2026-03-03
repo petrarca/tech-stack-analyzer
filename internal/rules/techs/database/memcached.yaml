@@ -1,0 +1,20 @@
+tech: memcached
+name: Memcached
+dotenv:
+  - MEMCACHED_
+dependencies:
+  - type: npm
+    name: memcached
+    example: memcached
+  - type: rust
+    name: memcache-async
+    example: memcache-async
+  - type: rust
+    name: memcache
+    example: memcache
+  - type: ruby
+    name: dalli
+    example: dalli
+  - type: npm
+    name: "@opentelemetry/instrumentation-memcached"
+    example: "@opentelemetry/instrumentation-memcached"

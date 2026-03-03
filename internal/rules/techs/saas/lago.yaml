@@ -1,0 +1,26 @@
+tech: lago
+name: Lago
+dotenv:
+  - LAGO_
+dependencies:
+  - type: npm
+    name: lago-javascript-client
+    example: lago-javascript-client
+  - type: golang
+    name: github.com/getlago/lago-go-client
+    example: github.com/getlago/lago-go-client
+  - type: ruby
+    name: lago-ruby-client
+    example: lago-ruby-client
+  - type: python
+    name: lago-python-client
+    example: lago-python-client
+  - type: docker
+    name: getlago/front
+    example: getlago/front
+  - type: docker
+    name: getlago/api
+    example: getlago/api
+  - type: docker
+    name: getlago/lago-gotenberg
+    example: getlago/lago-gotenberg

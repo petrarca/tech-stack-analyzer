@@ -1,0 +1,6 @@
+tech: apache_spark
+name: Apache Spark
+dependencies:
+  - type: docker
+    name: apache/spark
+    example: apache/spark

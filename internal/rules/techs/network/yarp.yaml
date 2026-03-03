@@ -1,0 +1,10 @@
+tech: yarp
+name: YARP
+type: network
+dependencies:
+  - type: nuget
+    name: Microsoft.Extensions.ServiceDiscovery.Yarp
+    example: Microsoft.Extensions.ServiceDiscovery.Yarp
+  - type: nuget
+    name: Aspire.Hosting.Yarp
+    example: Aspire.Hosting.Yarp

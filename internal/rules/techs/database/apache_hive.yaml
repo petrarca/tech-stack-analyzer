@@ -1,0 +1,6 @@
+tech: apache_hive
+name: Apache Hive
+dependencies:
+  - type: docker
+    name: apache/hive
+    example: apache/hive

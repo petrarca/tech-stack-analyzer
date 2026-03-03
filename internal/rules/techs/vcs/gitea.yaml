@@ -1,0 +1,23 @@
+tech: gitea
+name: Gitea
+files:
+  - .gitea
+dependencies:
+  - type: terraform
+    name: registry.terraform.io/go-gitea/gitea
+    example: registry.terraform.io/go-gitea/gitea
+  - type: python
+    name: py-gitea-api
+    example: py-gitea-api
+  - type: python
+    name: giteapy
+    example: giteapy
+  - type: npm
+    name: gitea-js
+    example: gitea-js
+  - type: go
+    name: code.gitea.io/sdk/gitea
+    example: code.gitea.io/sdk/gitea
+  - type: ruby
+    name: gitea-client
+    example: gitea-client

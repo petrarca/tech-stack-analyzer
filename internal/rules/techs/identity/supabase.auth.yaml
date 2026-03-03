@@ -1,0 +1,9 @@
+tech: supabase.auth
+name: Supabase Auth
+dependencies:
+  - type: npm
+    name: "@supabase/gotrue-js"
+    example: "@supabase/gotrue-js"
+  - type: docker
+    name: supabase/gotrue
+    example: supabase/gotrue

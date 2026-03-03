@@ -1,0 +1,33 @@
+tech: typesense
+name: Typesense
+dependencies:
+  - type: npm
+    name: typesense
+    example: typesense
+  - type: npm
+    name: typesense-instantsearch-adapter
+    example: typesense-instantsearch-adapter
+  - type: npm
+    name: gatsby-plugin-typesense
+    example: gatsby-plugin-typesense
+  - type: docker
+    name: typesense/typesense
+    example: typesense/typesense
+  - type: golang
+    name: github.com/typesense/typesense-go/typesense
+    example: github.com/typesense/typesense-go/typesense
+  - type: rust
+    name: typesense
+    example: typesense
+  - type: ruby
+    name: typesense
+    example: typesense
+  - type: php
+    name: typesense/typesense-php
+    example: typesense/typesense-php
+  - type: php
+    name: typesense/laravel-scout-typesense-driver
+    example: typesense/laravel-scout-typesense-driver
+  - type: terraform.resource
+    name: airbyte_destination_typesense
+    example: airbyte_destination_typesense

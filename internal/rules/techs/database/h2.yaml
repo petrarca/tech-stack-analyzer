@@ -1,0 +1,9 @@
+tech: h2
+name: H2 Database
+dependencies:
+  - type: maven
+    name: com.h2database:h2
+    example: com.h2database:h2
+  - type: gradle
+    name: com.h2database:h2
+    example: com.h2database:h2

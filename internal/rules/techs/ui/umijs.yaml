@@ -1,0 +1,11 @@
+tech: umijs
+name: UmiJS
+dependencies:
+  - type: npm
+    name: umi
+    example: umi
+  - type: npm
+    name: "@umijs/route-utils"
+    example: "@umijs/route-utils"
+files:
+  - .umirc.ts

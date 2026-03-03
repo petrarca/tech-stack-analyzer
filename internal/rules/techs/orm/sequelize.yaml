@@ -1,0 +1,4 @@
+tech: sequelize
+name: Sequelize
+files:
+  - .sequelizerc

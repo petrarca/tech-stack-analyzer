@@ -1,0 +1,18 @@
+tech: azure.sql
+name: Azure SQL
+dependencies:
+  - type: githubAction
+    name: azure/sql-action
+    example: azure/sql-action
+  - type: ruby
+    name: azure_mgmt_sql
+    example: azure_mgmt_sql
+  - type: rust
+    name: azure_mgmt_sql
+    example: azure_mgmt_sql
+  - type: npm
+    name: "@azure/arm-sql"
+    example: "@azure/arm-sql"
+  - type: golang
+    name: github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql
+    example: github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/sql/armsql

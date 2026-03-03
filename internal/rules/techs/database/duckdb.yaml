@@ -1,0 +1,9 @@
+tech: duckdb
+name: DuckDB
+dependencies:
+  - type: npm
+    name: duckdb
+    example: duckdb
+  - type: terraform.resource
+    name: airbyte_destination_duckdb
+    example: airbyte_destination_duckdb

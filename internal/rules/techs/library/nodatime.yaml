@@ -1,0 +1,5 @@
+tech: nodatime
+name: NodaTime
+dependencies:
+  - type: nuget
+    name: NodaTime

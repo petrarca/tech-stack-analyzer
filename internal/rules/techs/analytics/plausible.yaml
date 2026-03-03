@@ -1,0 +1,26 @@
+tech: plausible
+name: Plausible
+dotenv:
+  - PLAUSIBLE_
+dependencies:
+  - type: docker
+    name: plausible/analytics
+    example: plausible/analytics
+  - type: docker
+    name: ghcr.io/plausible/community-edition
+    example: ghcr.io/plausible/community-edition
+  - type: npm
+    name: plausible-tracker
+    example: plausible-tracker
+  - type: php
+    name: prestashop_plausible
+    example: prestashop_plausible
+  - type: ruby
+    name: plausible_api
+    example: plausible_api
+  - type: php
+    name: vincentbean/laravel-plausible
+    example: vincentbean/laravel-plausible
+  - type: golang
+    name: github.com/andrerfcsantos/go-plausible/plausible
+    example: github.com/andrerfcsantos/go-plausible/plausible

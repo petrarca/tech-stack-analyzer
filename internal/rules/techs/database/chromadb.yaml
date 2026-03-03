@@ -1,0 +1,6 @@
+tech: chromadb
+name: ChromaDB
+dependencies:
+  - type: python
+    name: chromadb
+    example: chromadb

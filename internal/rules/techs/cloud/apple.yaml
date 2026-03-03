@@ -1,0 +1,4 @@
+tech: apple
+name: Apple
+dotenv:
+  - APPLE_ID

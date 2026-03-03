@@ -1,0 +1,12 @@
+tech: oraclecloud
+name: Oracle Cloud
+dependencies:
+  - type: terraform
+    name: registry.terraform.io/oracle/oci
+    example: registry.terraform.io/oracle/oci
+  - type: ruby
+    name: oci
+    example: oci
+  - type: php
+    name: oracle/oci-php-sdk
+    example: oracle/oci-php-sdk

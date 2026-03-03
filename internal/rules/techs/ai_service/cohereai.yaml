@@ -1,0 +1,23 @@
+tech: cohereai
+name: Cohere AI
+dotenv:
+  - COHERE_
+dependencies:
+  - type: npm
+    name: "@langchain/cohere"
+    example: "@langchain/cohere"
+  - type: npm
+    name: "@ai-sdk/cohere"
+    example: "@ai-sdk/cohere"
+  - type: npm
+    name: "@llamaindex/cohere"
+    example: "@llamaindex/cohere"
+  - type: npm
+    name: cohere-ai
+    example: cohere-ai
+  - type: python
+    name: cohere
+    example: cohere
+  - type: golang
+    name: github.com/cohere-ai/cohere-go/v2
+    example: github.com/cohere-ai/cohere-go/v2

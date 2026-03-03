@@ -1,0 +1,8 @@
+tech: deepsource
+name: Deepsource
+dependencies:
+  - type: githubAction
+    name: deepsourcelabs/test-coverage-action
+    example: deepsourcelabs/test-coverage-action
+files:
+  - .deepsource.toml

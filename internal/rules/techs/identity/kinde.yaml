@@ -1,0 +1,12 @@
+tech: kinde
+name: Kinde
+dependencies:
+  - type: python
+    name: kinde-python-sdk
+    example: kinde-python-sdk
+  - type: ruby
+    name: kinde_sdk
+    example: kinde_sdk
+  - type: php
+    name: kinde-oss/kinde-auth-php
+    example: kinde-oss/kinde-auth-php

@@ -1,0 +1,22 @@
+tech: wpf
+name: Windows Presentation Foundation
+dependencies:
+  # NuGet packages
+  - type: nuget
+    name: /^Microsoft\.WindowsDesktop\.App\.WPF/
+  - type: nuget
+    name: /^System\.Windows\./
+  - type: nuget
+    name: /^WPF\./
+  - type: nuget
+    name: /^MaterialDesignThemes/
+  - type: nuget
+    name: /^MahApps\.Metro/
+  - type: nuget
+    name: /^Caliburn\.Micro/
+  - type: nuget
+    name: /^Prism\.Wpf/
+  - type: nuget
+    name: /^CommunityToolkit\.Mvvm/
+extensions:
+  - .xaml

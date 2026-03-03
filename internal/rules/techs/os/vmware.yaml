@@ -1,0 +1,11 @@
+tech: os_vmware
+name: VMware
+dotenv:
+  - VMWARE
+dependencies:
+  - type: python
+    name: pyvmomi
+    example: pyvmomi
+  - type: maven
+    name: com.vmware:vim25
+    example: com.vmware:vim25

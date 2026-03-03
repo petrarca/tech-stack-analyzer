@@ -1,0 +1,11 @@
+tech: blackfire
+name: Blackfire
+dotenv:
+  - BLACKFIRE_
+dependencies:
+  - type: php
+    name: blackfire/php-sdk
+    example: blackfire/php-sdk
+  - type: docker
+    name: blackfire/blackfire
+    example: blackfire/blackfire

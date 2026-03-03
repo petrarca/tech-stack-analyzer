@@ -1,0 +1,6 @@
+tech: codebase
+name: Codebase
+dependencies:
+  - type: nuget
+    name: CodeBase
+    example: CodeBase

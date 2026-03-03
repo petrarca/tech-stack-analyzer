@@ -1,0 +1,9 @@
+tech: vbnet
+name: VB.NET
+extensions:
+  - .vb
+files:
+  - .vbproj
+dependencies:
+  - type: nuget
+    name: /^Microsoft\.VisualBasic/

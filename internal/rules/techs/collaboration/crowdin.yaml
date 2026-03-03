@@ -1,0 +1,9 @@
+tech: crowdin
+name: Crowdin
+dependencies:
+  - type: php
+    name: crowdin/crowdin-api-client
+    example: crowdin/crowdin-api-client
+files:
+  - crowdin.yml
+  - crowdin.yaml

@@ -1,0 +1,9 @@
+tech: remixrouter
+name: Remix Router
+dependencies:
+  - type: npm
+    name: "@remix-run/router"
+    example: "@remix-run/router"
+  - type: npm
+    name: "@remix-run/react"
+    example: "@remix-run/react"

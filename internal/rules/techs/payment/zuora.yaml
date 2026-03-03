@@ -1,0 +1,11 @@
+tech: zuora
+name: Zuora
+dotenv:
+  - ZUORA_
+dependencies:
+  - type: npm
+    name: zuora-sdk-js
+    example: zuora-sdk-js
+  - type: python
+    name: zuora-sdk
+    example: zuora-sdk

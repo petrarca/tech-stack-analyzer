@@ -1,0 +1,11 @@
+tech: vuepress
+name: VuePress
+dependencies:
+  - type: npm
+    name: vuepress
+    example: vuepress
+  - type: npm
+    name: "@vuepress/core"
+    example: "@vuepress/core"
+files:
+  - .vuepress

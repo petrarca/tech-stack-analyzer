@@ -1,0 +1,41 @@
+tech: mysql
+name: Mysql
+dotenv:
+  - MYSQL_
+dependencies:
+  - type: npm
+    name: mysql
+    example: mysql
+  - type: npm
+    name: "@mikro-orm/mysql"
+    example: "@mikro-orm/mysql"
+  - type: npm
+    name: mysql2
+    example: mysql2
+  - type: npm
+    name: "@opentelemetry/instrumentation-mysql"
+    example: "@opentelemetry/instrumentation-mysql"
+  - type: ruby
+    name: ruby-mysql
+    example: ruby-mysql
+  - type: ruby
+    name: mysql2
+    example: mysql2
+  - type: npm
+    name: "@pulumi/mysql"
+    example: "@pulumi/mysql"
+  - type: python
+    name: mysql-connector-python
+    example: mysql-connector-python
+  - type: python
+    name: PyMySQL
+    example: PyMySQL
+  - type: python
+    name: pymysql
+    example: pymysql
+  - type: python
+    name: mysqlclient
+    example: mysqlclient
+  - type: terraform.resource
+    name: airbyte_destination_mysql
+    example: airbyte_destination_mysql

@@ -1,0 +1,7 @@
+tech: cocoapods
+name: CocoaPods
+type: package_manager
+is_primary_tech: true
+files:
+  - Podfile
+  - Podfile.lock

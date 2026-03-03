@@ -1,0 +1,15 @@
+tech: xamarin
+name: Xamarin
+dependencies:
+  - type: nuget
+    name: Xamarin.Forms
+    example: Xamarin.Forms
+  - type: nuget
+    name: Xamarin.Essentials
+    example: Xamarin.Essentials
+  - type: nuget
+    name: Xamarin.Android
+    example: Xamarin.Android
+  - type: nuget
+    name: Xamarin.iOS
+    example: Xamarin.iOS

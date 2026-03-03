@@ -1,0 +1,81 @@
+tech: azure.storage
+name: Azure Storage
+dependencies:
+  - type: npm
+    name: "@azure/storage-blob"
+    example: "@azure/storage-blob"
+  - type: npm
+    name: "@azure/storage-queue"
+    example: "@azure/storage-queue"
+  - type: npm
+    name: "@azure/storage-file-share"
+    example: "@azure/storage-file-share"
+  - type: npm
+    name: "@azure/storage-file-datalake"
+    example: "@azure/storage-file-datalake"
+  - type: ruby
+    name: azure-storage
+    example: azure-storage
+  - type: ruby
+    name: azure-storage-common
+    example: azure-storage-common
+  - type: ruby
+    name: azure-storage-blob
+    example: azure-storage-blob
+  - type: ruby
+    name: azure-storage-table
+    example: azure-storage-table
+  - type: ruby
+    name: azure-storage-file
+    example: azure-storage-file
+  - type: ruby
+    name: azure-storage-queue
+    example: azure-storage-queue
+  - type: ruby
+    name: azure_mgmt_storage
+    example: azure_mgmt_storage
+  - type: ruby
+    name: fluent-plugin-azurestorage
+    example: fluent-plugin-azurestorage
+  - type: ruby
+    name: fluent-plugin-azurestorage-gen2
+    example: fluent-plugin-azurestorage-gen2
+  - type: ruby
+    name: logstash-input-azureblob
+    example: logstash-input-azureblob
+  - type: php
+    name: microsoft/azure-storage-common
+    example: microsoft/azure-storage-common
+  - type: php
+    name: microsoft/azure-storage-blob
+    example: microsoft/azure-storage-blob
+  - type: php
+    name: microsoft/azure-storage-table
+    example: microsoft/azure-storage-table
+  - type: php
+    name: microsoft/azure-storage-file
+    example: microsoft/azure-storage-file
+  - type: php
+    name: microsoft/azure-storage-queue
+    example: microsoft/azure-storage-queue
+  - type: php
+    name: matthewbdaly/laravel-azure-storage
+    example: matthewbdaly/laravel-azure-storage
+  - type: php
+    name: league/flysystem-azure-blob-storage
+    example: league/flysystem-azure-blob-storage
+  - type: rust
+    name: azure_storage
+    example: azure_storage
+  - type: rust
+    name: azure_storage_queues
+    example: azure_storage_queues
+  - type: rust
+    name: azure_storage_blobs
+    example: azure_storage_blobs
+  - type: rust
+    name: azure_storage_datalake
+    example: azure_storage_datalake
+  - type: terraform.resource
+    name: airbyte_destination_azure_blob_storage
+    example: airbyte_destination_azure_blob_storage

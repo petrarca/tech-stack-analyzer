@@ -1,0 +1,33 @@
+tech: nats
+name: Nats
+dependencies:
+  - type: docker
+    name: nats
+    example: nats
+  - type: docker
+    name: nats-streaming
+    example: nats-streaming
+  - type: docker
+    name: bitnami/nats
+    example: bitnami/nats
+  - type: npm
+    name: nats
+    example: nats
+  - type: php
+    name: repejota/nats
+    example: repejota/nats
+  - type: ruby
+    name: nats-pure
+    example: nats-pure
+  - type: ruby
+    name: nats
+    example: nats
+  - type: golang
+    name: github.com/nats-io/nats.go
+    example: github.com/nats-io/nats.go
+  - type: golang
+    name: github.com/nats-io/stan.go
+    example: github.com/nats-io/stan.go
+  - type: rust
+    name: nats
+    example: nats

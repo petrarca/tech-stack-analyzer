@@ -1,0 +1,6 @@
+tech: innovasys
+name: Innovasys
+dependencies:
+  - type: nuget
+    name: Innovasys.DocumentX
+    example: Innovasys.DocumentX

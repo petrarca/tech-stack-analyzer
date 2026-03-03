@@ -1,0 +1,42 @@
+tech: atlassian.jira
+name: Jira
+dependencies:
+  - type: githubAction
+    name: atlassian/gajira-todo
+    example: atlassian/gajira-todo
+  - type: githubAction
+    name: github/ghas-jira-integration
+    example: github/ghas-jira-integration
+  - type: githubAction
+    name: atlassian/gajira-transition
+    example: atlassian/gajira-transition
+  - type: githubAction
+    name: atlassian/gajira-create
+    example: atlassian/gajira-create
+  - type: githubAction
+    name: atlassian/gajira-cli
+    example: atlassian/gajira-cli
+  - type: githubAction
+    name: atlassian/gajira-find-issue-key
+    example: atlassian/gajira-find-issue-key
+  - type: githubAction
+    name: atlassian/gajira-comment
+    example: atlassian/gajira-comment
+  - type: docker
+    name: atlassian/jira-software
+    example: atlassian/jira-software
+  - type: npm
+    name: jira.js
+    example: jira.js
+  - type: php
+    name: lesstif/php-jira-rest-client
+    example: lesstif/php-jira-rest-client
+  - type: ruby
+    name: jira-ruby
+    example: jira-ruby
+  - type: terraform.resource
+    name: gitlab_integration_jira
+    example: gitlab_integration_jira
+  - type: terraform.resource
+    name: airbyte_source_jira
+    example: airbyte_source_jira

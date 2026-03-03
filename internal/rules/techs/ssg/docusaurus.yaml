@@ -1,0 +1,11 @@
+tech: docusaurus
+name: Docusaurus
+dependencies:
+  - type: npm
+    name: "@docusaurus/core"
+    example: "@docusaurus/core"
+  - type: npm
+    name: docusaurus
+    example: docusaurus
+files:
+  - docusaurus.config.js

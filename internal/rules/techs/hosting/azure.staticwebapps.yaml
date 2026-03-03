@@ -1,0 +1,18 @@
+tech: azure.staticwebapps
+name: Azure Static Web Apps
+dependencies:
+  - type: npm
+    name: "@azure/static-web-apps-cli"
+    example: "@azure/static-web-apps-cli"
+  - type: ruby
+    name: azure_mgmt_web
+    example: azure_mgmt_web
+  - type: githubAction
+    name: Azure/webapps-deploy
+    example: Azure/webapps-deploy
+  - type: githubAction
+    name: Azure/static-web-apps-deploy
+    example: Azure/static-web-apps-deploy
+  - type: githubAction
+    name: Azure/appservice-build
+    example: Azure/appservice-build

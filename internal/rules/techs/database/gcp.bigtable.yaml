@@ -1,0 +1,15 @@
+tech: gcp.bigtable
+name: Cloud BigTable
+dependencies:
+  - type: npm
+    name: "@google-cloud/bigtable"
+    example: "@google-cloud/bigtable"
+  - type: ruby
+    name: google-cloud-bigtable
+    example: google-cloud-bigtable
+  - type: golang
+    name: cloud.google.com/go/bigtable
+    example: cloud.google.com/go/bigtable
+  - type: php
+    name: google/cloud-bigtable
+    example: google/cloud-bigtable

@@ -1,0 +1,12 @@
+tech: connect2id
+name: Connect2ID
+dependencies:
+  - type: maven
+    name: com.nimbusds:oauth2-oidc-sdk
+    example: com.nimbusds:oauth2-oidc-sdk
+  - type: maven
+    name: com.nimbusds:nimbus-jose-jwt
+    example: com.nimbusds:nimbus-jose-jwt
+  - type: maven
+    name: com.nimbusds:c2id-server-sdk
+    example: com.nimbusds:c2id-server-sdk

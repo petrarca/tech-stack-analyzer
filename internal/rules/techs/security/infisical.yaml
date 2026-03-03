@@ -1,0 +1,13 @@
+tech: infisical
+name: Infisical
+dotenv:
+  - INFISICAL_
+dependencies:
+  - type: npm
+    name: infisical
+    example: infisical
+  - type: docker
+    name: infisical/infisical
+    example: infisical/infisical
+files:
+  - .infisical.json

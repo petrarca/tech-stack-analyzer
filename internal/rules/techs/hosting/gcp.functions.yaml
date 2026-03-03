@@ -1,0 +1,21 @@
+tech: gcp.functions
+name: Cloud Functions
+dependencies:
+  - type: npm
+    name: "@google-cloud/functions-framework"
+    example: "@google-cloud/functions-framework"
+  - type: ruby
+    name: functions_framework
+    example: functions_framework
+  - type: golang
+    name: cloud.google.com/go/functions
+    example: cloud.google.com/go/functions
+  - type: php
+    name: google/cloud-functions-framework
+    example: google/cloud-functions-framework
+  - type: php
+    name: google/cloud-functions
+    example: google/cloud-functions
+  - type: githubAction
+    name: google-github-actions/deploy-cloud-functions
+    example: google-github-actions/deploy-cloud-functions

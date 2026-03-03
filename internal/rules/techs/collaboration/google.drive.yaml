@@ -1,0 +1,24 @@
+tech: google.drive
+name: Google Drive
+dependencies:
+  - type: npm
+    name: "@googleapis/drive"
+    example: "@googleapis/drive"
+  - type: npm
+    name: react-google-drive-picker
+    example: react-google-drive-picker
+  - type: npm
+    name: "@uppy/google-drive-picker"
+    example: "@uppy/google-drive-picker"
+  - type: terraform.resource
+    name: airbyte_source_google_drive
+    example: airbyte_source_google_drive
+  - type: ruby
+    name: google-apis-drive_v2
+    example: google-apis-drive_v2
+  - type: ruby
+    name: google-apis-drive_v3
+    example: google-apis-drive_v3
+  - type: rust
+    name: google-drive
+    example: google-drive

@@ -1,0 +1,50 @@
+tech: google.analytics
+name: Google Analytics
+dotenv:
+  - GOOGLE_ANALYTICS
+dependencies:
+  - type: npm
+    name: universal-analytics
+    example: universal-analytics
+  - type: npm
+    name: react-ga
+    example: react-ga
+  - type: npm
+    name: react-ga4
+    example: react-ga4
+  - type: npm
+    name: "@types/google.analytics"
+    example: "@types/google.analytics"
+  - type: npm
+    name: "@docusaurus/plugin-google-analytics"
+    example: "@docusaurus/plugin-google-analytics"
+  - type: npm
+    name: "@analytics/google-analytics"
+    example: "@analytics/google-analytics"
+  - type: npm
+    name: nextjs-google-analytics
+    example: nextjs-google-analytics
+  - type: npm
+    name: "@nuxtjs/google-analytics"
+    example: "@nuxtjs/google-analytics"
+  - type: npm
+    name: gatsby-plugin-google-analytics
+    example: gatsby-plugin-google-analytics
+  - type: php
+    name: google/analytics-data
+    example: google/analytics-data
+  - type: php
+    name: spatie/laravel-analytics
+    example: spatie/laravel-analytics
+  - type: php
+    name: theiconic/php-ga-measurement-protocol
+    example: theiconic/php-ga-measurement-protocol
+  - type: php
+    name: google/analytics-admin
+    example: google/analytics-admin
+  - type: terraform.resource
+    name: airbyte_source_google_analytics_data_api
+    example: airbyte_source_google_analytics_data_api
+  - type: python
+    name: google-analytics-data
+    example: google-analytics-data

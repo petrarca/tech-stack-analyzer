@@ -1,0 +1,11 @@
+tech: os_ibm_power
+name: IBM Power
+dotenv:
+  - IBM_POWER
+  - POWERPC
+  - PPC64
+  - AIX
+dependencies:
+  - type: maven
+    name: net.sf.jt400:jt400
+    example: net.sf.jt400:jt400

@@ -1,0 +1,4 @@
+tech: intuit
+name: Intuit
+dotenv:
+  - INTUIT_

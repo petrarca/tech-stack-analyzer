@@ -1,0 +1,30 @@
+tech: apacheCordova
+name: Cordova
+dependencies:
+  - type: npm
+    name: cordova
+    example: cordova
+  - type: npm
+    name: cordova-android
+    example: cordova-android
+  - type: npm
+    name: cordova-ios
+    example: cordova-ios
+  - type: npm
+    name: cordova-windows
+    example: cordova-windows
+  - type: npm
+    name: cordova-browser
+    example: cordova-browser
+  - type: npm
+    name: cordova-electron
+    example: cordova-electron
+  - type: npm
+    name: cordova-plugin-camera
+    example: cordova-plugin-camera
+  - type: npm
+    name: cordova-plugin-file
+    example: cordova-plugin-file
+  - type: npm
+    name: "@types/cordova"
+    example: "@types/cordova"

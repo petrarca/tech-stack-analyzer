@@ -1,0 +1,4 @@
+tech: instagram
+name: Instagram
+dotenv:
+  - INSTAGRAM_

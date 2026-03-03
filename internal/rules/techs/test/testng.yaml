@@ -1,0 +1,9 @@
+tech: testng
+name: TestNG
+dependencies:
+  - type: maven
+    name: org.testng:testng
+    example: org.testng:testng
+  - type: gradle
+    name: org.testng:testng
+    example: org.testng:testng

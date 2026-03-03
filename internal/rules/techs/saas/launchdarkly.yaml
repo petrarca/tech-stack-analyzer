@@ -1,0 +1,27 @@
+tech: launchdarkly
+name: LaunchDarkly
+dotenv:
+  - LAUNCHDARKLY_
+  - LAUNCH_DARKLY_
+dependencies:
+  - type: ruby
+    name: launchdarkly-server-sdk
+    example: launchdarkly-server-sdk
+  - type: ruby
+    name: ldclient-rb
+    example: ldclient-rb
+  - type: rust
+    name: launchdarkly-server-sdk
+    example: launchdarkly-server-sdk
+  - type: terraform
+    name: registry.terraform.io/launchdarkly/launchdarkly
+    example: registry.terraform.io/launchdarkly/launchdarkly
+  - type: php
+    name: launchdarkly/server-sdk
+    example: launchdarkly/server-sdk
+  - type: php
+    name: launchdarkly/launchdarkly-php
+    example: launchdarkly/launchdarkly-php
+  - type: githubAction
+    name: launchdarkly/find-code-references
+    example: launchdarkly/find-code-references

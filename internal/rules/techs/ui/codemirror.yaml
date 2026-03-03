@@ -1,0 +1,6 @@
+tech: codemirror
+name: CodeMirror
+dependencies:
+  - type: npm
+    name: codemirror
+    example: codemirror

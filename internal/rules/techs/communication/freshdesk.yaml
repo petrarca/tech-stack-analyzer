@@ -1,0 +1,23 @@
+tech: freshdesk
+name: Freshdesk
+dotenv:
+  - FRESHDESK_
+dependencies:
+  - type: npm
+    name: freshdesk-api
+    example: freshdesk-api
+  - type: npm
+    name: freshdesk
+    example: freshdesk
+  - type: python
+    name: freshdesk
+    example: freshdesk
+  - type: ruby
+    name: freshdesk_api
+    example: freshdesk_api
+  - type: php
+    name: freshdesk/freshdesk-php
+    example: freshdesk/freshdesk-php
+  - type: golang
+    name: github.com/freshdesk/freshdesk-go
+    example: github.com/freshdesk/freshdesk-go

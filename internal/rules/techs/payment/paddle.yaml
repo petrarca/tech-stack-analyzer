@@ -1,0 +1,20 @@
+tech: paddle
+name: Paddle
+dotenv:
+  - PADDLE_
+dependencies:
+  - type: npm
+    name: "@paddle/paddle-js"
+    example: "@paddle/paddle-js"
+  - type: npm
+    name: "@paddle/paddle-node-sdk"
+    example: "@paddle/paddle-node-sdk"
+  - type: golang
+    name: github.com/PaddleHQ/paddle-go-sdk
+    example: github.com/PaddleHQ/paddle-go-sdk
+  - type: python
+    name: paddle-python-sdk
+    example: paddle-python-sdk
+  - type: php
+    name: paddlehq/paddle-php-sdk
+    example: paddlehq/paddle-php-sdk

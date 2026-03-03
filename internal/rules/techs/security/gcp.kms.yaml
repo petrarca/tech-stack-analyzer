@@ -1,0 +1,12 @@
+tech: gcp.kms
+name: Cloud KMS
+dependencies:
+  - type: npm
+    name: "@google-cloud/kms"
+    example: "@google-cloud/kms"
+  - type: golang
+    name: cloud.google.com/go/kms
+    example: cloud.google.com/go/kms
+  - type: php
+    name: google/cloud-kms
+    example: google/cloud-kms

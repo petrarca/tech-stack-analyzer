@@ -1,0 +1,12 @@
+tech: veriff
+name: Veriff
+dependencies:
+  - type: npm
+    name: "@veriff/js-sdk"
+    example: "@veriff/js-sdk"
+  - type: npm
+    name: "@veriff/incontext-sdk"
+    example: "@veriff/incontext-sdk"
+  - type: ruby
+    name: veriff
+    example: veriff

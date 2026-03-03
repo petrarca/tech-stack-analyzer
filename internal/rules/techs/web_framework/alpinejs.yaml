@@ -1,0 +1,6 @@
+tech: alpinejs
+name: Alpine.js
+dependencies:
+  - type: npm
+    name: alpinejs
+    example: alpinejs

@@ -1,0 +1,7 @@
+tech: perforce
+name: Perforce Helix
+files:
+  - .p4config
+dependencies:
+  - type: generic
+    name: //depot/

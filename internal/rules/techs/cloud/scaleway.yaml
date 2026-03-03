@@ -1,0 +1,12 @@
+tech: scaleway
+name: Scaleway
+dependencies:
+  - type: npm
+    name: "@scaleway/sdk"
+    example: "@scaleway/sdk"
+  - type: terraform
+    name: registry.terraform.io/scaleway/scaleway
+    example: registry.terraform.io/scaleway/scaleway
+  - type: githubAction
+    name: scaleway/action-scw
+    example: scaleway/action-scw

@@ -1,0 +1,9 @@
+tech: aspnet
+name: ASP.NET
+extensions:
+  - .asax
+  - .ascx
+  - .ashx
+  - .asmx
+  - .aspx
+  - .axd

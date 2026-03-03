@@ -1,0 +1,6 @@
+tech: apache_airflow
+name: Apache Airflow
+dependencies:
+  - type: docker
+    name: apache/airflow
+    example: apache/airflow

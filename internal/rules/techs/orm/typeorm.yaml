@@ -1,0 +1,6 @@
+tech: typeorm
+name: TypeORM
+dependencies:
+  - type: npm
+    name: typeorm
+    example: typeorm

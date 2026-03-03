@@ -1,0 +1,6 @@
+tech: sequelruby
+name: Sequel
+dependencies:
+  - type: ruby
+    name: sequel
+    example: sequel

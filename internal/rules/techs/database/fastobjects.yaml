@@ -1,0 +1,6 @@
+tech: fastobjects
+name: FastObjects
+dependencies:
+  - type: maven
+    name: com.versant:jdo
+    example: com.versant:jdo

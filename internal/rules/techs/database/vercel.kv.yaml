@@ -1,0 +1,6 @@
+tech: vercel.kv
+name: Vercel KV
+dependencies:
+  - type: npm
+    name: "@vercel/kv"
+    example: "@vercel/kv"

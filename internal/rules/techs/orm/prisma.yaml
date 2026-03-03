@@ -1,0 +1,8 @@
+tech: prisma
+name: Prisma
+dependencies:
+  - type: npm
+    name: prisma
+    example: prisma
+files:
+  - schema.prisma

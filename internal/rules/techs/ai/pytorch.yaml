@@ -1,0 +1,6 @@
+tech: pytorch
+name: Pytorch
+dependencies:
+  - type: python
+    name: pytorch
+    example: pytorch

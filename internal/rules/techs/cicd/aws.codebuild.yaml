@@ -1,0 +1,18 @@
+tech: aws.codebuild
+name: AWS Code Build
+dependencies:
+  - type: npm
+    name: "@aws-sdk/client-codebuild"
+    example: "@aws-sdk/client-codebuild"
+  - type: rust
+    name: aws-sdk-codebuild
+    example: aws-sdk-codebuild
+  - type: ruby
+    name: aws-sdk-codebuild
+    example: aws-sdk-codebuild
+  - type: golang
+    name: github.com/aws/aws-sdk-go-v2/service/codebuild
+    example: github.com/aws/aws-sdk-go-v2/service/codebuild
+  - type: githubAction
+    name: aws-actions/aws-codebuild-run-build
+    example: aws-actions/aws-codebuild-run-build

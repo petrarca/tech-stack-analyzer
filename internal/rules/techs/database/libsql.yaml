@@ -1,0 +1,27 @@
+tech: libsql
+name: libSQL
+dependencies:
+  - type: npm
+    name: "@libsql/client"
+    example: "@libsql/client"
+  - type: golang
+    name: github.com/tursodatabase/go-libsql
+    example: github.com/tursodatabase/go-libsql
+  - type: golang
+    name: github.com/tursodatabase/libsql-client-go/libsql
+    example: github.com/tursodatabase/libsql-client-go/libsql
+  - type: python
+    name: libsql-experimental
+    example: libsql-experimental
+  - type: rust
+    name: libsql
+    example: libsql
+  - type: php
+    name: turso/libsql
+    example: turso/libsql
+  - type: ruby
+    name: turso_libsql
+    example: turso_libsql
+  - type: ruby
+    name: libsql_activerecord
+    example: libsql_activerecord

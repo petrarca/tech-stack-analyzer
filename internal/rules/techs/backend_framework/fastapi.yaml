@@ -1,0 +1,6 @@
+tech: fastapi
+name: FastAPI
+dependencies:
+  - type: python
+    name: fastapi
+    example: fastapi

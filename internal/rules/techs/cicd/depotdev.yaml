@@ -1,0 +1,11 @@
+tech: depotdev
+name: Depot.dev
+dependencies:
+  - type: githubAction
+    name: depot/setup-action
+    example: depot/setup-action
+  - type: githubAction
+    name: depot/build-push-action
+    example: depot/build-push-action
+files:
+  - depot.json

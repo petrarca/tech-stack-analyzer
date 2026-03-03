@@ -1,0 +1,15 @@
+tech: fusionauth
+name: Fusionauth
+dependencies:
+  - type: golang
+    name: github.com/FusionAuth/go-client/pkg/fusionauth
+    example: github.com/FusionAuth/go-client/pkg/fusionauth
+  - type: php
+    name: fusionauth/fusionauth-client
+    example: fusionauth/fusionauth-client
+  - type: python
+    name: fusionauth-client
+    example: fusionauth-client
+  - type: ruby
+    name: fusionauth_client
+    example: fusionauth_client

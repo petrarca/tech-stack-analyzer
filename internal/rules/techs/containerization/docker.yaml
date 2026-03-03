@@ -1,0 +1,14 @@
+tech: docker
+name: Docker
+dependencies:
+  - type: githubAction
+    name: docker/login-action
+    example: docker/login-action
+  - type: npm
+    name: "@pulumi/docker"
+    example: "@pulumi/docker"
+files:
+  - .dockerignore
+  - Dockerfile
+  - docker-compose.yml
+  - docker-compose.yaml

@@ -1,0 +1,17 @@
+tech: trustsource
+name: TrustSource
+dependencies:
+  - type: maven
+    name: de.eacg:ecs-mvn-plugin
+  - type: gradle
+    name: de.eacg:ecs-gradle-plugin
+  - type: gem
+    name: ecs_bundler
+  - type: php
+    name: eacg-gmbh/ecs-composer
+  - type: npm
+    name: ecs-grunt-plugin
+  - type: python
+    name: ts-scan
+files:
+  - .ecsrc.json

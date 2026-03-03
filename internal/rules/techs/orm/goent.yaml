@@ -1,0 +1,6 @@
+tech: goent
+name: ent.
+dependencies:
+  - type: golang
+    name: entgo.io/ent
+    example: entgo.io/ent

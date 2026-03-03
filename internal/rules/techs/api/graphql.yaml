@@ -1,0 +1,78 @@
+tech: graphql
+name: GraphQL
+dependencies:
+  - type: maven
+    name: io.smallrye:smallrye-graphql-client
+    example: io.smallrye:smallrye-graphql-client
+  - type: maven
+    name: /^com.graphql-java.*$/
+    example: com.graphql-java:graphql-java
+  - type: npm
+    name: graphql
+    example: graphql
+  - type: npm
+    name: /^graphql-.*$/
+    example: graphql-tools
+  - type: npm
+    name: /^@apollo\/.*/
+    example: "@apollo/client"
+  - type: npm
+    name: urql
+    example: urql
+  - type: npm
+    name: /^@urql\/.*/
+    example: "@urql/vue"
+  - type: npm
+    name: relay-runtime
+    example: relay-runtime
+  - type: npm
+    name: react-relay
+    example: react-relay
+  - type: npm
+    name: /^@graphql-codegen\/.*/
+    example: "@graphql-codegen/cli"
+  - type: npm
+    name: /^@graphql-tools\/.*/
+    example: "@graphql-tools/utils"
+  - type: npm
+    name: type-graphql
+    example: type-graphql
+  - type: npm
+    name: nexus
+    example: nexus
+  - type: npm
+    name: graphql-yoga
+    example: graphql-yoga
+  - type: npm
+    name: /^@graphql-yoga\/.*/
+    example: "@graphql-yoga/node"
+  - type: npm
+    name: mercurius
+    example: mercurius
+  - type: python
+    name: graphql-core
+    example: graphql-core
+  - type: python
+    name: gql
+    example: gql
+  - type: python
+    name: /^graphene.*$/
+    example: graphene
+  - type: python
+    name: /^strawberry-graphql.*$/
+    example: strawberry-graphql
+  - type: python
+    name: ariadne
+    example: ariadne
+  - type: python
+    name: tartiflette
+    example: tartiflette
+  - type: python
+    name: tartiflette-aiohttp
+    example: tartiflette-aiohttp
+  - type: nuget
+    name: /^GraphQL.*/
+    example: GraphQL
+  - type: nuget
+    name: StrawberryShake.Server
+    example: StrawberryShake.Server

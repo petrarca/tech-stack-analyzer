@@ -1,0 +1,6 @@
+tech: airbyte
+name: Airbyte
+dependencies:
+  - type: terraform
+    name: registry.terraform.io/airbytehq/airbyte
+    example: registry.terraform.io/airbytehq/airbyte

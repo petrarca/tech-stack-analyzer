@@ -1,0 +1,32 @@
+tech: intercom
+name: Intercom
+dotenv:
+  - INTERCOM_
+dependencies:
+  - type: npm
+    name: react-use-intercom
+    example: react-use-intercom
+  - type: npm
+    name: intercom-client
+    example: intercom-client
+  - type: npm
+    name: "@intercom/intercom-react-native"
+    example: "@intercom/intercom-react-native"
+  - type: npm
+    name: ng-intercom
+    example: ng-intercom
+  - type: php
+    name: intercom/intercom-php
+    example: intercom/intercom-php
+  - type: php
+    name: intercom/oauth2-intercom
+    example: intercom/oauth2-intercom
+  - type: ruby
+    name: intercom
+    example: intercom
+  - type: ruby
+    name: intercom-rails
+    example: intercom-rails
+  - type: npm
+    name: "@analytics/intercom"
+    example: "@analytics/intercom"

@@ -1,0 +1,4 @@
+tech: cargo
+name: Cargo
+files:
+  - Cargo.toml

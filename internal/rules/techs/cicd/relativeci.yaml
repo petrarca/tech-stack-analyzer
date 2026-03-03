@@ -1,0 +1,11 @@
+tech: relativeci
+name: RelativeCI
+dependencies:
+  - type: npm
+    name: "@relative-ci/agent"
+    example: "@relative-ci/agent"
+  - type: githubAction
+    name: relative-ci/agent-action
+    example: relative-ci/agent-action
+files:
+  - relativeci.config.js

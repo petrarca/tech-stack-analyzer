@@ -1,0 +1,34 @@
+tech: soap
+name: SOAP
+files:
+  - .wsdl
+content:
+  - pattern: '<definitions.*name='
+  - pattern: '<wsdl:definitions'
+  - pattern: '<soap:Envelope'
+  - pattern: '<soap:Body'
+  - pattern: '<soap:Header'
+  - pattern: '"http://schemas.xmlsoap.org/'
+  - pattern: '"http://www.w3.org/2003/05/soap-envelope"'
+dependencies:
+  - type: nuget
+    name: "System.ServiceModel"
+    example: "System.ServiceModel"
+  - type: nuget
+    name: "SoapCore"
+    example: "SoapCore"
+  - type: maven
+    name: "org.springframework.boot:spring-boot-starter-web-services"
+    example: "org.springframework.boot:spring-boot-starter-web-services"
+  - type: python
+    name: "zeep"
+    example: "zeep"
+  - type: python
+    name: "suds"
+    example: "suds"
+  - type: npm
+    name: "soap"
+    example: "soap"
+  - type: npm
+    name: "strong-soap"
+    example: "strong-soap"

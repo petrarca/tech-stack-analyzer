@@ -1,0 +1,6 @@
+tech: joijs
+name: Joi
+dependencies:
+  - type: npm
+    name: joi
+    example: joi

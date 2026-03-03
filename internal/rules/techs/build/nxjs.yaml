@@ -1,0 +1,8 @@
+tech: nxjs
+name: NX
+dependencies:
+  - type: npm
+    name: nx
+    example: nx
+files:
+  - nx.json

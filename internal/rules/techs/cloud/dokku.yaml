@@ -1,0 +1,14 @@
+tech: dokku
+name: Dokku
+dotenv:
+  - DOKKU_
+dependencies:
+  - type: githubAction
+    name: dokku/github-action
+    example: dokku/github-action
+  - type: docker
+    name: dokku/ci-docker-image
+    example: dokku/ci-docker-image
+  - type: docker
+    name: dokku/dokku
+    example: dokku/dokku

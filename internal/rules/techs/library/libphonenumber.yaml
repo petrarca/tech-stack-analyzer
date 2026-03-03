@@ -1,0 +1,51 @@
+tech: libphonenumber
+name: libphonenumber
+dependencies:
+  - type: maven
+    name: /^com\.googlecode\.libphonenumber:.*$/
+    example: com.googlecode.libphonenumber:libphonenumber
+  - type: npm
+    name: "google-libphonenumber"
+    example: google-libphonenumber
+  - type: npm
+    name: "@google/libphonenumber"
+    example: "@google/libphonenumber"
+  - type: python
+    name: phonenumbers
+    example: phonenumbers
+  - type: python
+    name: "phonenumberslite"
+    example: phonenumberslite
+  - type: ruby
+    name: phonelib
+    example: phonelib
+  - type: php
+    name: giggsey/libphonenumber-for-php
+    example: giggsey/libphonenumber-for-php
+  - type: php
+    name: libphonenumber-for-php
+    example: libphonenumber-for-php
+  - type: golang
+    name: github.com/nyaruka/libphonenumber
+    example: github.com/nyaruka/libphonenumber
+  - type: golang
+    name: github.com/ttacon/libphonenumber
+    example: github.com/ttacon/libphonenumber
+  - type: cargo
+    name: phonenumber
+    example: phonenumber
+  - type: cargo
+    name: libphonenumber
+    example: libphonenumber
+  - type: dart
+    name: libphonenumber
+    example: libphonenumber
+  - type: dart
+    name: "libphonenumber_plugin"
+    example: libphonenumber_plugin
+  - type: nuget
+    name: libphonenumber-csharp
+    example: libphonenumber-csharp
+  - type: nuget
+    name: PhoneNumbers
+    example: PhoneNumbers

@@ -1,0 +1,24 @@
+tech: grafana
+name: Grafana
+dependencies:
+  - type: docker
+    name: grafana/grafana-enterprise
+    example: grafana/grafana-enterprise
+  - type: docker
+    name: grafana/grafana-oss
+    example: grafana/grafana-oss
+  - type: docker
+    name: grafana/grafana
+    example: grafana/grafana
+  - type: docker
+    name: grafana/agent
+    example: grafana/agent
+  - type: docker
+    name: grafana/tempo
+    example: grafana/tempo
+  - type: docker
+    name: grafana/agent-operator
+    example: grafana/agent-operator
+  - type: terraform
+    name: registry.terraform.io/grafana/grafana
+    example: registry.terraform.io/grafana/grafana

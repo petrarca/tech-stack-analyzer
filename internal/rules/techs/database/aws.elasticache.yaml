@@ -1,0 +1,21 @@
+tech: aws.elasticache
+name: AWS ElastiCache
+dependencies:
+  - type: npm
+    name: "@aws-cdk/aws-elasticache"
+    example: "@aws-cdk/aws-elasticache"
+  - type: npm
+    name: "@aws-sdk/client-elasticache"
+    example: "@aws-sdk/client-elasticache"
+  - type: rust
+    name: aws-sdk-elasticache
+    example: aws-sdk-elasticache
+  - type: ruby
+    name: aws-sdk-elasticache
+    example: aws-sdk-elasticache
+  - type: golang
+    name: github.com/aws/aws-sdk-go-v2/service/elasticache
+    example: github.com/aws/aws-sdk-go-v2/service/elasticache
+  - type: php
+    name: atyagi/elasticache-laravel
+    example: atyagi/elasticache-laravel

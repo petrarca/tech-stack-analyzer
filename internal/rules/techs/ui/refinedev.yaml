@@ -1,0 +1,12 @@
+tech: refinedev
+name: Refine
+dependencies:
+  - type: npm
+    name: "@refinedev/core"
+    example: "@refinedev/core"
+  - type: npm
+    name: "@refinedev/antd"
+    example: "@refinedev/antd"
+  - type: npm
+    name: "@refinedev/cli"
+    example: "@refinedev/cli"

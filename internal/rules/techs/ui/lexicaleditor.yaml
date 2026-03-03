@@ -1,0 +1,6 @@
+tech: lexicaleditor
+name: Lexical Editor
+dependencies:
+  - type: npm
+    name: lexical
+    example: lexical

@@ -1,0 +1,23 @@
+tech: nango
+name: Nango
+dotenv:
+  - NANGO_
+dependencies:
+  - type: npm
+    name: nango
+    example: nango
+  - type: npm
+    name: "@nangohq/node"
+    example: "@nangohq/node"
+  - type: npm
+    name: "@nangohq/frontend"
+    example: "@nangohq/frontend"
+  - type: docker
+    name: nangohq/nango
+    example: nangohq/nango
+  - type: docker
+    name: nangohq/nango-server
+    example: nangohq/nango-server
+files:
+  - .nango
+  - nango.yaml

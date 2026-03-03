@@ -1,0 +1,21 @@
+tech: aws.cloudformation
+name: AWS CloudFormation
+dependencies:
+  - type: npm
+    name: "@aws-sdk/client-cloudformation"
+    example: "@aws-sdk/client-cloudformation"
+  - type: npm
+    name: "@aws-cdk/aws-cloudformation"
+    example: "@aws-cdk/aws-cloudformation"
+  - type: rust
+    name: aws-sdk-cloudformation
+    example: aws-sdk-cloudformation
+  - type: ruby
+    name: aws-sdk-cloudformation
+    example: aws-sdk-cloudformation
+  - type: golang
+    name: github.com/aws/aws-sdk-go-v2/service/cloudformation
+    example: github.com/aws/aws-sdk-go-v2/service/cloudformation
+  - type: githubAction
+    name: aws-actions/aws-cloudformation-github-deploy
+    example: aws-actions/aws-cloudformation-github-deploy

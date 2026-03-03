@@ -1,0 +1,6 @@
+tech: drizzleorm
+name: Drizzle ORM
+dependencies:
+  - type: npm
+    name: drizzle-orm
+    example: drizzle-orm

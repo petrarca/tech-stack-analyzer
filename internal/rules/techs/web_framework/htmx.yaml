@@ -1,0 +1,6 @@
+tech: htmx
+name: HTMX
+dependencies:
+  - type: npm
+    name: htmx.org
+    example: htmx.org

@@ -1,0 +1,9 @@
+tech: dioxus
+name: Dioxus
+dependencies:
+  - type: rust
+    name: dioxus
+    example: dioxus
+  - type: rust
+    name: dioxus-cli
+    example: dioxus-cli

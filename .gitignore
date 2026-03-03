@@ -1,0 +1,68 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool
+*.out
+
+# Go workspace file
+go.work
+
+# Dependency directories
+vendor/
+
+# Build output
+bin/
+dist/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Task cache
+.task/
+
+# Log files
+*.log
+
+# OS files
+Thumbs.db
+
+# Pre-commit cache
+.pre-commit-cache/
+
+# Binary output
+stack-analyzer
+stack-analyzer-*.exe
+stack-analyzer-*.tar.gz
+stack-analyzer-*.zip
+
+# Symbolic link to original source code
+stack-analyser
+
+# Root level Python and JavaScript files - ad-hoc scripting
+*.py
+*.js
+
+# Default scanner output file
+/stack-analysis.json

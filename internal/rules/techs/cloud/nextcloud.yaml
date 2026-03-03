@@ -1,0 +1,12 @@
+tech: nextcloud
+name: Nextcloud
+dependencies:
+  - type: docker
+    name: nextcloud/all-in-one
+    example: nextcloud/all-in-one
+  - type: docker
+    name: nextcloud
+    example: nextcloud
+  - type: docker
+    name: nextcloud/aio-nextcloud
+    example: nextcloud/aio-nextcloud

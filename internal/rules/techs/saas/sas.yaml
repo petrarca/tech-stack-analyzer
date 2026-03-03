@@ -1,0 +1,6 @@
+tech: sas
+name: SAS
+dependencies:
+  - type: python
+    name: sasviya
+    example: sasviya

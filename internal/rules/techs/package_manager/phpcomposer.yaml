@@ -1,0 +1,4 @@
+tech: phpcomposer
+name: Composer
+files:
+  - composer.json

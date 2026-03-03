@@ -1,0 +1,51 @@
+tech: azure
+name: Azure
+dependencies:
+  - type: terraform
+    name: registry.terraform.io/hashicorp/azurerm
+    example: registry.terraform.io/hashicorp/azurerm
+  - type: golang
+    name: github.com/Azure/azure-sdk-for-go
+    example: github.com/Azure/azure-sdk-for-go
+  - type: rust
+    name: azure_core
+    example: azure_core
+  - type: ruby
+    name: azure-armrest
+    example: azure-armrest
+  - type: githubAction
+    name: azure/login
+    example: azure/login
+  - type: githubAction
+    name: azure/CLI
+    example: azure/CLI
+  - type: githubAction
+    name: azure/powershell
+    example: azure/powershell
+  - type: docker
+    name: bitnami/azure-cli
+    example: bitnami/azure-cli
+  - type: docker
+    name: cimg/azure
+    example: cimg/azure
+  - type: docker
+    name: webdevops/azure-devops-exporter
+    example: webdevops/azure-devops-exporter
+  - type: docker
+    name: webdevops/azure-metrics-exporter
+    example: webdevops/azure-metrics-exporter
+  - type: npm
+    name: "@pulumi/azure"
+    example: "@pulumi/azure"
+  - type: python
+    name: azure-identity
+    example: azure-identity
+  - type: npm
+    name: "@azure/identity"
+    example: "@azure/identity"
+  - type: npm
+    name: "@azure/msal-browser"
+    example: "@azure/msal-browser"
+  - type: npm
+    name: "@azure/msal-node"
+    example: "@azure/msal-node"

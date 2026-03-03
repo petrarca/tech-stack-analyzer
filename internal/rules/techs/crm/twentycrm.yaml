@@ -1,0 +1,6 @@
+tech: twentycrm
+name: Twenty CRM
+dependencies:
+  - type: docker
+    name: twentycrm/twenty
+    example: twentycrm/twenty

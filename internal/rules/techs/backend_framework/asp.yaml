@@ -1,0 +1,7 @@
+tech: asp
+name: ASP
+dependencies:
+  - type: nuget
+    name: /^Microsoft\.AspNet/
+  - type: nuget
+    name: /^System\.Web/

@@ -1,0 +1,8 @@
+tech: clicksend
+name: ClickSend
+dotenv:
+  - CLICKSEND_
+dependencies:
+  - type: npm
+    name: clicksend
+    example: clicksend

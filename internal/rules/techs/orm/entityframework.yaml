@@ -1,0 +1,17 @@
+tech: entityframework
+name: Entity Framework
+dependencies:
+  # Entity Framework Core (modern)
+  - type: nuget
+    name: /^Microsoft\.EntityFrameworkCore/
+  - type: nuget
+    name: /^Npgsql\.EntityFrameworkCore/
+  - type: nuget
+    name: /^Pomelo\.EntityFrameworkCore/
+  - type: nuget
+    name: /^Oracle\.EntityFrameworkCore/
+  # Entity Framework 6 (legacy)
+  - type: nuget
+    name: EntityFramework
+  - type: nuget
+    name: /^EntityFramework\./

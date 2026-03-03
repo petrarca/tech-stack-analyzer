@@ -1,0 +1,6 @@
+tech: qwikjs
+name: Qwik
+dependencies:
+  - type: npm
+    name: builder.io/qwik
+    example: builder.io/qwik

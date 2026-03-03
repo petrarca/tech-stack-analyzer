@@ -1,0 +1,8 @@
+tech: phpunit
+name: PHPUnit
+dependencies:
+  - type: php
+    name: phpunit/phpunit
+    example: phpunit/phpunit
+files:
+  - phpunit.xml.dist

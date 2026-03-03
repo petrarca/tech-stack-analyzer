@@ -1,0 +1,11 @@
+tech: xai
+name: X AI
+dotenv:
+  - XAI_
+dependencies:
+  - type: npm
+    name: "@ai-sdk/xai"
+    example: "@ai-sdk/xai"
+  - type: python
+    name: langchain-xai
+    example: langchain-xai

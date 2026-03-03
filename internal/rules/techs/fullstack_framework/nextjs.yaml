@@ -1,0 +1,12 @@
+tech: nextjs
+name: Next.js
+dependencies:
+  - type: npm
+    name: next
+    example: next
+  - type: npm
+    name: "@netlify/plugin-nextjs"
+    example: "@netlify/plugin-nextjs"
+files:
+  - next.config.js
+  - next.config.mjs

@@ -1,0 +1,9 @@
+tech: reactrouterdom
+name: React Router
+dependencies:
+  - type: npm
+    name: react-router-dom
+    example: react-router-dom
+  - type: npm
+    name: react-router
+    example: react-router

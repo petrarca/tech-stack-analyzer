@@ -1,0 +1,12 @@
+tech: gcp.language
+name: Cloud Language
+dependencies:
+  - type: npm
+    name: "@google-cloud/language"
+    example: "@google-cloud/language"
+  - type: golang
+    name: cloud.google.com/go/language
+    example: cloud.google.com/go/language
+  - type: php
+    name: google/cloud-language
+    example: google/cloud-language

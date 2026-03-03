@@ -1,0 +1,27 @@
+tech: supabase.postgres
+name: Supabase Postgres
+dependencies:
+  - type: npm
+    name: "@supabase/postgrest-js"
+    example: "@supabase/postgrest-js"
+  - type: npm
+    name: "@supabase/pg-admin-js"
+    example: "@supabase/pg-admin-js"
+  - type: npm
+    name: "@supabase/postgres-meta"
+    example: "@supabase/postgres-meta"
+  - type: githubAction
+    name: supabase/embeddings-generator
+    example: supabase/embeddings-generator
+  - type: docker
+    name: bitnami/supabase-postgres
+    example: bitnami/supabase-postgres
+  - type: docker
+    name: supabase/postgres
+    example: supabase/postgres
+  - type: docker
+    name: supabase/postgres-meta
+    example: supabase/postgres-meta
+  - type: php
+    name: supabase/postgrest-php
+    example: supabase/postgrest-php

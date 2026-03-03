@@ -1,0 +1,9 @@
+tech: mongodbatlas
+name: MongoDB Atlas
+dependencies:
+  - type: terraform
+    name: registry.terraform.io/mongodb/mongodbatlas
+    example: registry.terraform.io/mongodb/mongodbatlas
+  - type: npm
+    name: "@pulumi/mongodbatlas"
+    example: "@pulumi/mongodbatlas"

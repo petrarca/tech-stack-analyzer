@@ -1,0 +1,35 @@
+tech: qdrant
+name: Qdrant
+dotenv:
+  - QDRANT_
+dependencies:
+  - type: rust
+    name: qdrant-client
+    example: qdrant-client
+  - type: python
+    name: qdrant-client
+    example: qdrant-client
+  - type: docker
+    name: qdrant/qdrant
+    example: qdrant/qdrant
+  - type: golang
+    name: github.com/qdrant/go-client
+    example: github.com/qdrant/go-client
+  - type: npm
+    name: "@qdrant/js-client-rest"
+    example: "@qdrant/js-client-rest"
+  - type: npm
+    name: "@qdrant/drant-js"
+    example: "@qdrant/drant-js"
+  - type: npm
+    name: "@qdrant/js-client-grpc"
+    example: "@qdrant/js-client-grpc"
+  - type: php
+    name: hkulekci/qdrant
+    example: hkulekci/qdrant
+  - type: php
+    name: qdrant-ruby
+    example: qdrant-ruby
+  - type: terraform.resource
+    name: airbyte_destination_qdrant
+    example: airbyte_destination_qdrant

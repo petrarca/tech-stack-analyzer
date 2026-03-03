@@ -1,0 +1,12 @@
+tech: prestashop
+name: Prestashop
+dependencies:
+  - type: php
+    name: prestashop/ps_facetedsearch
+    example: prestashop/ps_facetedsearch
+  - type: php
+    name: prestashop/ps_shoppingcart
+    example: prestashop/ps_shoppingcart
+  - type: php
+    name: prestashop/ps_currencyselector
+    example: prestashop/ps_currencyselector

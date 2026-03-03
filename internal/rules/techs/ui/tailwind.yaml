@@ -1,0 +1,8 @@
+tech: tailwind
+name: Tailwind
+dependencies:
+  - type: npm
+    name: tailwindcss
+    example: tailwindcss
+files:
+  - tailwind.config.js

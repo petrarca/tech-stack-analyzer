@@ -1,0 +1,18 @@
+tech: lemonsqueezy
+name: Lemon Squeezy
+dotenv:
+  - LEMON_SQUEEZY_
+  - LEMONSQUEEZY_
+dependencies:
+  - type: npm
+    name: lemonsqueezy.ts
+    example: lemonsqueezy.ts
+  - type: ruby
+    name: lemonsqueezy
+    example: lemonsqueezy
+  - type: golang
+    name: github.com/NdoleStudio/lemonsqueezy-go
+    example: github.com/NdoleStudio/lemonsqueezy-go
+  - type: php
+    name: lemonsqueezy/laravel
+    example: lemonsqueezy/laravel

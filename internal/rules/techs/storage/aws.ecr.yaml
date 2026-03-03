@@ -1,0 +1,21 @@
+tech: aws.ecr
+name: AWS Container Registry
+dependencies:
+  - type: npm
+    name: "@aws-cdk/aws-ecr"
+    example: "@aws-cdk/aws-ecr"
+  - type: npm
+    name: "@aws-sdk/client-ecr"
+    example: "@aws-sdk/client-ecr"
+  - type: rust
+    name: aws-sdk-ecr
+    example: aws-sdk-ecr
+  - type: ruby
+    name: aws-sdk-ecr
+    example: aws-sdk-ecr
+  - type: golang
+    name: github.com/aws/aws-sdk-go-v2/service/ecr
+    example: github.com/aws/aws-sdk-go-v2/service/ecr
+  - type: githubAction
+    name: aws-actions/amazon-ecr-login
+    example: aws-actions/amazon-ecr-login

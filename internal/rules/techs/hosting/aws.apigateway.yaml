@@ -1,0 +1,18 @@
+tech: aws.apigateway
+name: AWS Api Gateway
+dependencies:
+  - type: npm
+    name: "@aws-cdk/aws-apigateway"
+    example: "@aws-cdk/aws-apigateway"
+  - type: npm
+    name: "@aws-sdk/client-apigateway"
+    example: "@aws-sdk/client-apigateway"
+  - type: rust
+    name: aws-sdk-apigateway
+    example: aws-sdk-apigateway
+  - type: ruby
+    name: aws-sdk-apigateway
+    example: aws-sdk-apigateway
+  - type: golang
+    name: github.com/aws/aws-sdk-go-v2/service/apigateway
+    example: github.com/aws/aws-sdk-go-v2/service/apigateway

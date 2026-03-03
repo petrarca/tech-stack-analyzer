@@ -1,0 +1,10 @@
+tech: prefect
+name: Prefect
+dependencies:
+  - type: python
+    name: prefect
+  - type: python
+    name: /^prefect-/
+files:
+  - prefect.yaml
+  - prefect.yml

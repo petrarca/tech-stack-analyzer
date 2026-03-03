@@ -1,0 +1,6 @@
+tech: ada
+name: Ada
+extensions:
+  - .ada
+  - .adb
+  - .ads

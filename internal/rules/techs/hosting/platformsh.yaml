@@ -1,0 +1,4 @@
+tech: platformsh
+name: Platform.sh
+files:
+  - .platform.app.yaml

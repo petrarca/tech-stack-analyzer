@@ -1,0 +1,41 @@
+tech: wordpress
+name: Wordpress
+dotenv:
+  - WP_
+dependencies:
+  - type: php
+    name: wp-cli/wp-cli
+    example: wp-cli/wp-cli
+  - type: php
+    name: roots/wordpress
+    example: roots/wordpress
+  - type: php
+    name: johnpbloch/wordpress
+    example: johnpbloch/wordpress
+  - type: githubAction
+    name: 10up/action-wordpress-plugin-deploy
+    example: 10up/action-wordpress-plugin-deploy
+  - type: docker
+    name: wordpress
+    example: wordpress
+  - type: npm
+    name: gatsby-source-wordpress
+    example: gatsby-source-wordpress
+  - type: npm
+    name: "@wordpress/block-editor"
+    example: "@wordpress/block-editor"
+  - type: npm
+    name: "@wordpress/data"
+    example: "@wordpress/data"
+  - type: npm
+    name: "@wordpress/blocks"
+    example: "@wordpress/blocks"
+  - type: npm
+    name: "@wordpress/api-fetch"
+    example: "@wordpress/api-fetch"
+  - type: npm
+    name: "@wordpress/i18n"
+    example: "@wordpress/i18n"
+  - type: npm
+    name: "@wordpress/hooks"
+    example: "@wordpress/hooks"

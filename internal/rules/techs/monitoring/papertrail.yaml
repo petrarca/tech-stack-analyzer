@@ -1,0 +1,20 @@
+tech: papertrail
+name: Papertrail
+dotenv:
+  - PAPERTRAIL_
+dependencies:
+  - type: npm
+    name: winston-papertrail
+    example: winston-papertrail
+  - type: npm
+    name: pino-papertrail
+    example: pino-papertrail
+  - type: php
+    name: stephanecoinon/papertrail
+    example: stephanecoinon/papertrail
+  - type: ruby
+    name: papertrail
+    example: papertrail
+  - type: golang
+    name: github.com/papertrail/go-tail/follower
+    example: github.com/papertrail/go-tail/follower

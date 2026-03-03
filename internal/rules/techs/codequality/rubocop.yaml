@@ -1,0 +1,4 @@
+tech: rubocop
+name: Rubocop
+files:
+  - .rubocop.yml

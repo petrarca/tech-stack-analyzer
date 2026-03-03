@@ -1,0 +1,11 @@
+tech: huggingface
+name: Hugging Face
+dotenv:
+  - HUGGINGFACE_
+dependencies:
+  - type: python
+    name: langchain-huggingface
+    example: langchain-huggingface
+  - type: python
+    name: huggingface-hub
+    example: huggingface-hub

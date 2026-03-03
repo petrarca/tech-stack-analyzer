@@ -1,0 +1,6 @@
+tech: denodeploy
+name: Deno Deploy
+dependencies:
+  - type: githubAction
+    name: denoland/deployctl
+    example: denoland/deployctl

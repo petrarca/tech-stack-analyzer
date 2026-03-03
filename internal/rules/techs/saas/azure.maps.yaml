@@ -1,0 +1,20 @@
+tech: azure.maps
+name: Bing Maps
+dotenv:
+  - AZURE_MAPS_
+dependencies:
+  - type: npm
+    name: "@azure/maps-control"
+    example: "@azure/maps-control"
+  - type: npm
+    name: bingmaps
+    example: bingmaps
+  - type: npm
+    name: azure-maps-control
+    example: azure-maps-control
+  - type: npm
+    name: "@azure-rest/maps-search"
+    example: "@azure-rest/maps-search"
+  - type: terraform.resource
+    name: azurerm_maps_account
+    example: azurerm_maps_account

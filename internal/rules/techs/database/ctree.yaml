@@ -1,0 +1,9 @@
+tech: ctree
+name: c-tree
+dependencies:
+  - type: nuget
+    name: FairCom.CtreeDb
+    example: FairCom.CtreeDb
+  - type: maven
+    name: com.faircom:ctree-jdbc
+    example: com.faircom:ctree-jdbc

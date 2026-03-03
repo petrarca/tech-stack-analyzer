@@ -1,0 +1,6 @@
+tech: sitecore
+name: Sitecore
+dependencies:
+  - type: npm
+    name: "@sitecore-jss/sitecore-jss"
+    example: "@sitecore-jss/sitecore-jss"

@@ -1,0 +1,9 @@
+tech: scaleway.storage
+name: Scaleway Storage
+dependencies:
+  - type: terraform.resource
+    name: scaleway_object_bucket
+    example: scaleway_object_bucket
+  - type: terraform.resource
+    name: scaleway_object_bucket_acl
+    example: scaleway_object_bucket_acl

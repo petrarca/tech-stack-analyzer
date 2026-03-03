@@ -1,0 +1,11 @@
+tech: airtable
+name: Airtable
+dotenv:
+  - AIRTABLE_
+dependencies:
+  - type: npm
+    name: airtable
+    example: airtable
+  - type: php
+    name: sleiman/airtable-php
+    example: sleiman/airtable-php

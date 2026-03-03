@@ -1,0 +1,17 @@
+tech: twitter
+name: X
+dotenv:
+  - TWITTER_
+dependencies:
+  - type: npm
+    name: twitter-api-v2
+    example: twitter-api-v2
+  - type: python
+    name: tweepy
+    example: tweepy
+  - type: npm
+    name: passport-twitter
+    example: passport-twitter
+  - type: terraform.resource
+    name: airbyte_source_twitter
+    example: airbyte_source_twitter

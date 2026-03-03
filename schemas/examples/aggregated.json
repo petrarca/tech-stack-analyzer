@@ -1,0 +1,295 @@
+{
+  "metadata": {
+    "format": "aggregated",
+    "source": "tech-stack-scanner",
+    "timestamp": "2026-03-03T11:29:49Z",
+    "scan_path": "/path/to/your/project",
+    "specVersion": "0.1",
+    "duration_ms": 1103,
+    "file_count": 210,
+    "component_count": 6,
+    "language_count": 8,
+    "tech_count": 2,
+    "techs_count": 5
+  },
+  "tech": [
+    "github",
+    "golang"
+  ],
+  "techs": [
+    "git",
+    "github",
+    "github.actions",
+    "golang",
+    "golangcilint"
+  ],
+  "reason": {
+    "_": [
+      "matched file: /path/to/your/project"
+    ],
+    "_license": [
+      "license detected: MIT (confidence: 1.00, file: LICENSE)"
+    ],
+    "git": [
+      "matched file: .gitignore"
+    ],
+    "github": [
+      "matched file: .github"
+    ],
+    "github.actions": [
+      "matched file: .github/workflows"
+    ],
+    "golang": [
+      "matched file: go.mod",
+      "matched file: main.go"
+    ],
+    "golangcilint": [
+      "github action matched"
+    ]
+  },
+  "languages": {
+    "Go": 176,
+    "Go Checksums": 1,
+    "Go Module": 1,
+    "Ignore List": 1,
+    "JSON": 7,
+    "Markdown": 14,
+    "Text": 1,
+    "YAML": 9
+  },
+  "primary_languages": [
+    {
+      "language": "Go",
+      "pct": 1
+    }
+  ],
+  "licenses_aggregated": [
+    "MIT"
+  ],
+  "dependencies": [
+    [
+      "githubAction",
+      "actions/checkout",
+      "v6"
+    ],
+    [
+      "githubAction",
+      "actions/setup-go",
+      "v6"
+    ],
+    [
+      "githubAction",
+      "golangci/golangci-lint-action",
+      "v9"
+    ],
+    [
+      "golang",
+      "github.com/bmatcuk/doublestar/v4",
+      "v4.10.0"
+    ],
+    [
+      "golang",
+      "github.com/boyter/scc/v3",
+      "v3.6.0"
+    ],
+    [
+      "golang",
+      "github.com/go-enry/go-enry/v2",
+      "v2.9.4"
+    ],
+    [
+      "golang",
+      "github.com/go-enry/go-license-detector/v4",
+      "v4.3.1"
+    ],
+    [
+      "golang",
+      "github.com/go-git/go-git/v5",
+      "v5.16.5"
+    ],
+    [
+      "golang",
+      "github.com/hashicorp/hcl/v2",
+      "v2.24.0"
+    ],
+    [
+      "golang",
+      "github.com/santhosh-tekuri/jsonschema/v5",
+      "v5.3.1"
+    ],
+    [
+      "golang",
+      "github.com/spf13/cobra",
+      "v1.10.2"
+    ],
+    [
+      "golang",
+      "github.com/stretchr/testify",
+      "v1.11.1"
+    ],
+    [
+      "golang",
+      "github.com/zclconf/go-cty",
+      "v1.17.0"
+    ],
+    [
+      "golang",
+      "golang.org/x/mod",
+      "v0.33.0"
+    ],
+    [
+      "golang",
+      "gopkg.in/yaml.v3",
+      "v3.0.1"
+    ]
+  ],
+  "code_stats": {
+    "total": {
+      "lines": 57367,
+      "code": 47080,
+      "comments": 3745,
+      "blanks": 6542,
+      "complexity": 4346,
+      "files": 207
+    },
+    "by_type": {
+      "programming": {
+        "total": {
+          "lines": 40860,
+          "code": 31515,
+          "comments": 3661,
+          "blanks": 5684,
+          "complexity": 4346,
+          "files": 176
+        },
+        "metrics": {
+          "comment_ratio": 0.12,
+          "code_density": 0.77,
+          "avg_file_size": 232.16,
+          "complexity_per_kloc": 137.9,
+          "avg_complexity": 24.69,
+          "primary_languages": [
+            {
+              "language": "Go",
+              "pct": 1
+            }
+          ]
+        },
+        "languages": [
+          "Go"
+        ]
+      },
+      "data": {
+        "total": {
+          "lines": 13417,
+          "code": 12858,
+          "comments": 84,
+          "blanks": 116,
+          "complexity": 0,
+          "files": 19
+        },
+        "languages": [
+          "JSON",
+          "YAML",
+          "Go Checksums",
+          "Go Module",
+          "Ignore List"
+        ]
+      },
+      "prose": {
+        "total": {
+          "lines": 3449,
+          "code": 2707,
+          "comments": 0,
+          "blanks": 742,
+          "complexity": 0,
+          "files": 15
+        },
+        "languages": [
+          "Markdown",
+          "Text"
+        ]
+      }
+    },
+    "analyzed": {
+      "total": {
+        "lines": 57367,
+        "code": 47080,
+        "comments": 3745,
+        "blanks": 6542,
+        "complexity": 4346,
+        "files": 207
+      },
+      "by_language": [
+        {
+          "language": "Go",
+          "lines": 40860,
+          "code": 31515,
+          "comments": 3661,
+          "blanks": 5684,
+          "complexity": 4346,
+          "files": 176
+        },
+        {
+          "language": "JSON",
+          "lines": 12299,
+          "code": 12299,
+          "comments": 0,
+          "blanks": 0,
+          "complexity": 0,
+          "files": 7
+        },
+        {
+          "language": "Markdown",
+          "lines": 3428,
+          "code": 2690,
+          "comments": 0,
+          "blanks": 738,
+          "complexity": 0,
+          "files": 14
+        },
+        {
+          "language": "YAML",
+          "lines": 759,
+          "code": 559,
+          "comments": 84,
+          "blanks": 116,
+          "complexity": 0,
+          "files": 9
+        },
+        {
+          "language": "Text",
+          "lines": 21,
+          "code": 17,
+          "comments": 0,
+          "blanks": 4,
+          "complexity": 0,
+          "files": 1
+        }
+      ]
+    },
+    "unanalyzed": {
+      "total": {
+        "lines": 359,
+        "files": 3
+      },
+      "by_language": [
+        {
+          "language": "Go Checksums",
+          "lines": 219,
+          "files": 1
+        },
+        {
+          "language": "Go Module",
+          "lines": 72,
+          "files": 1
+        },
+        {
+          "language": "Ignore List",
+          "lines": 68,
+          "files": 1
+        }
+      ]
+    }
+  }
+}

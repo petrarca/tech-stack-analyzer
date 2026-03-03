@@ -1,0 +1,5 @@
+tech: moq
+name: Moq
+dependencies:
+  - type: maven
+    name: Moq

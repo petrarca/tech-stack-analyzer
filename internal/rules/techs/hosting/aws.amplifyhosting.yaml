@@ -1,0 +1,6 @@
+tech: aws.amplifyhosting
+name: AWS Amplify Hosting
+dependencies:
+  - type: npm
+    name: aws-amplify
+    example: aws-amplify

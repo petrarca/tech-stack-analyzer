@@ -1,0 +1,4 @@
+tech: bash
+name: Bash
+extensions:
+  - .sh

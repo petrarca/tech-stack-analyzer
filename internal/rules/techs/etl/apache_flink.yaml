@@ -1,0 +1,6 @@
+tech: apache_flink
+name: Apache Flink
+dependencies:
+  - type: docker
+    name: apache/flink
+    example: apache/flink

@@ -1,0 +1,12 @@
+tech: zookeeper
+name: Zookeeper
+dependencies:
+  - type: rust
+    name: zookeeper
+    example: zookeeper
+  - type: ruby
+    name: zookeeper
+    example: zookeeper
+  - type: php
+    name: sparkinfluence/zookeeper
+    example: sparkinfluence/zookeeper

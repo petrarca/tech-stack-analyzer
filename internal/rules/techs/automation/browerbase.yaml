@@ -1,0 +1,9 @@
+tech: browerbase
+name: Browserbase
+dependencies:
+  - type: php
+    name: "@browserbasehq/sdk"
+    example: "@browserbasehq/sdk"
+  - type: python
+    name: browserbase
+    example: browserbase

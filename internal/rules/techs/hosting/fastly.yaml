@@ -1,0 +1,17 @@
+tech: fastly
+name: Fastly
+dotenv:
+  - FASTLY_
+dependencies:
+  - type: rust
+    name: fastly-api
+    example: fastly-api
+  - type: ruby
+    name: fastly
+    example: fastly
+  - type: npm
+    name: fastly
+    example: fastly
+  - type: npm
+    name: fastly/fastly
+    example: fastly/fastly

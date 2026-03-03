@@ -1,0 +1,9 @@
+tech: equinix
+name: Equinix
+dependencies:
+  - type: terraform
+    name: registry.terraform.io/equinix/equinix
+    example: registry.terraform.io/equinix/equinix
+  - type: terraform
+    name: registry.terraform.io/equinix/metal
+    example: registry.terraform.io/equinix/metal

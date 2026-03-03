@@ -1,0 +1,6 @@
+tech: testinglibrary
+name: Testing Library
+dependencies:
+  - type: npm
+    name: /^@testing-library\//
+    example: '@testing-library/react'

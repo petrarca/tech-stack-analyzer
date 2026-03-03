@@ -1,0 +1,9 @@
+tech: cheshirecat
+name: Cheshire Cat AI
+dependencies:
+  - type: python
+    name: cheshire-cat-ai
+    example: cheshire-cat-ai
+  - type: docker
+    name: ghcr.io/cheshire-cat-ai/core
+    example: ghcr.io/cheshire-cat-ai/core

@@ -1,0 +1,11 @@
+tech: meteorjs
+name: Meteor
+dependencies:
+  - type: npm
+    name: meteor
+    example: meteor
+  - type: npm
+    name: meteor-node-stubs
+    example: meteor-node-stubs
+files:
+  - .meteor

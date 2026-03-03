@@ -1,0 +1,7 @@
+tech: git
+name: Git
+files:
+  - .gitignore
+  - .gitmodules
+  - .gitattributes
+  - .lfsconfig

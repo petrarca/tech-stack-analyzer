@@ -1,0 +1,14 @@
+tech: aircall
+name: Aircall
+dotenv:
+  - AIRCALL_
+dependencies:
+  - type: npm
+    name: aircall-everywhere
+    example: aircall-everywhere
+  - type: npm
+    name: aircall
+    example: aircall
+  - type: terraform.resource
+    name: airbyte_source_aircall
+    example: airbyte_source_aircall

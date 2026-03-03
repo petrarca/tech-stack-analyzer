@@ -1,0 +1,6 @@
+tech: typebox
+name: TypeBox
+dependencies:
+  - type: npm
+    name: "@sinclair/typebox"
+    example: "@sinclair/typebox"

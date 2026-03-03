@@ -1,0 +1,5 @@
+tech: mercurial
+name: Mercurial
+files:
+  - .hgignore
+  - .hgtags

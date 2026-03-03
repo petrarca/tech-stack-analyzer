@@ -1,0 +1,6 @@
+tech: bundler
+name: Bundler
+dependencies:
+  - type: ruby
+    name: bundler
+    example: bundler

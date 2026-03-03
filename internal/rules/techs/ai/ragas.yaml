@@ -1,0 +1,6 @@
+tech: ragas
+name: RAGAS
+dependencies:
+  - type: python
+    name: ragas
+    example: ragas

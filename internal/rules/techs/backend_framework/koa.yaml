@@ -1,0 +1,9 @@
+tech: koa
+name: Koa
+dependencies:
+  - type: npm
+    name: koa
+    example: koa
+  - type: npm
+    name: "@opentelemetry/instrumentation-koa"
+    example: "@opentelemetry/instrumentation-koa"

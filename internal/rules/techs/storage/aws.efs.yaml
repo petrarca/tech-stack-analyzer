@@ -1,0 +1,18 @@
+tech: aws.efs
+name: AWS File System
+dependencies:
+  - type: npm
+    name: "@aws-cdk/aws-efs"
+    example: "@aws-cdk/aws-efs"
+  - type: npm
+    name: "@aws-sdk/client-efs"
+    example: "@aws-sdk/client-efs"
+  - type: rust
+    name: aws-sdk-efs
+    example: aws-sdk-efs
+  - type: ruby
+    name: aws-sdk-efs
+    example: aws-sdk-efs
+  - type: golang
+    name: github.com/aws/aws-sdk-go-v2/service/efs
+    example: github.com/aws/aws-sdk-go-v2/service/efs

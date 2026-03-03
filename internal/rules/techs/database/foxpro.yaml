@@ -1,0 +1,7 @@
+tech: foxpro
+name: FoxPro
+dependencies:
+  - type: nuget
+    name: VfpEntityFrameworkProvider2
+    example: VfpEntityFrameworkProvider2
+is_primary_tech: true

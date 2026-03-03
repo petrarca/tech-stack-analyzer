@@ -1,0 +1,6 @@
+tech: sap
+name: SAP
+dependencies:
+  - type: npm
+    name: "@sap/hana-client"
+    example: "@sap/hana-client"

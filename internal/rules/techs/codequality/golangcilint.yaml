@@ -1,0 +1,14 @@
+tech: golangcilint
+name: GolangCI Lint
+dependencies:
+  - type: golang
+    name: github.com/golangci/golangci-lint
+    example: github.com/golangci/golangci-lint
+  - type: githubAction
+    name: golangci/golangci-lint-action
+    example: golangci/golangci-lint-action
+  - type: docker
+    name: golangci/golangci-lint
+    example: golangci/golangci-lint
+files:
+  - .golangcit.yml

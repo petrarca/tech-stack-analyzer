@@ -1,0 +1,6 @@
+tech: monday
+name: Monday
+dependencies:
+  - type: npm
+    name: monday-sdk-js
+    example: monday-sdk-js

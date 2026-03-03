@@ -1,0 +1,11 @@
+tech: sqreen
+name: Sqreen
+dotenv:
+  - SQREEN_
+dependencies:
+  - type: npm
+    name: sqreen
+    example: sqreen
+  - type: ruby
+    name: sqreen
+    example: sqreen

@@ -1,0 +1,20 @@
+tech: cloudflare.workers
+name: Cloudflare Workers
+dependencies:
+  - type: npm
+    name: wrangler
+    example: wrangler
+  - type: npm
+    name: "@miniflare/cache"
+    example: "@miniflare/cache"
+  - type: npm
+    name: miniflare
+    example: miniflare
+  - type: npm
+    name: "@cfworker/json-schema"
+    example: "@cfworker/json-schema"
+  - type: githubAction
+    name: cloudflare/wrangler-action
+    example: cloudflare/wrangler-action
+files:
+  - wrangler.toml

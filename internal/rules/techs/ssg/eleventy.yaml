@@ -1,0 +1,13 @@
+tech: eleventy
+name: Eleventy
+dependencies:
+  - type: npm
+    name: "@11ty/eleventy"
+    example: "@11ty/eleventy"
+  - type: githubAction
+    name: TartanLlama/actions-eleventy
+    example: TartanLlama/actions-eleventy
+files:
+  - .eleventy.js
+  - eleventy.config.js
+  - eleventy.config.cjs

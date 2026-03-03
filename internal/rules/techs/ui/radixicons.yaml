@@ -1,0 +1,6 @@
+tech: radixicons
+name: Radix Icons
+dependencies:
+  - type: npm
+    name: "@radix-ui/react-icons"
+    example: "@radix-ui/react-icons"

@@ -1,0 +1,67 @@
+tech: pick
+name: Pick Database
+type: database
+dependencies:
+  - type: npm
+    name: jbase-client
+    example: jbase-client
+  - type: npm
+    name: "@zumasys/qmclient"
+    example: "@zumasys/qmclient"
+  - type: npm
+    name: "@rocketsoftware/u2"
+    example: "@rocketsoftware/u2"
+  - type: python
+    name: jbase
+    example: jbase
+  - type: python
+    name: qmclient
+    example: qmclient
+  - type: python
+    name: u2py
+    example: u2py
+  - type: nuget
+    name: JBASEDotNet
+    example: JBASEDotNet
+  - type: nuget
+    name: U2.DataClient
+    example: U2.DataClient
+  - type: nuget
+    name: QMClient
+    example: QMClient
+  - type: nuget
+    name: D3DotNet
+    example: D3DotNet
+  - type: java
+    name: U2JDBC
+    example: U2JDBC
+  - type: java
+    name: U2DataClient
+    example: U2DataClient
+  - type: java
+    name: QMClient.jar
+    example: QMClient.jar
+  - type: java
+    name: jremote.jar
+    example: jremote.jar
+  - type: java
+    name: jbasejdbc.jar
+    example: jbasejdbc.jar
+  - type: docker
+    name: zumasys/openqm
+    example: zumasys/openqm
+  - type: docker
+    name: rocketsoftware/universe
+    example: rocketsoftware/universe
+  - type: docker
+    name: rocketsoftware/unidata
+    example: rocketsoftware/unidata
+  - type: docker
+    name: jbase/jbase
+    example: jbase/jbase
+  - type: terraform.resource
+    name: rocketsoftware_universe_account
+    example: rocketsoftware_universe_account
+  - type: terraform.resource
+    name: rocketsoftware_unidata_account
+    example: rocketsoftware_unidata_account

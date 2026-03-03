@@ -1,0 +1,11 @@
+tech: betterauth
+name: Betterauth
+dotenv:
+  - BETTER_AUTH_
+dependencies:
+  - type: npm
+    name: better-auth
+    example: better-auth
+  - type: npm
+    name: "@better-auth/cli"
+    example: "@better-auth/cli"

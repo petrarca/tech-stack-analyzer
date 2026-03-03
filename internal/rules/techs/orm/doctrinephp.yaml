@@ -1,0 +1,6 @@
+tech: doctrinephp
+name: Doctrine
+dependencies:
+  - type: php
+    name: doctrine/orm
+    example: doctrine/orm

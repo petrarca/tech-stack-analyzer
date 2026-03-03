@@ -1,0 +1,9 @@
+tech: mailhog
+name: Mailhog
+dependencies:
+  - type: golang
+    name: github.com/mailhog/MailHog
+    example: github.com/mailhog/MailHog
+  - type: docker
+    name: mailhog/mailhog
+    example: mailhog/mailhog

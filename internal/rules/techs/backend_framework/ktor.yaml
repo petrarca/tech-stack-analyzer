@@ -1,0 +1,9 @@
+tech: ktor
+name: Ktor
+dependencies:
+  - type: maven
+    name: /^io\.ktor:ktor-/
+  - type: gradle
+    name: /^io\.ktor:ktor-/
+  - type: python
+    name: ktor-client

@@ -1,0 +1,6 @@
+tech: express
+name: Express
+dependencies:
+  - type: npm
+    name: express
+    example: express

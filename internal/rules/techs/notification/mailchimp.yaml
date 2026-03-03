@@ -1,0 +1,29 @@
+tech: mailchimp
+name: Mailchimp
+dotenv:
+  - MAILCHIMP_
+dependencies:
+  - type: npm
+    name: "@mailchimp/mailchimp_marketing"
+    example: "@mailchimp/mailchimp_marketing"
+  - type: npm
+    name: "@mailchimp/mailchimp_transactional"
+    example: "@mailchimp/mailchimp_transactional"
+  - type: ruby
+    name: MailchimpMarketing
+    example: MailchimpMarketing
+  - type: ruby
+    name: MailchimpTransactional
+    example: MailchimpTransactional
+  - type: php
+    name: drewm/mailchimp-api
+    example: drewm/mailchimp-api
+  - type: php
+    name: mailchimp/transactional
+    example: mailchimp/transactional
+  - type: php
+    name: mailchimp/makerting
+    example: mailchimp/makerting
+  - type: terraform.resource
+    name: airbyte_source_mailchimp
+    example: airbyte_source_mailchimp

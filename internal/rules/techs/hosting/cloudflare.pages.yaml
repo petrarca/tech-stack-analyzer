@@ -1,0 +1,6 @@
+tech: cloudflare.pages
+name: Cloudflare Pages
+dependencies:
+  - type: githubAction
+    name: cloudflare/pages-action
+    example: cloudflare/pages-action

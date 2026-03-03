@@ -1,0 +1,11 @@
+tech: mfc
+name: Microsoft Foundation Class Library
+content:
+  - pattern: '#include\s+<afx'
+    extensions: [.cpp, .h, .hpp]
+  - pattern: 'class\s+\w+\s*:\s*public\s+C(Wnd|FrameWnd|Dialog|View|Document|WinApp|Button|Edit|ListCtrl|TreeCtrl|Static|ComboBox|PropertySheet|PropertyPage)'
+    extensions: [.cpp, .h, .hpp]
+  - pattern: '(BEGIN_MESSAGE_MAP|END_MESSAGE_MAP|DECLARE_MESSAGE_MAP|ON_COMMAND|ON_WM_|DECLARE_DYNCREATE|DECLARE_SERIAL|DECLARE_DYNAMIC)'
+    extensions: [.cpp, .h, .hpp]
+  - pattern: 'IMPLEMENT_(DYNCREATE|SERIAL|DYNAMIC)\s*\('
+    extensions: [.cpp, .h, .hpp]

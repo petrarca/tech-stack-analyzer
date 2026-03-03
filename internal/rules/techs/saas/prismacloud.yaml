@@ -1,0 +1,6 @@
+tech: prismacloud
+name: Prisma Cloud
+dependencies:
+  - type: terraform
+    name: registry.terraform.io/PaloAltoNetworks/prismacloud
+    example: registry.terraform.io/PaloAltoNetworks/prismacloud

@@ -1,0 +1,6 @@
+tech: effectjs
+name: EffectJS
+dependencies:
+  - type: npm
+    name: effect
+    example: effect

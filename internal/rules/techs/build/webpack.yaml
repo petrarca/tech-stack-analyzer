@@ -1,0 +1,6 @@
+tech: webpack
+name: Webpack
+dependencies:
+  - type: npm
+    name: webpack
+    example: webpack

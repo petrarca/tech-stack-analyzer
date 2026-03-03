@@ -1,0 +1,18 @@
+tech: aws.sfn
+name: AWS Step Functions
+dependencies:
+  - type: npm
+    name: "@aws-sdk/client-sfn"
+    example: "@aws-sdk/client-sfn"
+  - type: npm
+    name: "@aws-cdk/aws-sfn"
+    example: "@aws-cdk/aws-sfn"
+  - type: rust
+    name: aws-sdk-sfn
+    example: aws-sdk-sfn
+  - type: ruby
+    name: aws-sdk-sfn
+    example: aws-sdk-sfn
+  - type: golang
+    name: github.com/aws/aws-sdk-go-v2/service/sfn
+    example: github.com/aws/aws-sdk-go-v2/service/sfn

@@ -1,0 +1,6 @@
+tech: litedb
+name: LiteDB
+dependencies:
+  - type: nuget
+    name: LiteDB
+    example: LiteDB

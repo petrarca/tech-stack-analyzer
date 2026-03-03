@@ -1,0 +1,6 @@
+tech: chef
+name: Chef
+dependencies:
+  - type: docker
+    name: chef/chef
+    example: chef/chef

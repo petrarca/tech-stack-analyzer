@@ -1,0 +1,23 @@
+tech: pinecone
+name: Pinecone
+dotenv:
+  - PINECONE_
+dependencies:
+  - type: terraform
+    name: registry.terraform.io/pinecone-io/pinecone
+    example: registry.terraform.io/pinecone-io/pinecone
+  - type: python
+    name: pinecone
+    example: pinecone
+  - type: npm
+    name: "@pinecone-database/pinecone"
+    example: "@pinecone-database/pinecone"
+  - type: golang
+    name: github.com/pinecone-io/go-pinecone/v3/pinecone
+    example: github.com/pinecone-io/go-pinecone/v3/pinecone
+  - type: rust
+    name: pinecone-sdk
+    example: pinecone-sdk
+  - type: terraform.resource
+    name: airbyte_destination_pinecone
+    example: airbyte_destination_pinecone

@@ -1,0 +1,6 @@
+tech: dieselrs
+name: Diesel
+dependencies:
+  - type: rust
+    name: diesel
+    example: diesel

@@ -1,0 +1,8 @@
+tech: kong
+name: Kong
+dependencies:
+  - type: docker
+    name: kong
+    example: kong
+files:
+  - kong.conf

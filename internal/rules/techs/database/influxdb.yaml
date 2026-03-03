@@ -1,0 +1,18 @@
+tech: influxdb
+name: InfluxDB
+dependencies:
+  - type: npm
+    name: "@influxdata/influxdb-client"
+    example: "@influxdata/influxdb-client"
+  - type: rust
+    name: influxdb
+    example: influxdb
+  - type: rust
+    name: influxdb2
+    example: influxdb2
+  - type: ruby
+    name: influxdb-client
+    example: influxdb-client
+  - type: php
+    name: influxdata/influxdb-client-php
+    example: influxdata/influxdb-client-php

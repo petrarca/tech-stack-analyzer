@@ -1,0 +1,33 @@
+tech: datadome
+name: DataDome
+dependencies:
+  - type: npm
+    name: "@datadome/fraud-sdk-node"
+    example: "@datadome/fraud-sdk-node"
+  - type: npm
+    name: "@datadome/node-module"
+    example: "@datadome/node-module"
+  - type: npm
+    name: "@datadome/react-native-datadome"
+    example: "@datadome/react-native-datadome"
+  - type: npm
+    name: "@datadome/datadome-react-native-navigation"
+    example: "@datadome/datadome-react-native-navigation"
+  - type: python
+    name: datadome-fraud-sdk-python
+    example: datadome-fraud-sdk-python
+  - type: php
+    name: datadome/fraud-sdk-symfony
+    example: datadome/fraud-sdk-symfony
+  - type: php
+    name: datadome/fraud-sdk-laravel
+    example: datadome/fraud-sdk-laravel
+  - type: ruby
+    name: datadome_fraud_sdk_ruby
+    example: datadome_fraud_sdk_ruby
+  - type: golang
+    name: github.com/datadome/fraud-sdk-go-package
+    example: github.com/datadome/fraud-sdk-go-package
+  - type: php
+    name: DataDomeServiceProvider
+    example: DataDomeServiceProvider

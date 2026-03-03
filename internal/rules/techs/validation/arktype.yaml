@@ -1,0 +1,6 @@
+tech: arktype
+name: ArkType
+dependencies:
+  - type: npm
+    name: arktype
+    example: arktype

@@ -1,0 +1,13 @@
+tech: os_android
+name: Android
+dotenv:
+  - ANDROID
+files:
+  - "AndroidManifest.xml"
+dependencies:
+  - type: maven
+    name: com.android.tools.build:gradle
+    example: com.android.tools.build:gradle
+  - type: maven
+    name: androidx.appcompat:appcompat
+    example: androidx.appcompat:appcompat

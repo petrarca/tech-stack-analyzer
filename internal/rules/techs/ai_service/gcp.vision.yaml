@@ -1,0 +1,15 @@
+tech: gcp.vision
+name: Cloud Vision
+dependencies:
+  - type: npm
+    name: "@google-cloud/vision"
+    example: "@google-cloud/vision"
+  - type: golang
+    name: cloud.google.com/go/vision
+    example: cloud.google.com/go/vision
+  - type: php
+    name: google/cloud-vision
+    example: google/cloud-vision
+  - type: python
+    name: google-cloud-vision
+    example: google-cloud-vision

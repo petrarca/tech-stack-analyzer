@@ -1,0 +1,552 @@
+package python
+
+import (
+	"fmt"
+	"path/filepath"
+	"regexp"
+	"strings"
+
+	"github.com/petrarca/tech-stack-analyzer/internal/license"
+	"github.com/petrarca/tech-stack-analyzer/internal/scanner/components"
+	"github.com/petrarca/tech-stack-analyzer/internal/scanner/parsers"
+	"github.com/petrarca/tech-stack-analyzer/internal/scanner/providers"
+	"github.com/petrarca/tech-stack-analyzer/internal/types"
+)
+
+// Detector implements Python component detection
+type Detector struct{}
+
+// Name returns the detector name
+func (d *Detector) Name() string {
+	return "python"
+}
+
+// Detect scans for Python projects with priority-based detection:
+// Priority 1: pyproject.toml (supports Poetry, uv, and other PEP 518 tools)
+// Priority 2: requirements.txt (PEP 508 compliant dependency parsing)
+// Priority 3: setup.py (basic detection, no dependency parsing)
+//
+// If pyproject.toml is found and successfully parsed, lower-priority files are skipped.
+func (d *Detector) Detect(files []types.File, currentPath, basePath string, provider types.Provider, depDetector components.DependencyDetector) []*types.Payload {
+	// Scan files to determine what's available
+	hasPyprojectToml := false
+	hasRequirementsTxt := false
+	hasSetupPy := false
+
+	for _, file := range files {
+		switch file.Name {
+		case "pyproject.toml":
+			hasPyprojectToml = true
+		case "requirements.txt":
+			hasRequirementsTxt = true
+		case "setup.py":
+			hasSetupPy = true
+		}
+	}
+
+	// Priority 1: pyproject.toml
+	if hasPyprojectToml {
+		if payload := d.detectFromPyprojectToml(currentPath, basePath, provider, depDetector); payload != nil {
+			return []*types.Payload{payload}
+		}
+	}
+
+	// Priority 2: requirements.txt (only if pyproject.toml didn't produce a component)
+	if hasRequirementsTxt {
+		if payload := d.detectFromRequirementsTxt(currentPath, basePath, provider, depDetector); payload != nil {
+			return []*types.Payload{payload}
+		}
+	}
+
+	// Priority 3: setup.py (only if neither pyproject.toml nor requirements.txt produced a component)
+	if hasSetupPy {
+		if payload := d.detectFromSetupPy(currentPath, basePath); payload != nil {
+			return []*types.Payload{payload}
+		}
+	}
+
+	return nil
+}
+
+// detectFromPyprojectToml creates a component from pyproject.toml.
+// Falls back to directory name if no [project] or [tool.poetry] name is found.
+func (d *Detector) detectFromPyprojectToml(currentPath, basePath string, provider types.Provider, depDetector components.DependencyDetector) *types.Payload {
+	content, err := provider.ReadFile(filepath.Join(currentPath, "pyproject.toml"))
+	if err != nil {
+		return nil
+	}
+
+	// Extract project name, falling back to directory name
+	projectName := extractProjectName(string(content))
+	if projectName == "" {
+		projectName = dirName(currentPath, basePath)
+	}
+
+	relativeFilePath := relativePath(basePath, currentPath, "pyproject.toml")
+	payload := types.NewPayloadWithPath(projectName, relativeFilePath)
+	payload.SetComponentType("python")
+	payload.AddPrimaryTech("python")
+
+	// Store package name in properties for inter-component dependency tracking
+	payload.SetComponentProperty("python", "package_name", projectName)
+
+	// Parse dependencies using lock file priority system
+	dependencies := extractDependenciesWithPriority(currentPath, projectName, string(content), provider)
+	d.matchAndAddDependencies(payload, dependencies, depDetector)
+
+	// Detect license
+	detectLicense(string(content), payload)
+
+	return payload
+}
+
+// detectFromRequirementsTxt creates a component from requirements.txt.
+// Uses the directory name as the component name and parses PEP 508 dependencies.
+func (d *Detector) detectFromRequirementsTxt(currentPath, basePath string, provider types.Provider, depDetector components.DependencyDetector) *types.Payload {
+	content, err := provider.ReadFile(filepath.Join(currentPath, "requirements.txt"))
+	if err != nil {
+		return nil
+	}
+
+	projectName := dirName(currentPath, basePath)
+	relativeFilePath := relativePath(basePath, currentPath, "requirements.txt")
+
+	payload := types.NewPayloadWithPath(projectName, relativeFilePath)
+	payload.SetComponentType("python")
+	payload.AddPrimaryTech("python")
+	payload.SetComponentProperty("python", "package_name", projectName)
+
+	// Parse requirements.txt using the PEP 508 compliant parser
+	parser := parsers.NewPythonParser()
+	dependencies := parser.ParseRequirementsTxt(string(content))
+	d.matchAndAddDependencies(payload, dependencies, depDetector)
+
+	return payload
+}
+
+// detectFromSetupPy creates a basic component from setup.py.
+// Does not parse dependencies (setup.py is executable Python, not statically parseable).
+func (d *Detector) detectFromSetupPy(currentPath, basePath string) *types.Payload {
+	projectName := dirName(currentPath, basePath)
+	relativeFilePath := relativePath(basePath, currentPath, "setup.py")
+
+	payload := types.NewPayloadWithPath(projectName, relativeFilePath)
+	payload.SetComponentType("python")
+	payload.AddPrimaryTech("python")
+	payload.SetComponentProperty("python", "package_name", projectName)
+
+	return payload
+}
+
+// matchAndAddDependencies matches dependencies against rules and adds them to the payload.
+func (d *Detector) matchAndAddDependencies(payload *types.Payload, dependencies []types.Dependency, depDetector components.DependencyDetector) {
+	if len(dependencies) == 0 {
+		return
+	}
+
+	var depNames []string
+	for _, dep := range dependencies {
+		depNames = append(depNames, dep.Name)
+	}
+
+	matchedTechs := depDetector.MatchDependencies(depNames, "python")
+	for tech, reasons := range matchedTechs {
+		for _, reason := range reasons {
+			payload.AddTech(tech, reason)
+		}
+		depDetector.AddPrimaryTechIfNeeded(payload, tech)
+	}
+
+	payload.Dependencies = dependencies
+}
+
+// dirName extracts the directory name to use as a fallback component name.
+// For the root scan path, returns "main".
+func dirName(currentPath, basePath string) string {
+	if currentPath == basePath {
+		return "main"
+	}
+	return filepath.Base(currentPath)
+}
+
+// relativePath computes the relative file path for payload display.
+func relativePath(basePath, currentPath, fileName string) string {
+	relativeFilePath, _ := filepath.Rel(basePath, filepath.Join(currentPath, fileName))
+	if relativeFilePath == "." {
+		return "/"
+	}
+	return "/" + relativeFilePath
+}
+
+// extractProjectName extracts the project name from pyproject.toml
+func extractProjectName(content string) string {
+	lines := strings.Split(content, "\n")
+	inProjectSection := false
+	inPoetrySection := false
+
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+
+		if line == "[project]" {
+			inProjectSection = true
+			inPoetrySection = false
+			continue
+		}
+
+		if line == "[tool.poetry]" {
+			inPoetrySection = true
+			inProjectSection = false
+			continue
+		}
+
+		if strings.HasPrefix(line, "[") {
+			inProjectSection = false
+			inPoetrySection = false
+			continue
+		}
+
+		if (inProjectSection || inPoetrySection) && strings.HasPrefix(line, "name") {
+			parts := strings.SplitN(line, "=", 2)
+			if len(parts) == 2 {
+				name := strings.TrimSpace(parts[1])
+				name = strings.Trim(name, `"'`)
+				if name != "" {
+					return name
+				}
+			}
+		}
+	}
+
+	return ""
+}
+
+// parseDependencies parses dependencies from pyproject.toml
+func parseDependencies(content string) []types.Dependency {
+	var dependencies []types.Dependency
+	lineReg := regexp.MustCompile(`^([a-zA-Z0-9._-]+)(\s*=\s*(.*))?$`)
+	arrayDepReg := regexp.MustCompile(`^([a-zA-Z0-9._\-\[\]]+)([>=<]+[^"]*)?`)
+
+	lines := strings.Split(content, "\n")
+	state := &dependencyParseState{}
+
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+
+		state = updateDependencyState(state, line)
+
+		if shouldParseDependency(state, line) {
+			if dep := parseDependencyLine(line, state.inArrayDependencies, lineReg, arrayDepReg); dep != nil {
+				dependencies = append(dependencies, *dep)
+			}
+		}
+	}
+
+	return dependencies
+}
+
+// extractDependenciesWithPriority extracts dependencies using lock file priority system
+// Priority 1: uv.lock (resolved versions)
+// Priority 2: poetry.lock (resolved versions)
+// Priority 3: pyproject.toml (version ranges as fallback)
+func extractDependenciesWithPriority(currentPath, projectName, pyprojectContent string, provider types.Provider) []types.Dependency {
+	// Check if lock files are enabled
+	if !components.UseLockFiles() {
+		dependencies := parseDependencies(pyprojectContent)
+		for i := range dependencies {
+			dependencies[i].SourceFile = "pyproject.toml"
+		}
+		return dependencies
+	}
+
+	// Priority 1: Check for uv.lock
+	if uvLockContent, err := provider.ReadFile(filepath.Join(currentPath, "uv.lock")); err == nil && len(uvLockContent) > 0 {
+		deps := parsers.ParseUvLock(uvLockContent, projectName)
+		if len(deps) > 0 {
+			return deps
+		}
+	}
+
+	// Priority 2: Check for poetry.lock
+	if poetryLockContent, err := provider.ReadFile(filepath.Join(currentPath, "poetry.lock")); err == nil && len(poetryLockContent) > 0 {
+		deps := parsers.ParsePoetryLock(poetryLockContent, pyprojectContent)
+		if len(deps) > 0 {
+			return deps
+		}
+	}
+
+	// Priority 3: Fallback to pyproject.toml
+	dependencies := parseDependencies(pyprojectContent)
+
+	// Add source file information
+	for i := range dependencies {
+		dependencies[i].SourceFile = "pyproject.toml"
+	}
+
+	return dependencies
+}
+
+// dependencyParseState tracks the current parsing state
+type dependencyParseState struct {
+	inProjectSection      bool
+	inDependenciesSection bool
+	inArrayDependencies   bool
+	expectingDependencies bool
+}
+
+// updateDependencyState updates the parsing state based on the current line
+func updateDependencyState(state *dependencyParseState, line string) *dependencyParseState {
+	newState := *state // copy state
+
+	if line == "[project]" {
+		newState.inProjectSection = true
+	} else if line == "[project.dependencies]" {
+		newState.inDependenciesSection = true
+		newState.inArrayDependencies = true
+	} else if line == "[tool.poetry.dependencies]" || line == "[tool.uv.sources]" {
+		newState.inDependenciesSection = true
+		newState.inArrayDependencies = false
+	} else if strings.HasPrefix(line, "[") {
+		// Reset all state on any other section
+		newState = dependencyParseState{}
+	} else if newState.inProjectSection && strings.HasPrefix(line, "dependencies") {
+		newState.expectingDependencies = true
+		newState.inArrayDependencies = true
+	}
+
+	return &newState
+}
+
+// shouldParseDependency determines if the current line should be parsed as a dependency
+func shouldParseDependency(state *dependencyParseState, line string) bool {
+	return (state.inDependenciesSection || state.expectingDependencies) &&
+		line != "" && !strings.HasPrefix(line, "#") && line != "]" && line != "[" &&
+		!strings.HasPrefix(line, "dependencies") && !strings.HasPrefix(line, "[")
+}
+
+// parseDependencyLine parses a single dependency line
+func parseDependencyLine(line string, isArrayFormat bool, lineReg, arrayDepReg *regexp.Regexp) *types.Dependency {
+	line = strings.TrimSpace(line)
+	line = strings.TrimPrefix(line, `"`)
+	line = strings.TrimSuffix(line, `",`)
+	line = strings.TrimSuffix(line, `"`)
+
+	if isArrayFormat {
+		return parseArrayDependency(line, arrayDepReg)
+	}
+	return parseKeyValueDependency(line, lineReg)
+}
+
+// parseArrayDependency parses array format dependencies like "fastapi>=0.104.0"
+func parseArrayDependency(line string, arrayDepReg *regexp.Regexp) *types.Dependency {
+	match := arrayDepReg.FindStringSubmatch(line)
+	if match == nil {
+		return nil
+	}
+
+	name := match[1]
+	version := match[2]
+	if version == "" {
+		version = "latest"
+	} else {
+		// Clean version by stripping operators
+		version = extractVersion(version)
+	}
+
+	return &types.Dependency{
+		Type:    "python",
+		Name:    name,
+		Version: version,
+	}
+}
+
+// parseKeyValueDependency parses key-value format dependencies like "fastapi = ^0.104.1"
+func parseKeyValueDependency(line string, lineReg *regexp.Regexp) *types.Dependency {
+	match := lineReg.FindStringSubmatch(line)
+	if match == nil {
+		return nil
+	}
+
+	name := match[1]
+	version := "latest"
+
+	if len(match) > 3 && match[3] != "" {
+		version = extractVersion(match[3])
+	}
+
+	return &types.Dependency{
+		Type:    "python",
+		Name:    name,
+		Version: version,
+	}
+}
+
+// extractVersion extracts version from various pyproject.toml formats
+func extractVersion(valueStr string) string {
+	valueStr = strings.TrimSpace(valueStr)
+	valueStr = strings.Trim(valueStr, `"`)
+
+	// Handle simple version strings with operators
+	if strings.HasPrefix(valueStr, "^") || strings.HasPrefix(valueStr, "~") ||
+		strings.HasPrefix(valueStr, ">=") || strings.HasPrefix(valueStr, "<=") ||
+		strings.HasPrefix(valueStr, "==") || strings.HasPrefix(valueStr, "!=") ||
+		strings.HasPrefix(valueStr, ">") || strings.HasPrefix(valueStr, "<") {
+		// Strip the operator for clean version - check 2-char operators first
+		if len(valueStr) > 2 && (strings.HasPrefix(valueStr, ">=") || strings.HasPrefix(valueStr, "<=") || strings.HasPrefix(valueStr, "==") || strings.HasPrefix(valueStr, "!=")) {
+			return valueStr[2:]
+		}
+		if len(valueStr) > 1 && (strings.HasPrefix(valueStr, "^") || strings.HasPrefix(valueStr, "~") || strings.HasPrefix(valueStr, ">") || strings.HasPrefix(valueStr, "<")) {
+			return valueStr[1:]
+		}
+		return valueStr
+	}
+
+	// Handle complex format with version field
+	if strings.Contains(valueStr, "version") {
+		versionReg := regexp.MustCompile(`version\s*=\s*["']([^"']+)["']`)
+		if match := versionReg.FindStringSubmatch(valueStr); len(match) > 1 {
+			return match[1]
+		}
+	}
+
+	// Handle Git URLs
+	if strings.Contains(valueStr, "git") {
+		gitReg := regexp.MustCompile(`git\+https?://[^@]+@([^#]+)#?([^"]*)?`)
+		if match := gitReg.FindStringSubmatch(valueStr); len(match) > 1 {
+			version := "git: " + match[1]
+			if len(match) > 2 && match[2] != "" {
+				version += "@" + match[2]
+			}
+			return version
+		}
+		return "git"
+	}
+
+	// Handle local paths
+	if strings.Contains(valueStr, "path") {
+		return "local"
+	}
+
+	// Handle simple quoted version
+	if !strings.Contains(valueStr, "{") && !strings.Contains(valueStr, "[") {
+		return valueStr
+	}
+
+	return "latest"
+}
+
+// detectLicense detects license from pyproject.toml using SPDX-compliant normalization.
+// Supports both simple strings (license = "MIT") and TOML object format (license = {text = "MIT"}).
+// Compound SPDX expressions like "MIT OR Apache-2.0" are split into individual licenses.
+func detectLicense(content string, payload *types.Payload) {
+	normalizer := license.NewNormalizer()
+
+	lines := strings.Split(content, "\n")
+	inProjectSection := false
+
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+
+		inProjectSection = updateSectionStatus(line, inProjectSection)
+
+		if inProjectSection && strings.HasPrefix(line, "license") {
+			processLicenseLine(line, payload, normalizer)
+		}
+	}
+}
+
+// updateSectionStatus tracks whether we're in the [project] section
+func updateSectionStatus(line string, inProjectSection bool) bool {
+	if line == "[project]" {
+		return true
+	}
+	if strings.HasPrefix(line, "[") && line != "[project]" {
+		return false
+	}
+	return inProjectSection
+}
+
+// processLicenseLine processes a single license line from pyproject.toml.
+// First extracts the license text from TOML format, then passes it through
+// ParseLicenseExpression to handle compound SPDX expressions (PEP 639).
+func processLicenseLine(line string, payload *types.Payload, normalizer *license.Normalizer) {
+	parts := strings.SplitN(line, "=", 2)
+	if len(parts) != 2 {
+		return
+	}
+
+	rawValue := strings.TrimSpace(parts[1])
+
+	// First extract the license text from TOML format (handles {text = "MIT"} etc.)
+	licenseText := normalizer.ParseTOMLLicense(rawValue)
+	if licenseText == "" {
+		payload.AddReason(fmt.Sprintf("license ignored: %q (invalid TOML format from pyproject.toml)", rawValue))
+		return
+	}
+
+	// Now parse as SPDX expression to handle compound expressions like "MIT OR Apache-2.0"
+	// This is required for PEP 639 compliance where license is an SPDX expression
+	licenses := normalizer.ParseLicenseExpression(licenseText)
+	if len(licenses) == 0 {
+		payload.AddReason(fmt.Sprintf("license ignored: %q (invalid expression from pyproject.toml)", licenseText))
+		return
+	}
+
+	isTOMLObject := strings.Contains(rawValue, "{text =") || strings.Contains(rawValue, "{file =")
+
+	if len(licenses) == 1 {
+		licenseObj := types.License{
+			LicenseName: licenses[0],
+			SourceFile:  "pyproject.toml",
+			Confidence:  1.0,
+		}
+
+		if isTOMLObject {
+			licenseObj.DetectionType = "toml_parsed"
+			licenseObj.OriginalLicense = rawValue
+			payload.AddReason(fmt.Sprintf("license parsed from TOML: %q -> %s (from pyproject.toml, SPDX format)", rawValue, licenses[0]))
+		} else if licenses[0] == licenseText {
+			licenseObj.DetectionType = "direct"
+			payload.AddReason(fmt.Sprintf("license detected: %s (from pyproject.toml)", licenses[0]))
+		} else {
+			licenseObj.DetectionType = "normalized"
+			licenseObj.OriginalLicense = licenseText
+			payload.AddReason(fmt.Sprintf("license normalized: %q -> %s (from pyproject.toml, SPDX format)", licenseText, licenses[0]))
+		}
+
+		license.AddLicenseToPayload(payload, licenseObj)
+	} else {
+		reason := fmt.Sprintf("license expression parsed: %q -> [%s] (from pyproject.toml, SPDX format)", licenseText, strings.Join(licenses, ", "))
+		for _, licenseName := range licenses {
+			licenseObj := types.License{
+				LicenseName:     licenseName,
+				DetectionType:   "expression_parsed",
+				SourceFile:      "pyproject.toml",
+				Confidence:      1.0,
+				OriginalLicense: licenseText,
+			}
+			license.AddLicenseToPayload(payload, licenseObj)
+			payload.AddReason(reason)
+		}
+	}
+}
+
+func init() {
+	// Auto-register this detector
+	components.Register(&Detector{})
+
+	// Register Python package provider (dependency type is "python" not "pypi")
+	providers.Register(&providers.PackageProvider{
+		DependencyType:      "python",
+		ExtractPackageNames: providers.SinglePropertyExtractor("python", "package_name"),
+		MatchFunc: func(componentPkgName, dependencyName string) bool {
+			// Normalize names: lowercase and replace underscores/dots with dashes (PEP 503 style)
+			normalize := func(name string) string {
+				name = strings.ToLower(name)
+				name = strings.ReplaceAll(name, "_", "-")
+				name = strings.ReplaceAll(name, ".", "-")
+				return name
+			}
+			return normalize(componentPkgName) == normalize(dependencyName)
+		},
+	})
+}

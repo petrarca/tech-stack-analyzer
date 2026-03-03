@@ -1,0 +1,6 @@
+tech: esbuild
+name: Esbuild
+dependencies:
+  - type: npm
+    name: esbuild
+    example: esbuild

@@ -1,0 +1,5 @@
+tech: elixir
+name: Elixir
+extensions:
+  - .ex
+  - .exs

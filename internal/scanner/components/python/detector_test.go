@@ -1,0 +1,770 @@
+package python
+
+import (
+	"os"
+	"testing"
+
+	"github.com/petrarca/tech-stack-analyzer/internal/types"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
+
+// MockProvider implements types.Provider for testing
+type MockProvider struct {
+	files map[string]string
+}
+
+func (m *MockProvider) ReadFile(path string) ([]byte, error) {
+	if content, exists := m.files[path]; exists {
+		return []byte(content), nil
+	}
+	return nil, os.ErrNotExist
+}
+
+func (m *MockProvider) ListDir(path string) ([]types.File, error) {
+	return nil, nil
+}
+
+func (m *MockProvider) Open(path string) (string, error) {
+	if content, exists := m.files[path]; exists {
+		return content, nil
+	}
+	return "", os.ErrNotExist
+}
+
+func (m *MockProvider) Exists(path string) (bool, error) {
+	_, exists := m.files[path]
+	return exists, nil
+}
+
+func (m *MockProvider) IsDir(path string) (bool, error) {
+	return false, nil
+}
+
+func (m *MockProvider) GetBasePath() string {
+	return "/mock"
+}
+
+// MockDependencyDetector implements components.DependencyDetector for testing
+type MockDependencyDetector struct {
+	matchedTechs map[string][]string
+}
+
+func (m *MockDependencyDetector) MatchDependencies(dependencies []string, depType string) map[string][]string {
+	return m.matchedTechs
+}
+
+func (m *MockDependencyDetector) AddPrimaryTechIfNeeded(payload *types.Payload, tech string) {
+	// Mock implementation - do nothing
+}
+
+func TestDetector_Name(t *testing.T) {
+	detector := &Detector{}
+	assert.Equal(t, "python", detector.Name())
+}
+
+func TestDetector_Detect_BasicPyProject(t *testing.T) {
+	detector := &Detector{}
+
+	// Create mock pyproject.toml content
+	pyprojectContent := `[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "test-app"
+version = "1.0.0"
+description = "A test Python application"
+license = {text = "MIT"}
+dependencies = [
+    "flask>=2.0.0",
+    "requests==2.26.0",
+    "numpy",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0.0",
+    "black",
+]`
+
+	// Setup mock provider
+	provider := &MockProvider{
+		files: map[string]string{
+			"/project/pyproject.toml": pyprojectContent,
+		},
+	}
+
+	// Setup mock dependency detector
+	depDetector := &MockDependencyDetector{
+		matchedTechs: map[string][]string{
+			"flask": {"matched dependency: flask"},
+		},
+	}
+
+	// Create file list
+	files := []types.File{
+		{Name: "pyproject.toml", Path: "/project/pyproject.toml"},
+	}
+
+	// Test detection
+	results := detector.Detect(files, "/project", "/project", provider, depDetector)
+
+	// Verify results
+	require.Len(t, results, 1, "Should detect one Python project")
+
+	payload := results[0]
+	assert.Equal(t, "test-app", payload.Name)
+	assert.Equal(t, "/pyproject.toml", payload.Path[0])
+	assert.Contains(t, payload.Tech, "python", "Should have python as primary tech")
+	assert.Contains(t, payload.Techs, "flask", "Should detect flask from dependencies")
+	// License parsing now returns SPDX-normalized value
+	// Check if any license object has the expected license name
+	found := false
+	for _, license := range payload.Licenses {
+		if license.LicenseName == "MIT" {
+			found = true
+			break
+		}
+	}
+	assert.True(t, found, "Should detect MIT license")
+
+	// Check dependencies
+	assert.Len(t, payload.Dependencies, 3, "Should have 3 dependencies")
+
+	depNames := make(map[string]bool)
+	for _, dep := range payload.Dependencies {
+		depNames[dep.Name] = true
+		assert.Equal(t, "python", dep.Type, "All dependencies should be python type")
+	}
+
+	assert.True(t, depNames["flask"], "Should have flask dependency")
+	assert.True(t, depNames["requests"], "Should have requests dependency")
+	assert.True(t, depNames["numpy"], "Should have numpy dependency")
+}
+
+func TestDetector_Detect_PoetryFormat(t *testing.T) {
+	detector := &Detector{}
+
+	// Create mock pyproject.toml content with Poetry format
+	poetryContent := `[tool.poetry]
+name = "poetry-app"
+version = "1.0.0"
+description = "A Poetry-based Python application"
+license = "Apache-2.0"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+django = "^4.0.0"
+celery = ">=5.0.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.0.0"
+black = "^22.0.0"
+]`
+
+	// Setup mock provider
+	provider := &MockProvider{
+		files: map[string]string{
+			"/project/pyproject.toml": poetryContent,
+		},
+	}
+
+	// Setup mock dependency detector
+	depDetector := &MockDependencyDetector{
+		matchedTechs: map[string][]string{
+			"django": {"matched dependency: django"},
+		},
+	}
+
+	// Create file list
+	files := []types.File{
+		{Name: "pyproject.toml", Path: "/project/pyproject.toml"},
+	}
+
+	// Test detection
+	results := detector.Detect(files, "/project", "/project", provider, depDetector)
+
+	// Verify results
+	assert.NotEmpty(t, results, "Should detect Poetry project with name extraction from [tool.poetry]")
+	assert.Len(t, results, 1, "Should detect exactly one Poetry project")
+
+	payload := results[0]
+	assert.Equal(t, "poetry-app", payload.Name, "Should extract project name from [tool.poetry]")
+	assert.Contains(t, payload.Tech, "python", "Should detect Python technology as primary tech")
+	assert.Contains(t, payload.Techs, "django", "Should detect Django from dependencies")
+}
+
+func TestDetector_Detect_PyProjectWithoutName(t *testing.T) {
+	detector := &Detector{}
+
+	// Create mock pyproject.toml content without name
+	pyprojectContent := `[build-system]
+requires = ["setuptools>=45", "wheel"]
+
+[project]
+version = "1.0.0"
+dependencies = [
+    "flask>=2.0.0",
+]`
+
+	// Setup mock provider
+	provider := &MockProvider{
+		files: map[string]string{
+			"/project/pyproject.toml": pyprojectContent,
+		},
+	}
+
+	// Setup mock dependency detector
+	depDetector := &MockDependencyDetector{
+		matchedTechs: map[string][]string{
+			"flask": {"matched dependency: flask"},
+		},
+	}
+
+	// Create file list
+	files := []types.File{
+		{Name: "pyproject.toml", Path: "/project/pyproject.toml"},
+	}
+
+	// Test detection - should fall back to directory name
+	results := detector.Detect(files, "/project", "/mock", provider, depDetector)
+
+	require.Len(t, results, 1, "Should detect project using directory name as fallback")
+	payload := results[0]
+	assert.Equal(t, "project", payload.Name, "Should use directory name when pyproject.toml has no name")
+	assert.Contains(t, payload.Tech, "python", "Should have python as primary tech")
+	assert.Contains(t, payload.Techs, "flask", "Should detect flask from dependencies")
+	assert.Len(t, payload.Dependencies, 1, "Should have 1 dependency")
+}
+
+func TestDetector_Detect_RequirementsTxtOnly(t *testing.T) {
+	detector := &Detector{}
+
+	reqContent := `flask==2.3.0
+requests==2.31.0
+redis==5.0.0
+`
+	// Setup mock provider
+	provider := &MockProvider{
+		files: map[string]string{
+			"/project/requirements.txt": reqContent,
+		},
+	}
+
+	// Setup mock dependency detector
+	depDetector := &MockDependencyDetector{
+		matchedTechs: map[string][]string{
+			"flask": {"matched dependency: flask"},
+		},
+	}
+
+	// Create file list with requirements.txt but no pyproject.toml
+	files := []types.File{
+		{Name: "app.py", Path: "/project/app.py"},
+		{Name: "requirements.txt", Path: "/project/requirements.txt"},
+	}
+
+	// Test detection - should detect from requirements.txt
+	results := detector.Detect(files, "/project", "/mock", provider, depDetector)
+
+	require.Len(t, results, 1, "Should detect Python component from requirements.txt")
+
+	payload := results[0]
+	assert.Equal(t, "project", payload.Name, "Should use directory name as component name")
+	assert.Contains(t, payload.Tech, "python", "Should have python as primary tech")
+	assert.Contains(t, payload.Techs, "flask", "Should detect flask from dependencies")
+	assert.Len(t, payload.Dependencies, 3, "Should have 3 dependencies (flask, requests, redis)")
+
+	depNames := make(map[string]bool)
+	for _, dep := range payload.Dependencies {
+		depNames[dep.Name] = true
+		assert.Equal(t, "python", dep.Type, "All dependencies should be python type")
+	}
+	assert.True(t, depNames["flask"], "Should have flask dependency")
+	assert.True(t, depNames["requests"], "Should have requests dependency")
+	assert.True(t, depNames["redis"], "Should have redis dependency")
+}
+
+func TestDetector_Detect_SetupPyOnly(t *testing.T) {
+	detector := &Detector{}
+
+	// Setup mock provider - setup.py exists but we don't parse it
+	provider := &MockProvider{
+		files: map[string]string{},
+	}
+
+	// Setup mock dependency detector
+	depDetector := &MockDependencyDetector{
+		matchedTechs: map[string][]string{},
+	}
+
+	// Create file list with only setup.py
+	files := []types.File{
+		{Name: "setup.py", Path: "/project/setup.py"},
+		{Name: "app.py", Path: "/project/app.py"},
+	}
+
+	// Test detection - should detect basic Python project from setup.py
+	results := detector.Detect(files, "/project", "/mock", provider, depDetector)
+
+	require.Len(t, results, 1, "Should detect Python component from setup.py")
+
+	payload := results[0]
+	assert.Equal(t, "project", payload.Name, "Should use directory name as component name")
+	assert.Contains(t, payload.Tech, "python", "Should have python as primary tech")
+	assert.Empty(t, payload.Dependencies, "Should have no dependencies (setup.py not parsed)")
+}
+
+func TestDetector_Detect_NoPythonFiles(t *testing.T) {
+	detector := &Detector{}
+
+	// Setup mock provider
+	provider := &MockProvider{
+		files: map[string]string{},
+	}
+
+	// Setup mock dependency detector
+	depDetector := &MockDependencyDetector{
+		matchedTechs: map[string][]string{},
+	}
+
+	// Create file list with no Python project files
+	files := []types.File{
+		{Name: "app.py", Path: "/project/app.py"},
+		{Name: "README.md", Path: "/project/README.md"},
+	}
+
+	// Test detection
+	results := detector.Detect(files, "/project", "/project", provider, depDetector)
+
+	// Verify no results
+	assert.Empty(t, results, "Should not detect any Python components without project files")
+}
+
+func TestDetector_Detect_PyProjectTakesPriorityOverRequirementsTxt(t *testing.T) {
+	detector := &Detector{}
+
+	pyprojectContent := `[project]
+name = "my-app"
+version = "1.0.0"
+dependencies = [
+    "django>=4.0.0",
+]`
+
+	reqContent := `flask==2.3.0
+requests==2.31.0
+`
+
+	// Setup mock provider with both files
+	provider := &MockProvider{
+		files: map[string]string{
+			"/project/pyproject.toml":   pyprojectContent,
+			"/project/requirements.txt": reqContent,
+		},
+	}
+
+	// Setup mock dependency detector
+	depDetector := &MockDependencyDetector{
+		matchedTechs: map[string][]string{
+			"django": {"matched dependency: django"},
+		},
+	}
+
+	// Create file list with both files
+	files := []types.File{
+		{Name: "pyproject.toml", Path: "/project/pyproject.toml"},
+		{Name: "requirements.txt", Path: "/project/requirements.txt"},
+	}
+
+	// Test detection - pyproject.toml should take priority
+	results := detector.Detect(files, "/project", "/mock", provider, depDetector)
+
+	require.Len(t, results, 1, "Should detect exactly one component (pyproject.toml wins)")
+
+	payload := results[0]
+	assert.Equal(t, "my-app", payload.Name, "Should use pyproject.toml name, not directory name")
+	assert.Contains(t, payload.Techs, "django", "Should detect django from pyproject.toml deps")
+}
+
+func TestDetector_Detect_EmptyFilesList(t *testing.T) {
+	detector := &Detector{}
+
+	// Setup mock provider
+	provider := &MockProvider{
+		files: map[string]string{},
+	}
+
+	// Setup mock dependency detector
+	depDetector := &MockDependencyDetector{
+		matchedTechs: map[string][]string{},
+	}
+
+	// Test with empty files list
+	results := detector.Detect([]types.File{}, "/project", "/project", provider, depDetector)
+
+	// Verify no results
+	assert.Empty(t, results, "Should not detect any components from empty file list")
+}
+
+func TestDetector_Detect_FileReadError(t *testing.T) {
+	detector := &Detector{}
+
+	// Setup mock provider that returns error (empty files map)
+	provider := &MockProvider{
+		files: map[string]string{},
+	}
+
+	// Setup mock dependency detector
+	depDetector := &MockDependencyDetector{
+		matchedTechs: map[string][]string{},
+	}
+
+	// Create file list
+	files := []types.File{
+		{Name: "pyproject.toml", Path: "/project/pyproject.toml"},
+	}
+
+	// Test detection
+	results := detector.Detect(files, "/project", "/project", provider, depDetector)
+
+	// Verify no results due to file read error
+	assert.Empty(t, results, "Should not detect components when file read fails")
+}
+
+func TestDetector_Detect_PyProjectWithEmptyDependencies(t *testing.T) {
+	detector := &Detector{}
+
+	// Create mock pyproject.toml content with empty dependencies
+	pyprojectContent := `[build-system]
+requires = ["setuptools>=45", "wheel"]
+
+[project]
+name = "no-deps-app"
+version = "1.0.0"
+dependencies = []
+
+[project.optional-dependencies]
+dev = []
+]`
+
+	// Setup mock provider
+	provider := &MockProvider{
+		files: map[string]string{
+			"/project/pyproject.toml": pyprojectContent,
+		},
+	}
+
+	// Setup mock dependency detector
+	depDetector := &MockDependencyDetector{
+		matchedTechs: map[string][]string{},
+	}
+
+	// Create file list
+	files := []types.File{
+		{Name: "pyproject.toml", Path: "/project/pyproject.toml"},
+	}
+
+	// Test detection
+	results := detector.Detect(files, "/project", "/project", provider, depDetector)
+
+	// Verify results
+	require.Len(t, results, 1, "Should detect one Python project")
+
+	payload := results[0]
+	assert.Equal(t, "no-deps-app", payload.Name)
+	assert.Contains(t, payload.Tech, "python", "Should have python as primary tech")
+	assert.Empty(t, payload.Dependencies, "Should have no dependencies")
+}
+
+func TestDetector_Detect_RelativePathHandling(t *testing.T) {
+	detector := &Detector{}
+
+	// Create mock pyproject.toml content
+	pyprojectContent := `[project]
+name = "path-test-app"
+version = "1.0.0"
+]`
+
+	// Setup mock provider
+	provider := &MockProvider{
+		files: map[string]string{
+			"/project/subdir/pyproject.toml": pyprojectContent,
+		},
+	}
+
+	// Setup mock dependency detector
+	depDetector := &MockDependencyDetector{
+		matchedTechs: map[string][]string{},
+	}
+
+	// Create file list
+	files := []types.File{
+		{Name: "pyproject.toml", Path: "/project/subdir/pyproject.toml"},
+	}
+
+	// Test detection with nested path
+	results := detector.Detect(files, "/project/subdir", "/project", provider, depDetector)
+
+	// Verify results
+	require.Len(t, results, 1, "Should detect one Python project")
+
+	payload := results[0]
+	assert.Equal(t, "path-test-app", payload.Name)
+	assert.Equal(t, "/subdir/pyproject.toml", payload.Path[0], "Should handle relative paths correctly")
+}
+
+func TestExtractProjectName(t *testing.T) {
+	tests := []struct {
+		name     string
+		content  string
+		expected string
+	}{
+		{
+			name: "basic project name",
+			content: `[project]
+name = "test-app"
+version = "1.0.0"
+]`,
+			expected: "test-app",
+		},
+		{
+			name: "project name with single quotes",
+			content: `[project]
+name = 'test-app'
+version = "1.0.0"
+]`,
+			expected: "test-app",
+		},
+		{
+			name: "project name with whitespace",
+			content: `[project]
+name =    "test-app"    
+version = "1.0.0"
+]`,
+			expected: "test-app",
+		},
+		{
+			name: "no project section",
+			content: `[build-system]
+requires = ["setuptools"]
+]`,
+			expected: "",
+		},
+		{
+			name: "empty project section",
+			content: `[project]
+version = "1.0.0"
+]`,
+			expected: "",
+		},
+		{
+			name: "project name in different section",
+			content: `[tool.poetry]
+name = "poetry-app"
+version = "1.0.0"
+]`,
+			expected: "poetry-app",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := extractProjectName(tt.content)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestParseDependencies(t *testing.T) {
+	tests := []struct {
+		name     string
+		content  string
+		expected []types.Dependency
+	}{
+		{
+			name: "basic dependencies",
+			content: `[project]
+dependencies = [
+    "flask>=2.0.0",
+    "requests==2.26.0",
+    "numpy",
+]`,
+			expected: []types.Dependency{
+				{Type: "python", Name: "flask", Version: "2.0.0"},
+				{Type: "python", Name: "requests", Version: "2.26.0"},
+				{Type: "python", Name: "numpy", Version: "latest"},
+			},
+		},
+		{
+			name: "poetry dependencies",
+			content: `[tool.poetry.dependencies]
+python = "^3.8"
+django = "^4.0.0"
+celery = ">=5.0.0"
+]`,
+			expected: []types.Dependency{
+				{Type: "python", Name: "python", Version: "3.8"},
+				{Type: "python", Name: "django", Version: "4.0.0"},
+				{Type: "python", Name: "celery", Version: "5.0.0"},
+			},
+		},
+		{
+			name: "no dependencies",
+			content: `[project]
+dependencies = []
+]`,
+			expected: []types.Dependency{},
+		},
+		{
+			name: "no dependencies section",
+			content: `[project]
+name = "test-app"
+]`,
+			expected: []types.Dependency{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := parseDependencies(tt.content)
+			assert.Equal(t, len(tt.expected), len(result), "Should have correct number of dependencies")
+
+			for i, expectedDep := range tt.expected {
+				if i < len(result) {
+					assert.Equal(t, expectedDep.Type, result[i].Type)
+					assert.Equal(t, expectedDep.Name, result[i].Name)
+					assert.Equal(t, expectedDep.Version, result[i].Version)
+				}
+			}
+		})
+	}
+}
+
+func TestDetectLicense(t *testing.T) {
+	tests := []struct {
+		name     string
+		content  string
+		expected string
+	}{
+		{
+			name: "MIT license",
+			content: `[project]
+name = "test-app"
+license = {text = "MIT"}
+]`,
+			expected: "MIT", // Now returns SPDX-normalized value
+		},
+		{
+			name: "Apache license",
+			content: `[project]
+name = "test-app"
+license = "Apache-2.0"
+]`,
+			expected: "Apache-2.0",
+		},
+		{
+			name: "no license",
+			content: `[project]
+name = "test-app"
+version = "1.0.0"
+]`,
+			expected: "",
+		},
+		{
+			name: "license in different section",
+			content: `[tool.poetry]
+name = "test-app"
+license = "MIT"
+]`,
+			expected: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			payload := &types.Payload{
+				Reason: make(map[string][]string),
+			}
+			detectLicense(tt.content, payload)
+
+			if tt.expected != "" {
+				// Check if any license object has the expected license name
+				found := false
+				for _, license := range payload.Licenses {
+					if license.LicenseName == tt.expected {
+						found = true
+						break
+					}
+				}
+				assert.True(t, found, "Should detect license")
+			} else {
+				assert.Empty(t, payload.Licenses, "Should not detect license")
+			}
+		})
+	}
+}
+
+func TestDetectLicense_CompoundExpression(t *testing.T) {
+	tests := []struct {
+		name             string
+		content          string
+		expectedLicenses []string
+	}{
+		{
+			name: "SPDX OR expression",
+			content: `[project]
+name = "test-app"
+license = "MIT OR Apache-2.0"
+`,
+			expectedLicenses: []string{"MIT", "Apache-2.0"},
+		},
+		{
+			name: "SPDX AND expression",
+			content: `[project]
+name = "test-app"
+license = "MIT AND BSD-3-Clause"
+`,
+			expectedLicenses: []string{"MIT", "BSD-3-Clause"},
+		},
+		{
+			name: "TOML object with compound expression (PEP 639)",
+			content: `[project]
+name = "test-app"
+license = {text = "GPL-3.0 OR LGPL-3.0"}
+`,
+			expectedLicenses: []string{"GPL-3.0", "LGPL-3.0"},
+		},
+		{
+			name: "simple TOML object license",
+			content: `[project]
+name = "test-app"
+license = {text = "MIT"}
+`,
+			expectedLicenses: []string{"MIT"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			payload := &types.Payload{
+				Reason: make(map[string][]string),
+			}
+			detectLicense(tt.content, payload)
+
+			require.Len(t, payload.Licenses, len(tt.expectedLicenses),
+				"Should detect %d license(s)", len(tt.expectedLicenses))
+
+			for _, expected := range tt.expectedLicenses {
+				found := false
+				for _, lic := range payload.Licenses {
+					if lic.LicenseName == expected {
+						found = true
+						break
+					}
+				}
+				assert.True(t, found, "Should detect license %s", expected)
+			}
+		})
+	}
+}

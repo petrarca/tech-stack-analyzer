@@ -1,0 +1,33 @@
+tech: javafx
+name: JavaFX
+dependencies:
+  - type: maven
+    name: org.openjfx/javafx-controls
+    example: org.openjfx/javafx-controls
+  - type: maven
+    name: org.openjfx/javafx-fxml
+    example: org.openjfx/javafx-fxml
+  - type: maven
+    name: org.openjfx/javafx-graphics
+    example: org.openjfx/javafx-graphics
+  - type: maven
+    name: org.openjfx/javafx-media
+    example: org.openjfx/javafx-media
+  - type: maven
+    name: org.openjfx/javafx-web
+    example: org.openjfx/javafx-web
+  - type: maven
+    name: org.openjfx/javafx-swing
+    example: org.openjfx/javafx-swing
+  - type: gradle
+    name: org.openjfx:javafx-controls
+    example: org.openjfx:javafx-controls
+  - type: gradle
+    name: org.openjfx:javafx-fxml
+    example: org.openjfx:javafx-fxml
+  - type: gradle
+    name: org.openjfx:javafx-graphics
+    example: org.openjfx:javafx-graphics
+  - type: gradle.plugin
+    name: org.openjfx.javafxplugin
+    example: org.openjfx.javafxplugin

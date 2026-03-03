@@ -1,0 +1,14 @@
+tech: ghost
+name: Ghost
+dotenv:
+  - GHOST_
+dependencies:
+  - type: docker
+    name: ghost
+    example: ghost
+  - type: npm
+    name: ghost-cli
+    example: ghost-cli
+  - type: npm
+    name: "@tryghost/content-api"
+    example: "@tryghost/content-api"

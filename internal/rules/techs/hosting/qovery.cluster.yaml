@@ -1,0 +1,6 @@
+tech: qovery.cluster
+name: Qovery Cluster
+dependencies:
+  - type: terraform.resource
+    name: qovery_cluster
+    example: qovery_cluster

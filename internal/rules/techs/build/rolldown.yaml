@@ -1,0 +1,6 @@
+tech: rolldown
+name: Rolldown
+dependencies:
+  - type: npm
+    name: rolldown
+    example: rolldown

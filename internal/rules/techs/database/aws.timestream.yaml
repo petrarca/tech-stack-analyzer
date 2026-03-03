@@ -1,0 +1,21 @@
+tech: aws.timestream
+name: AWS Timestream
+dependencies:
+  - type: npm
+    name: "@aws-cdk/aws-timestream"
+    example: "@aws-cdk/aws-timestream"
+  - type: npm
+    name: "@aws-sdk/client-timestream"
+    example: "@aws-sdk/client-timestream"
+  - type: rust
+    name: aws-sdk-timestream
+    example: aws-sdk-timestream
+  - type: ruby
+    name: aws-sdk-timestream
+    example: aws-sdk-timestream
+  - type: golang
+    name: github.com/aws/aws-sdk-go-v2/service/timestream
+    example: github.com/aws/aws-sdk-go-v2/service/timestream
+  - type: terraform.resource
+    name: airbyte_destination_timestream
+    example: airbyte_destination_timestream

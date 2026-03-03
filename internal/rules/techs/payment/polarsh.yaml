@@ -1,0 +1,14 @@
+tech: polarsh
+name: Polar
+dotenv:
+  - POLARSH_
+dependencies:
+  - type: python
+    name: polar-sdk
+    example: polar-sdk
+  - type: php
+    name: polar-sh/sdk
+    example: polar-sh/sdk
+  - type: golang
+    name: github.com/polarsource/polar-go
+    example: github.com/polarsource/polar-go

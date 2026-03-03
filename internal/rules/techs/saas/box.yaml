@@ -1,0 +1,12 @@
+tech: box
+name: Box
+dependencies:
+  - type: npm
+    name: box-node-sdk
+    example: box-node-sdk
+  - type: python
+    name: boxsdk
+    example: boxsdk
+  - type: php
+    name: box/box-php-sdk
+    example: box/box-php-sdk

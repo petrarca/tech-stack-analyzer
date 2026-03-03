@@ -1,0 +1,18 @@
+tech: gcp.logging
+name: Cloud Logging
+dependencies:
+  - type: npm
+    name: "@google-cloud/logging"
+    example: "@google-cloud/logging"
+  - type: golang
+    name: cloud.google.com/go/logging
+    example: cloud.google.com/go/logging
+  - type: ruby
+    name: google-cloud-logging
+    example: google-cloud-logging
+  - type: rust
+    name: google-cloud-logging
+    example: google-cloud-logging
+  - type: php
+    name: google/cloud-logging
+    example: google/cloud-logging

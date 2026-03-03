@@ -1,0 +1,9 @@
+tech: trufflesecurity
+name: Truffle Security
+dependencies:
+  - type: docker
+    name: trufflesecurity/trufflehog
+    example: trufflesecurity/trufflehog
+  - type: githubAction
+    name: trufflesecurity/trufflehog
+    example: trufflesecurity/trufflehog

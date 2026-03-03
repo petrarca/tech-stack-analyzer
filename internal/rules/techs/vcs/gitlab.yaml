@@ -1,0 +1,24 @@
+tech: gitlab
+name: Gitlab
+dependencies:
+  - type: terraform
+    name: registry.terraform.io/gitlabhq/gitlab
+    example: registry.terraform.io/gitlabhq/gitlab
+  - type: rust
+    name: gitlab
+    example: gitlab
+  - type: ruby
+    name: gitlab
+    example: gitlab
+  - type: php
+    name: m4tthumphrey/php-gitlab-api
+    example: m4tthumphrey/php-gitlab-api
+  - type: npm
+    name: "@pulumi/gitlab"
+    example: "@pulumi/gitlab"
+  - type: terraform.resource
+    name: airbyte_source_gitlab
+    example: airbyte_source_gitlab
+  - type: python
+    name: python-gitlab
+    example: python-gitlab

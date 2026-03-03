@@ -1,0 +1,9 @@
+tech: frontegg
+name: Frontegg
+dependencies:
+  - type: python
+    name: frontegg
+    example: frontegg
+  - type: terraform
+    name: registry.terraform.io/frontegg/frontegg
+    example: registry.terraform.io/frontegg/frontegg

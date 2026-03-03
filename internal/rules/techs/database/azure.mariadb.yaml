@@ -1,0 +1,15 @@
+tech: azure.mariadb
+name: Azure MariaDB
+dependencies:
+  - type: ruby
+    name: azure_mgmt_mariadb
+    example: azure_mgmt_mariadb
+  - type: rust
+    name: azure_mgmt_mariadb
+    example: azure_mgmt_mariadb
+  - type: npm
+    name: "@azure/arm-mariadb"
+    example: "@azure/arm-mariadb"
+  - type: golang
+    name: github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/mariadb/armmariadb
+    example: github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/mariadb/armmariadb

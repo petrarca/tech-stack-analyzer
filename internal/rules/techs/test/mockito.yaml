@@ -1,0 +1,9 @@
+tech: mockito
+name: Mockito
+dependencies:
+  - type: maven
+    name: org.mockito:mockito-core
+    example: org.mockito:mockito-core
+  - type: maven
+    name: org.mockito:mockito-junit-jupiter
+    example: org.mockito:mockito-junit-jupiter

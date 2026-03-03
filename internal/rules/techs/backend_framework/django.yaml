@@ -1,0 +1,6 @@
+tech: django
+name: Django
+dependencies:
+  - type: python
+    name: django
+    example: django

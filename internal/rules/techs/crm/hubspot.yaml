@@ -1,0 +1,12 @@
+tech: hubspot
+name: HubSpot
+dependencies:
+  - type: php
+    name: hubspot/hubspot-php
+    example: hubspot/hubspot-php
+  - type: php
+    name: hubspot/api-client
+    example: hubspot/api-client
+  - type: npm
+    name: "@analytics/hubspot"
+    example: "@analytics/hubspot"

@@ -1,0 +1,21 @@
+tech: betterstack
+name: Better Stack
+dotenv:
+  - LOGTAIL_
+  - BETTERSTACK_
+dependencies:
+  - type: npm
+    name: "@logtail/node"
+    example: "@logtail/node"
+  - type: ruby
+    name: logtail-rails
+    example: logtail-rails
+  - type: php
+    name: logtail/monolog-logtail
+    example: logtail/monolog-logtail
+  - type: terraform
+    name: registry.terraform.io/BetterStackHQ/better-uptime
+    example: registry.terraform.io/BetterStackHQ/better-uptime
+  - type: terraform
+    name: registry.terraform.io/BetterStackHQ/logtail
+    example: registry.terraform.io/BetterStackHQ/logtail

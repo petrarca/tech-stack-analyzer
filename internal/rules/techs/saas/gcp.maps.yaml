@@ -1,0 +1,17 @@
+tech: gcp.maps
+name: Google Maps
+dotenv:
+  - GOOGLE_MAPS_
+dependencies:
+  - type: npm
+    name: "@google-cloud/maps"
+    example: "@google-cloud/maps"
+  - type: ruby
+    name: google_maps_service
+    example: google_maps_service
+  - type: golang
+    name: cloud.google.com/go/maps
+    example: cloud.google.com/go/maps
+  - type: python
+    name: google-maps-mapsplatformdatasets
+    example: google-maps-mapsplatformdatasets

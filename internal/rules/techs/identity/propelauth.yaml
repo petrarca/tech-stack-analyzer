@@ -1,0 +1,12 @@
+tech: propelauth
+name: PropelAuth
+dependencies:
+  - type: python
+    name: propelauth_fastapi
+    example: propelauth_fastapi
+  - type: rust
+    name: propelauth
+    example: propelauth
+  - type: golang
+    name: github.com/propelauth/propelauth-go
+    example: github.com/propelauth/propelauth-go

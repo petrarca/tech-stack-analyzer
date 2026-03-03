@@ -1,0 +1,14 @@
+tech: zendesk
+name: Zendesk
+dotenv:
+  - ZENDESK_
+dependencies:
+  - type: npm
+    name: node-zendesk
+    example: node-zendesk
+  - type: ruby
+    name: zendesk_api
+    example: zendesk_api
+  - type: php
+    name: zendesk/zendesk_api_client_php
+    example: zendesk/zendesk_api_client_php

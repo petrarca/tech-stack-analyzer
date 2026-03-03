@@ -1,0 +1,14 @@
+tech: nuxtjs
+name: Nuxt.js
+dependencies:
+  - type: npm
+    name: nuxt
+    example: nuxt
+  - type: npm
+    name: nuxt-edge
+    example: nuxt-edge
+  - type: npm
+    name: nuxt3
+    example: nuxt3
+files:
+  - nuxt.config.js

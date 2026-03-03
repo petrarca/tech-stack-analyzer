@@ -1,0 +1,6 @@
+tech: sanity
+name: Sanity
+dependencies:
+  - type: npm
+    name: sanity
+    example: sanity

@@ -1,0 +1,8 @@
+tech: expodev
+name: Expo.dev
+dependencies:
+  - type: githubAction
+    name: expo/expo-github-action
+    example: expo/expo-github-action
+files:
+  - expo.dev

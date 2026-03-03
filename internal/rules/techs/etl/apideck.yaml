@@ -1,0 +1,12 @@
+tech: apideck
+name: Apideck
+dependencies:
+  - type: php
+    name: apideck-libraries/sdk-php
+    example: apideck-libraries/sdk-php
+  - type: python
+    name: apideck-unify
+    example: apideck-unify
+  - type: golang
+    name: github.com/apideck-libraries/sdk-go
+    example: github.com/apideck-libraries/sdk-go

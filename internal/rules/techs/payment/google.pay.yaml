@@ -1,0 +1,9 @@
+tech: google.pay
+name: Google Pay
+dotenv:
+  - GOOGLE_PAY_
+  - GPAY_
+dependencies:
+  - type: npm
+    name: "@types/googlepay"
+    example: "@types/googlepay"

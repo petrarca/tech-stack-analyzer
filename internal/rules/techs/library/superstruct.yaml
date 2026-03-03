@@ -1,0 +1,6 @@
+tech: superstruct
+name: Superstruct
+dependencies:
+  - type: npm
+    name: superstruct
+    example: superstruct

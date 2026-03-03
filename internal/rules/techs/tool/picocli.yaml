@@ -1,0 +1,6 @@
+tech: picocli
+name: picocli
+dependencies:
+  - type: maven
+    name: info.picocli:picocli
+    example: info.picocli:picocli

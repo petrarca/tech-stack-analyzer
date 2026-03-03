@@ -1,0 +1,14 @@
+tech: docusign
+name: Docusign
+dotenv:
+  - DOCUSIGN_
+dependencies:
+  - type: npm
+    name: docusign-esign
+    example: docusign-esign
+  - type: ruby
+    name: docusign_esign
+    example: docusign_esign
+  - type: php
+    name: docusign/esign-client
+    example: docusign/esign-client

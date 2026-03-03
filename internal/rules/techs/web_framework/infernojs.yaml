@@ -1,0 +1,6 @@
+tech: infernojs
+name: Inferno
+dependencies:
+  - type: npm
+    name: inferno
+    example: inferno

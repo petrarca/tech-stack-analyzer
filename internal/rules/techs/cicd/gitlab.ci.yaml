@@ -1,0 +1,5 @@
+tech: gitlab.ci
+name: Gitlab CI
+files:
+  - .gitlab-ci.yml
+  - .gitlab-ci.yaml

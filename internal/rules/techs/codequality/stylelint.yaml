@@ -1,0 +1,7 @@
+tech: stylelint
+name: Stylelint
+files:
+  - .stylelint
+  - .stylelintrc.cjs
+  - .stylelintrc.json
+  - .stylelintrc.js

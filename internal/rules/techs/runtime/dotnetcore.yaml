@@ -1,0 +1,25 @@
+tech: dotnetcore
+name: .NET Core
+dependencies:
+  - type: nuget
+    name: Microsoft.NETCore.App
+    example: Microsoft.NETCore.App
+  - type: nuget
+    name: Microsoft.AspNetCore.App
+    example: Microsoft.AspNetCore.App
+  - type: nuget
+    name: Microsoft.Extensions.Hosting
+    example: Microsoft.Extensions.Hosting
+content:
+  # .NET Core project files
+  - type: regex
+    pattern: <TargetFramework>netcoreapp|<TargetFramework>netstandard
+    extensions: [.csproj, .vbproj, .fsproj]
+  # .NET Core web projects
+  - type: regex
+    pattern: Microsoft\.AspNetCore\.|Microsoft\.Extensions\.|netcoreapp
+    extensions: [.csproj, .vbproj, .fsproj]
+  # .NET Core global.json
+  - type: regex
+    pattern: dotnet.*[0-9]+\.[0-9]+
+    extensions: [.json]

@@ -1,0 +1,15 @@
+tech: aws.glacier
+name: AWS Glacier
+dependencies:
+  - type: npm
+    name: "@aws-sdk/client-glacier"
+    example: "@aws-sdk/client-glacier"
+  - type: rust
+    name: aws-sdk-glacier
+    example: aws-sdk-glacier
+  - type: ruby
+    name: aws-sdk-glacier
+    example: aws-sdk-glacier
+  - type: golang
+    name: github.com/aws/aws-sdk-go-v2/service/glacier
+    example: github.com/aws/aws-sdk-go-v2/service/glacier

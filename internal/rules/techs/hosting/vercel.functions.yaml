@@ -1,0 +1,9 @@
+tech: vercel.functions
+name: Vercel Functions
+dependencies:
+  - type: npm
+    name: "@vercel/functions"
+    example: "@vercel/functions"
+  - type: npm
+    name: "@vercel/og"
+    example: "@vercel/og"

@@ -1,0 +1,27 @@
+tech: gcp.bigquery
+name: Cloud BigQuery
+dependencies:
+  - type: npm
+    name: "@google-cloud/bigquery"
+    example: "@google-cloud/bigquery"
+  - type: rust
+    name: gcp-bigquery-client
+    example: gcp-bigquery-client
+  - type: ruby
+    name: google-cloud-bigquery
+    example: google-cloud-bigquery
+  - type: golang
+    name: cloud.google.com/go/bigquery
+    example: cloud.google.com/go/bigquery
+  - type: php
+    name: google/cloud-bigquery
+    example: google/cloud-bigquery
+  - type: terraform.resource
+    name: airbyte_destination_bigquery
+    example: airbyte_destination_bigquery
+  - type: python
+    name: google-cloud-bigquery-logging
+    example: google-cloud-bigquery-logging
+  - type: python
+    name: google-cloud-bigquery-datatransfer
+    example: google-cloud-bigquery-datatransfer

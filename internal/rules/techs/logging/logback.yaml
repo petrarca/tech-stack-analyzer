@@ -1,0 +1,6 @@
+tech: logback
+name: Logback
+dependencies:
+  - type: maven
+    name: /^ch\.qos\.logback:.*$/
+    example: ch.qos.logback:logback-classic

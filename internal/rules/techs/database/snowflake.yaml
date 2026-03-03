@@ -1,0 +1,21 @@
+tech: snowflake
+name: Snowflake
+dependencies:
+  - type: terraform
+    name: registry.terraform.io/Snowflake-Labs/snowflake
+    example: registry.terraform.io/Snowflake-Labs/snowflake
+  - type: rust
+    name: snowflake
+    example: snowflake
+  - type: rust
+    name: rs-snowflake
+    example: rs-snowflake
+  - type: npm
+    name: "@pulumi/snowflake"
+    example: "@pulumi/snowflake"
+  - type: ruby
+    name: sequel-snowflake
+    example: sequel-snowflake
+  - type: terraform.resource
+    name: airbyte_destination_snowflake
+    example: airbyte_destination_snowflake

@@ -1,0 +1,21 @@
+tech: aws.redshift
+name: AWS Redshift
+dependencies:
+  - type: npm
+    name: "@aws-cdk/aws-redshift"
+    example: "@aws-cdk/aws-redshift"
+  - type: npm
+    name: "@aws-sdk/aws-redshift"
+    example: "@aws-sdk/aws-redshift"
+  - type: rust
+    name: aws-sdk-redshift
+    example: aws-sdk-redshift
+  - type: ruby
+    name: aws-sdk-redshift
+    example: aws-sdk-redshift
+  - type: golang
+    name: github.com/aws/aws-sdk-go-v2/service/redshift
+    example: github.com/aws/aws-sdk-go-v2/service/redshift
+  - type: terraform.resource
+    name: airbyte_destination_redshift
+    example: airbyte_destination_redshift

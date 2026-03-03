@@ -1,0 +1,20 @@
+tech: os_windows
+name: Windows
+dotenv:
+  - WINDOWS
+  - WIN32
+  - WIN64
+files:
+  - ".sln"
+  - ".vcxproj"
+  - ".csproj"
+dependencies:
+  - type: nuget
+    name: Microsoft.Windows.Compatibility
+    example: Microsoft.Windows.Compatibility
+  - type: nuget
+    name: System.Windows.Forms
+    example: System.Windows.Forms
+  - type: python
+    name: pywin32
+    example: pywin32

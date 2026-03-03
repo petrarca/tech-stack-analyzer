@@ -1,0 +1,11 @@
+tech: cache_objectscript
+name: Cache ObjectScript
+content:
+  # Cache/IRIS package.xml files (only if they contain Cache/IRIS content)
+  - type: regex
+    pattern: generator="Cache"|generator=".*Cache.*"|generator=".*IRIS.*"
+    files: [package.xml]
+  # Cache ObjectScript routine files
+  - type: regex
+    pattern: ^///.*ROUTINE|^ROUTINE\s+\w+|;\s*Cache ObjectScript
+    extensions: [.int, .mac]

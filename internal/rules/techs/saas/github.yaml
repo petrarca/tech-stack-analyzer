@@ -1,0 +1,26 @@
+tech: github
+name: GitHub
+dependencies:
+  - type: npm
+    name: octokit
+    example: octokit
+  - type: terraform
+    name: registry.terraform.io/integrations/github
+    example: registry.terraform.io/integrations/github
+  - type: ruby
+    name: octokit
+    example: octokit
+  - type: php
+    name: knplabs/github-api
+    example: knplabs/github-api
+  - type: npm
+    name: "@pulumi/github"
+    example: "@pulumi/github"
+  - type: python
+    name: PyGithub
+    example: PyGithub
+  - type: terraform.resource
+    name: airbyte_source_github
+    example: airbyte_source_github
+files:
+  - .github

@@ -1,0 +1,9 @@
+tech: rocket_universe
+name: Rocket UniVerse
+dependencies:
+  - type: nuget
+    name: U2.Data.Client
+    example: U2.Data.Client
+  - type: maven
+    name: com.rocketsoftware:u2-jdbc
+    example: com.rocketsoftware:u2-jdbc

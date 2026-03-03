@@ -1,0 +1,26 @@
+tech: playwright
+name: Playwright
+dependencies:
+  - type: npm
+    name: playwright
+    example: playwright
+  - type: npm
+    name: "@playwright/test"
+    example: "@playwright/test"
+  - type: githubAction
+    name: microsoft/playwright-github-action
+    example: microsoft/playwright-github-action
+  - type: docker
+    name: mcr.microsoft.com/playwright
+    example: mcr.microsoft.com/playwright
+  - type: python
+    name: pytest-playwright
+    example: pytest-playwright
+  - type: nuget
+    name: Microsoft.Playwright.NUnit
+    example: Microsoft.Playwright.NUnit
+  - type: maven
+    name: /^com\.microsoft\.playwright:.*$/
+    example: com.microsoft.playwright:playwright
+files:
+  - playwright.config.ts

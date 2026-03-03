@@ -1,0 +1,7 @@
+tech: react
+name: React
+dependencies:
+  - type: npm
+    name: react
+    example: react
+is_primary_tech: true

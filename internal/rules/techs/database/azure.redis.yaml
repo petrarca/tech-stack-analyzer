@@ -1,0 +1,15 @@
+tech: azure.redis
+name: Azure Redis
+dependencies:
+  - type: ruby
+    name: azure_mgmt_redis
+    example: azure_mgmt_redis
+  - type: rust
+    name: azure_mgmt_redis
+    example: azure_mgmt_redis
+  - type: npm
+    name: "@azure/arm-redis"
+    example: "@azure/arm-redis"
+  - type: golang
+    name: github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/redis/armredis/v2
+    example: github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/redis/armredis/v2

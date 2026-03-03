@@ -1,0 +1,12 @@
+tech: browserstack
+name: Browserstack
+dependencies:
+  - type: npm
+    name: browserstack
+    example: browserstack
+  - type: ruby
+    name: browserstack-local
+    example: browserstack-local
+files:
+  - browserstack.json
+  - browserstack.yml

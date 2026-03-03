@@ -1,0 +1,9 @@
+tech: koyeb
+name: Koyeb
+dependencies:
+  - type: npm
+    name: koyeb-api-client
+    example: koyeb-api-client
+files:
+  - .koyeb.yaml
+  - Dockerfile.koyeb

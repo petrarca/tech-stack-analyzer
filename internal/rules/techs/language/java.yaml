@@ -1,0 +1,7 @@
+tech: java
+name: Java
+is_primary_tech: true
+extensions:
+  - .java
+  - .jav
+  - .jsh

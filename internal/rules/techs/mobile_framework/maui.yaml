@@ -1,0 +1,19 @@
+tech: maui
+name: MAUI
+type: mobile_framework
+dependencies:
+  - type: nuget
+    name: Microsoft.Maui.Controls
+    example: Microsoft.Maui.Controls
+  - type: nuget
+    name: Microsoft.Maui.Controls.Compatibility
+    example: Microsoft.Maui.Controls.Compatibility
+  - type: nuget
+    name: Microsoft.Maui.Controls.Maps
+    example: Microsoft.Maui.Controls.Maps
+  - type: nuget
+    name: CommunityToolkit.Maui
+    example: CommunityToolkit.Maui
+  - type: nuget
+    name: CommunityToolkit.Mvvm
+    example: CommunityToolkit.Mvvm

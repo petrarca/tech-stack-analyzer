@@ -1,0 +1,19 @@
+tech: hyperfile
+name: HyperFile
+dependencies:
+  - type: docker
+    name: cloudian/hyperfile
+    example: cloudian/hyperfile
+content:
+  # HyperFile configuration files
+  - type: regex
+    pattern: Cloudian|HyperFile|NFS|SMB|CIFS
+    extensions: [.conf, .cfg, .yaml, .yml]
+  # HyperFile mount points and exports
+  - type: regex
+    pattern: /mnt/hyperfile|/export/hyperfile|hyperfile.*mount
+    extensions: [.fstab, .exports, .mount]
+  # HyperFile service configurations
+  - type: regex
+    pattern: hyperfile.*service|cloudian.*storage
+    extensions: [.service, .systemd]

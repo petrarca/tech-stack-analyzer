@@ -1,0 +1,18 @@
+tech: gcp.appengine
+name: Google App Engine
+dependencies:
+  - type: npm
+    name: "@google-cloud/appengine-admin"
+    example: "@google-cloud/appengine-admin"
+  - type: ruby
+    name: appengine
+    example: appengine
+  - type: golang
+    name: cloud.google.com/go/appengine
+    example: cloud.google.com/go/appengine
+  - type: php
+    name: google/appengine-php-sdk
+    example: google/appengine-php-sdk
+  - type: githubAction
+    name: google-github-actions/deploy-appengine
+    example: google-github-actions/deploy-appengine

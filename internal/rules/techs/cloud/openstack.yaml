@@ -1,0 +1,31 @@
+tech: openstack
+name: OpenStack
+files:
+  - clouds.yaml
+  - openrc
+  - openrc.sh
+  - .zuul.yaml
+  - devstack/local.conf
+dependencies:
+  # OpenStack SDK and clients
+  - type: python
+    name: openstacksdk
+  - type: python
+    name: python-openstackclient
+  - type: python
+    name: /^python-[a-z]+client/
+  # OpenStack service clients
+  - type: python
+    name: python-novaclient
+  - type: python
+    name: python-glanceclient
+  - type: python
+    name: python-keystoneclient
+  - type: python
+    name: python-neutronclient
+  - type: python
+    name: python-cinderclient
+  - type: python
+    name: python-heatclient
+  - type: python
+    name: python-swiftclient

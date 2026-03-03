@@ -1,0 +1,12 @@
+tech: socketio
+name: Socket.io
+dependencies:
+  - type: npm
+    name: socket.io
+    example: socket.io
+  - type: python
+    name: python-socketio
+    example: python-socketio
+  - type: npm
+    name: "@opentelemetry/instrumentation-socket.io"
+    example: "@opentelemetry/instrumentation-socket.io"

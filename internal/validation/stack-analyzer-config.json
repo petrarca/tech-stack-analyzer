@@ -1,0 +1,199 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Tech Stack Analyzer Configuration",
+    "description": "Configuration schema for Tech Stack Analyzer scan configuration files and inline JSON",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "description": "JSON Schema reference for validation",
+            "format": "uri-reference"
+        },
+        "properties": {
+            "type": "object",
+            "description": "Custom properties added to metadata.properties in scan output",
+            "additionalProperties": {
+                "oneOf": [
+                    {"type": "string"},
+                    {"type": "number"},
+                    {"type": "boolean"}
+                ]
+            },
+            "propertyNames": {
+                "pattern": "^[a-zA-Z_][a-zA-Z0-9_-]*$",
+                "description": "Property names must be valid identifiers"
+            },
+            "maxProperties": 50,
+            "examples": [
+                {
+                    "product": "My Product Name",
+                    "team": "Platform Engineering",
+                    "owner": "engineering@company.com",
+                    "environment": "production",
+                    "version": "1.2.3"
+                }
+            ]
+        },
+        "exclude": {
+            "type": "array",
+            "description": "Files and directories to exclude from scanning (supports glob patterns)",
+            "items": {
+                "type": "string",
+                "pattern": "^[^./][^/]*$|^[^./][^/]*/([^/]+/)*[^/]+$",
+                "minLength": 1,
+                "maxLength": 255,
+                "description": "Exclude pattern (no path traversal allowed, supports glob patterns **, *, ?)"
+            },
+            "maxItems": 1000,
+            "uniqueItems": true,
+            "examples": [
+                ["node_modules", "vendor", "dist", "*.log", "**/__tests__/**"]
+            ]
+        },
+        "techs": {
+            "type": "array",
+            "description": "Technologies to add to scan results (even if not auto-detected)",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "tech": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9-]*$",
+                        "minLength": 1,
+                        "maxLength": 50,
+                        "description": "Technology identifier (lowercase, alphanumeric with hyphens)"
+                    },
+                    "reason": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200,
+                        "description": "Reason for including this technology"
+                    }
+                },
+                "required": ["tech"],
+                "additionalProperties": false
+            },
+            "maxItems": 100,
+            "uniqueItems": true,
+            "examples": [
+                [
+                    {"tech": "aws", "reason": "Deployed on AWS ECS"},
+                    {"tech": "datadog", "reason": "Monitoring via Datadog"}
+                ]
+            ]
+        },
+        "scan": {
+            "type": "object",
+            "description": "Scan configuration options (matching CLI flags)",
+            "properties": {
+                "output_file": {
+                    "type": "string",
+                    "pattern": "^[^/][^/]*$|^[^/][^/]*/([^/]+/)*[^/]+$|^-$|^\\./[^/]+$|^\\.\\./[^/]+$",
+                    "minLength": 1,
+                    "maxLength": 255,
+                    "description": "Output file path (relative path, './path', '../path', or '-' for stdout)"
+                },
+                "pretty": {
+                    "type": "boolean",
+                    "description": "Pretty print JSON output (matches --pretty flag)"
+                },
+                "aggregate": {
+                    "type": "string",
+                    "pattern": "^$|^(tech|techs|languages|licenses|dependencies|git|all)(,(tech|techs|languages|licenses|dependencies|git|all))*$",
+                    "description": "Aggregate fields (comma-separated list: tech,techs,languages,licenses,dependencies,git,all)"
+                },
+                "verbose": {
+                    "type": "boolean",
+                    "description": "Show progress with simple output (matches --verbose flag)"
+                },
+                "debug": {
+                    "type": "boolean",
+                    "description": "Show progress with tree structure (matches --debug flag)"
+                },
+                "no_code_stats": {
+                    "type": "boolean",
+                    "description": "Disable code statistics (matches --no-code-stats flag)"
+                },
+                "component_code_stats": {
+                    "type": "boolean",
+                    "description": "Enable per-component code statistics (matches --component-code-stats flag)"
+                },
+                "trace_timings": {
+                    "type": "boolean",
+                    "description": "Show timing information for each directory (matches --trace-timings flag)"
+                },
+                "trace_rules": {
+                    "type": "boolean",
+                    "description": "Show detailed rule matching information (matches --trace-rules flag)"
+                },
+                "filter_rules": {
+                    "type": "array",
+                    "description": "Only use these rules (matches --rules flag)",
+                    "items": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9-]*$",
+                        "minLength": 1,
+                        "maxLength": 50,
+                        "description": "Technology rule name"
+                    },
+                    "maxItems": 50,
+                    "uniqueItems": true
+                },
+                "primary_language_threshold": {
+                    "type": "number",
+                    "minimum": 0.001,
+                    "maximum": 1,
+                    "default": 0.05,
+                    "description": "Minimum percentage (0.001-1.0) for a programming language to be considered primary (default: 0.05 = 5%)"
+                },
+                "use_lock_files": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Use lock files (package-lock.json, uv.lock, Cargo.lock, etc.) for dependency resolution with exact versions (default: true)"
+                }
+            },
+            "additionalProperties": false,
+            "examples": [
+                {
+                    "output_file": "results.json",
+                    "pretty": true,
+                    "aggregate": "techs,languages",
+                    "debug": true,
+                    "trace_timings": false,
+                    "filter_rules": ["nodejs", "python"],
+                    "primary_language_threshold": 0.05
+                }
+            ]
+        }
+    },
+    "additionalProperties": false,
+    "maxProperties": 10,
+    "examples": [
+        {
+            "properties": {
+                "product": "My Product Name",
+                "team": "Platform Engineering",
+                "environment": "production"
+            },
+            "exclude": [
+                "node_modules",
+                "vendor",
+                "dist",
+                "*.log",
+                "**/__tests__/**"
+            ],
+            "techs": [
+                {"tech": "aws", "reason": "Deployed on AWS ECS"},
+                {"tech": "datadog", "reason": "Monitoring via Datadog"}
+            ],
+            "scan": {
+                "output_file": "results.json",
+                "pretty": true,
+                "aggregate": "techs,languages",
+                "debug": true,
+                "trace_timings": false,
+                "filter_rules": ["nodejs", "python"]
+            }
+        }
+    ]
+}

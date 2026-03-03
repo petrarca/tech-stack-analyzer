@@ -1,0 +1,6 @@
+tech: github.codeql
+name: GitHub CodeQL
+dependencies:
+  - type: githubAction
+    name: github/codeql-action/analyze
+    example: github/codeql-action/analyze

@@ -1,0 +1,23 @@
+tech: brevo
+name: Brevo
+dotenv:
+  - BREVO_
+dependencies:
+  - type: golang
+    name: github.com/getbrevo/brevo-go
+    example: github.com/getbrevo/brevo-go
+  - type: npm
+    name: "@getbrevo/brevo"
+    example: "@getbrevo/brevo"
+  - type: php
+    name: getbrevo/brevo-php
+    example: getbrevo/brevo-php
+  - type: php
+    name: sendinblue/api-v3-sdk
+    example: sendinblue/api-v3-sdk
+  - type: ruby
+    name: sib-api-v3-sdk
+    example: sib-api-v3-sdk
+  - type: npm
+    name: "@sendinblue/client"
+    example: "@sendinblue/client"

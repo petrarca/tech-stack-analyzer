@@ -1,0 +1,30 @@
+tech: logstash
+name: Logstash
+dependencies:
+  - type: docker
+    name: logstash
+    example: logstash
+  - type: npm
+    name: bunyan-logstash-tcp
+    example: bunyan-logstash-tcp
+  - type: ruby
+    name: logstash-event
+    example: logstash-event
+  - type: ruby
+    name: logstash-logger
+    example: logstash-logger
+  - type: ruby
+    name: logstash-output-sqs
+    example: logstash-output-sqs
+  - type: ruby
+    name: logstash-filter-translate
+    example: logstash-filter-translate
+  - type: ruby
+    name: logstash-output-stastd
+    example: logstash-output-stastd
+  - type: golang
+    name: github.com/elastic/beats/libbeat/outputs/logstash
+    example: github.com/elastic/beats/libbeat/outputs/logstash
+  - type: golang
+    name: github.com/bshuster-repo/logrus-logstash-hook
+    example: github.com/bshuster-repo/logrus-logstash-hook

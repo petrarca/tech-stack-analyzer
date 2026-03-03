@@ -1,0 +1,6 @@
+tech: babel
+name: Babel
+dependencies:
+  - type: npm
+    name: "@babel/core"
+    example: "@babel/core"

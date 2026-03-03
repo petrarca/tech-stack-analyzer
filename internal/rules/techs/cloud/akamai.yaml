@@ -1,0 +1,11 @@
+tech: akamai
+name: Akamai
+dotenv:
+  - AKAMAI_
+dependencies:
+  - type: terraform
+    name: registry.terraform.io/akamai/akamai
+    example: registry.terraform.io/akamai/akamai
+  - type: npm
+    name: akamai-edgegrid
+    example: akamai-edgegrid

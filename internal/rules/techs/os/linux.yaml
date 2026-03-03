@@ -1,0 +1,8 @@
+tech: os_linux
+name: Linux
+dotenv:
+  - LINUX
+dependencies:
+  - type: python
+    name: systemd
+    example: systemd

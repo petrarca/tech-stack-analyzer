@@ -1,0 +1,9 @@
+tech: joomla
+name: Joomla!
+dependencies:
+  - type: php
+    name: joomla/application
+    example: joomla/application
+  - type: docker
+    name: joomla
+    example: joomla

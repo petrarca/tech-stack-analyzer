@@ -1,0 +1,5 @@
+tech: jsx
+name: JSX
+extensions:
+  - .jsx
+  - .tsx

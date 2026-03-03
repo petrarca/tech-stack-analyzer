@@ -1,0 +1,15 @@
+tech: gcp.datastore
+name: Cloud Datastore
+dependencies:
+  - type: npm
+    name: "@google-cloud/datastore"
+    example: "@google-cloud/datastore"
+  - type: ruby
+    name: google-cloud-datastore
+    example: google-cloud-datastore
+  - type: golang
+    name: cloud.google.com/go/datastore
+    example: cloud.google.com/go/datastore
+  - type: php
+    name: google/cloud-datastore
+    example: google/cloud-datastore

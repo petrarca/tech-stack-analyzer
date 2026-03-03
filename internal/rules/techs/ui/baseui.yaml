@@ -1,0 +1,6 @@
+tech: baseui
+name: Base UI
+dependencies:
+  - type: npm
+    name: "@base-ui-components/react"
+    example: "@base-ui-components/react"

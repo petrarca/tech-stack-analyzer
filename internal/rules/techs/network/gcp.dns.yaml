@@ -1,0 +1,9 @@
+tech: gcp.dns
+name: Google DNS
+dependencies:
+  - type: npm
+    name: "@google-cloud/dns"
+    example: "@google-cloud/dns"
+  - type: ruby
+    name: google-cloud-dns
+    example: google-cloud-dns

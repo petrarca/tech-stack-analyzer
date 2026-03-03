@@ -1,0 +1,20 @@
+tech: railway
+name: Railway
+dotenv:
+  - RAILWAY_
+dependencies:
+  - type: terraform
+    name: registry.terraform.io/terraform-community-providers/railway
+    example: registry.terraform.io/terraform-community-providers/railway
+  - type: npm
+    name: railway
+    example: railway
+  - type: npm
+    name: "@railway/cli"
+    example: "@railway/cli"
+  - type: githubAction
+    name: bervProject/railway-deploy
+    example: bervProject/railway-deploy
+files:
+  - railway.toml
+  - railway.json

@@ -1,0 +1,18 @@
+tech: componentone
+name: ComponentOne
+dependencies:
+  - type: nuget
+    name: C1.Win.FlexGrid
+    example: C1.Win.FlexGrid
+  - type: nuget
+    name: C1.Blazor.Grid
+    example: C1.Blazor.Grid
+  - type: nuget
+    name: C1.WPF.Grid
+    example: C1.WPF.Grid
+  - type: nuget
+    name: C1.Web.Mvc
+    example: C1.Web.Mvc
+  - type: nuget
+    name: GrapeCity.Documents.Excel
+    example: GrapeCity.Documents.Excel

@@ -1,0 +1,18 @@
+tech: svelte
+name: Svelte
+files:
+  - svelte.config.js
+  - svelte.config.mjs
+  - svelte.config.cjs
+extensions:
+  - .svelte
+dependencies:
+  - type: npm
+    name: svelte
+    example: svelte
+  - type: npm
+    name: "@sveltejs/kit"
+    example: "@sveltejs/kit"
+  - type: npm
+    name: /^@sveltejs/.*/
+    example: "@sveltejs/adapter-auto"

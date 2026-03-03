@@ -1,0 +1,32 @@
+tech: stripe
+name: Stripe
+dotenv:
+  - STRIPE_
+dependencies:
+  - type: npm
+    name: stripe
+    example: stripe
+  - type: php
+    name: stripe/stripe-php
+    example: stripe/stripe-php
+  - type: php
+    name: laravel/cashier
+    example: laravel/cashier
+  - type: php
+    name: omnipay/stripe
+    example: omnipay/stripe
+  - type: php
+    name: cartalyst/stripe
+    example: cartalyst/stripe
+  - type: ruby
+    name: stripe
+    example: stripe
+  - type: ruby
+    name: stripe-rails
+    example: stripe-rails
+  - type: ruby
+    name: stripe_event
+    example: stripe_event
+  - type: golang
+    name: github.com/stripe/stripe-go
+    example: github.com/stripe/stripe-go

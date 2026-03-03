@@ -1,0 +1,5 @@
+tech: xslt
+name: XSLT
+extensions:
+  - .xsl
+  - .xslt

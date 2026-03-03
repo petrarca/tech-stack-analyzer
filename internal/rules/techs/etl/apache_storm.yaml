@@ -1,0 +1,6 @@
+tech: apache_storm
+name: Apache Storm
+dependencies:
+  - type: docker
+    name: apache/storm
+    example: apache/storm

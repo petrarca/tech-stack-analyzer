@@ -1,0 +1,27 @@
+tech: gcp.pubsub
+name: PubSub
+dependencies:
+  - type: npm
+    name: "@google-cloud/pubsub"
+    example: "@google-cloud/pubsub"
+  - type: golang
+    name: cloud.google.com/go/pubsub
+    example: cloud.google.com/go/pubsub
+  - type: rust
+    name: google-cloud-pubsub
+    example: google-cloud-pubsub
+  - type: ruby
+    name: google-cloud-pubsub
+    example: google-cloud-pubsub
+  - type: php
+    name: google/cloud-pubsub
+    example: google/cloud-pubsub
+  - type: php
+    name: gos/pubsub-router-bundle
+    example: gos/pubsub-router-bundle
+  - type: php
+    name: petitpress/gps-messenger-bundle
+    example: petitpress/gps-messenger-bundle
+  - type: terraform.resource
+    name: airbyte_destination_pubsub
+    example: airbyte_destination_pubsub

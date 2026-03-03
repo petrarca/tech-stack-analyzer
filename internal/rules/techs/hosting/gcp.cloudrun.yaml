@@ -1,0 +1,15 @@
+tech: gcp.cloudrun
+name: Cloud Run
+dependencies:
+  - type: npm
+    name: "@google-cloud/run"
+    example: "@google-cloud/run"
+  - type: golang
+    name: cloud.google.com/go/run
+    example: cloud.google.com/go/run
+  - type: php
+    name: google/cloud-run
+    example: google/cloud-run
+  - type: githubAction
+    name: google-github-actions/deploy-cloudrun
+    example: google-github-actions/deploy-cloudrun

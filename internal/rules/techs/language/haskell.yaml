@@ -1,0 +1,23 @@
+tech: haskell
+name: Haskell
+content:
+  # Haskell module declarations
+  - type: regex
+    pattern: ^module\s+[A-Z][A-Za-z0-9_']*(\s*\([^)]*\))?\s+where
+    extensions: [.hs]
+  # Haskell type signatures with ::
+  - type: regex
+    pattern: \w+\s*::\s*[^=]+=>\s*[^=]+->\s*[^=]+
+    extensions: [.hs]
+  # Haskell function signatures and guards
+  - type: regex
+    pattern: \w+\s+\w+\s*\|\s*\w+
+    extensions: [.hs]
+  # Haskell do-notation
+  - type: regex
+    pattern: \bdo\s+.*<-
+    extensions: [.hs]
+  # Haskell distinctive operators
+  - type: regex
+    pattern: =>|<-|::|\(\s*\w+\s*\:\s*\w+\s*\)
+    extensions: [.hs]

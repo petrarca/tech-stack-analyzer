@@ -1,0 +1,7 @@
+tech: acucobol
+name: AcuCOBOL
+is_primary_tech: true
+dedependencies:
+  - type: maven
+    name: com.microfocus.cobol/acucobol
+    example: com.microfocus.cobol/acucobol

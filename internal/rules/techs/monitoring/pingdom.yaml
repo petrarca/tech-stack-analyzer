@@ -1,0 +1,8 @@
+tech: pingdom
+name: Pingdom
+dotenv:
+  - PINGDOM_
+dependencies:
+  - type: terraform
+    name: registry.terraform.io/russellcardullo/pingdom
+    example: registry.terraform.io/russellcardullo/pingdom

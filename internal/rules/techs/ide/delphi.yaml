@@ -1,0 +1,7 @@
+tech: delphi
+name: Delphi
+extensions:
+  - .dproj
+  - .dpr
+  - .dpk
+is_primary_tech: true

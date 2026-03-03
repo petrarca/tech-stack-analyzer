@@ -1,0 +1,32 @@
+tech: github
+name: GitHub
+files:
+  - .github
+dependencies:
+  - type: terraform
+    name: registry.terraform.io/integrations/github
+    example: registry.terraform.io/integrations/github
+  - type: python
+    name: PyGithub
+    example: PyGithub
+  - type: python
+    name: ghapi
+    example: ghapi
+  - type: npm
+    name: "@octokit/rest"
+    example: "@octokit/rest"
+  - type: npm
+    name: "@octokit/core"
+    example: "@octokit/core"
+  - type: npm
+    name: "@actions/github"
+    example: "@actions/github"
+  - type: go
+    name: github.com/google/go-github
+    example: github.com/google/go-github
+  - type: ruby
+    name: octokit
+    example: octokit
+  - type: rust
+    name: octocrab
+    example: octocrab

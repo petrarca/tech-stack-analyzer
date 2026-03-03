@@ -1,0 +1,6 @@
+tech: qovery.database
+name: Qovery Database
+dependencies:
+  - type: terraform.resource
+    name: qovery_database
+    example: qovery_database

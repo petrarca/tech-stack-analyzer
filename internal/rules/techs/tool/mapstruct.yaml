@@ -1,0 +1,6 @@
+tech: mapstruct
+name: MapStruct
+dependencies:
+  - type: maven
+    name: /^org\.mapstruct.*/
+    example: org.mapstruct:mapstruct

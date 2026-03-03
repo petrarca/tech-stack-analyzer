@@ -1,0 +1,15 @@
+tech: gcp.aiplatform
+name: Cloud AI Platform
+dependencies:
+  - type: npm
+    name: "@google-cloud/aiplatform"
+    example: "@google-cloud/aiplatform"
+  - type: golang
+    name: cloud.google.com/go/aiplatform
+    example: cloud.google.com/go/aiplatform
+  - type: php
+    name: google/cloud-ai-platform
+    example: google/cloud-ai-platform
+  - type: python
+    name: google-cloud-aiplatform
+    example: google-cloud-aiplatform

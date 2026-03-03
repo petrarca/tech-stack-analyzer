@@ -1,0 +1,23 @@
+tech: twilio
+name: Twilio
+dotenv:
+  - TWILIO_
+dependencies:
+  - type: npm
+    name: twilio
+    example: twilio
+  - type: php
+    name: twilio/sdk
+    example: twilio/sdk
+  - type: githubAction
+    name: twilio-labs/actions-sms
+    example: twilio-labs/actions-sms
+  - type: golang
+    name: github.com/twilio/twilio-go
+    example: github.com/twilio/twilio-go
+  - type: ruby
+    name: twilio-ruby
+    example: twilio-ruby
+  - type: terraform.resource
+    name: airbyte_source_twilio
+    example: airbyte_source_twilio

@@ -1,0 +1,11 @@
+tech: os_windows_server
+name: Windows Server
+dotenv:
+  - WINDOWS_SERVER
+dependencies:
+  - type: nuget
+    name: System.DirectoryServices
+    example: System.DirectoryServices
+  - type: nuget
+    name: Microsoft.ActiveDirectory.Management
+    example: Microsoft.ActiveDirectory.Management

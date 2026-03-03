@@ -1,0 +1,18 @@
+tech: hetzner
+name: Hetzner
+dependencies:
+  - type: terraform
+    name: registry.terraform.io/hetznercloud/hcloud
+    example: registry.terraform.io/hetznercloud/hcloud
+  - type: golang
+    name: github.com/hetznercloud/hcloud-go/v2/hcloud
+    example: github.com/hetznercloud/hcloud-go/v2/hcloud
+  - type: python
+    name: hcloud
+    example: hcloud
+  - type: php
+    name: lkdevelopment/hetzner-cloud-php-sdk
+    example: lkdevelopment/hetzner-cloud-php-sdk
+  - type: ruby
+    name: hetznercloud
+    example: hetznercloud

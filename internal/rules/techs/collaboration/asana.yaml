@@ -1,0 +1,23 @@
+tech: asana
+name: Asana
+dotenv:
+  - ASANA_
+dependencies:
+  - type: npm
+    name: asana
+    example: asana
+  - type: python
+    name: asana
+    example: asana
+  - type: ruby
+    name: asana
+    example: asana
+  - type: php
+    name: asana/asana
+    example: asana/asana
+  - type: golang
+    name: github.com/Asana/go-asana
+    example: github.com/Asana/go-asana
+  - type: terraform.resource
+    name: airbyte_source_asana
+    example: airbyte_source_asana

@@ -1,0 +1,11 @@
+tech: matomo
+name: Matomo
+dotenv:
+  - MATOMO
+dependencies:
+  - type: docker
+    name: matomo
+    example: matomo
+  - type: docker
+    name: bitnami/matomo
+    example: bitnami/matomo

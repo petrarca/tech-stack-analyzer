@@ -1,0 +1,6 @@
+tech: planetscale
+name: PlanetScale
+dependencies:
+  - type: githubAction
+    name: planetscale/create-branch-action
+    example: planetscale/create-branch-action

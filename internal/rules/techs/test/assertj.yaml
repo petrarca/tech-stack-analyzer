@@ -1,0 +1,6 @@
+tech: assertj
+name: AssertJ
+dependencies:
+  - type: maven
+    name: org.assertj:assertj-core
+    example: org.assertj:assertj-core

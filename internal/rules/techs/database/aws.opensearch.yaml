@@ -1,0 +1,21 @@
+tech: aws.opensearch
+name: AWS Opensearch
+dependencies:
+  - type: npm
+    name: "@aws-cdk/aws-opensearch"
+    example: "@aws-cdk/aws-opensearch"
+  - type: npm
+    name: "@aws-sdk/client-opensearch"
+    example: "@aws-sdk/client-opensearch"
+  - type: rust
+    name: aws-sdk-opensearch
+    example: aws-sdk-opensearch
+  - type: ruby
+    name: aws-sdk-opensearch
+    example: aws-sdk-opensearch
+  - type: golang
+    name: github.com/aws/aws-sdk-go-v2/service/opensearch
+    example: github.com/aws/aws-sdk-go-v2/service/opensearch
+  - type: python
+    name: opensearch-py
+    example: opensearch-py

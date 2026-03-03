@@ -1,0 +1,11 @@
+tech: facebook
+name: Facebook
+dotenv:
+  - FACEBOOK_
+dependencies:
+  - type: npm
+    name: facebook-nodejs-business-sdk
+    example: facebook-nodejs-business-sdk
+  - type: npm
+    name: passport-facebook
+    example: passport-facebook

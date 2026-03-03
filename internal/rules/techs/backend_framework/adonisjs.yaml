@@ -1,0 +1,9 @@
+tech: adonisjs
+name: AdonisJS
+dependencies:
+  - type: npm
+    name: adonisjs
+    example: adonisjs
+  - type: npm
+    name: "@adonisjs/core"
+    example: "@adonisjs/core"

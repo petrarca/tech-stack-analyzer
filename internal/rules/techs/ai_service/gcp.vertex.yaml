@@ -1,0 +1,17 @@
+tech: gcp.vertex
+name: Vertex AI
+dotenv:
+  - VERTEX_AI
+dependencies:
+  - type: npm
+    name: "@ai-sdk/google-vertex"
+    example: "@ai-sdk/google-vertex"
+  - type: npm
+    name: "@google-cloud/vertexai"
+    example: "@google-cloud/vertexai"
+  - type: npm
+    name: "@langchain/google-vertexai"
+    example: "@langchain/google-vertexai"
+  - type: python
+    name: vertexai
+    example: vertexai

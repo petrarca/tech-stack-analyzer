@@ -1,0 +1,15 @@
+tech: sap_ase
+name: SAP ASE
+dependencies:
+  - type: python
+    name: python-sybase
+    example: python-sybase
+  - type: nuget
+    name: AdoNetCore.AseClient
+    example: AdoNetCore.AseClient
+  - type: maven
+    name: net.sourceforge.jtds:jtds
+    example: net.sourceforge.jtds:jtds
+  - type: maven
+    name: com.sybase.jdbc4.jdbc:jconn4
+    example: com.sybase.jdbc4.jdbc:jconn4
