@@ -17,18 +17,18 @@ type Payload struct {
 	Git              *git.GitInfo           `json:"git,omitempty"`
 	ID               string                 `json:"id"`
 	Name             string                 `json:"name"`
-	Path             []string               `json:"path"`
+	Path             []string               `json:"path,omitempty"`
 	ComponentType    string                 `json:"type,omitempty"` // Type of component (e.g., "maven", "nodejs", "python")
 	Tech             []string               `json:"tech"`           // Changed from *string to []string to support multiple primary technologies
 	Techs            []string               `json:"techs"`
 	Languages        map[string]int         `json:"languages"`
 	PrimaryLanguages []PrimaryLanguage      `json:"primary_languages,omitempty"` // Top programming languages (from code_stats)
 	Licenses         []License              `json:"licenses"`                    // Changed to structured License objects
-	Reason           map[string][]string    `json:"reason"`                      // Maps technology to detection reasons, "_" for non-tech reasons
+	Reason           map[string][]string    `json:"reason,omitempty"`            // Maps technology to detection reasons, "_" for non-tech reasons
 	Dependencies     []Dependency           `json:"dependencies"`
 	Properties       map[string]interface{} `json:"properties,omitempty"`
 	Children         []*Payload             `json:"children"`
-	Edges            []Edge                 `json:"edges"`
+	Edges            []Edge                 `json:"edges,omitempty"`
 	ComponentRefs    []ComponentRef         `json:"component_refs,omitempty"` // Inter-component references (outgoing - components this component depends on)
 	CodeStats        interface{}            `json:"code_stats,omitempty"`
 }

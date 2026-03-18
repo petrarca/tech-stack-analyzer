@@ -157,6 +157,9 @@ func init() {
 
 	// Scan configuration flag
 	scanCmd.Flags().StringVar(&scanConfigPath, "config", "", "Scan configuration file path or inline JSON")
+
+	// Output field omission flag
+	scanCmd.Flags().StringSliceVar(&settings.OmitFields, "omit-fields", settings.OmitFields, "Fields to omit from output (e.g. reason,path,edges). Applies to all components recursively.")
 }
 
 // configureLogging sets up logging based on command flags
@@ -675,7 +678,7 @@ func generateAndWriteOutput(payload interface{}, logger *slog.Logger) {
 		"aggregate", settings.Aggregate,
 		"pretty_print", settings.PrettyPrint)
 
-	jsonData, err := generateOutput(payload, settings.Aggregate, settings.PrettyPrint)
+	jsonData, err := generateOutput(payload, settings.Aggregate, settings.PrettyPrint, settings.OmitFields)
 	if err != nil {
 		logger.Error("Failed to marshal JSON", "error", err)
 		os.Exit(1)
@@ -685,8 +688,58 @@ func generateAndWriteOutput(payload interface{}, logger *slog.Logger) {
 	writeOutput(jsonData)
 }
 
-func generateOutput(payload interface{}, aggregateFields string, prettyPrint bool) ([]byte, error) {
+// stripFields recursively removes the specified fields from a payload tree.
+// Valid field names: "reason", "path", "edges", "licenses", "dependencies",
+// "component_refs", "properties", "code_stats", "primary_languages".
+func stripFields(p *types.Payload, fields map[string]bool) {
+	if p == nil {
+		return
+	}
+	if fields["reason"] {
+		p.Reason = nil
+	}
+	if fields["path"] {
+		p.Path = nil
+	}
+	if fields["edges"] {
+		p.Edges = nil
+	}
+	if fields["licenses"] {
+		p.Licenses = nil
+	}
+	if fields["dependencies"] {
+		p.Dependencies = nil
+	}
+	if fields["component_refs"] {
+		p.ComponentRefs = nil
+	}
+	if fields["properties"] {
+		p.Properties = nil
+	}
+	if fields["code_stats"] {
+		p.CodeStats = nil
+	}
+	if fields["primary_languages"] {
+		p.PrimaryLanguages = nil
+	}
+	for _, child := range p.Children {
+		stripFields(child, fields)
+	}
+}
+
+func generateOutput(payload interface{}, aggregateFields string, prettyPrint bool, omitFields []string) ([]byte, error) {
 	var result interface{}
+
+	// Apply field omission to full payload (before aggregation)
+	if len(omitFields) > 0 {
+		if p, ok := payload.(*types.Payload); ok {
+			omitSet := make(map[string]bool, len(omitFields))
+			for _, f := range omitFields {
+				omitSet[strings.TrimSpace(f)] = true
+			}
+			stripFields(p, omitSet)
+		}
+	}
 
 	if aggregateFields != "" {
 		// Parse aggregate fields

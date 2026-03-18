@@ -29,6 +29,7 @@ type Settings struct {
 	RootID                   string   // Override random root ID for deterministic scans
 	PrimaryLanguageThreshold float64  // Minimum percentage for primary languages (default 0.05 = 5%)
 	UseLockFiles             bool     // Use lock files for dependency resolution (default true)
+	OmitFields               []string // Fields to omit from full output (e.g. "reason", "path", "edges")
 
 	// Logging
 	LogLevel  slog.Level
