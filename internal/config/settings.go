@@ -30,6 +30,7 @@ type Settings struct {
 	PrimaryLanguageThreshold float64  // Minimum percentage for primary languages (default 0.05 = 5%)
 	UseLockFiles             bool     // Use lock files for dependency resolution (default true)
 	OmitFields               []string // Fields to omit from full output (e.g. "reason", "path", "edges")
+	AlsoAggregate            string   // Also produce an aggregate output alongside the full output (e.g. "tech,techs,languages")
 
 	// Logging
 	LogLevel  slog.Level

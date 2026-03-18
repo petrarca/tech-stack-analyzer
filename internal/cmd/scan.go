@@ -160,6 +160,9 @@ func init() {
 
 	// Output field omission flag
 	scanCmd.Flags().StringSliceVar(&settings.OmitFields, "omit-fields", settings.OmitFields, "Fields to omit from output (e.g. reason,path,edges). Applies to all components recursively.")
+
+	// Also-aggregate flag — produce both full and aggregate output in one scan pass
+	scanCmd.Flags().StringVar(&settings.AlsoAggregate, "also-aggregate", "", "Also produce an aggregate output alongside the full output. Suffix -agg is added to the output filename. (e.g. tech,techs,languages,dependencies,git)")
 }
 
 // configureLogging sets up logging based on command flags
@@ -676,6 +679,7 @@ func generateAndWriteOutput(payload interface{}, logger *slog.Logger) {
 	// Generate output (aggregated or full payload)
 	logger.Debug("Generating output",
 		"aggregate", settings.Aggregate,
+		"also_aggregate", settings.AlsoAggregate,
 		"pretty_print", settings.PrettyPrint)
 
 	jsonData, err := generateOutput(payload, settings.Aggregate, settings.PrettyPrint, settings.OmitFields)
@@ -684,8 +688,41 @@ func generateAndWriteOutput(payload interface{}, logger *slog.Logger) {
 		os.Exit(1)
 	}
 
-	// Write output
+	// Write primary output
 	writeOutput(jsonData)
+
+	// Also produce aggregate output alongside full output if requested
+	if settings.AlsoAggregate != "" && settings.Aggregate == "" {
+		aggFile := aggregateOutputFile(settings.OutputFile)
+		aggData, err := generateOutput(payload, settings.AlsoAggregate, settings.PrettyPrint, nil)
+		if err != nil {
+			logger.Error("Failed to marshal aggregate JSON", "error", err)
+			os.Exit(1)
+		}
+		if aggFile != "" {
+			err = os.WriteFile(aggFile, aggData, 0644)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Failed to write aggregate output file: %v\n", err)
+				os.Exit(1)
+			}
+			fmt.Fprintf(os.Stderr, "Aggregate results written to %s\n", aggFile)
+		} else {
+			// stdout mode — skip aggregate (can't write two JSON blobs to stdout)
+			logger.Debug("Skipping aggregate output: primary output is stdout")
+		}
+	}
+}
+
+// aggregateOutputFile derives the aggregate output filename from the primary output filename.
+// Returns empty string if primary output is stdout.
+// Example: "output.json" -> "output-agg.json"
+func aggregateOutputFile(outputFile string) string {
+	if outputFile == "" {
+		return ""
+	}
+	ext := filepath.Ext(outputFile)
+	base := strings.TrimSuffix(outputFile, ext)
+	return base + "-agg" + ext
 }
 
 // stripFields recursively removes the specified fields from a payload tree.
