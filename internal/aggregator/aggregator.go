@@ -8,6 +8,16 @@ import (
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
 
+// ComponentEntry represents a single component in the flat component list
+type ComponentEntry struct {
+	ID    string   `json:"id"`
+	Name  string   `json:"name"`
+	Type  string   `json:"type,omitempty"`
+	Tech  []string `json:"tech,omitempty"`
+	Techs []string `json:"techs,omitempty"`
+	Path  string   `json:"path,omitempty"` // First path entry (primary location)
+}
+
 // AggregateOutput represents aggregated/rolled-up data from the scan
 type AggregateOutput struct {
 	Metadata           interface{}             `json:"metadata,omitempty"`            // Scan metadata (from root payload)
@@ -19,6 +29,7 @@ type AggregateOutput struct {
 	PrimaryLanguages   []types.PrimaryLanguage `json:"primary_languages,omitempty"`   // Top programming languages (from code_stats)
 	LicensesAggregated []string                `json:"licenses_aggregated,omitempty"` // Detected licenses (unique names only)
 	Dependencies       [][]string              `json:"dependencies,omitempty"`        // All dependencies [type, name, version]
+	Components         []ComponentEntry        `json:"components,omitempty"`          // Flat list of all components (id, name, type, tech, techs, path)
 	CodeStats          interface{}             `json:"code_stats,omitempty"`          // Code statistics (if enabled)
 }
 
@@ -74,6 +85,10 @@ func (a *Aggregator) Aggregate(payload *types.Payload) *AggregateOutput {
 
 	if a.fields["dependencies"] {
 		output.Dependencies = a.collectDependencies(payload)
+	}
+
+	if a.fields["components"] {
+		output.Components = a.collectComponents(payload)
 	}
 
 	// Include code stats if present
@@ -306,6 +321,42 @@ func (a *Aggregator) collectGitRecursive(payload *types.Payload, gitMap map[stri
 	// Recursively process children
 	for _, child := range payload.Children {
 		a.collectGitRecursive(child, gitMap)
+	}
+}
+
+// collectComponents recursively collects all components as a flat list
+func (a *Aggregator) collectComponents(payload *types.Payload) []ComponentEntry {
+	var components []ComponentEntry
+	a.collectComponentsRecursive(payload, &components)
+	return components
+}
+
+// collectComponentsRecursive helper function — skips the root node
+func (a *Aggregator) collectComponentsRecursive(payload *types.Payload, components *[]ComponentEntry, depth ...int) {
+	d := 0
+	if len(depth) > 0 {
+		d = depth[0]
+	}
+
+	// Skip the root node (depth 0) — only collect actual components
+	if d > 0 {
+		path := ""
+		if len(payload.Path) > 0 {
+			path = payload.Path[0]
+		}
+		entry := ComponentEntry{
+			ID:    payload.ID,
+			Name:  payload.Name,
+			Type:  payload.ComponentType,
+			Tech:  payload.Tech,
+			Techs: payload.Techs,
+			Path:  path,
+		}
+		*components = append(*components, entry)
+	}
+
+	for _, child := range payload.Children {
+		a.collectComponentsRecursive(child, components, d+1)
 	}
 }
 

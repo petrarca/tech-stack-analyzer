@@ -200,7 +200,8 @@ func (s *Settings) Validate() error {
 		validFields := map[string]bool{
 			"tech": true, "techs": true, "reason": true,
 			"languages": true, "licenses": true,
-			"dependencies": true, "git": true, "all": true,
+			"dependencies": true, "git": true,
+			"components": true, "all": true,
 		}
 
 		fields := strings.Split(s.Aggregate, ",")

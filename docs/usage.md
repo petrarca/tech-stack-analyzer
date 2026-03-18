@@ -14,7 +14,7 @@ stack-analyzer scan [path] [flags]
 **Flags:**
 - `--config` - Scan configuration file path or inline JSON (YAML/JSON file path or inline JSON string starting with `{`)
 - `--output, -o` - Output file path (default: stack-analysis.json). Use `-o -` or `-o /dev/stdout` for piping
-- `--aggregate` - Aggregate fields: `tech,techs,languages,licenses,dependencies,git,all` (use `all` for all aggregated fields)
+- `--aggregate` - Aggregate fields: `tech,techs,languages,licenses,dependencies,git,components,all` (use `all` for all aggregated fields). The `components` field produces a flat list of all components with `id`, `name`, `type`, `tech`, `techs`, `path`.
 - `--also-aggregate` - Produce both full and aggregate output in one scan pass. The aggregate file gets a `-agg` suffix (e.g. `output.json` → `output-agg.json`). Cannot be combined with `--aggregate`. Useful for large codebases where scanning twice would be too slow.
 - `--omit-fields` - Strip fields from the full output tree before writing (e.g. `reason,edges`). Applied recursively to all components. Useful to reduce file size when downstream consumers don't need certain fields.
 - `--exclude` - Additional patterns to exclude (combined with .gitignore; supports glob patterns like `**/__tests__/**`, `*.log`; can be specified multiple times)
