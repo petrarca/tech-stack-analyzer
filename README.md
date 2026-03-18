@@ -60,6 +60,12 @@ go install github.com/petrarca/tech-stack-analyzer/cmd/scanner@latest
 # Get an aggregated overview
 ./bin/stack-analyzer scan --aggregate all /path/to/project
 
+# Full output + aggregate in one scan pass (e.g. for large codebases)
+./bin/stack-analyzer scan /path/to/project --also-aggregate tech,techs,languages,dependencies,git
+
+# Strip fields not needed by downstream consumers
+./bin/stack-analyzer scan /path/to/project --omit-fields reason,edges
+
 # Pipe to jq
 ./bin/stack-analyzer scan -o - /path/to/project | jq '.techs'
 

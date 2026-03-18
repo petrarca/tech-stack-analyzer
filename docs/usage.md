@@ -15,6 +15,8 @@ stack-analyzer scan [path] [flags]
 - `--config` - Scan configuration file path or inline JSON (YAML/JSON file path or inline JSON string starting with `{`)
 - `--output, -o` - Output file path (default: stack-analysis.json). Use `-o -` or `-o /dev/stdout` for piping
 - `--aggregate` - Aggregate fields: `tech,techs,languages,licenses,dependencies,git,all` (use `all` for all aggregated fields)
+- `--also-aggregate` - Produce both full and aggregate output in one scan pass. The aggregate file gets a `-agg` suffix (e.g. `output.json` → `output-agg.json`). Cannot be combined with `--aggregate`. Useful for large codebases where scanning twice would be too slow.
+- `--omit-fields` - Strip fields from the full output tree before writing (e.g. `reason,edges`). Applied recursively to all components. Useful to reduce file size when downstream consumers don't need certain fields.
 - `--exclude` - Additional patterns to exclude (combined with .gitignore; supports glob patterns like `**/__tests__/**`, `*.log`; can be specified multiple times)
 - `--no-code-stats` - Disable code statistics collection (enabled by default)
 - `--pretty` - Pretty print JSON output (default: true)
@@ -39,6 +41,14 @@ stack-analyzer scan --config '{"scan":{"paths":["./project"],"output":{"file":"r
 # Add additional exclusions beyond .gitignore
 stack-analyzer scan /path --exclude build-cache --exclude "*.tmp"
 stack-analyzer scan /path --exclude "**/__tests__/**" --exclude "*.log"
+
+# Produce full output AND aggregate in one scan pass
+# Generates: results.json (full) + results-agg.json (aggregate)
+stack-analyzer scan /path --output results.json --also-aggregate tech,techs,languages,dependencies,git
+
+# Strip unused fields to reduce output size (applied recursively to all components)
+stack-analyzer scan /path --omit-fields reason,edges
+stack-analyzer scan /path --omit-fields reason,edges --also-aggregate tech,techs,languages,dependencies,git
 
 # Verbose mode
 stack-analyzer scan -v /path/to/project
