@@ -34,8 +34,7 @@ func attachComponentCodeStats(payload *types.Payload, analyzer codestats.Analyze
 // attachComponentCodeStatsRecursive attaches stats to components at depth <= maxDepth.
 func attachComponentCodeStatsRecursive(payload *types.Payload, analyzer codestats.Analyzer, depth, maxDepth int) {
 	if depth <= maxDepth {
-		// componentPath returns the stable path key used during stats collection
-		key := componentPath(payload)
+		key := payload.ComponentPath()
 		if stats := analyzer.GetComponentStats(key); stats != nil {
 			payload.CodeStats = stats
 		}
@@ -47,22 +46,13 @@ func attachComponentCodeStatsRecursive(payload *types.Payload, analyzer codestat
 	}
 }
 
-// componentPath returns the stable key used to identify a component in the code stats map.
-// Mirrors the same function in the scanner package — uses Path[0] (manifest relative path)
-// which is set at component creation and never changes, unlike the ID which is finalised later.
-// Returns empty string for root and virtual components (Path[0] == "/") which have no distinct
-// manifest location and should not receive per-component stats.
-func componentPath(p *types.Payload) string {
-	if len(p.Path) > 0 && p.Path[0] != "/" {
-		return p.Path[0]
-	}
-	return ""
-}
-
 // attachSubsystemStats populates payload.SubsystemStats from the analyzer's subsystem buckets.
 // Each entry is one subsystem key with its rolled-up code stats and component count.
 // This is a no-op when subsystem tracking is disabled.
-func attachSubsystemStats(payload *types.Payload, analyzer codestats.Analyzer, s *scanner.Scanner) {
+// subsystemKeyResolver is a function that maps a depth-1 path prefix to a subsystem key.
+type subsystemKeyResolver func(depthOnePath string) string
+
+func attachSubsystemStats(payload *types.Payload, analyzer codestats.Analyzer, resolve subsystemKeyResolver) {
 	sa, ok := analyzer.(codestats.SubsystemAnalyzer)
 	if !ok {
 		return
@@ -75,7 +65,7 @@ func attachSubsystemStats(payload *types.Payload, analyzer codestats.Analyzer, s
 	pathCounts := countComponentsByDepthOnePath(payload)
 	counts := make(map[string]int)
 	for path, count := range pathCounts {
-		if key := s.ResolveSubsystemKeyFromPath(path); key != "" {
+		if key := resolve(path); key != "" {
 			counts[key] += count
 		}
 	}
@@ -104,17 +94,8 @@ func countComponentsByDepthOnePath(payload *types.Payload) map[string]int {
 }
 
 func countComponentsByDepthOnePathRecursive(payload *types.Payload, counts map[string]int) {
-	cp := componentPath(payload)
-	if cp != "" {
-		prefix := ""
-		if idx := strings.Index(cp[1:], "/"); idx >= 0 {
-			prefix = cp[:idx+1]
-		} else {
-			prefix = cp
-		}
-		if prefix != "" {
-			counts[prefix]++
-		}
+	if prefix := types.DepthPrefix(payload.ComponentPath(), 1); prefix != "" {
+		counts[prefix]++
 	}
 	for _, child := range payload.Children {
 		countComponentsByDepthOnePathRecursive(child, counts)
@@ -568,7 +549,7 @@ func runMultiPathScan(args []string, cmd *cobra.Command, logger *slog.Logger) {
 		}
 
 		attachComponentCodeStats(payload, codeStatsAnalyzer, settings.ComponentStatsDepth)
-		attachSubsystemStats(payload, codeStatsAnalyzer, s)
+		attachSubsystemStats(payload, codeStatsAnalyzer, s.ResolveSubsystemKeyFromPath)
 	}
 
 	// Enhance payload with configuration data
@@ -724,7 +705,7 @@ func runScanner(absPath string, isFile bool, mergedConfig *config.ScanConfig, lo
 			}
 
 			attachComponentCodeStats(p, codeStatsAnalyzer, settings.ComponentStatsDepth)
-			attachSubsystemStats(p, codeStatsAnalyzer, s)
+			attachSubsystemStats(p, codeStatsAnalyzer, s.ResolveSubsystemKeyFromPath)
 		}
 	}
 

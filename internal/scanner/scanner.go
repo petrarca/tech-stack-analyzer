@@ -614,22 +614,12 @@ func (s *Scanner) processFile(ctx *types.Payload, dirPath string, fileName strin
 }
 
 // collectCodeStats dispatches a single ProcessFile call with the resolved component and subsystem keys.
+// Files at the root level (no component) or in virtual components have an empty ComponentPath,
+// which means they contribute to global stats only — not to any component or subsystem bucket.
 func (s *Scanner) collectCodeStats(filePath, language string, content []byte, ctx *types.Payload) {
-	compKey := componentPath(ctx)
+	compKey := ctx.ComponentPath()
 	subsysKey := s.resolveSubsystemKey(compKey)
 	s.codeStats.ProcessFile(filePath, language, content, compKey, subsysKey)
-}
-
-// componentPath returns the stable, unique key used to identify a component in the code stats map.
-// It uses the component's primary path (its manifest file relative path) which is set at creation
-// time and never changes — unlike the component ID which is only finalized after AssignIDs.
-// Returns an empty string for root and virtual components (Path[0] == "/") which have no distinct
-// manifest location and should not receive per-component stats.
-func componentPath(p *types.Payload) string {
-	if len(p.Path) > 0 && p.Path[0] != "/" {
-		return p.Path[0]
-	}
-	return ""
 }
 
 // resolveSubsystemKey returns the subsystem key for a given component path.
@@ -652,22 +642,8 @@ func (s *Scanner) resolveSubsystemKey(compPath string) string {
 }
 
 // subsystemKey extracts the depth-N path prefix from a component path for subsystem rollup.
-// e.g. "/med/med/pom.xml" at depth 1 → "/med"
-//
-//	"/med/med/pom.xml" at depth 2 → "/med/med"
-//
-// Returns empty string when the path has fewer segments than depth, or path is "/" (root/virtual).
 func subsystemKey(compPath string, depth int) string {
-	if compPath == "" || depth <= 0 {
-		return ""
-	}
-	// Split on "/" — path starts with "/", so first element after split is ""
-	parts := strings.SplitN(compPath, "/", depth+2) // e.g. depth=1: ["", "med", "med/pom.xml"]
-	if len(parts) < depth+1 || parts[depth] == "" {
-		return ""
-	}
-	// Rejoin the first `depth` segments with leading slash
-	return "/" + strings.Join(parts[1:depth+1], "/")
+	return types.DepthPrefix(compPath, depth)
 }
 
 // recurse scans a directory recursively, detecting technologies and components

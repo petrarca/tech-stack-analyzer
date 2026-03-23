@@ -34,6 +34,35 @@ type Payload struct {
 	SubsystemStats   []SubsystemStat        `json:"subsystem_stats,omitempty"` // Per-subsystem code stats rollup (root only)
 }
 
+// ComponentPath returns the stable, unique key used to identify this component in code stats.
+// Uses Path[0] (the manifest file relative path) which is set at creation time and never
+// changes — unlike the ID which is only finalized after AssignIDs.
+// Returns empty string for root and virtual components (Path[0] == "/") which have no
+// distinct manifest location and should not receive per-component stats.
+func (p *Payload) ComponentPath() string {
+	if len(p.Path) > 0 && p.Path[0] != "/" {
+		return p.Path[0]
+	}
+	return ""
+}
+
+// DepthPrefix extracts the first N path segments from a component path.
+// e.g. DepthPrefix("/med/med/pom.xml", 1) → "/med"
+//
+//	DepthPrefix("/med/med/pom.xml", 2) → "/med/med"
+//
+// Returns empty string when the path has fewer segments than depth, or is empty/root.
+func DepthPrefix(path string, depth int) string {
+	if path == "" || path == "/" || depth <= 0 {
+		return ""
+	}
+	parts := strings.SplitN(path, "/", depth+2)
+	if len(parts) < depth+1 || parts[depth] == "" {
+		return ""
+	}
+	return "/" + strings.Join(parts[1:depth+1], "/")
+}
+
 // SubsystemStat holds aggregated code stats for a depth-N path prefix (e.g. "/med").
 type SubsystemStat struct {
 	Path           string      `json:"path"`            // Depth-N path prefix, e.g. "/med"
