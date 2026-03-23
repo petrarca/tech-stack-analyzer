@@ -21,9 +21,9 @@ import (
 
 // attachComponentCodeStats attaches per-component code stats to child components up to statsDepth.
 // Root keeps the global stats; only children at depth 1..statsDepth receive per-component stats.
-// statsDepth=0 is a no-op (no per-component stats collected or attached).
+// statsDepth=0 is a no-op.
 func attachComponentCodeStats(payload *types.Payload, analyzer codestats.Analyzer, statsDepth int) {
-	if statsDepth <= 0 || !analyzer.IsPerComponentEnabled() {
+	if statsDepth <= 0 {
 		return
 	}
 	for _, child := range payload.Children {
@@ -63,10 +63,11 @@ func componentPath(p *types.Payload) string {
 // Each entry is one subsystem key with its rolled-up code stats and component count.
 // This is a no-op when subsystem tracking is disabled.
 func attachSubsystemStats(payload *types.Payload, analyzer codestats.Analyzer, s *scanner.Scanner) {
-	if !analyzer.IsSubsystemEnabled() {
+	sa, ok := analyzer.(codestats.SubsystemAnalyzer)
+	if !ok {
 		return
 	}
-	keys := analyzer.SubsystemKeys()
+	keys := sa.SubsystemKeys()
 	if len(keys) == 0 {
 		return
 	}
@@ -81,7 +82,7 @@ func attachSubsystemStats(payload *types.Payload, analyzer codestats.Analyzer, s
 
 	stats := make([]types.SubsystemStat, 0, len(keys))
 	for _, key := range keys {
-		cs := analyzer.GetSubsystemStats(key)
+		cs := sa.GetSubsystemStats(key)
 		if cs == nil {
 			continue
 		}
@@ -159,17 +160,16 @@ func convertPrimaryLanguages(src []codestats.PrimaryLanguage) []types.PrimaryLan
 }
 
 // buildCodeStatsAnalyzer creates the code stats analyzer from settings.
-// Per-component collection is enabled when ComponentStatsDepth > 0.
-// Subsystem collection is enabled when SubsystemDepth > 0 OR SubsystemGroups are defined.
 func buildCodeStatsAnalyzer(s *config.Settings) codestats.Analyzer {
-	subsystemEnabled := s.SubsystemDepth > 0 || len(s.SubsystemGroups) > 0
-	return codestats.NewAnalyzerWithSubsystem(
-		!s.NoCodeStats,
-		s.ComponentStatsDepth > 0,
-		subsystemEnabled,
-		s.PrimaryLanguageThreshold,
-		5,
-	)
+	if s.NoCodeStats {
+		return codestats.NewNoopAnalyzer()
+	}
+	return codestats.NewAnalyzer(codestats.AnalyzerConfig{
+		PerComponent:     s.ComponentStatsDepth > 0,
+		Subsystem:        s.SubsystemDepth > 0 || len(s.SubsystemGroups) > 0,
+		PrimaryThreshold: s.PrimaryLanguageThreshold,
+		MaxPrimaryLangs:  5,
+	})
 }
 
 // parseLogLevel converts string log level to slog.Level

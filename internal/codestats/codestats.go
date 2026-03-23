@@ -102,101 +102,83 @@ type CodeStats struct {
 	Unanalyzed UnanalyzedBucket `json:"unanalyzed"` // Files SCC can't parse
 }
 
-// Analyzer interface for code statistics collection
+// Analyzer interface for code statistics collection.
+// ProcessFile runs SCC once per file and distributes results to global, component, and
+// subsystem buckets in a single pass. Pass empty strings for componentKey/subsystemKey
+// to skip those buckets.
 type Analyzer interface {
-	// ProcessFile analyzes a file and adds its stats to the global totals.
+	// ProcessFile analyzes a file and adds its stats to the applicable buckets.
 	// language is the go-enry detected language name (used for grouping).
-	// If content is provided, it will be used; otherwise the file will be read.
-	ProcessFile(filename string, language string, content []byte)
-
-	// ProcessFileForComponent analyzes a file and attributes its stats to both
-	// the global totals and to the component identified by componentPath.
-	// componentPath must be a stable, unique identifier for the component
-	// (e.g. the relative manifest file path) so that stats can be retrieved
-	// after the component tree has been finalized.
-	ProcessFileForComponent(filename string, language string, content []byte, componentPath string)
+	// componentKey: stable component identifier (e.g. manifest path); empty = skip component bucket.
+	// subsystemKey: subsystem identifier (depth-N prefix or group name); empty = skip subsystem bucket.
+	ProcessFile(filename, language string, content []byte, componentKey, subsystemKey string)
 
 	// GetStats returns the aggregated global statistics.
 	GetStats() interface{}
 
-	// GetComponentStats returns statistics for the component identified by componentPath.
+	// GetComponentStats returns statistics for the component identified by key.
 	// Returns nil when per-component tracking is disabled or no stats were recorded.
-	GetComponentStats(componentPath string) interface{}
+	GetComponentStats(key string) interface{}
 
 	// IsEnabled returns whether code stats collection is enabled.
 	IsEnabled() bool
+}
 
-	// IsPerComponentEnabled returns whether per-component code stats collection is enabled.
-	IsPerComponentEnabled() bool
-
-	// ProcessFileForSubsystem analyzes a file and attributes its stats to the subsystem
-	// identified by subsystemKey (typically a depth-N path prefix, e.g. "/med").
-	// Stats are added to the subsystem bucket only — not to global or component buckets.
-	ProcessFileForSubsystem(filename string, language string, content []byte, subsystemKey string)
-
-	// GetSubsystemStats returns statistics for the subsystem identified by subsystemKey.
-	// Returns nil when subsystem tracking is disabled or no stats were recorded.
-	GetSubsystemStats(subsystemKey string) interface{}
-
-	// IsSubsystemEnabled returns whether subsystem-level stats collection is enabled.
-	IsSubsystemEnabled() bool
-
-	// SubsystemKeys returns all subsystem keys that have collected stats, sorted.
+// SubsystemAnalyzer is an optional interface for subsystem-level stats retrieval.
+// Satisfied by the SCC analyzer when subsystem tracking is enabled.
+// Callers use a type assertion: if sa, ok := analyzer.(SubsystemAnalyzer); ok { ... }
+type SubsystemAnalyzer interface {
+	GetSubsystemStats(key string) interface{}
 	SubsystemKeys() []string
 }
 
-// NewAnalyzer creates an analyzer based on enabled flag
-func NewAnalyzer(enabled bool) Analyzer {
-	if enabled {
-		return newSCCAnalyzer(false) // Per-component disabled by default for backward compatibility
-	}
-	return &noopAnalyzer{}
+// AnalyzerConfig holds all configuration for creating an Analyzer.
+type AnalyzerConfig struct {
+	PerComponent     bool    // Enable per-component stats tracking
+	Subsystem        bool    // Enable subsystem-level stats tracking
+	PrimaryThreshold float64 // Minimum percentage for primary languages (default: 0.05)
+	MaxPrimaryLangs  int     // Maximum primary languages to show (default: 5)
 }
 
-// NewAnalyzerWithPerComponent creates an analyzer with per-component option
-func NewAnalyzerWithPerComponent(enabled bool, perComponent bool) Analyzer {
-	if enabled {
-		return newSCCAnalyzerWithOptions(perComponent, 0.05, 5) // Default values
+// NewAnalyzer creates a code stats analyzer from config. Returns a no-op implementation
+// when the zero-value config is passed.
+func NewAnalyzer(cfg AnalyzerConfig) Analyzer {
+	if cfg.PrimaryThreshold <= 0 {
+		cfg.PrimaryThreshold = 0.05
 	}
-	return &noopAnalyzer{}
+	if cfg.MaxPrimaryLangs <= 0 {
+		cfg.MaxPrimaryLangs = 5
+	}
+	a := &sccAnalyzer{
+		codeByLanguage:   make(map[string]*Stats),
+		otherByLanguage:  make(map[string]*OtherStats),
+		byType:           make(map[string]*Stats),
+		primaryThreshold: cfg.PrimaryThreshold,
+		maxPrimaryLangs:  cfg.MaxPrimaryLangs,
+	}
+	if cfg.PerComponent {
+		a.perComponentEnabled = true
+		a.componentBuckets = make(map[string]*statsBucket)
+	}
+	if cfg.Subsystem {
+		a.subsystemEnabled = true
+		a.subsystemStats = make(map[string]*statsBucket)
+	}
+	return a
 }
 
-// NewAnalyzerWithOptions creates an analyzer with all custom options
-func NewAnalyzerWithOptions(enabled bool, perComponent bool, primaryThreshold float64, maxPrimaryLangs int) Analyzer {
-	if enabled {
-		return newSCCAnalyzerWithOptions(perComponent, primaryThreshold, maxPrimaryLangs)
-	}
-	return &noopAnalyzer{}
-}
-
-// NewAnalyzerWithSubsystem creates an analyzer with per-component and subsystem options
-func NewAnalyzerWithSubsystem(enabled bool, perComponent bool, subsystem bool, primaryThreshold float64, maxPrimaryLangs int) Analyzer {
-	if enabled {
-		a := newSCCAnalyzerWithOptions(perComponent, primaryThreshold, maxPrimaryLangs)
-		if subsystem {
-			a.subsystemEnabled = true
-			a.subsystemStats = make(map[string]*componentStats)
-		}
-		return a
-	}
+// NewNoopAnalyzer returns a disabled analyzer that does nothing.
+func NewNoopAnalyzer() Analyzer {
 	return &noopAnalyzer{}
 }
 
 // noopAnalyzer is a no-op implementation when code stats are disabled
 type noopAnalyzer struct{}
 
-func (n *noopAnalyzer) ProcessFile(filename string, language string, content []byte) {}
-func (n *noopAnalyzer) ProcessFileForComponent(filename string, language string, content []byte, componentID string) {
-}
-func (n *noopAnalyzer) ProcessFileForSubsystem(filename string, language string, content []byte, subsystemKey string) {
-}
-func (n *noopAnalyzer) GetStats() interface{}                             { return nil }
-func (n *noopAnalyzer) GetComponentStats(componentID string) interface{}  { return nil }
-func (n *noopAnalyzer) GetSubsystemStats(subsystemKey string) interface{} { return nil }
-func (n *noopAnalyzer) IsEnabled() bool                                   { return false }
-func (n *noopAnalyzer) IsPerComponentEnabled() bool                       { return false }
-func (n *noopAnalyzer) IsSubsystemEnabled() bool                          { return false }
-func (n *noopAnalyzer) SubsystemKeys() []string                           { return nil }
+func (n *noopAnalyzer) ProcessFile(_, _ string, _ []byte, _, _ string) {}
+func (n *noopAnalyzer) GetStats() interface{}                          { return nil }
+func (n *noopAnalyzer) GetComponentStats(_ string) interface{}         { return nil }
+func (n *noopAnalyzer) IsEnabled() bool                                { return false }
 
 // sccAnalyzer uses boyter/scc for code statistics
 type sccAnalyzer struct {
@@ -208,18 +190,18 @@ type sccAnalyzer struct {
 	// By type aggregation (programming, data, markup, prose)
 	byType map[string]*Stats // key: "programming", "data", "markup", "prose"
 	// Per-component tracking
-	perComponentEnabled bool                       // Whether per-component tracking is enabled
-	componentStats      map[string]*componentStats // Stats by component path
+	perComponentEnabled bool                    // Whether per-component tracking is enabled
+	componentBuckets    map[string]*statsBucket // Stats by component path
 	// Per-subsystem tracking (rollup per depth-N path prefix, e.g. "/med")
-	subsystemEnabled bool                       // Whether subsystem tracking is enabled
-	subsystemStats   map[string]*componentStats // Stats by subsystem key (reuses componentStats struct)
+	subsystemEnabled bool                    // Whether subsystem tracking is enabled
+	subsystemStats   map[string]*statsBucket // Stats by subsystem key (reuses statsBucket struct)
 	// Primary language configuration
 	primaryThreshold float64 // Minimum percentage for primary languages
 	maxPrimaryLangs  int     // Maximum number of primary languages to show
 }
 
-// componentStats holds statistics for a single component
-type componentStats struct {
+// statsBucket holds statistics for a single component or subsystem.
+type statsBucket struct {
 	total           Stats                  // Grand total (code only)
 	codeByLanguage  map[string]*Stats      // SCC-analyzed languages
 	otherTotal      OtherStats             // Total for non-SCC files
@@ -227,35 +209,7 @@ type componentStats struct {
 	byType          map[string]*Stats      // By type aggregation (programming, data, markup, prose)
 }
 
-func newSCCAnalyzer(perComponent bool) *sccAnalyzer {
-	return newSCCAnalyzerWithOptions(perComponent, 0.05, 5) // Default values
-}
-
-// newSCCAnalyzerWithOptions creates an analyzer with custom primary language settings
-func newSCCAnalyzerWithOptions(perComponent bool, primaryThreshold float64, maxPrimaryLangs int) *sccAnalyzer {
-	analyzer := &sccAnalyzer{
-		codeByLanguage:   make(map[string]*Stats),
-		otherByLanguage:  make(map[string]*OtherStats),
-		byType:           make(map[string]*Stats),
-		primaryThreshold: primaryThreshold,
-		maxPrimaryLangs:  maxPrimaryLangs,
-	}
-
-	if perComponent {
-		analyzer.perComponentEnabled = true
-		analyzer.componentStats = make(map[string]*componentStats)
-	}
-
-	return analyzer
-}
-
-func (a *sccAnalyzer) IsEnabled() bool {
-	return true
-}
-
-func (a *sccAnalyzer) IsPerComponentEnabled() bool {
-	return a.perComponentEnabled
-}
+func (a *sccAnalyzer) IsEnabled() bool { return true }
 
 // buildAnalyzedSlice converts codeByLanguage map to sorted slice
 func (a *sccAnalyzer) buildAnalyzedSlice() []LanguageStats {
@@ -393,30 +347,29 @@ func (a *sccAnalyzer) GetStats() interface{} {
 	}
 }
 
-// ProcessFileForComponent analyzes a file for a specific component
-// This processes the file ONCE and adds stats to both global and component buckets
-func (a *sccAnalyzer) ProcessFileForComponent(filename string, language string, content []byte, componentID string) {
-	// If per-component tracking is disabled, just use regular ProcessFile
-	if !a.perComponentEnabled {
-		a.ProcessFile(filename, language, content)
+// ProcessFile analyzes a file once and distributes results to global, component, and subsystem buckets.
+// componentKey and subsystemKey are optional — empty string means skip that bucket.
+func (a *sccAnalyzer) ProcessFile(filename, language string, content []byte, componentKey, subsystemKey string) {
+	filejob, sccLang, ok := a.processFileCommon(filename, language, content)
+	if !ok {
 		return
 	}
 
-	// Process the file and get the stats (same logic as ProcessFile)
-	filejob, sccLang, success := a.processFileCommon(filename, language, content)
-	if !success {
-		return
-	}
-
-	// Aggregate results with thread safety
 	a.mu.Lock()
 	defer a.mu.Unlock()
 
-	// 1. Add to GLOBAL stats (existing behavior)
+	// Always add to global stats
 	a.addToGlobalStatsUnsafe(filejob, language, sccLang)
 
-	// 2. Add to COMPONENT stats (new per-component feature)
-	a.addComponentStatsUnsafe(filejob, language, sccLang, componentID, a.componentStats)
+	// Optionally add to component bucket
+	if a.perComponentEnabled && componentKey != "" {
+		a.addToBucketUnsafe(filejob, language, sccLang, componentKey, a.componentBuckets)
+	}
+
+	// Optionally add to subsystem bucket
+	if a.subsystemEnabled && subsystemKey != "" {
+		a.addToBucketUnsafe(filejob, language, sccLang, subsystemKey, a.subsystemStats)
+	}
 }
 
 // processFileCommon contains the shared logic for file processing
@@ -526,11 +479,11 @@ func (a *sccAnalyzer) addToGlobalStatsUnsafe(filejob *processor.FileJob, languag
 	}
 }
 
-// addComponentStatsUnsafe adds file job results to a keyed stats bucket (caller must hold mutex).
-// statsMap is either componentStats or subsystemStats — same logic, different map.
-func (a *sccAnalyzer) addComponentStatsUnsafe(filejob *processor.FileJob, language string, sccLang string, key string, statsMap map[string]*componentStats) {
+// addToBucketUnsafe adds file job results to a keyed stats bucket (caller must hold mutex).
+// statsMap is either statsBucket or subsystemStats — same logic, different map.
+func (a *sccAnalyzer) addToBucketUnsafe(filejob *processor.FileJob, language string, sccLang string, key string, statsMap map[string]*statsBucket) {
 	if _, ok := statsMap[key]; !ok {
-		statsMap[key] = &componentStats{
+		statsMap[key] = &statsBucket{
 			codeByLanguage:  make(map[string]*Stats),
 			otherByLanguage: make(map[string]*OtherStats),
 			byType:          make(map[string]*Stats),
@@ -606,16 +559,11 @@ func (a *sccAnalyzer) GetComponentStats(componentID string) interface{} {
 	}
 	a.mu.Lock()
 	defer a.mu.Unlock()
-	compStats, exists := a.componentStats[componentID]
+	compStats, exists := a.componentBuckets[componentID]
 	if !exists {
 		return nil
 	}
 	return a.buildCodeStatsFromComponentStats(compStats)
-}
-
-// IsSubsystemEnabled returns whether subsystem-level stats collection is enabled.
-func (a *sccAnalyzer) IsSubsystemEnabled() bool {
-	return a.subsystemEnabled
 }
 
 // SubsystemKeys returns all subsystem keys that have collected stats, sorted.
@@ -628,20 +576,6 @@ func (a *sccAnalyzer) SubsystemKeys() []string {
 	}
 	sort.Strings(keys)
 	return keys
-}
-
-// ProcessFileForSubsystem attributes a file's stats to the given subsystem bucket only.
-func (a *sccAnalyzer) ProcessFileForSubsystem(filename string, language string, content []byte, subsystemKey string) {
-	if !a.subsystemEnabled || subsystemKey == "" {
-		return
-	}
-	filejob, sccLang, ok := a.processFileCommon(filename, language, content)
-	if !ok {
-		return
-	}
-	a.mu.Lock()
-	defer a.mu.Unlock()
-	a.addComponentStatsUnsafe(filejob, language, sccLang, subsystemKey, a.subsystemStats)
 }
 
 // GetSubsystemStats returns statistics for the subsystem identified by subsystemKey.
@@ -658,8 +592,8 @@ func (a *sccAnalyzer) GetSubsystemStats(subsystemKey string) interface{} {
 	return a.buildCodeStatsFromComponentStats(compStats)
 }
 
-// buildCodeStatsFromComponentStats builds a CodeStats from a componentStats bucket.
-func (a *sccAnalyzer) buildCodeStatsFromComponentStats(compStats *componentStats) *CodeStats {
+// buildCodeStatsFromComponentStats builds a CodeStats from a statsBucket bucket.
+func (a *sccAnalyzer) buildCodeStatsFromComponentStats(compStats *statsBucket) *CodeStats {
 	analyzed := make([]LanguageStats, 0, len(compStats.codeByLanguage))
 	for lang, stats := range compStats.codeByLanguage {
 		analyzed = append(analyzed, LanguageStats{
@@ -684,7 +618,7 @@ func (a *sccAnalyzer) buildCodeStatsFromComponentStats(compStats *componentStats
 }
 
 // buildComponentByType builds by-type stats for components with metrics
-func (a *sccAnalyzer) buildComponentByType(compStats *componentStats, analyzed []LanguageStats, unanalyzed []OtherLanguageStats) ByType {
+func (a *sccAnalyzer) buildComponentByType(compStats *statsBucket, analyzed []LanguageStats, unanalyzed []OtherLanguageStats) ByType {
 	// Collect languages by type
 	typeLanguages := make(map[string][]string)
 

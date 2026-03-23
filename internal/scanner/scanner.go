@@ -551,20 +551,10 @@ func (s *Scanner) ScanFile(fileName string) (*types.Payload, error) {
 		ctx.AddLanguage(lang)
 	}
 
-	// Collect code statistics if enabled (pass go-enry language for grouping)
+	// Collect code statistics if enabled
 	if s.codeStats != nil {
 		lang := s.langDetector.DetectLanguage(fileName, content)
-		key := componentPath(payload)
-		if s.codeStats.IsPerComponentEnabled() && key != "" {
-			s.codeStats.ProcessFileForComponent(filePath, lang, content, key)
-		} else {
-			s.codeStats.ProcessFile(filePath, lang, content)
-		}
-		if s.codeStats.IsSubsystemEnabled() {
-			if skey := s.resolveSubsystemKey(key); skey != "" {
-				s.codeStats.ProcessFileForSubsystem(filePath, lang, content, skey)
-			}
-		}
+		s.collectCodeStats(filePath, lang, content, payload)
 	}
 
 	// Add metadata for single file scan
@@ -619,18 +609,15 @@ func (s *Scanner) processFile(ctx *types.Payload, dirPath string, fileName strin
 
 	// Collect code statistics if enabled
 	if s.codeStats != nil {
-		key := componentPath(ctx)
-		if s.codeStats.IsPerComponentEnabled() && key != "" {
-			s.codeStats.ProcessFileForComponent(fileFullPath, lang, content, key)
-		} else {
-			s.codeStats.ProcessFile(fileFullPath, lang, content)
-		}
-		if s.codeStats.IsSubsystemEnabled() {
-			if skey := s.resolveSubsystemKey(key); skey != "" {
-				s.codeStats.ProcessFileForSubsystem(fileFullPath, lang, content, skey)
-			}
-		}
+		s.collectCodeStats(fileFullPath, lang, content, ctx)
 	}
+}
+
+// collectCodeStats dispatches a single ProcessFile call with the resolved component and subsystem keys.
+func (s *Scanner) collectCodeStats(filePath, language string, content []byte, ctx *types.Payload) {
+	compKey := componentPath(ctx)
+	subsysKey := s.resolveSubsystemKey(compKey)
+	s.codeStats.ProcessFile(filePath, language, content, compKey, subsysKey)
 }
 
 // componentPath returns the stable, unique key used to identify a component in the code stats map.
