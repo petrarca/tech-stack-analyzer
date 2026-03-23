@@ -32,7 +32,7 @@ func (d *Detector) Detect(files []types.File, currentPath, basePath string, prov
 		if file.Name != "project.json" {
 			continue
 		}
-		if payload := d.processProjectJSON(file, currentPath, basePath, provider); payload != nil {
+		if payload := processProjectJSON(file, currentPath, basePath, provider); payload != nil {
 			payloads = append(payloads, payload)
 		}
 	}
@@ -46,7 +46,7 @@ type nxProjectJSON struct {
 	ProjectType string `json:"projectType"` // "library" or "application"
 }
 
-func (d *Detector) processProjectJSON(file types.File, currentPath, basePath string, provider types.Provider) *types.Payload {
+func processProjectJSON(file types.File, currentPath, basePath string, provider types.Provider) *types.Payload {
 	content, err := provider.ReadFile(filepath.Join(currentPath, file.Name))
 	if err != nil {
 		return nil
@@ -77,7 +77,6 @@ func (d *Detector) processProjectJSON(file types.File, currentPath, basePath str
 
 	payload := types.NewPayloadWithPath(project.Name, relativeFilePath)
 	payload.SetComponentType("nx")
-	payload.AddPrimaryTech("nodejs") // Nx projects are always Node/TS ecosystem
 
 	return payload
 }
