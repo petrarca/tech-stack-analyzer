@@ -4,8 +4,8 @@ go 1.25.7
 
 require (
 	github.com/bmatcuk/doublestar/v4 v4.10.0
-	github.com/boyter/scc/v3 v3.6.0
-	github.com/go-enry/go-enry/v2 v2.9.4
+	github.com/boyter/scc/v3 v3.7.0
+	github.com/go-enry/go-enry/v2 v2.9.5
 	github.com/go-enry/go-license-detector/v4 v4.3.1
 	github.com/go-git/go-git/v5 v5.16.5
 	github.com/hashicorp/hcl/v2 v2.24.0
@@ -24,7 +24,7 @@ require (
 	github.com/agext/levenshtein v1.2.1 // indirect
 	github.com/agnivade/levenshtein v1.2.2-0.20250519083737-420867539855 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
-	github.com/boyter/gocodewalker v1.5.1 // indirect
+	github.com/boyter/gocodewalker v1.5.2-0.20260227212453-19676720409f // indirect
 	github.com/clipperhouse/uax29/v2 v2.2.0 // indirect
 	github.com/cloudflare/circl v1.6.1 // indirect
 	github.com/cyphar/filepath-securejoin v0.4.1 // indirect
@@ -58,6 +58,7 @@ require (
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
+	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	golang.org/x/crypto v0.47.0 // indirect
 	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56 // indirect
 	golang.org/x/net v0.49.0 // indirect
@@ -68,5 +69,4 @@ require (
 	gonum.org/v1/gonum v0.8.2 // indirect
 	gopkg.in/neurosnap/sentences.v1 v1.0.7 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

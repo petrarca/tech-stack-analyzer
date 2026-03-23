@@ -139,7 +139,9 @@ func (c *ScanConfigFile) MergeWithSettings(settings *Settings) {
 		settings.ExcludePatterns = c.Exclude
 	}
 
-	// Merge subsystem groups (not in ScanOptions — top-level config field)
+	// Merge top-level fields that are not in ScanOptions (and thus not covered by
+	// the reflection-based mergeStructFields above). These fields are product metadata,
+	// not scan behavior flags, so they live at the config root, not under "scan:".
 	if len(c.SubsystemGroups) > 0 && len(settings.SubsystemGroups) == 0 {
 		settings.SubsystemGroups = c.SubsystemGroups
 	}
