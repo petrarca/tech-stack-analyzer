@@ -31,6 +31,14 @@ type Payload struct {
 	Edges            []Edge                 `json:"edges,omitempty"`
 	ComponentRefs    []ComponentRef         `json:"component_refs,omitempty"` // Inter-component references (outgoing - components this component depends on)
 	CodeStats        interface{}            `json:"code_stats,omitempty"`
+	SubsystemStats   []SubsystemStat        `json:"subsystem_stats,omitempty"` // Per-subsystem code stats rollup (root only)
+}
+
+// SubsystemStat holds aggregated code stats for a depth-N path prefix (e.g. "/med").
+type SubsystemStat struct {
+	Path           string      `json:"path"`            // Depth-N path prefix, e.g. "/med"
+	ComponentCount int         `json:"component_count"` // Number of components under this prefix
+	CodeStats      interface{} `json:"code_stats"`      // Rolled-up CodeStats for all files in this subsystem
 }
 
 // Edge represents a relationship between components and technologies

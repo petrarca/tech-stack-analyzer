@@ -119,8 +119,8 @@ tasks:
     desc: Generate JSON schema examples from our actual project
     cmds:
       - echo "Generating schema examples from tech-stack-analyzer project..."
-      - ./{{.BINARY_NAME}} scan . --output schemas/examples/full.json
-      - ./{{.BINARY_NAME}} scan . --aggregate all --output schemas/examples/aggregated.json
+      - ./{{.BINARY_NAME}} scan . --component-stats-depth 1 --subsystem-depth 1 --output schemas/examples/full.json
+      - ./{{.BINARY_NAME}} scan . --component-stats-depth 1 --subsystem-depth 1 --aggregate all --output schemas/examples/aggregated.json
       - echo "Sanitizing absolute paths..."
       - sed -i '' "s|$(pwd)|/path/to/your/project|g" schemas/examples/full.json
       - sed -i '' "s|$(pwd)|/path/to/your/project|g" schemas/examples/aggregated.json

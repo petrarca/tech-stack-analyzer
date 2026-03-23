@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"log/slog"
@@ -18,19 +19,128 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// attachComponentCodeStats recursively attaches code stats to child components in the payload tree
-// Note: This should be called AFTER setting the root payload's global CodeStats
-// It only attaches stats to CHILD components, not the root (which keeps global stats)
-func attachComponentCodeStats(payload *types.Payload, analyzer codestats.Analyzer) {
-	// Early exit if per-component is not enabled - zero impact
-	if !analyzer.IsPerComponentEnabled() {
+// attachComponentCodeStats attaches per-component code stats to child components up to statsDepth.
+// Root keeps the global stats; only children at depth 1..statsDepth receive per-component stats.
+// statsDepth=0 is a no-op (no per-component stats collected or attached).
+func attachComponentCodeStats(payload *types.Payload, analyzer codestats.Analyzer, statsDepth int) {
+	if statsDepth <= 0 || !analyzer.IsPerComponentEnabled() {
 		return
 	}
-
-	// Recursively attach to child components (NOT the root - it keeps global stats)
 	for _, child := range payload.Children {
-		attachComponentCodeStatsRecursive(child, analyzer)
+		attachComponentCodeStatsRecursive(child, analyzer, 1, statsDepth)
 	}
+}
+
+// attachComponentCodeStatsRecursive attaches stats to components at depth <= maxDepth.
+func attachComponentCodeStatsRecursive(payload *types.Payload, analyzer codestats.Analyzer, depth, maxDepth int) {
+	if depth <= maxDepth {
+		// componentPath returns the stable path key used during stats collection
+		key := componentPath(payload)
+		if stats := analyzer.GetComponentStats(key); stats != nil {
+			payload.CodeStats = stats
+		}
+	}
+	if depth < maxDepth {
+		for _, child := range payload.Children {
+			attachComponentCodeStatsRecursive(child, analyzer, depth+1, maxDepth)
+		}
+	}
+}
+
+// componentPath returns the stable key used to identify a component in the code stats map.
+// Mirrors the same function in the scanner package — uses Path[0] (manifest relative path)
+// which is set at component creation and never changes, unlike the ID which is finalised later.
+// Returns empty string for root and virtual components (Path[0] == "/") which have no distinct
+// manifest location and should not receive per-component stats.
+func componentPath(p *types.Payload) string {
+	if len(p.Path) > 0 && p.Path[0] != "/" {
+		return p.Path[0]
+	}
+	return ""
+}
+
+// attachSubsystemStats populates payload.SubsystemStats from the analyzer's subsystem buckets.
+// Each entry is one subsystem key with its rolled-up code stats and component count.
+// This is a no-op when subsystem tracking is disabled.
+func attachSubsystemStats(payload *types.Payload, analyzer codestats.Analyzer, s *scanner.Scanner) {
+	if !analyzer.IsSubsystemEnabled() {
+		return
+	}
+	keys := analyzer.SubsystemKeys()
+	if len(keys) == 0 {
+		return
+	}
+	// Count components per depth-1 path prefix, then resolve to subsystem keys
+	pathCounts := countComponentsByDepthOnePath(payload)
+	counts := make(map[string]int)
+	for path, count := range pathCounts {
+		if key := s.ResolveSubsystemKeyFromPath(path); key != "" {
+			counts[key] += count
+		}
+	}
+
+	stats := make([]types.SubsystemStat, 0, len(keys))
+	for _, key := range keys {
+		cs := analyzer.GetSubsystemStats(key)
+		if cs == nil {
+			continue
+		}
+		stats = append(stats, types.SubsystemStat{
+			Path:           key,
+			ComponentCount: counts[key],
+			CodeStats:      cs,
+		})
+	}
+	sortSubsystemStatsByCode(stats)
+	payload.SubsystemStats = stats
+}
+
+// countComponentsByDepthOnePath counts components per depth-1 path prefix.
+func countComponentsByDepthOnePath(payload *types.Payload) map[string]int {
+	counts := make(map[string]int)
+	countComponentsByDepthOnePathRecursive(payload, counts)
+	return counts
+}
+
+func countComponentsByDepthOnePathRecursive(payload *types.Payload, counts map[string]int) {
+	cp := componentPath(payload)
+	if cp != "" {
+		prefix := ""
+		if idx := strings.Index(cp[1:], "/"); idx >= 0 {
+			prefix = cp[:idx+1]
+		} else {
+			prefix = cp
+		}
+		if prefix != "" {
+			counts[prefix]++
+		}
+	}
+	for _, child := range payload.Children {
+		countComponentsByDepthOnePathRecursive(child, counts)
+	}
+}
+
+// sortSubsystemStatsByCode sorts subsystem stats by total code lines descending.
+func sortSubsystemStatsByCode(stats []types.SubsystemStat) {
+	sort.Slice(stats, func(i, j int) bool {
+		ci := codeLines(stats[i].CodeStats)
+		cj := codeLines(stats[j].CodeStats)
+		if ci != cj {
+			return ci > cj
+		}
+		return stats[i].Path < stats[j].Path
+	})
+}
+
+// codeLines extracts total code lines from a CodeStats interface value.
+func codeLines(cs interface{}) int64 {
+	if cs == nil {
+		return 0
+	}
+	if typed, ok := cs.(*codestats.CodeStats); ok {
+		return typed.Total.Code
+	}
+	return 0
 }
 
 // convertPrimaryLanguages converts codestats.PrimaryLanguage to types.PrimaryLanguage
@@ -48,17 +158,18 @@ func convertPrimaryLanguages(src []codestats.PrimaryLanguage) []types.PrimaryLan
 	return result
 }
 
-// attachComponentCodeStatsRecursive attaches code stats to a component and its children
-func attachComponentCodeStatsRecursive(payload *types.Payload, analyzer codestats.Analyzer) {
-	// Attach stats to current component
-	if stats := analyzer.GetComponentStats(payload.ID); stats != nil {
-		payload.CodeStats = stats
-	}
-
-	// Recursively attach to child components
-	for _, child := range payload.Children {
-		attachComponentCodeStatsRecursive(child, analyzer)
-	}
+// buildCodeStatsAnalyzer creates the code stats analyzer from settings.
+// Per-component collection is enabled when ComponentStatsDepth > 0.
+// Subsystem collection is enabled when SubsystemDepth > 0 OR SubsystemGroups are defined.
+func buildCodeStatsAnalyzer(s *config.Settings) codestats.Analyzer {
+	subsystemEnabled := s.SubsystemDepth > 0 || len(s.SubsystemGroups) > 0
+	return codestats.NewAnalyzerWithSubsystem(
+		!s.NoCodeStats,
+		s.ComponentStatsDepth > 0,
+		subsystemEnabled,
+		s.PrimaryLanguageThreshold,
+		5,
+	)
 }
 
 // parseLogLevel converts string log level to slog.Level
@@ -144,8 +255,11 @@ func init() {
 	// Code statistics flag (enabled by default)
 	scanCmd.Flags().BoolVar(&settings.NoCodeStats, "no-code-stats", settings.NoCodeStats, "Disable code statistics (lines of code, comments, blanks, complexity)")
 
-	// Per-component code statistics flag (disabled by default)
-	scanCmd.Flags().BoolVar(&settings.CodeStatsPerComponent, "component-code-stats", settings.CodeStatsPerComponent, "Enable per-component code statistics (lines of code, comments, blanks, complexity per component)")
+	// Component stats depth: collect and include code_stats on components up to this tree depth (0=disabled)
+	scanCmd.Flags().IntVar(&settings.ComponentStatsDepth, "component-stats-depth", 0, "Include code_stats on components up to this tree depth in output (0=none, 1=top-level only, 2=two levels deep, ...)")
+
+	// Subsystem depth: collect and include subsystem_stats rolled up per depth-N path prefix (0=disabled)
+	scanCmd.Flags().IntVar(&settings.SubsystemDepth, "subsystem-depth", 0, "Produce subsystem_stats[] rolled up per depth-N path prefix (0=none, 1=top-level folders). Useful for large monorepos.")
 
 	// Root ID override flag for deterministic scans
 	scanCmd.Flags().StringVar(&settings.RootID, "root-id", "", "Override random root ID for deterministic scans (e.g., 'my-project-2024')")
@@ -409,13 +523,7 @@ func runMultiPathScan(args []string, cmd *cobra.Command, logger *slog.Logger) {
 		"root_id", rootID,
 	)
 
-	// Create code stats analyzer
-	codeStatsAnalyzer := codestats.NewAnalyzerWithOptions(
-		!settings.NoCodeStats,
-		settings.CodeStatsPerComponent,
-		settings.PrimaryLanguageThreshold,
-		5,
-	)
+	codeStatsAnalyzer := buildCodeStatsAnalyzer(settings)
 
 	// Create scanner rooted at common parent with include-path filtering
 	s, err := scanner.NewScannerWithOptionsAndLogger(
@@ -434,6 +542,9 @@ func runMultiPathScan(args []string, cmd *cobra.Command, logger *slog.Logger) {
 		logger.Error("Failed to create scanner", "error", err)
 		os.Exit(1)
 	}
+
+	s.SetSubsystemDepth(settings.SubsystemDepth)
+	s.SetSubsystemGroups(settings.SubsystemGroups)
 
 	// Set include paths so only specified subdirectories are scanned
 	s.SetIncludePaths(relPaths)
@@ -456,9 +567,8 @@ func runMultiPathScan(args []string, cmd *cobra.Command, logger *slog.Logger) {
 			}
 		}
 
-		if codeStatsAnalyzer.IsPerComponentEnabled() {
-			attachComponentCodeStats(payload, codeStatsAnalyzer)
-		}
+		attachComponentCodeStats(payload, codeStatsAnalyzer, settings.ComponentStatsDepth)
+		attachSubsystemStats(payload, codeStatsAnalyzer, s)
 	}
 
 	// Enhance payload with configuration data
@@ -575,19 +685,15 @@ func runScanner(absPath string, isFile bool, mergedConfig *config.ScanConfig, lo
 		"exclude_patterns", settings.ExcludePatterns,
 		"code_stats", !settings.NoCodeStats)
 
-	// Create code stats analyzer (enabled by default, disabled with --no-code-stats)
-	codeStatsAnalyzer := codestats.NewAnalyzerWithOptions(
-		!settings.NoCodeStats,
-		settings.CodeStatsPerComponent,
-		settings.PrimaryLanguageThreshold,
-		5, // maxPrimaryLangs - could be configurable in the future
-	)
+	codeStatsAnalyzer := buildCodeStatsAnalyzer(settings)
 
 	s, err := scanner.NewScannerWithOptionsAndLogger(scannerPath, settings.ExcludePatterns, settings.Verbose, settings.Debug, settings.TraceTimings, settings.TraceRules, codeStatsAnalyzer, logger, settings.RootID, mergedConfig)
 	if err != nil {
 		logger.Error("Failed to create scanner", "error", err)
 		os.Exit(1)
 	}
+	s.SetSubsystemDepth(settings.SubsystemDepth)
+	s.SetSubsystemGroups(settings.SubsystemGroups)
 
 	// Scan project or file
 	var payload interface{}
@@ -617,10 +723,8 @@ func runScanner(absPath string, isFile bool, mergedConfig *config.ScanConfig, lo
 				}
 			}
 
-			// Attach per-component stats if enabled (post-processing)
-			if codeStatsAnalyzer.IsPerComponentEnabled() {
-				attachComponentCodeStats(p, codeStatsAnalyzer)
-			}
+			attachComponentCodeStats(p, codeStatsAnalyzer, settings.ComponentStatsDepth)
+			attachSubsystemStats(p, codeStatsAnalyzer, s)
 		}
 	}
 

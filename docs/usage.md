@@ -19,6 +19,8 @@ stack-analyzer scan [path] [flags]
 - `--omit-fields` - Strip fields from the full output tree before writing (e.g. `reason,edges`). Applied recursively to all components. Useful to reduce file size when downstream consumers don't need certain fields.
 - `--exclude` - Additional patterns to exclude (combined with .gitignore; supports glob patterns like `**/__tests__/**`, `*.log`; can be specified multiple times)
 - `--no-code-stats` - Disable code statistics collection (enabled by default)
+- `--component-stats-depth N` - Include `code_stats` on components up to depth N in output (default: 0 = none)
+- `--subsystem-depth N` - Produce `subsystem_stats[]` rolled up per depth-N path prefix (default: 0 = none)
 - `--pretty` - Pretty print JSON output (default: true)
 - `--verbose, -v` - Show detailed progress information on stderr (default: false)
 - `--log-level` - Log level: trace, debug, error, fatal (default: error)
@@ -220,23 +222,54 @@ All values rounded to 2 decimal places. KPIs are computed from programming langu
 
 ### Per-Component Code Statistics
 
-Enable per-component code statistics with `--component-code-stats` to get detailed metrics for each detected component (e.g., each Maven module, npm package, or Go module):
+Enable per-component code statistics with `--component-stats-depth N` to get detailed metrics for each detected component up to depth N in the component tree (e.g., each Maven module, npm package, or Go module):
 
 ```bash
-# Enable per-component code stats
-./bin/stack-analyzer scan --component-code-stats /path/to/project
+# Include code_stats on top-level components only (depth 1)
+./bin/stack-analyzer scan --component-stats-depth 1 /path/to/project
+
+# Include code_stats on first two levels of the component tree
+./bin/stack-analyzer scan --component-stats-depth 2 /path/to/project
 ```
 
 Key points:
-- **Root `code_stats`**: Global statistics for the entire codebase (all files)
-- **Component `code_stats`**: Statistics for files directly in that component only
-- **Global >= Sum of components**: Root-level files not in any component are only in global stats
-- **Zero overhead when disabled**: No performance impact when flag is not used
+- **Root `code_stats`**: Global statistics for the entire codebase (all files) — always present
+- **Component `code_stats`**: Statistics for all files under that component's subtree
+- **Depth 0 (default)**: No per-component stats — global stats only, no overhead
+- **Global >= Sum of components**: Root-level files not inside any component are only in global stats
 
 This is useful for:
-- Identifying large/complex modules in monorepos
+- Identifying large/complex top-level modules in monorepos
 - Tracking code growth per component over time
 - Finding components with low comment ratios or high complexity
+
+### Subsystem Statistics
+
+For large monorepos with many top-level folders, `--subsystem-depth N` produces a `subsystem_stats[]` array at the root level with one rolled-up entry per depth-N path prefix:
+
+```bash
+# One stat entry per depth-1 folder (/server, /frontend, /libs, etc.)
+./bin/stack-analyzer scan --subsystem-depth 1 /path/to/project
+```
+
+Each entry aggregates all files under that folder — regardless of how many individual components are inside. This gives a clean per-subsystem breakdown without polluting the flat `components[]` list.
+
+For named groups (aggregating multiple folders into a single logical subsystem), define `subsystem-groups` in a config file:
+
+```bash
+./bin/stack-analyzer scan \
+  --config '{"subsystem-groups":{"core":{"paths":["/core","/platform"],"description":"Core platform"},"services":{"paths":["/svc-a","/svc-b"],"description":"Business services"}}}' \
+  /path/to/project
+```
+
+When `subsystem-groups` is defined, `--subsystem-depth` is ignored — the named groups take precedence. See [configuration.md](configuration.md#subsystem-groups) for details.
+
+Key points:
+- **`subsystem_stats[]`** appears on the root node of both full and aggregated outputs
+- **`path`**: the depth-N prefix (e.g. `/server`) or group name (e.g. `core-platform`)
+- **`component_count`**: number of components in that subsystem
+- **`code_stats`**: full stats structure identical to root `code_stats`
+- **Independent of `--component-stats-depth`**: both flags can be used together or separately
 
 ## Multi-Git Repository Support
 

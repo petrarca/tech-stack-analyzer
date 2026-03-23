@@ -10,12 +10,13 @@ import (
 
 // ComponentEntry represents a single component in the flat component list
 type ComponentEntry struct {
-	ID    string   `json:"id"`
-	Name  string   `json:"name"`
-	Type  string   `json:"type,omitempty"`
-	Tech  []string `json:"tech,omitempty"`
-	Techs []string `json:"techs,omitempty"`
-	Path  string   `json:"path,omitempty"` // First path entry (primary location)
+	ID        string      `json:"id"`
+	Name      string      `json:"name"`
+	Type      string      `json:"type,omitempty"`
+	Tech      []string    `json:"tech,omitempty"`
+	Techs     []string    `json:"techs,omitempty"`
+	Path      string      `json:"path,omitempty"`       // First path entry (primary location)
+	CodeStats interface{} `json:"code_stats,omitempty"` // Per-component code statistics (included when within component-stats-depth)
 }
 
 // AggregateOutput represents aggregated/rolled-up data from the scan
@@ -31,6 +32,7 @@ type AggregateOutput struct {
 	Dependencies       [][]string              `json:"dependencies,omitempty"`        // All dependencies [type, name, version]
 	Components         []ComponentEntry        `json:"components,omitempty"`          // Flat list of all components (id, name, type, tech, techs, path)
 	CodeStats          interface{}             `json:"code_stats,omitempty"`          // Code statistics (if enabled)
+	SubsystemStats     []types.SubsystemStat   `json:"subsystem_stats,omitempty"`     // Per-subsystem code stats rollup (when --subsystem-depth > 0)
 }
 
 // Aggregator handles aggregation of scan results
@@ -44,9 +46,7 @@ func NewAggregator(fields []string) *Aggregator {
 	for _, field := range fields {
 		fieldMap[field] = true
 	}
-	return &Aggregator{
-		fields: fieldMap,
-	}
+	return &Aggregator{fields: fieldMap}
 }
 
 // Aggregate processes a payload and returns aggregated data
@@ -96,6 +96,9 @@ func (a *Aggregator) Aggregate(payload *types.Payload) *AggregateOutput {
 
 	// Copy primary_languages from root payload (already extracted from code_stats)
 	output.PrimaryLanguages = payload.PrimaryLanguages
+
+	// Copy subsystem stats if present (populated by cmd/scan.go after scanning)
+	output.SubsystemStats = payload.SubsystemStats
 
 	return output
 }
@@ -324,39 +327,34 @@ func (a *Aggregator) collectGitRecursive(payload *types.Payload, gitMap map[stri
 	}
 }
 
-// collectComponents recursively collects all components as a flat list
+// collectComponents recursively collects all components as a flat list, skipping the root node.
+// code_stats is included on each component when already populated (controlled by --component-stats-depth).
 func (a *Aggregator) collectComponents(payload *types.Payload) []ComponentEntry {
 	var components []ComponentEntry
-	a.collectComponentsRecursive(payload, &components)
+	collectComponentsRecursive(payload, &components, false)
 	return components
 }
 
-// collectComponentsRecursive helper function — skips the root node
-func (a *Aggregator) collectComponentsRecursive(payload *types.Payload, components *[]ComponentEntry, depth ...int) {
-	d := 0
-	if len(depth) > 0 {
-		d = depth[0]
-	}
-
-	// Skip the root node (depth 0) — only collect actual components
-	if d > 0 {
+// collectComponentsRecursive appends non-root components to the slice.
+// skipCurrent is true only for the root call, false for all recursive calls.
+func collectComponentsRecursive(payload *types.Payload, components *[]ComponentEntry, includeNode bool) {
+	if includeNode {
 		path := ""
 		if len(payload.Path) > 0 {
 			path = payload.Path[0]
 		}
-		entry := ComponentEntry{
-			ID:    payload.ID,
-			Name:  payload.Name,
-			Type:  payload.ComponentType,
-			Tech:  payload.Tech,
-			Techs: payload.Techs,
-			Path:  path,
-		}
-		*components = append(*components, entry)
+		*components = append(*components, ComponentEntry{
+			ID:        payload.ID,
+			Name:      payload.Name,
+			Type:      payload.ComponentType,
+			Tech:      payload.Tech,
+			Techs:     payload.Techs,
+			Path:      path,
+			CodeStats: payload.CodeStats, // non-nil only when --component-stats-depth covers this component
+		})
 	}
-
 	for _, child := range payload.Children {
-		a.collectComponentsRecursive(child, components, d+1)
+		collectComponentsRecursive(child, components, true)
 	}
 }
 

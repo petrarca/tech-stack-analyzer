@@ -120,6 +120,7 @@ Use the `--aggregate` flag to get a simplified, rolled-up view of your entire co
 - **reason**: Object mapping technologies to detection reasons, with "_" key for non-tech reasons (licenses, base images, etc.)
 - **properties**: Object containing tech-specific metadata (Docker, Terraform, Kubernetes, etc.)
 - **code_stats**: Code statistics with analyzed/unanalyzed buckets (see [usage.md](usage.md#code-statistics))
+- **subsystem_stats**: Per-subsystem code stats rollup (root node only; present when `--subsystem-depth > 0` or `subsystem-groups` is defined in config). Each entry has `path` (folder prefix or group name), `component_count`, and `code_stats`. See [usage.md](usage.md#subsystem-statistics).
 - **git**: Git repository information (available at root and component levels for multi-repo projects)
 - **metadata**: Scan execution metadata (only in root payload)
 

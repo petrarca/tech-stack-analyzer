@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 	"strings"
 
 	"log/slog"
@@ -23,14 +24,16 @@ type Settings struct {
 	Debug                    bool
 	TraceTimings             bool
 	TraceRules               bool
-	FilterRules              []string // Only use these rules (for debugging)
-	NoCodeStats              bool     // Disable code statistics (enabled by default)
-	CodeStatsPerComponent    bool     // Enable per-component code statistics (disabled by default)
-	RootID                   string   // Override random root ID for deterministic scans
-	PrimaryLanguageThreshold float64  // Minimum percentage for primary languages (default 0.05 = 5%)
-	UseLockFiles             bool     // Use lock files for dependency resolution (default true)
-	OmitFields               []string // Fields to omit from full output (e.g. "reason", "path", "edges")
-	AlsoAggregate            string   // Also produce an aggregate output alongside the full output (e.g. "tech,techs,languages")
+	FilterRules              []string                  // Only use these rules (for debugging)
+	NoCodeStats              bool                      // Disable code statistics (enabled by default)
+	ComponentStatsDepth      int                       // Collect and include code_stats on components up to this tree depth (0=none, 1=top-level, 2=two levels)
+	SubsystemDepth           int                       // Collect and include subsystem_stats rolled up per depth-N path prefix (0=none, 1=top-level folders)
+	SubsystemGroups          map[string]SubsystemGroup // Named subsystem groups overriding depth-based splitting (from config file)
+	RootID                   string                    // Override random root ID for deterministic scans
+	PrimaryLanguageThreshold float64                   // Minimum percentage for primary languages (default 0.05 = 5%)
+	UseLockFiles             bool                      // Use lock files for dependency resolution (default true)
+	OmitFields               []string                  // Fields to omit from full output (e.g. "reason", "path", "edges")
+	AlsoAggregate            string                    // Also produce an aggregate output alongside the full output (e.g. "tech,techs,languages")
 
 	// Logging
 	LogLevel  slog.Level
@@ -51,7 +54,8 @@ func DefaultSettings() *Settings {
 		TraceRules:               false,
 		FilterRules:              []string{},
 		NoCodeStats:              false,           // Code stats enabled by default
-		CodeStatsPerComponent:    false,           // Per-component code stats disabled by default
+		ComponentStatsDepth:      0,               // Per-component stats disabled by default
+		SubsystemDepth:           0,               // Subsystem rollup disabled by default
 		LogLevel:                 slog.LevelError, // Changed from InfoLevel - only errors by default
 		LogFormat:                "text",
 		LogFile:                  "",
@@ -89,8 +93,16 @@ func LoadSettingsFromEnvironment() *Settings {
 		settings.NoCodeStats = strings.ToLower(noCodeStats) == "true"
 	}
 
-	if componentStats := os.Getenv("STACK_ANALYZER_COMPONENT_CODE_STATS"); componentStats != "" {
-		settings.CodeStatsPerComponent = strings.ToLower(componentStats) == "true"
+	if statsDepth := os.Getenv("STACK_ANALYZER_COMPONENT_STATS_DEPTH"); statsDepth != "" {
+		if depth, err := strconv.Atoi(statsDepth); err == nil {
+			settings.ComponentStatsDepth = depth
+		}
+	}
+
+	if subsysDepth := os.Getenv("STACK_ANALYZER_SUBSYSTEM_DEPTH"); subsysDepth != "" {
+		if depth, err := strconv.Atoi(subsysDepth); err == nil {
+			settings.SubsystemDepth = depth
+		}
 	}
 
 	if traceTimings := os.Getenv("STACK_ANALYZER_TRACE_TIMINGS"); traceTimings != "" {

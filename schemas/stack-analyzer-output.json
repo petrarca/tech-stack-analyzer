@@ -112,6 +112,57 @@
             "required": ["language", "pct"],
             "additionalProperties": false
         },
+        "code_stats": {
+            "type": "object",
+            "description": "Code statistics produced by scc. Root node always has global stats (all files). Child components have stats only when --component-stats-depth covers their tree depth.",
+            "properties": {
+                "total": {
+                    "type": "object",
+                    "description": "Totals across all file types",
+                    "properties": {
+                        "files":      { "type": "integer", "description": "Number of files analyzed" },
+                        "lines":      { "type": "integer", "description": "Total lines (code + comments + blanks)" },
+                        "code":       { "type": "integer", "description": "Lines of code" },
+                        "comments":   { "type": "integer", "description": "Comment lines" },
+                        "blanks":     { "type": "integer", "description": "Blank lines" },
+                        "complexity": { "type": "integer", "description": "Cyclomatic complexity" }
+                    }
+                },
+                "by_type": {
+                    "type": "object",
+                    "description": "Stats broken down by file type (programming, data, documentation, etc.)",
+                    "properties": {
+                        "programming": {
+                            "type": "object",
+                            "description": "Source code files only",
+                            "properties": {
+                                "total": { "type": "object" },
+                                "metrics": {
+                                    "type": "object",
+                                    "description": "Derived KPIs computed from programming files only",
+                                    "properties": {
+                                        "comment_ratio":          { "type": "number", "description": "comments / (code + comments), 0.0-1.0" },
+                                        "complexity_per_kloc":    { "type": "number", "description": "Cyclomatic complexity per 1000 lines of code" },
+                                        "blank_ratio":            { "type": "number", "description": "blank / total lines, 0.0-1.0" },
+                                        "primary_languages": {
+                                            "type": "array",
+                                            "items": { "$ref": "#/definitions/primary_language" },
+                                            "description": "Top languages by lines of code (max 5, ≥5% threshold by default)"
+                                        }
+                                    }
+                                },
+                                "languages": {
+                                    "type": "object",
+                                    "description": "Per-language breakdown",
+                                    "additionalProperties": { "type": "object" }
+                                }
+                            }
+                        }
+                    },
+                    "additionalProperties": { "type": "object" }
+                }
+            }
+        },
         "full": {
             "type": "object",
             "properties": {
@@ -232,7 +283,7 @@
                     "$ref": "#/definitions/properties"
                 },
                 "code_stats": {
-                    "type": "object"
+                    "$ref": "#/definitions/code_stats"
                 },
                 "git": {
                     "type": "object",
@@ -391,6 +442,47 @@
                     ],
                     "additionalProperties": false
                 },
+                "components": {
+                    "type": "array",
+                    "description": "Flat list of all detected components (each Maven module, npm package, Go module, etc.)",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "Unique component identifier"
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Component name"
+                            },
+                            "type": {
+                                "type": "string",
+                                "description": "Component type (e.g. maven, nodejs, python, golang)"
+                            },
+                            "tech": {
+                                "type": "array",
+                                "items": { "type": "string" },
+                                "description": "Primary technologies"
+                            },
+                            "techs": {
+                                "type": "array",
+                                "items": { "type": "string" },
+                                "description": "All detected technologies including transitive"
+                            },
+                            "path": {
+                                "type": "string",
+                                "description": "Relative path to the component manifest file"
+                            },
+                            "code_stats": {
+                                "$ref": "#/definitions/code_stats",
+                                "description": "Per-component code statistics. Present only when --component-stats-depth covers this component's tree depth; absent otherwise."
+                            }
+                        },
+                        "required": ["id", "name"],
+                        "additionalProperties": false
+                    }
+                },
                 "git": {
                     "type": "array",
                     "items": {
@@ -437,7 +529,7 @@
                     "description": "List of all dependencies detected across the entire project"
                 },
                 "code_stats": {
-                    "type": "object"
+                    "$ref": "#/definitions/code_stats"
                 },
                 "properties": {
                     "type": "object",

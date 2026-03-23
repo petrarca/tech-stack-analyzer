@@ -54,7 +54,11 @@ scan:
   - Useful for external dependencies (AWS, SaaS services)
   - Manual documentation of deployment targets or platforms
 
+- **`subsystem-groups`** *(optional)* - Named subsystem groups for `subsystem_stats[]` rollup. Only needed for large monorepos with 10+ top-level folders where depth-based splitting (via `--subsystem-depth`) produces too many entries. When defined, overrides `--subsystem-depth`. See [Subsystem Groups](#subsystem-groups) below.
+
 - **`scan`** - Scan behavior configuration options
+  - **`component_stats_depth`** - Include `code_stats` on components up to this tree depth in output (default: 0 = none). Matches `--component-stats-depth` flag.
+  - **`subsystem_depth`** - Produce `subsystem_stats[]` rolled up per depth-N path prefix (default: 0 = none). Ignored when `subsystem-groups` is defined. Matches `--subsystem-depth` flag.
   - **`primary_language_threshold`** - Minimum percentage (0.001-1.0) for a programming language to be considered primary
     - Default: 0.05 (5%)
     - Lower values show more languages, higher values show only dominant languages
@@ -83,7 +87,9 @@ export STACK_ANALYZER_PRETTY=false
 export STACK_ANALYZER_EXCLUDE_DIRS=vendor,node_modules,build
 export STACK_ANALYZER_AGGREGATE=tech,techs,languages,git
 export STACK_ANALYZER_VERBOSE=true         # Show detailed progress information
-export STACK_ANALYZER_USE_LOCK_FILES=false # Disable lock file parsing (default: true)
+export STACK_ANALYZER_USE_LOCK_FILES=false        # Disable lock file parsing (default: true)
+export STACK_ANALYZER_COMPONENT_STATS_DEPTH=1    # Include code_stats on depth-1 components
+export STACK_ANALYZER_SUBSYSTEM_DEPTH=1          # Produce subsystem_stats per depth-1 folder
 
 # Logging
 export STACK_ANALYZER_LOG_LEVEL=debug      # trace, debug, error, fatal (default: error)
@@ -126,7 +132,39 @@ stack-analyzer scan --config portfolio.yml --output portfolio-analysis.json
 - **Flexible exclusions** - Project-specific ignore patterns beyond .gitignore
 - **Inline JSON support** - Perfect for CI/CD and automation pipelines
 
-See `scan-config.example.yml` for a complete configuration template with all available options and precedence examples.
+See `stack-analyzer-config.example.yml` for a complete configuration template with all available options and precedence examples.
+
+### Subsystem Groups
+
+The `subsystem-groups` config option lets you define named logical groups that aggregate multiple depth-1 folders into a single `subsystem_stats` entry. This is useful for large monorepos (10+ top-level folders) where depth-based folder splitting produces too many entries to be useful.
+
+```yaml
+# stack-analyzer-config.yml
+subsystem-groups:
+  core:
+    paths: [/core, /platform, /shared]
+    description: "Core framework and shared platform libraries"
+  services:
+    paths: [/svc-auth, /svc-billing, /svc-notifications]
+    description: "Business services"
+  integrations:
+    paths: [/integration, /adapters, /connectors]
+    description: "External system integrations"
+```
+
+Or equivalently as inline JSON for CI/CD:
+
+```bash
+stack-analyzer scan \
+  --config '{"subsystem-groups":{"core":{"paths":["/core","/platform"]},"services":{"paths":["/svc-auth","/svc-billing"]}}}' \
+  /path/to/project
+```
+
+Key behaviour:
+- When `subsystem-groups` is defined, `--subsystem-depth` is ignored
+- Folders not listed in any group are excluded from `subsystem_stats` (but still counted in global `code_stats`)
+- Each group's `code_stats` aggregates all files under all listed paths
+- Group names become the `path` field in each `subsystem_stats` entry
 
 ## Logging
 

@@ -114,9 +114,19 @@
                     "type": "boolean",
                     "description": "Disable code statistics (matches --no-code-stats flag)"
                 },
-                "component_code_stats": {
-                    "type": "boolean",
-                    "description": "Enable per-component code statistics (matches --component-code-stats flag)"
+                "component_stats_depth": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 5,
+                    "default": 0,
+                    "description": "Include code_stats on components up to this tree depth in output (0=none, 1=top-level only). Matches --component-stats-depth flag."
+                },
+                "subsystem_depth": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 5,
+                    "default": 0,
+                    "description": "Produce subsystem_stats[] rolled up per depth-N path prefix (0=none, 1=top-level folders). Ignored when subsystem-groups is defined. Matches --subsystem-depth flag."
                 },
                 "trace_timings": {
                     "type": "boolean",
@@ -164,36 +174,30 @@
                     "primary_language_threshold": 0.05
                 }
             ]
+        },
+        "subsystem-groups": {
+            "type": "object",
+            "description": "Optional named subsystem groups for subsystem_stats rollup. When defined, overrides --subsystem-depth. Each key is a group name, each value defines the depth-1 path prefixes that belong to the group.",
+            "additionalProperties": {
+                "type": "object",
+                "properties": {
+                    "paths": {
+                        "type": "array",
+                        "items": { "type": "string", "pattern": "^/[a-zA-Z0-9_-].*$" },
+                        "minItems": 1,
+                        "description": "Depth-1 path prefixes (e.g. [\"/module-a\", \"/module-b\"])"
+                    },
+                    "description": {
+                        "type": "string",
+                        "maxLength": 300,
+                        "description": "Human-readable description of this subsystem group"
+                    }
+                },
+                "required": ["paths"],
+                "additionalProperties": false
+            }
         }
     },
     "additionalProperties": false,
-    "maxProperties": 10,
-    "examples": [
-        {
-            "properties": {
-                "product": "My Product Name",
-                "team": "Platform Engineering",
-                "environment": "production"
-            },
-            "exclude": [
-                "node_modules",
-                "vendor",
-                "dist",
-                "*.log",
-                "**/__tests__/**"
-            ],
-            "techs": [
-                {"tech": "aws", "reason": "Deployed on AWS ECS"},
-                {"tech": "datadog", "reason": "Monitoring via Datadog"}
-            ],
-            "scan": {
-                "output_file": "results.json",
-                "pretty": true,
-                "aggregate": "techs,languages",
-                "debug": true,
-                "trace_timings": false,
-                "filter_rules": ["nodejs", "python"]
-            }
-        }
-    ]
+    "maxProperties": 11
 }

@@ -104,28 +104,45 @@ type CodeStats struct {
 
 // Analyzer interface for code statistics collection
 type Analyzer interface {
-	// ProcessFile analyzes a file and adds its stats
-	// language is the go-enry detected language name (used for grouping)
-	// If content is provided, it will be used; otherwise the file will be read
+	// ProcessFile analyzes a file and adds its stats to the global totals.
+	// language is the go-enry detected language name (used for grouping).
+	// If content is provided, it will be used; otherwise the file will be read.
 	ProcessFile(filename string, language string, content []byte)
 
-	// ProcessFileForComponent analyzes a file for a specific component
-	// componentID is used to group stats by component
-	// language is the go-enry detected language name (used for grouping)
-	// If content is provided, it will be used; otherwise the file will be read
-	ProcessFileForComponent(filename string, language string, content []byte, componentID string)
+	// ProcessFileForComponent analyzes a file and attributes its stats to both
+	// the global totals and to the component identified by componentPath.
+	// componentPath must be a stable, unique identifier for the component
+	// (e.g. the relative manifest file path) so that stats can be retrieved
+	// after the component tree has been finalized.
+	ProcessFileForComponent(filename string, language string, content []byte, componentPath string)
 
-	// GetStats returns the aggregated statistics
+	// GetStats returns the aggregated global statistics.
 	GetStats() interface{}
 
-	// GetComponentStats returns statistics for a specific component
-	GetComponentStats(componentID string) interface{}
+	// GetComponentStats returns statistics for the component identified by componentPath.
+	// Returns nil when per-component tracking is disabled or no stats were recorded.
+	GetComponentStats(componentPath string) interface{}
 
-	// IsEnabled returns whether code stats collection is enabled
+	// IsEnabled returns whether code stats collection is enabled.
 	IsEnabled() bool
 
-	// IsPerComponentEnabled returns whether per-component code stats collection is enabled
+	// IsPerComponentEnabled returns whether per-component code stats collection is enabled.
 	IsPerComponentEnabled() bool
+
+	// ProcessFileForSubsystem analyzes a file and attributes its stats to the subsystem
+	// identified by subsystemKey (typically a depth-N path prefix, e.g. "/med").
+	// Stats are added to the subsystem bucket only — not to global or component buckets.
+	ProcessFileForSubsystem(filename string, language string, content []byte, subsystemKey string)
+
+	// GetSubsystemStats returns statistics for the subsystem identified by subsystemKey.
+	// Returns nil when subsystem tracking is disabled or no stats were recorded.
+	GetSubsystemStats(subsystemKey string) interface{}
+
+	// IsSubsystemEnabled returns whether subsystem-level stats collection is enabled.
+	IsSubsystemEnabled() bool
+
+	// SubsystemKeys returns all subsystem keys that have collected stats, sorted.
+	SubsystemKeys() []string
 }
 
 // NewAnalyzer creates an analyzer based on enabled flag
@@ -152,16 +169,34 @@ func NewAnalyzerWithOptions(enabled bool, perComponent bool, primaryThreshold fl
 	return &noopAnalyzer{}
 }
 
+// NewAnalyzerWithSubsystem creates an analyzer with per-component and subsystem options
+func NewAnalyzerWithSubsystem(enabled bool, perComponent bool, subsystem bool, primaryThreshold float64, maxPrimaryLangs int) Analyzer {
+	if enabled {
+		a := newSCCAnalyzerWithOptions(perComponent, primaryThreshold, maxPrimaryLangs)
+		if subsystem {
+			a.subsystemEnabled = true
+			a.subsystemStats = make(map[string]*componentStats)
+		}
+		return a
+	}
+	return &noopAnalyzer{}
+}
+
 // noopAnalyzer is a no-op implementation when code stats are disabled
 type noopAnalyzer struct{}
 
-func (n *noopAnalyzer) ProcessFile(filename string, language string, content []byte) {} // language and content optional
+func (n *noopAnalyzer) ProcessFile(filename string, language string, content []byte) {}
 func (n *noopAnalyzer) ProcessFileForComponent(filename string, language string, content []byte, componentID string) {
-}                                                                        // component-specific analysis
-func (n *noopAnalyzer) GetStats() interface{}                            { return nil }
-func (n *noopAnalyzer) GetComponentStats(componentID string) interface{} { return nil }
-func (n *noopAnalyzer) IsEnabled() bool                                  { return false }
-func (n *noopAnalyzer) IsPerComponentEnabled() bool                      { return false }
+}
+func (n *noopAnalyzer) ProcessFileForSubsystem(filename string, language string, content []byte, subsystemKey string) {
+}
+func (n *noopAnalyzer) GetStats() interface{}                             { return nil }
+func (n *noopAnalyzer) GetComponentStats(componentID string) interface{}  { return nil }
+func (n *noopAnalyzer) GetSubsystemStats(subsystemKey string) interface{} { return nil }
+func (n *noopAnalyzer) IsEnabled() bool                                   { return false }
+func (n *noopAnalyzer) IsPerComponentEnabled() bool                       { return false }
+func (n *noopAnalyzer) IsSubsystemEnabled() bool                          { return false }
+func (n *noopAnalyzer) SubsystemKeys() []string                           { return nil }
 
 // sccAnalyzer uses boyter/scc for code statistics
 type sccAnalyzer struct {
@@ -174,7 +209,10 @@ type sccAnalyzer struct {
 	byType map[string]*Stats // key: "programming", "data", "markup", "prose"
 	// Per-component tracking
 	perComponentEnabled bool                       // Whether per-component tracking is enabled
-	componentStats      map[string]*componentStats // Stats by component ID
+	componentStats      map[string]*componentStats // Stats by component path
+	// Per-subsystem tracking (rollup per depth-N path prefix, e.g. "/med")
+	subsystemEnabled bool                       // Whether subsystem tracking is enabled
+	subsystemStats   map[string]*componentStats // Stats by subsystem key (reuses componentStats struct)
 	// Primary language configuration
 	primaryThreshold float64 // Minimum percentage for primary languages
 	maxPrimaryLangs  int     // Maximum number of primary languages to show
@@ -378,7 +416,7 @@ func (a *sccAnalyzer) ProcessFileForComponent(filename string, language string, 
 	a.addToGlobalStatsUnsafe(filejob, language, sccLang)
 
 	// 2. Add to COMPONENT stats (new per-component feature)
-	a.addComponentStatsUnsafe(filejob, language, sccLang, componentID)
+	a.addComponentStatsUnsafe(filejob, language, sccLang, componentID, a.componentStats)
 }
 
 // processFileCommon contains the shared logic for file processing
@@ -488,18 +526,18 @@ func (a *sccAnalyzer) addToGlobalStatsUnsafe(filejob *processor.FileJob, languag
 	}
 }
 
-// addComponentStatsUnsafe adds file job results to component statistics (caller must hold mutex)
-func (a *sccAnalyzer) addComponentStatsUnsafe(filejob *processor.FileJob, language string, sccLang string, componentID string) {
-	// Initialize component stats if not exists
-	if _, ok := a.componentStats[componentID]; !ok {
-		a.componentStats[componentID] = &componentStats{
+// addComponentStatsUnsafe adds file job results to a keyed stats bucket (caller must hold mutex).
+// statsMap is either componentStats or subsystemStats — same logic, different map.
+func (a *sccAnalyzer) addComponentStatsUnsafe(filejob *processor.FileJob, language string, sccLang string, key string, statsMap map[string]*componentStats) {
+	if _, ok := statsMap[key]; !ok {
+		statsMap[key] = &componentStats{
 			codeByLanguage:  make(map[string]*Stats),
 			otherByLanguage: make(map[string]*OtherStats),
 			byType:          make(map[string]*Stats),
 		}
 	}
 
-	compStats := a.componentStats[componentID]
+	compStats := statsMap[key]
 
 	// Determine if SCC recognized this file
 	sccRecognized := sccLang != ""
@@ -561,21 +599,67 @@ func (a *sccAnalyzer) addComponentStatsUnsafe(filejob *processor.FileJob, langua
 	}
 }
 
-// GetComponentStats returns statistics for a specific component
+// GetComponentStats returns statistics for a specific component.
 func (a *sccAnalyzer) GetComponentStats(componentID string) interface{} {
 	if !a.perComponentEnabled {
 		return nil
 	}
-
 	a.mu.Lock()
 	defer a.mu.Unlock()
-
 	compStats, exists := a.componentStats[componentID]
 	if !exists {
 		return nil
 	}
+	return a.buildCodeStatsFromComponentStats(compStats)
+}
 
-	// Build analyzed and unanalyzed slices for this component
+// IsSubsystemEnabled returns whether subsystem-level stats collection is enabled.
+func (a *sccAnalyzer) IsSubsystemEnabled() bool {
+	return a.subsystemEnabled
+}
+
+// SubsystemKeys returns all subsystem keys that have collected stats, sorted.
+func (a *sccAnalyzer) SubsystemKeys() []string {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	keys := make([]string, 0, len(a.subsystemStats))
+	for k := range a.subsystemStats {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+// ProcessFileForSubsystem attributes a file's stats to the given subsystem bucket only.
+func (a *sccAnalyzer) ProcessFileForSubsystem(filename string, language string, content []byte, subsystemKey string) {
+	if !a.subsystemEnabled || subsystemKey == "" {
+		return
+	}
+	filejob, sccLang, ok := a.processFileCommon(filename, language, content)
+	if !ok {
+		return
+	}
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	a.addComponentStatsUnsafe(filejob, language, sccLang, subsystemKey, a.subsystemStats)
+}
+
+// GetSubsystemStats returns statistics for the subsystem identified by subsystemKey.
+func (a *sccAnalyzer) GetSubsystemStats(subsystemKey string) interface{} {
+	if !a.subsystemEnabled {
+		return nil
+	}
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	compStats, exists := a.subsystemStats[subsystemKey]
+	if !exists {
+		return nil
+	}
+	return a.buildCodeStatsFromComponentStats(compStats)
+}
+
+// buildCodeStatsFromComponentStats builds a CodeStats from a componentStats bucket.
+func (a *sccAnalyzer) buildCodeStatsFromComponentStats(compStats *componentStats) *CodeStats {
 	analyzed := make([]LanguageStats, 0, len(compStats.codeByLanguage))
 	for lang, stats := range compStats.codeByLanguage {
 		analyzed = append(analyzed, LanguageStats{
@@ -584,21 +668,13 @@ func (a *sccAnalyzer) GetComponentStats(componentID string) interface{} {
 			Complexity: stats.Complexity, Files: stats.Files,
 		})
 	}
-
 	unanalyzed := make([]OtherLanguageStats, 0, len(compStats.otherByLanguage))
 	for lang, stats := range compStats.otherByLanguage {
-		unanalyzed = append(unanalyzed, OtherLanguageStats{
-			Language: lang, Lines: stats.Lines, Files: stats.Files,
-		})
+		unanalyzed = append(unanalyzed, OtherLanguageStats{Language: lang, Lines: stats.Lines, Files: stats.Files})
 	}
-
-	// Sort slices by lines descending (like global stats)
 	sort.Slice(analyzed, func(i, j int) bool { return analyzed[i].Lines > analyzed[j].Lines })
 	sort.Slice(unanalyzed, func(i, j int) bool { return unanalyzed[i].Lines > unanalyzed[j].Lines })
-
-	// Build by-type structure with metrics for components
 	byType := a.buildComponentByType(compStats, analyzed, unanalyzed)
-
 	return &CodeStats{
 		Total:      compStats.total,
 		ByType:     byType,

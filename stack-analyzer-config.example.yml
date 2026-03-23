@@ -60,7 +60,8 @@ scan:
   verbose: false                   # Matches --verbose flag
   debug: true                      # Matches --debug flag
   no_code_stats: false             # Matches --no-code-stats flag
-  component_code_stats: true       # Matches --component-code-stats flag
+  component_stats_depth: 0         # Matches --component-stats-depth flag (0=none, 1=top-level)
+  subsystem_depth: 1               # Matches --subsystem-depth flag (0=none, 1=top-level folders)
   trace_timings: false             # Matches --trace-timings flag
   trace_rules: false               # Matches --trace-rules flag
   filter_rules:                    # Matches --rules flag
@@ -68,6 +69,22 @@ scan:
     - "python"
     - "docker"
   primary_language_threshold: 0.05 # Minimum percentage for primary languages (default: 0.05 = 5%)
+
+# Optional: named subsystem groups for subsystem_stats rollup.
+# When defined, overrides --subsystem-depth. Each group aggregates multiple
+# depth-1 folders into a single named subsystem_stats entry.
+# Only needed for large monorepos with 10+ top-level folders.
+#
+# subsystem-groups:
+#   core:
+#     paths: [/core, /platform, /shared]
+#     description: "Core framework and shared platform libraries"
+#   domain-a:
+#     paths: [/module-a, /module-b, /module-c]
+#     description: "Domain A modules"
+#   integrations:
+#     paths: [/integration, /adapters]
+#     description: "External system integrations and adapters"
 
 # Example usage scenarios:
 #

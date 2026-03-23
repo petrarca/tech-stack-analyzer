@@ -27,9 +27,18 @@ type ScanOptions struct {
 	TraceRules               bool     `yaml:"trace_rules,omitempty" json:"trace_rules,omitempty" default:"false"`
 	FilterRules              []string `yaml:"filter_rules,omitempty" json:"filter_rules,omitempty"`
 	NoCodeStats              bool     `yaml:"no_code_stats,omitempty" json:"no_code_stats,omitempty" default:"false"`
-	CodeStatsPerComponent    bool     `yaml:"component_code_stats,omitempty" json:"component_code_stats,omitempty" default:"false"`
+	ComponentStatsDepth      int      `yaml:"component_stats_depth,omitempty" json:"component_stats_depth,omitempty" default:"0"`
+	SubsystemDepth           int      `yaml:"subsystem_depth,omitempty" json:"subsystem_depth,omitempty" default:"0"`
 	PrimaryLanguageThreshold float64  `yaml:"primary_language_threshold,omitempty" json:"primary_language_threshold,omitempty" default:"0.05"`
 	UseLockFiles             *bool    `yaml:"use_lock_files,omitempty" json:"use_lock_files,omitempty"` // nil = default (true), explicit false disables
+}
+
+// SubsystemGroup defines a named group of depth-1 path prefixes for subsystem stats rollup.
+// When subsystem-groups is defined in the config, --subsystem-depth is ignored and each
+// group produces one subsystem_stats entry aggregating all files under its paths.
+type SubsystemGroup struct {
+	Paths       []string `yaml:"paths" json:"paths"`                                 // Depth-1 path prefixes (e.g. ["/med", "/dpd"])
+	Description string   `yaml:"description,omitempty" json:"description,omitempty"` // Human-readable description
 }
 
 // ScanConfigFile represents the external scan configuration file
@@ -42,6 +51,11 @@ type ScanConfigFile struct {
 
 	// Root-level additional technologies (consistent with .stack-analyzer.yml)
 	Techs []ConfigTech `yaml:"techs,omitempty" json:"techs,omitempty"`
+
+	// Optional named subsystem groups for subsystem_stats rollup.
+	// Keys are group names (e.g. "core-platform"), values define paths and description.
+	// When present, overrides --subsystem-depth — one stat entry per named group.
+	SubsystemGroups map[string]SubsystemGroup `yaml:"subsystem-groups,omitempty" json:"subsystem-groups,omitempty"`
 
 	// Scan section with flat CLI options (matching CLI arguments)
 	Scan ScanOptions `yaml:"scan,omitempty" json:"scan,omitempty"`
@@ -123,6 +137,11 @@ func (c *ScanConfigFile) MergeWithSettings(settings *Settings) {
 	// Merge root-level excludes manually (different field names)
 	if len(c.Exclude) > 0 {
 		settings.ExcludePatterns = c.Exclude
+	}
+
+	// Merge subsystem groups (not in ScanOptions — top-level config field)
+	if len(c.SubsystemGroups) > 0 && len(settings.SubsystemGroups) == 0 {
+		settings.SubsystemGroups = c.SubsystemGroups
 	}
 }
 

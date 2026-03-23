@@ -10,6 +10,7 @@ import (
 	"log/slog"
 
 	"github.com/bmatcuk/doublestar/v4"
+	"github.com/petrarca/tech-stack-analyzer/internal/codestats"
 	"github.com/petrarca/tech-stack-analyzer/internal/config"
 	"github.com/petrarca/tech-stack-analyzer/internal/git"
 	"github.com/petrarca/tech-stack-analyzer/internal/license"
@@ -43,50 +44,31 @@ import (
 
 // Scanner handles the recursive directory scanning and technology detection logic
 type Scanner struct {
-	provider        types.Provider
-	rules           []types.Rule
-	depDetector     *DependencyDetector
-	dotenvDetector  *parsers.DotenvDetector
-	licenseDetector *license.LicenseDetector
-	langDetector    *LanguageDetector
-	contentMatcher  *matchers.ContentMatcherRegistry
-	excludePatterns []string
-	includePaths    []string // When set, only these relative paths under the root are scanned
-	progress        *progress.Progress
-	codeStats       CodeStatsAnalyzer
-	gitignoreStack  *git.StackBasedLoader
-	gitCache        map[string]*git.GitInfo // Cache git info by repo root path
-	gitRootCache    map[string]string       // Cache path -> repo root mapping
-	rootID          string                  // Override root ID for deterministic scans
-	config          *config.ScanConfig      // Merged configuration for metadata properties
-	useLockFiles    bool                    // Use lock files for dependency resolution
+	provider         types.Provider
+	rules            []types.Rule
+	depDetector      *DependencyDetector
+	dotenvDetector   *parsers.DotenvDetector
+	licenseDetector  *license.LicenseDetector
+	langDetector     *LanguageDetector
+	contentMatcher   *matchers.ContentMatcherRegistry
+	excludePatterns  []string
+	includePaths     []string // When set, only these relative paths under the root are scanned
+	progress         *progress.Progress
+	codeStats        CodeStatsAnalyzer
+	subsystemDepth   int               // Depth for subsystem stats rollup (0=disabled)
+	subsystemPathMap map[string]string // path prefix → group name (built from SubsystemGroups config)
+	gitignoreStack   *git.StackBasedLoader
+	gitCache         map[string]*git.GitInfo // Cache git info by repo root path
+	gitRootCache     map[string]string       // Cache path -> repo root mapping
+	rootID           string                  // Override root ID for deterministic scans
+	config           *config.ScanConfig      // Merged configuration for metadata properties
+	useLockFiles     bool                    // Use lock files for dependency resolution
 }
 
-// CodeStatsAnalyzer interface for code statistics collection
-type CodeStatsAnalyzer interface {
-	// ProcessFile analyzes a file
-	// language is the go-enry detected language name (used for grouping)
-	// If content is provided it will be used, otherwise file is read
-	ProcessFile(filename string, language string, content []byte)
-
-	// ProcessFileForComponent analyzes a file for a specific component
-	// componentID is used to group stats by component
-	// language is the go-enry detected language name (used for grouping)
-	// If content is provided it will be used, otherwise the file will be read
-	ProcessFileForComponent(filename string, language string, content []byte, componentID string)
-
-	// GetStats returns the aggregated statistics
-	GetStats() interface{}
-
-	// GetComponentStats returns statistics for a specific component
-	GetComponentStats(componentID string) interface{}
-
-	// IsEnabled returns whether code stats collection is enabled
-	IsEnabled() bool
-
-	// IsPerComponentEnabled returns whether per-component code stats collection is enabled
-	IsPerComponentEnabled() bool
-}
+// CodeStatsAnalyzer is the interface used by the scanner for code statistics collection.
+// It is identical to codestats.Analyzer — defined here to avoid exposing the codestats
+// package through the scanner's public API while keeping a single source of truth.
+type CodeStatsAnalyzer = codestats.Analyzer
 
 // NewScanner creates a new scanner with the given options
 func NewScanner(path string) (*Scanner, error) {
@@ -207,6 +189,7 @@ func NewScannerWithSettings(path string, settings *config.Settings, mergedConfig
 		return nil, err
 	}
 	scanner.useLockFiles = settings.UseLockFiles
+	scanner.subsystemDepth = settings.SubsystemDepth
 	return scanner, nil
 }
 
@@ -218,6 +201,44 @@ func (s *Scanner) UseLockFiles() bool {
 // SetUseLockFiles sets whether lock files should be used for dependency resolution
 func (s *Scanner) SetUseLockFiles(use bool) {
 	s.useLockFiles = use
+}
+
+// SetSubsystemDepth sets the depth for subsystem stats rollup.
+func (s *Scanner) SetSubsystemDepth(depth int) {
+	s.subsystemDepth = depth
+}
+
+// ResolveSubsystemKeyFromPath resolves a depth-1 path prefix to its subsystem key.
+// In group mode, returns the group name. In depth mode, returns the path itself.
+// Returns empty string when the path doesn't map to any subsystem.
+func (s *Scanner) ResolveSubsystemKeyFromPath(depthOnePath string) string {
+	if len(s.subsystemPathMap) > 0 {
+		if name, ok := s.subsystemPathMap[depthOnePath]; ok {
+			return name
+		}
+		return ""
+	}
+	if s.subsystemDepth > 0 {
+		return depthOnePath
+	}
+	return ""
+}
+
+// SetSubsystemGroups builds the path→group lookup map from named group definitions.
+// When set, takes precedence over subsystemDepth for subsystem key resolution.
+func (s *Scanner) SetSubsystemGroups(groups map[string]config.SubsystemGroup) {
+	if len(groups) == 0 {
+		return
+	}
+	pathMap := make(map[string]string, len(groups)*3)
+	for name, group := range groups {
+		for _, path := range group.Paths {
+			// Normalise: ensure leading slash, no trailing slash
+			p := "/" + strings.Trim(path, "/")
+			pathMap[p] = name
+		}
+	}
+	s.subsystemPathMap = pathMap
 }
 
 // SetIncludePaths restricts scanning to only the specified relative paths under the root.
@@ -533,11 +554,16 @@ func (s *Scanner) ScanFile(fileName string) (*types.Payload, error) {
 	// Collect code statistics if enabled (pass go-enry language for grouping)
 	if s.codeStats != nil {
 		lang := s.langDetector.DetectLanguage(fileName, content)
-		if s.codeStats.IsPerComponentEnabled() {
-			// For single file scans, use the payload ID as component ID
-			s.codeStats.ProcessFileForComponent(filePath, lang, content, payload.ID)
+		key := componentPath(payload)
+		if s.codeStats.IsPerComponentEnabled() && key != "" {
+			s.codeStats.ProcessFileForComponent(filePath, lang, content, key)
 		} else {
 			s.codeStats.ProcessFile(filePath, lang, content)
+		}
+		if s.codeStats.IsSubsystemEnabled() {
+			if skey := s.resolveSubsystemKey(key); skey != "" {
+				s.codeStats.ProcessFileForSubsystem(filePath, lang, content, skey)
+			}
 		}
 	}
 
@@ -593,12 +619,68 @@ func (s *Scanner) processFile(ctx *types.Payload, dirPath string, fileName strin
 
 	// Collect code statistics if enabled
 	if s.codeStats != nil {
-		if s.codeStats.IsPerComponentEnabled() {
-			s.codeStats.ProcessFileForComponent(fileFullPath, lang, content, ctx.ID)
+		key := componentPath(ctx)
+		if s.codeStats.IsPerComponentEnabled() && key != "" {
+			s.codeStats.ProcessFileForComponent(fileFullPath, lang, content, key)
 		} else {
 			s.codeStats.ProcessFile(fileFullPath, lang, content)
 		}
+		if s.codeStats.IsSubsystemEnabled() {
+			if skey := s.resolveSubsystemKey(key); skey != "" {
+				s.codeStats.ProcessFileForSubsystem(fileFullPath, lang, content, skey)
+			}
+		}
 	}
+}
+
+// componentPath returns the stable, unique key used to identify a component in the code stats map.
+// It uses the component's primary path (its manifest file relative path) which is set at creation
+// time and never changes — unlike the component ID which is only finalized after AssignIDs.
+// Returns an empty string for root and virtual components (Path[0] == "/") which have no distinct
+// manifest location and should not receive per-component stats.
+func componentPath(p *types.Payload) string {
+	if len(p.Path) > 0 && p.Path[0] != "/" {
+		return p.Path[0]
+	}
+	return ""
+}
+
+// resolveSubsystemKey returns the subsystem key for a given component path.
+// If subsystemPathMap is populated (from SubsystemGroups config), it looks up the group name
+// for the depth-1 prefix of the component path. Otherwise falls back to depth-based extraction.
+func (s *Scanner) resolveSubsystemKey(compPath string) string {
+	if compPath == "" {
+		return ""
+	}
+	if len(s.subsystemPathMap) > 0 {
+		// Group mode: resolve depth-1 prefix then look up group name
+		prefix := subsystemKey(compPath, 1)
+		if name, ok := s.subsystemPathMap[prefix]; ok {
+			return name
+		}
+		return "" // path not mapped to any group — exclude from subsystem stats
+	}
+	// Depth mode: extract depth-N prefix directly
+	return subsystemKey(compPath, s.subsystemDepth)
+}
+
+// subsystemKey extracts the depth-N path prefix from a component path for subsystem rollup.
+// e.g. "/med/med/pom.xml" at depth 1 → "/med"
+//
+//	"/med/med/pom.xml" at depth 2 → "/med/med"
+//
+// Returns empty string when the path has fewer segments than depth, or path is "/" (root/virtual).
+func subsystemKey(compPath string, depth int) string {
+	if compPath == "" || depth <= 0 {
+		return ""
+	}
+	// Split on "/" — path starts with "/", so first element after split is ""
+	parts := strings.SplitN(compPath, "/", depth+2) // e.g. depth=1: ["", "med", "med/pom.xml"]
+	if len(parts) < depth+1 || parts[depth] == "" {
+		return ""
+	}
+	// Rejoin the first `depth` segments with leading slash
+	return "/" + strings.Join(parts[1:depth+1], "/")
 }
 
 // recurse scans a directory recursively, detecting technologies and components
