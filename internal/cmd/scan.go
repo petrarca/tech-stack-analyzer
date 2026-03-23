@@ -19,6 +19,24 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// finalizeCodeStats attaches global, per-component, and subsystem code stats to the payload.
+func finalizeCodeStats(payload *types.Payload, analyzer codestats.Analyzer, statsDepth int, resolveKey subsystemKeyResolver) {
+	if !analyzer.IsEnabled() {
+		return
+	}
+	stats := analyzer.GetStats()
+	payload.CodeStats = stats
+
+	if cs, ok := stats.(*codestats.CodeStats); ok {
+		if cs.ByType.Programming != nil && cs.ByType.Programming.Metrics != nil {
+			payload.PrimaryLanguages = convertPrimaryLanguages(cs.ByType.Programming.Metrics.PrimaryLanguages)
+		}
+	}
+
+	attachComponentCodeStats(payload, analyzer, statsDepth)
+	attachSubsystemStats(payload, analyzer, resolveKey)
+}
+
 // attachComponentCodeStats attaches per-component code stats to child components up to statsDepth.
 // Root keeps the global stats; only children at depth 1..statsDepth receive per-component stats.
 // statsDepth=0 is a no-op.
@@ -537,20 +555,7 @@ func runMultiPathScan(args []string, cmd *cobra.Command, logger *slog.Logger) {
 		os.Exit(1)
 	}
 
-	// Attach code stats
-	if codeStatsAnalyzer.IsEnabled() {
-		stats := codeStatsAnalyzer.GetStats()
-		payload.CodeStats = stats
-
-		if cs, ok := stats.(*codestats.CodeStats); ok {
-			if cs.ByType.Programming != nil && cs.ByType.Programming.Metrics != nil {
-				payload.PrimaryLanguages = convertPrimaryLanguages(cs.ByType.Programming.Metrics.PrimaryLanguages)
-			}
-		}
-
-		attachComponentCodeStats(payload, codeStatsAnalyzer, settings.ComponentStatsDepth)
-		attachSubsystemStats(payload, codeStatsAnalyzer, s.ResolveSubsystemKeyFromPath)
-	}
+	finalizeCodeStats(payload, codeStatsAnalyzer, settings.ComponentStatsDepth, s.ResolveSubsystemKeyFromPath)
 
 	// Enhance payload with configuration data
 	enhanceSinglePayload(payload, mergedConfig)
@@ -691,22 +696,8 @@ func runScanner(absPath string, isFile bool, mergedConfig *config.ScanConfig, lo
 		os.Exit(1)
 	}
 
-	// Attach code stats to payload if enabled
-	if codeStatsAnalyzer.IsEnabled() {
-		if p, ok := payload.(*types.Payload); ok {
-			stats := codeStatsAnalyzer.GetStats()
-			p.CodeStats = stats
-
-			// Extract primary_languages from code_stats and set on root payload
-			if cs, ok := stats.(*codestats.CodeStats); ok {
-				if cs.ByType.Programming != nil && cs.ByType.Programming.Metrics != nil {
-					p.PrimaryLanguages = convertPrimaryLanguages(cs.ByType.Programming.Metrics.PrimaryLanguages)
-				}
-			}
-
-			attachComponentCodeStats(p, codeStatsAnalyzer, settings.ComponentStatsDepth)
-			attachSubsystemStats(p, codeStatsAnalyzer, s.ResolveSubsystemKeyFromPath)
-		}
+	if p, ok := payload.(*types.Payload); ok {
+		finalizeCodeStats(p, codeStatsAnalyzer, settings.ComponentStatsDepth, s.ResolveSubsystemKeyFromPath)
 	}
 
 	return payload
