@@ -181,11 +181,15 @@
             "additionalProperties": {
                 "type": "object",
                 "properties": {
+                    "base": {
+                        "type": "string",
+                        "description": "Optional common prefix prepended to all paths in this group (e.g. \"/parent/libs\"). Avoids repeating the prefix in each path entry."
+                    },
                     "paths": {
                         "type": "array",
-                        "items": { "type": "string", "pattern": "^/[a-zA-Z0-9_-].*$" },
+                        "items": { "type": "string" },
                         "minItems": 1,
-                        "description": "Depth-1 path prefixes (e.g. [\"/module-a\", \"/module-b\"])"
+                        "description": "Path prefixes for this group. Relative to base when base is set (e.g. [\"feature-a\", \"feature-b\"]), otherwise absolute (e.g. [\"/module-a\", \"/module-b\"])."
                     },
                     "description": {
                         "type": "string",

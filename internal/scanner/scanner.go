@@ -224,9 +224,11 @@ func (s *Scanner) SetSubsystemGroups(groups map[string]config.SubsystemGroup) {
 	}
 	pathMap := make(map[string]string, len(groups)*3)
 	for name, group := range groups {
+		base := strings.TrimRight(group.Base, "/")
 		for _, path := range group.Paths {
-			// Normalise: ensure leading slash, no trailing slash
-			p := "/" + strings.Trim(path, "/")
+			// Normalise: combine base + path, ensure single leading slash, no trailing slash
+			combined := base + "/" + strings.Trim(path, "/")
+			p := "/" + strings.TrimLeft(combined, "/")
 			pathMap[p] = name
 		}
 	}

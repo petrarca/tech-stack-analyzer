@@ -33,11 +33,12 @@ type ScanOptions struct {
 	UseLockFiles             *bool    `yaml:"use_lock_files,omitempty" json:"use_lock_files,omitempty"` // nil = default (true), explicit false disables
 }
 
-// SubsystemGroup defines a named group of depth-1 path prefixes for subsystem stats rollup.
+// SubsystemGroup defines a named group of path prefixes for subsystem stats rollup.
 // When subsystem-groups is defined in the config, --subsystem-depth is ignored and each
 // group produces one subsystem_stats entry aggregating all files under its paths.
 type SubsystemGroup struct {
-	Paths       []string `yaml:"paths" json:"paths"`                                 // Depth-1 path prefixes (e.g. ["/med", "/dpd"])
+	Base        string   `yaml:"base,omitempty" json:"base,omitempty"`               // Optional common prefix prepended to all paths (e.g. "/medicalcloud-zis/next/medical-cloud/libs")
+	Paths       []string `yaml:"paths" json:"paths"`                                 // Path prefixes; relative to base when base is set
 	Description string   `yaml:"description,omitempty" json:"description,omitempty"` // Human-readable description
 }
 
