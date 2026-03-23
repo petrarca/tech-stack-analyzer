@@ -77,14 +77,8 @@ func attachSubsystemStats(payload *types.Payload, analyzer codestats.Analyzer, r
 	if len(keys) == 0 {
 		return
 	}
-	// Count components per depth-1 path prefix, then resolve to subsystem keys
-	pathCounts := countComponentsByDepthOnePath(payload)
-	counts := make(map[string]int)
-	for path, count := range pathCounts {
-		if key := resolve(path); key != "" {
-			counts[key] += count
-		}
-	}
+	// Count components per subsystem by resolving each component's path to a subsystem key
+	counts := countComponentsBySubsystem(payload, resolve)
 
 	stats := make([]types.SubsystemStat, 0, len(keys))
 	for _, key := range keys {
@@ -107,19 +101,23 @@ func attachSubsystemStats(payload *types.Payload, analyzer codestats.Analyzer, r
 	payload.SubsystemStats = stats
 }
 
-// countComponentsByDepthOnePath counts components per depth-1 path prefix.
-func countComponentsByDepthOnePath(payload *types.Payload) map[string]int {
+// countComponentsBySubsystem counts components per subsystem using the resolver function.
+// The resolver maps each component's full path to a subsystem key (longest-prefix match).
+func countComponentsBySubsystem(payload *types.Payload, resolve subsystemKeyResolver) map[string]int {
 	counts := make(map[string]int)
-	countComponentsByDepthOnePathRecursive(payload, counts)
+	countComponentsBySubsystemRecursive(payload, counts, resolve)
 	return counts
 }
 
-func countComponentsByDepthOnePathRecursive(payload *types.Payload, counts map[string]int) {
-	if prefix := types.DepthPrefix(payload.ComponentPath(), 1); prefix != "" {
-		counts[prefix]++
+func countComponentsBySubsystemRecursive(payload *types.Payload, counts map[string]int, resolve subsystemKeyResolver) {
+	cp := payload.ComponentPath()
+	if cp != "" {
+		if key := resolve(cp); key != "" {
+			counts[key]++
+		}
 	}
 	for _, child := range payload.Children {
-		countComponentsByDepthOnePathRecursive(child, counts)
+		countComponentsBySubsystemRecursive(child, counts, resolve)
 	}
 }
 
@@ -504,8 +502,9 @@ func runMultiPathScan(args []string, cmd *cobra.Command, logger *slog.Logger) {
 	configureExcludePatterns(cmd)
 	setupScanSettings(logger)
 
-	// Load project config from the common parent
+	// Load project config from the common parent, then overlay --config if provided
 	_, mergedConfig := loadAndMergeProjectConfig(commonParent, logger)
+	loadAndMergeScanConfig(logger)
 
 	// Determine root ID for multi-path scan
 	rootID := settings.RootID

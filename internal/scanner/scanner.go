@@ -211,15 +211,25 @@ func (s *Scanner) SetSubsystemDepth(depth int) {
 // ResolveSubsystemKeyFromPath resolves a depth-1 path prefix to its subsystem key.
 // In group mode, returns the group name. In depth mode, returns the path itself.
 // Returns empty string when the path doesn't map to any subsystem.
-func (s *Scanner) ResolveSubsystemKeyFromPath(depthOnePath string) string {
+// ResolveSubsystemKeyFromPath resolves a component path to its subsystem key.
+// In group mode, tries progressively deeper prefixes (longest match wins) —
+// same logic as resolveSubsystemKey. In depth mode, returns the path as-is.
+func (s *Scanner) ResolveSubsystemKeyFromPath(compPath string) string {
 	if len(s.subsystemPathMap) > 0 {
-		if name, ok := s.subsystemPathMap[depthOnePath]; ok {
-			return name
+		maxDepth := strings.Count(compPath, "/")
+		for depth := maxDepth; depth >= 1; depth-- {
+			prefix := types.DepthPrefix(compPath, depth)
+			if prefix == "" {
+				continue
+			}
+			if name, ok := s.subsystemPathMap[prefix]; ok {
+				return name
+			}
 		}
 		return ""
 	}
 	if s.subsystemDepth > 0 {
-		return depthOnePath
+		return compPath
 	}
 	return ""
 }
@@ -630,12 +640,21 @@ func (s *Scanner) resolveSubsystemKey(compPath string) string {
 		return ""
 	}
 	if len(s.subsystemPathMap) > 0 {
-		// Group mode: resolve depth-1 prefix then look up group name
-		prefix := subsystemKey(compPath, 1)
-		if name, ok := s.subsystemPathMap[prefix]; ok {
-			return name
+		// Group mode: try progressively deeper prefixes (longest match wins).
+		// e.g. for "/medicalcloud-zis/zis_server/pom.xml":
+		//   try "/medicalcloud-zis/zis_server", then "/medicalcloud-zis"
+		// This allows group paths at any depth (e.g. "/medicalcloud-zis/next").
+		maxDepth := strings.Count(compPath, "/")
+		for depth := maxDepth; depth >= 1; depth-- {
+			prefix := types.DepthPrefix(compPath, depth)
+			if prefix == "" {
+				continue
+			}
+			if name, ok := s.subsystemPathMap[prefix]; ok {
+				return name
+			}
 		}
-		return "" // path not mapped to any group — exclude from subsystem stats
+		return "" // path not mapped to any group
 	}
 	// Depth mode: extract depth-N prefix directly
 	return subsystemKey(compPath, s.subsystemDepth)
