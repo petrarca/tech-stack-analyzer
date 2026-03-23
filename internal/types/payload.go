@@ -63,11 +63,13 @@ func DepthPrefix(path string, depth int) string {
 	return "/" + strings.Join(parts[1:depth+1], "/")
 }
 
-// SubsystemStat holds aggregated code stats for a depth-N path prefix (e.g. "/med").
+// SubsystemStat holds aggregated code stats for a subsystem (depth-N path prefix or named group).
 type SubsystemStat struct {
-	Path           string      `json:"path"`            // Depth-N path prefix, e.g. "/med"
-	ComponentCount int         `json:"component_count"` // Number of components under this prefix
-	CodeStats      interface{} `json:"code_stats"`      // Rolled-up CodeStats for all files in this subsystem
+	Path           string      `json:"path"`                  // Group name or depth-N prefix (e.g. "core-platform" or "/med")
+	Paths          []string    `json:"paths,omitempty"`       // Source path prefixes (from subsystem-groups config; absent in depth mode)
+	Description    string      `json:"description,omitempty"` // Human-readable description (from subsystem-groups config)
+	ComponentCount int         `json:"component_count"`       // Number of components under this subsystem
+	CodeStats      interface{} `json:"code_stats"`            // Rolled-up CodeStats for all files in this subsystem
 }
 
 // Edge represents a relationship between components and technologies

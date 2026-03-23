@@ -20,7 +20,7 @@ import (
 )
 
 // finalizeCodeStats attaches global, per-component, and subsystem code stats to the payload.
-func finalizeCodeStats(payload *types.Payload, analyzer codestats.Analyzer, statsDepth int, resolveKey subsystemKeyResolver) {
+func finalizeCodeStats(payload *types.Payload, analyzer codestats.Analyzer, statsDepth int, resolveKey subsystemKeyResolver, groups map[string]config.SubsystemGroup) {
 	if !analyzer.IsEnabled() {
 		return
 	}
@@ -32,7 +32,7 @@ func finalizeCodeStats(payload *types.Payload, analyzer codestats.Analyzer, stat
 	}
 
 	attachComponentCodeStats(payload, analyzer, statsDepth)
-	attachSubsystemStats(payload, analyzer, resolveKey)
+	attachSubsystemStats(payload, analyzer, resolveKey, groups)
 }
 
 // attachComponentCodeStats attaches per-component code stats to child components up to statsDepth.
@@ -68,7 +68,7 @@ func attachComponentCodeStatsRecursive(payload *types.Payload, analyzer codestat
 // subsystemKeyResolver is a function that maps a depth-1 path prefix to a subsystem key.
 type subsystemKeyResolver func(depthOnePath string) string
 
-func attachSubsystemStats(payload *types.Payload, analyzer codestats.Analyzer, resolve subsystemKeyResolver) {
+func attachSubsystemStats(payload *types.Payload, analyzer codestats.Analyzer, resolve subsystemKeyResolver, groups map[string]config.SubsystemGroup) {
 	sa, ok := analyzer.(codestats.SubsystemAnalyzer)
 	if !ok {
 		return
@@ -92,11 +92,16 @@ func attachSubsystemStats(payload *types.Payload, analyzer codestats.Analyzer, r
 		if cs == nil {
 			continue
 		}
-		stats = append(stats, types.SubsystemStat{
+		entry := types.SubsystemStat{
 			Path:           key,
 			ComponentCount: counts[key],
 			CodeStats:      cs,
-		})
+		}
+		if g, ok := groups[key]; ok {
+			entry.Paths = g.Paths
+			entry.Description = g.Description
+		}
+		stats = append(stats, entry)
 	}
 	sortSubsystemStatsByCode(stats)
 	payload.SubsystemStats = stats
@@ -553,7 +558,7 @@ func runMultiPathScan(args []string, cmd *cobra.Command, logger *slog.Logger) {
 		os.Exit(1)
 	}
 
-	finalizeCodeStats(payload, codeStatsAnalyzer, settings.ComponentStatsDepth, s.ResolveSubsystemKeyFromPath)
+	finalizeCodeStats(payload, codeStatsAnalyzer, settings.ComponentStatsDepth, s.ResolveSubsystemKeyFromPath, settings.SubsystemGroups)
 
 	// Enhance payload with configuration data
 	enhanceSinglePayload(payload, mergedConfig)
@@ -695,7 +700,7 @@ func runScanner(absPath string, isFile bool, mergedConfig *config.ScanConfig, lo
 	}
 
 	if p, ok := payload.(*types.Payload); ok {
-		finalizeCodeStats(p, codeStatsAnalyzer, settings.ComponentStatsDepth, s.ResolveSubsystemKeyFromPath)
+		finalizeCodeStats(p, codeStatsAnalyzer, settings.ComponentStatsDepth, s.ResolveSubsystemKeyFromPath, settings.SubsystemGroups)
 	}
 
 	return payload
