@@ -27,10 +27,8 @@ func finalizeCodeStats(payload *types.Payload, analyzer codestats.Analyzer, stat
 	stats := analyzer.GetStats()
 	payload.CodeStats = stats
 
-	if cs, ok := stats.(*codestats.CodeStats); ok {
-		if cs.ByType.Programming != nil && cs.ByType.Programming.Metrics != nil {
-			payload.PrimaryLanguages = convertPrimaryLanguages(cs.ByType.Programming.Metrics.PrimaryLanguages)
-		}
+	if stats != nil && stats.ByType.Programming != nil && stats.ByType.Programming.Metrics != nil {
+		payload.PrimaryLanguages = convertPrimaryLanguages(stats.ByType.Programming.Metrics.PrimaryLanguages)
 	}
 
 	attachComponentCodeStats(payload, analyzer, statsDepth)

@@ -113,12 +113,12 @@ type Analyzer interface {
 	// subsystemKey: subsystem identifier (depth-N prefix or group name); empty = skip subsystem bucket.
 	ProcessFile(filename, language string, content []byte, componentKey, subsystemKey string)
 
-	// GetStats returns the aggregated global statistics.
-	GetStats() interface{}
+	// GetStats returns the aggregated global statistics. Returns nil when disabled.
+	GetStats() *CodeStats
 
 	// GetComponentStats returns statistics for the component identified by key.
 	// Returns nil when per-component tracking is disabled or no stats were recorded.
-	GetComponentStats(key string) interface{}
+	GetComponentStats(key string) *CodeStats
 
 	// IsEnabled returns whether code stats collection is enabled.
 	IsEnabled() bool
@@ -128,7 +128,7 @@ type Analyzer interface {
 // Satisfied by the SCC analyzer when subsystem tracking is enabled.
 // Callers use a type assertion: if sa, ok := analyzer.(SubsystemAnalyzer); ok { ... }
 type SubsystemAnalyzer interface {
-	GetSubsystemStats(key string) interface{}
+	GetSubsystemStats(key string) *CodeStats
 	SubsystemKeys() []string
 }
 
@@ -176,8 +176,8 @@ func NewNoopAnalyzer() Analyzer {
 type noopAnalyzer struct{}
 
 func (n *noopAnalyzer) ProcessFile(_, _ string, _ []byte, _, _ string) {}
-func (n *noopAnalyzer) GetStats() interface{}                          { return nil }
-func (n *noopAnalyzer) GetComponentStats(_ string) interface{}         { return nil }
+func (n *noopAnalyzer) GetStats() *CodeStats                           { return nil }
+func (n *noopAnalyzer) GetComponentStats(_ string) *CodeStats          { return nil }
 func (n *noopAnalyzer) IsEnabled() bool                                { return false }
 
 // sccAnalyzer uses boyter/scc for code statistics
@@ -331,7 +331,7 @@ func (a *sccAnalyzer) setPrimaryLanguages(kpis *Metrics, progLangs []LanguageSta
 	}
 }
 
-func (a *sccAnalyzer) GetStats() interface{} {
+func (a *sccAnalyzer) GetStats() *CodeStats {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 
@@ -553,7 +553,7 @@ func (a *sccAnalyzer) addToBucketUnsafe(filejob *processor.FileJob, language str
 }
 
 // GetComponentStats returns statistics for a specific component.
-func (a *sccAnalyzer) GetComponentStats(componentID string) interface{} {
+func (a *sccAnalyzer) GetComponentStats(componentID string) *CodeStats {
 	if !a.perComponentEnabled {
 		return nil
 	}
@@ -579,7 +579,7 @@ func (a *sccAnalyzer) SubsystemKeys() []string {
 }
 
 // GetSubsystemStats returns statistics for the subsystem identified by subsystemKey.
-func (a *sccAnalyzer) GetSubsystemStats(subsystemKey string) interface{} {
+func (a *sccAnalyzer) GetSubsystemStats(subsystemKey string) *CodeStats {
 	if !a.subsystemEnabled {
 		return nil
 	}
