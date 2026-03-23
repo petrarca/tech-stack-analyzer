@@ -35,6 +35,7 @@ import (
 	_ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/golang"
 	_ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/java"
 	_ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/nodejs"
+	_ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/nx"
 	_ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/php"
 	_ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/python"
 	_ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/ruby"
