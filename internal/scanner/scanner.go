@@ -209,30 +209,11 @@ func (s *Scanner) SetSubsystemDepth(depth int) {
 	s.subsystemDepth = depth
 }
 
-// ResolveSubsystemKeyFromPath resolves a depth-1 path prefix to its subsystem key.
-// In group mode, returns the group name. In depth mode, returns the path itself.
-// Returns empty string when the path doesn't map to any subsystem.
 // ResolveSubsystemKeyFromPath resolves a component path to its subsystem key.
-// In group mode, tries progressively deeper prefixes (longest match wins) —
-// same logic as resolveSubsystemKey. In depth mode, returns the path as-is.
+// Delegates to resolveSubsystemKey — exposed for use by cmd/scan.go during
+// component counting after the scan tree is built.
 func (s *Scanner) ResolveSubsystemKeyFromPath(compPath string) string {
-	if len(s.subsystemPathMap) > 0 {
-		maxDepth := strings.Count(compPath, "/")
-		for depth := maxDepth; depth >= 1; depth-- {
-			prefix := types.DepthPrefix(compPath, depth)
-			if prefix == "" {
-				continue
-			}
-			if name, ok := s.subsystemPathMap[prefix]; ok {
-				return name
-			}
-		}
-		return ""
-	}
-	if s.subsystemDepth > 0 {
-		return compPath
-	}
-	return ""
+	return s.resolveSubsystemKey(compPath)
 }
 
 // SetSubsystemGroups builds the path→group lookup map from named group definitions.
