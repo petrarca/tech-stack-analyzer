@@ -11,8 +11,9 @@ The scanner outputs a hierarchical JSON structure showing detected technologies,
   "id": "root",
   "name": "my-project",
   "path": "/",
-  "tech": ["nodejs"],
-  "techs": ["nodejs", "react", "postgresql", "docker"],
+  "tech": ["nodejs", "react", "postgresql"],
+  "techs": ["nodejs", "react", "postgresql", "docker", "express", "eslint"],
+  "primary_techs": ["nodejs", "react", "postgresql"],
   "languages": {"JavaScript": 145, "TypeScript": 89},
   "reason": {
     "docker": ["matched file: Dockerfile"],
@@ -75,6 +76,7 @@ Use the `--aggregate` flag to get a simplified, rolled-up view of your entire co
     "file_count": 523
   },
   "techs": ["nodejs", "react", "postgresql", "docker", "express", "vite"],
+  "primary_techs": ["nodejs", "react", "postgresql"],
   "languages": {"JavaScript": 145, "TypeScript": 89, "CSS": 12},
   "dependencies": [
     ["npm", "react", "^18.2.0", "prod", true, {"source": "package-lock.json"}],
@@ -109,8 +111,9 @@ Use the `--aggregate` flag to get a simplified, rolled-up view of your entire co
 - **name**: Component name (e.g., "main", "frontend", "backend")
 - **path**: File system path relative to the project root
 - **type**: Component type (e.g., "npm-package", "maven-module", "docker-compose-service") - present when the component detector provides it
-- **tech**: Array of primary technologies for this component (e.g., `["nodejs", "java"]` for hybrid projects)
+- **tech**: Array of primary technologies for this component — filtered by `is_primary_tech` category flag (frameworks, runtimes, databases, languages; excludes docker, nginx, CI tools, test frameworks)
 - **techs**: Array of all technologies detected in this component (components + tools/libraries)
+- **primary_techs**: Weight-filtered subset of `tech[]` identifying the dominant technologies. Uses code-line weighting (≥1% of total typed code) when per-component `code_stats` are available; falls back to component-count threshold otherwise. Present at root level in both full and aggregated formats.
 - **languages**: Object mapping programming languages to file counts
 - **licenses**: Array of detected licenses in this component
 - **dependencies**: Array of detected dependencies with format `[type, name, version, scope, direct, metadata]` (always 6 elements)

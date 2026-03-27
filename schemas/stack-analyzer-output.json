@@ -216,6 +216,13 @@
                         "$ref": "#/definitions/primary_language"
                     }
                 },
+                "primary_techs": {
+                    "type": "array",
+                    "description": "Weight-filtered primary technologies. Uses code-line weighting (≥1% of total typed code) when per-component code_stats are available; falls back to component-count threshold (≤10 typed: all; >10: ≥3% of typed components) otherwise. Subset of tech[].",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "dependencies": {
                     "type": "array",
                     "items": {
@@ -512,6 +519,13 @@
                     "description": "Top programming languages by lines of code (max 5, ≥1% threshold)",
                     "items": {
                         "$ref": "#/definitions/primary_language"
+                    }
+                },
+                "primary_techs": {
+                    "type": "array",
+                    "description": "Weight-filtered primary technologies. Uses code-line weighting (≥1% of total typed code) when per-component code_stats are available; falls back to component-count threshold (≤10 typed: all; >10: ≥3% of typed components) otherwise. Subset of tech[].",
+                    "items": {
+                        "type": "string"
                     }
                 },
                 "licenses_aggregated": {

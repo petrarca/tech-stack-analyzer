@@ -75,7 +75,7 @@ python -m jsonschema -i results.json schemas/stack-analyzer-output.json
 The schema uses `oneOf` to support two output formats:
 
 - **Full Output** - Complete hierarchical structure with `children`, `edges`, and component relationships
-- **Aggregated Output** - Flattened structure with aggregated `tech`, `techs`, and `reason` arrays
+- **Aggregated Output** - Flattened structure with aggregated `tech`, `techs`, `primary_techs`, and `reason` arrays
 
 Both formats share common definitions for:
 - `metadata` - Scan execution information (matches ScanMetadata struct)

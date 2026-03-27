@@ -90,18 +90,20 @@ properties:
 - `null`/omitted - Use type-based default
 
 **`is_primary_tech`** - Override primary technology promotion behavior
-- `true` - Always promote to primary tech array (even without component)
-- `false` - Never promote to primary tech array (even with component)
-- `null`/omitted - Use component-based logic (if component created, promote to primary)
+- `true` - Always promote to `tech[]` array (even without component)
+- `false` - Never promote to `tech[]` array (even with component)
+- `null`/omitted - Check category-level `is_primary_tech` (from `categories.yaml`), then fall back to `is_component`
 
-This field provides fine-grained control over the relationship between component creation and primary tech promotion:
+Priority chain: **rule `is_primary_tech`** → **category `is_primary_tech`** → **`is_component`**
 
-| Configuration | Component Created | Primary Tech | Use Case |
-|---------------|------------------|--------------|----------|
-| `is_component: true` (no `is_primary_tech`) | Yes | Yes | Default behavior (languages, databases) |
-| `is_component: true, is_primary_tech: false` | Yes | No | Build tools with organization (CMake, Make) |
-| `is_component: false, is_primary_tech: true` | No | Yes | Simple primary tech without components |
-| `is_component: false` (no `is_primary_tech`) | No | No | Regular detection (most tools, frameworks) |
+Technologies in `tech[]` are then weight-filtered into `primary_techs[]` at the product level (code-line weighting or component-count threshold).
+
+| Configuration | Component Created | In `tech[]` | Use Case |
+|---------------|------------------|-------------|----------|
+| `is_component: true` (no `is_primary_tech`) | Yes | Category decides | databases, messaging — promoted by category |
+| `is_component: true, is_primary_tech: false` | Yes | No | docker, nginx — infrastructure, not app stack |
+| `is_component: false, is_primary_tech: true` | No | Yes | angular, fastapi — framework, no own graph node |
+| `is_component: false` (no `is_primary_tech`) | No | Category decides | most tools and frameworks |
 
 **`dotenv`** - Array of environment variable prefixes
 ```yaml

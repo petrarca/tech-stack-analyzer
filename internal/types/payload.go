@@ -23,6 +23,7 @@ type Payload struct {
 	Techs            []string               `json:"techs"`
 	Languages        map[string]int         `json:"languages"`
 	PrimaryLanguages []PrimaryLanguage      `json:"primary_languages,omitempty"` // Top programming languages (from code_stats)
+	PrimaryTechs     []string               `json:"primary_techs,omitempty"`     // Weight-filtered primary technologies (adaptive threshold on component count)
 	Licenses         []License              `json:"licenses"`                    // Changed to structured License objects
 	Reason           map[string][]string    `json:"reason,omitempty"`            // Maps technology to detection reasons, "_" for non-tech reasons
 	Dependencies     []Dependency           `json:"dependencies"`

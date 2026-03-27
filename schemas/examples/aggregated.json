@@ -2,25 +2,24 @@
   "metadata": {
     "format": "aggregated",
     "source": "tech-stack-scanner",
-    "timestamp": "2026-03-23T20:46:26Z",
+    "timestamp": "2026-03-27T11:50:40Z",
     "scan_path": "/path/to/your/project",
     "specVersion": "0.1",
-    "duration_ms": 1152,
+    "duration_ms": 1166,
     "file_count": 213,
     "component_count": 6,
     "language_count": 8,
-    "tech_count": 2,
+    "tech_count": 1,
     "techs_count": 5
   },
   "git": [
     {
       "branch": "main",
-      "commit": "90c1bbf",
+      "commit": "51d1e34",
       "remote_url": "https://github.com/petrarca/tech-stack-analyzer.git"
     }
   ],
   "tech": [
-    "github",
     "golang"
   ],
   "techs": [
@@ -29,6 +28,9 @@
     "github.actions",
     "golang",
     "golangcilint"
+  ],
+  "primary_techs": [
+    "golang"
   ],
   "reason": {
     "_": [
@@ -41,7 +43,8 @@
       "matched file: .gitignore"
     ],
     "github": [
-      "matched file: .github"
+      "matched file: .github",
+      "matched file: /path/to/your/project"
     ],
     "github.actions": [
       "matched file: .github/workflows"
@@ -168,29 +171,29 @@
       "path": "/go.mod",
       "code_stats": {
         "total": {
-          "lines": 59033,
-          "code": 48742,
-          "comments": 3765,
-          "blanks": 6526,
-          "complexity": 4316,
+          "lines": 59286,
+          "code": 48942,
+          "comments": 3800,
+          "blanks": 6544,
+          "complexity": 4357,
           "files": 207
         },
         "by_type": {
           "programming": {
             "total": {
-              "lines": 40667,
-              "code": 31380,
-              "comments": 3666,
-              "blanks": 5621,
-              "complexity": 4316,
+              "lines": 40832,
+              "code": 31504,
+              "comments": 3689,
+              "blanks": 5639,
+              "complexity": 4357,
               "files": 175
             },
             "metrics": {
               "comment_ratio": 0.12,
               "code_density": 0.77,
-              "avg_file_size": 232.38,
-              "complexity_per_kloc": 137.54,
-              "avg_complexity": 24.66,
+              "avg_file_size": 233.33,
+              "complexity_per_kloc": 138.3,
+              "avg_complexity": 24.9,
               "primary_languages": [
                 {
                   "language": "Go",
@@ -204,9 +207,9 @@
           },
           "data": {
             "total": {
-              "lines": 15020,
-              "code": 14444,
-              "comments": 99,
+              "lines": 15105,
+              "code": 14517,
+              "comments": 111,
               "blanks": 117,
               "complexity": 0,
               "files": 20
@@ -221,8 +224,8 @@
           },
           "prose": {
             "total": {
-              "lines": 3706,
-              "code": 2918,
+              "lines": 3709,
+              "code": 2921,
               "comments": 0,
               "blanks": 788,
               "complexity": 0,
@@ -236,27 +239,27 @@
         },
         "analyzed": {
           "total": {
-            "lines": 59033,
-            "code": 48742,
-            "comments": 3765,
-            "blanks": 6526,
-            "complexity": 4316,
+            "lines": 59286,
+            "code": 48942,
+            "comments": 3800,
+            "blanks": 6544,
+            "complexity": 4357,
             "files": 207
           },
           "by_language": [
             {
               "language": "Go",
-              "lines": 40667,
-              "code": 31380,
-              "comments": 3666,
-              "blanks": 5621,
-              "complexity": 4316,
+              "lines": 40832,
+              "code": 31504,
+              "comments": 3689,
+              "blanks": 5639,
+              "complexity": 4357,
               "files": 175
             },
             {
               "language": "JSON",
-              "lines": 13884,
-              "code": 13884,
+              "lines": 13904,
+              "code": 13904,
               "comments": 0,
               "blanks": 0,
               "complexity": 0,
@@ -264,8 +267,8 @@
             },
             {
               "language": "Markdown",
-              "lines": 3516,
-              "code": 2758,
+              "lines": 3519,
+              "code": 2761,
               "comments": 0,
               "blanks": 758,
               "complexity": 0,
@@ -273,9 +276,9 @@
             },
             {
               "language": "YAML",
-              "lines": 776,
-              "code": 560,
-              "comments": 99,
+              "lines": 841,
+              "code": 613,
+              "comments": 111,
               "blanks": 117,
               "complexity": 0,
               "files": 9
@@ -319,7 +322,7 @@
     {
       "id": "76f5d1862ccc4759d3b7",
       "name": "GitHub",
-      "tech": [
+      "techs": [
         "github"
       ],
       "path": "/go.mod"
@@ -363,29 +366,29 @@
   ],
   "code_stats": {
     "total": {
-      "lines": 59793,
-      "code": 49332,
-      "comments": 3822,
-      "blanks": 6639,
-      "complexity": 4466,
+      "lines": 60046,
+      "code": 49532,
+      "comments": 3857,
+      "blanks": 6657,
+      "complexity": 4507,
       "files": 210
     },
     "by_type": {
       "programming": {
         "total": {
-          "lines": 41427,
-          "code": 31970,
-          "comments": 3723,
-          "blanks": 5734,
-          "complexity": 4466,
+          "lines": 41592,
+          "code": 32094,
+          "comments": 3746,
+          "blanks": 5752,
+          "complexity": 4507,
           "files": 178
         },
         "metrics": {
           "comment_ratio": 0.12,
           "code_density": 0.77,
-          "avg_file_size": 232.74,
-          "complexity_per_kloc": 139.69,
-          "avg_complexity": 25.09,
+          "avg_file_size": 233.66,
+          "complexity_per_kloc": 140.43,
+          "avg_complexity": 25.32,
           "primary_languages": [
             {
               "language": "Go",
@@ -399,9 +402,9 @@
       },
       "data": {
         "total": {
-          "lines": 15020,
-          "code": 14444,
-          "comments": 99,
+          "lines": 15105,
+          "code": 14517,
+          "comments": 111,
           "blanks": 117,
           "complexity": 0,
           "files": 20
@@ -416,8 +419,8 @@
       },
       "prose": {
         "total": {
-          "lines": 3706,
-          "code": 2918,
+          "lines": 3709,
+          "code": 2921,
           "comments": 0,
           "blanks": 788,
           "complexity": 0,
@@ -431,27 +434,27 @@
     },
     "analyzed": {
       "total": {
-        "lines": 59793,
-        "code": 49332,
-        "comments": 3822,
-        "blanks": 6639,
-        "complexity": 4466,
+        "lines": 60046,
+        "code": 49532,
+        "comments": 3857,
+        "blanks": 6657,
+        "complexity": 4507,
         "files": 210
       },
       "by_language": [
         {
           "language": "Go",
-          "lines": 41427,
-          "code": 31970,
-          "comments": 3723,
-          "blanks": 5734,
-          "complexity": 4466,
+          "lines": 41592,
+          "code": 32094,
+          "comments": 3746,
+          "blanks": 5752,
+          "complexity": 4507,
           "files": 178
         },
         {
           "language": "JSON",
-          "lines": 13884,
-          "code": 13884,
+          "lines": 13904,
+          "code": 13904,
           "comments": 0,
           "blanks": 0,
           "complexity": 0,
@@ -459,8 +462,8 @@
         },
         {
           "language": "Markdown",
-          "lines": 3516,
-          "code": 2758,
+          "lines": 3519,
+          "code": 2761,
           "comments": 0,
           "blanks": 758,
           "complexity": 0,
@@ -468,9 +471,9 @@
         },
         {
           "language": "YAML",
-          "lines": 776,
-          "code": 560,
-          "comments": 99,
+          "lines": 841,
+          "code": 613,
+          "comments": 111,
           "blanks": 117,
           "complexity": 0,
           "files": 9
@@ -516,29 +519,29 @@
       "component_count": 2,
       "code_stats": {
         "total": {
-          "lines": 59033,
-          "code": 48742,
-          "comments": 3765,
-          "blanks": 6526,
-          "complexity": 4316,
+          "lines": 59286,
+          "code": 48942,
+          "comments": 3800,
+          "blanks": 6544,
+          "complexity": 4357,
           "files": 207
         },
         "by_type": {
           "programming": {
             "total": {
-              "lines": 40667,
-              "code": 31380,
-              "comments": 3666,
-              "blanks": 5621,
-              "complexity": 4316,
+              "lines": 40832,
+              "code": 31504,
+              "comments": 3689,
+              "blanks": 5639,
+              "complexity": 4357,
               "files": 175
             },
             "metrics": {
               "comment_ratio": 0.12,
               "code_density": 0.77,
-              "avg_file_size": 232.38,
-              "complexity_per_kloc": 137.54,
-              "avg_complexity": 24.66,
+              "avg_file_size": 233.33,
+              "complexity_per_kloc": 138.3,
+              "avg_complexity": 24.9,
               "primary_languages": [
                 {
                   "language": "Go",
@@ -552,9 +555,9 @@
           },
           "data": {
             "total": {
-              "lines": 15020,
-              "code": 14444,
-              "comments": 99,
+              "lines": 15105,
+              "code": 14517,
+              "comments": 111,
               "blanks": 117,
               "complexity": 0,
               "files": 20
@@ -569,8 +572,8 @@
           },
           "prose": {
             "total": {
-              "lines": 3706,
-              "code": 2918,
+              "lines": 3709,
+              "code": 2921,
               "comments": 0,
               "blanks": 788,
               "complexity": 0,
@@ -584,27 +587,27 @@
         },
         "analyzed": {
           "total": {
-            "lines": 59033,
-            "code": 48742,
-            "comments": 3765,
-            "blanks": 6526,
-            "complexity": 4316,
+            "lines": 59286,
+            "code": 48942,
+            "comments": 3800,
+            "blanks": 6544,
+            "complexity": 4357,
             "files": 207
           },
           "by_language": [
             {
               "language": "Go",
-              "lines": 40667,
-              "code": 31380,
-              "comments": 3666,
-              "blanks": 5621,
-              "complexity": 4316,
+              "lines": 40832,
+              "code": 31504,
+              "comments": 3689,
+              "blanks": 5639,
+              "complexity": 4357,
               "files": 175
             },
             {
               "language": "JSON",
-              "lines": 13884,
-              "code": 13884,
+              "lines": 13904,
+              "code": 13904,
               "comments": 0,
               "blanks": 0,
               "complexity": 0,
@@ -612,8 +615,8 @@
             },
             {
               "language": "Markdown",
-              "lines": 3516,
-              "code": 2758,
+              "lines": 3519,
+              "code": 2761,
               "comments": 0,
               "blanks": 758,
               "complexity": 0,
@@ -621,9 +624,9 @@
             },
             {
               "language": "YAML",
-              "lines": 776,
-              "code": 560,
-              "comments": 99,
+              "lines": 841,
+              "code": 613,
+              "comments": 111,
               "blanks": 117,
               "complexity": 0,
               "files": 9

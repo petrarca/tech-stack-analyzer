@@ -3,6 +3,7 @@ package aggregator
 import (
 	"sort"
 
+	"github.com/petrarca/tech-stack-analyzer/internal/codestats"
 	"github.com/petrarca/tech-stack-analyzer/internal/git"
 	"github.com/petrarca/tech-stack-analyzer/internal/metadata"
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
@@ -23,8 +24,9 @@ type ComponentEntry struct {
 type AggregateOutput struct {
 	Metadata           interface{}             `json:"metadata,omitempty"`            // Scan metadata (from root payload)
 	Git                []*git.GitInfo          `json:"git,omitempty"`                 // Git repositories (deduplicated)
-	Tech               []string                `json:"tech,omitempty"`                // Primary/main technologies
+	Tech               []string                `json:"tech,omitempty"`                // All is_primary_tech technologies (from all components)
 	Techs              []string                `json:"techs,omitempty"`               // All detected technologies
+	PrimaryTechs       []string                `json:"primary_techs,omitempty"`       // Weight-filtered primary technologies (adaptive threshold on component count)
 	Reason             map[string][]string     `json:"reason,omitempty"`              // Technology to detection reasons mapping, "_" for non-tech reasons
 	Languages          map[string]int          `json:"languages,omitempty"`           // Language file counts
 	PrimaryLanguages   []types.PrimaryLanguage `json:"primary_languages,omitempty"`   // Top programming languages (from code_stats)
@@ -96,6 +98,9 @@ func (a *Aggregator) Aggregate(payload *types.Payload) *AggregateOutput {
 
 	// Copy primary_languages from root payload (already extracted from code_stats)
 	output.PrimaryLanguages = payload.PrimaryLanguages
+
+	// Compute primary_techs from flat component list (always, after components and tech are collected)
+	output.PrimaryTechs = computePrimaryTechs(output.Components, output.Tech)
 
 	// Copy subsystem stats if present (populated by cmd/scan.go after scanning)
 	output.SubsystemStats = payload.SubsystemStats
@@ -356,6 +361,116 @@ func collectComponentsRecursive(payload *types.Payload, components *[]ComponentE
 	for _, child := range payload.Children {
 		collectComponentsRecursive(child, components, true)
 	}
+}
+
+// computePrimaryTechs derives primary technologies from the flat component list.
+// Uses code-line weighting (≥1% of total typed code) when per-component code_stats
+// cover ≥50% of typed components. Falls back to component-count threshold
+// (≤10 typed: all; >10: ≥3% of typed component count) when stats are sparse.
+func computePrimaryTechs(components []ComponentEntry, techEligible []string) []string {
+	if len(techEligible) == 0 {
+		return nil
+	}
+	eligible := make(map[string]bool, len(techEligible))
+	for _, t := range techEligible {
+		eligible[t] = true
+	}
+
+	// Count typed components and those with code stats
+	typedCount := 0
+	withStats := 0
+	for _, comp := range components {
+		if comp.Type == "" {
+			continue
+		}
+		typedCount++
+		if code := extractCode(comp.CodeStats); code > 0 {
+			withStats++
+		}
+	}
+
+	// Use code-weight when stats cover ≥50% of typed components
+	if withStats > 0 && withStats*2 >= typedCount {
+		return computeByCodeWeight(components, eligible)
+	}
+	return computeByComponentCount(components, eligible, typedCount)
+}
+
+// computeByCodeWeight sums code lines per eligible tech and applies 1% threshold.
+func computeByCodeWeight(components []ComponentEntry, eligible map[string]bool) []string {
+	techCode := make(map[string]int64)
+	var totalCode int64
+
+	for _, comp := range components {
+		if comp.Type == "" {
+			continue
+		}
+		code := extractCode(comp.CodeStats)
+		if code <= 0 {
+			continue
+		}
+		totalCode += code
+		for _, t := range comp.Tech {
+			if eligible[t] {
+				techCode[t] += code
+			}
+		}
+	}
+
+	threshold := totalCode / 100
+	if threshold < 1 {
+		threshold = 1
+	}
+
+	result := make([]string, 0)
+	for tech, code := range techCode {
+		if code >= threshold {
+			result = append(result, tech)
+		}
+	}
+	return sortStrings(result)
+}
+
+// computeByComponentCount counts typed components per eligible tech with adaptive threshold.
+func computeByComponentCount(components []ComponentEntry, eligible map[string]bool, typedCount int) []string {
+	techCount := make(map[string]int)
+	for _, comp := range components {
+		if comp.Type == "" {
+			continue
+		}
+		for _, t := range comp.Tech {
+			if eligible[t] {
+				techCount[t]++
+			}
+		}
+	}
+
+	threshold := 1
+	if typedCount > 10 {
+		threePercent := typedCount * 3 / 100
+		if threePercent < 2 {
+			threePercent = 2
+		}
+		threshold = threePercent
+	}
+
+	result := make([]string, 0)
+	for tech, count := range techCount {
+		if count >= threshold {
+			result = append(result, tech)
+		}
+	}
+	return sortStrings(result)
+}
+
+// extractCode extracts code lines from a component's code_stats field.
+// CodeStats is stored as interface{} on ComponentEntry to avoid circular imports,
+// but is always *codestats.CodeStats at runtime when present.
+func extractCode(stats interface{}) int64 {
+	if cs, ok := stats.(*codestats.CodeStats); ok {
+		return cs.Total.Code
+	}
+	return 0
 }
 
 // sortStrings sorts a slice of strings in place and returns it

@@ -42,8 +42,9 @@ stack-analyzer info rule postgresql
 
 ### Key Concepts
 
-- **tech** - Primary technologies that define a component (e.g., nodejs, java, postgresql)
+- **tech** - Stack-relevant technologies per component, filtered by `is_primary_tech` category (frameworks, runtimes, databases, languages; excludes docker, nginx, CI tools, test frameworks)
 - **techs** - All detected technologies including tools and libraries (superset of tech)
+- **primary_techs** - Weight-filtered subset of `tech[]` at root level — the dominant technologies for the product (code-line weighting when per-component stats available, component-count fallback otherwise)
 - **Component** - An architectural unit detected by the scanner (e.g., a Node.js package, a Docker service)
 - **Rule** - A YAML definition that describes how to detect a technology
 - **Detector** - Go code that handles complex detection logic for specific project types

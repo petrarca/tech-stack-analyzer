@@ -559,8 +559,13 @@ func runMultiPathScan(args []string, cmd *cobra.Command, logger *slog.Logger) {
 
 	finalizeCodeStats(payload, codeStatsAnalyzer, settings.ComponentStatsDepth, s.ResolveSubsystemKeyFromPath, settings.SubsystemGroups)
 
-	// Enhance payload with configuration data
+	// Enhance payload with configuration data (must run before primary_techs so config techs are included)
 	enhanceSinglePayload(payload, mergedConfig)
+
+	// Compute primary_techs via aggregator's flat component list (deterministic, single code path)
+	tempAgg := aggregator.NewAggregator([]string{"tech", "components"})
+	tempOutput := tempAgg.Aggregate(payload)
+	payload.PrimaryTechs = tempOutput.PrimaryTechs
 
 	// Generate and write output
 	generateAndWriteOutput(payload, logger)
@@ -700,6 +705,9 @@ func runScanner(absPath string, isFile bool, mergedConfig *config.ScanConfig, lo
 
 	if p, ok := payload.(*types.Payload); ok {
 		finalizeCodeStats(p, codeStatsAnalyzer, settings.ComponentStatsDepth, s.ResolveSubsystemKeyFromPath, settings.SubsystemGroups)
+		tempAgg := aggregator.NewAggregator([]string{"tech", "components"})
+		tempOutput := tempAgg.Aggregate(p)
+		p.PrimaryTechs = tempOutput.PrimaryTechs
 	}
 
 	return payload
@@ -836,6 +844,9 @@ func stripFields(p *types.Payload, fields map[string]bool) {
 	}
 	if fields["primary_languages"] {
 		p.PrimaryLanguages = nil
+	}
+	if fields["primary_techs"] {
+		p.PrimaryTechs = nil
 	}
 	for _, child := range p.Children {
 		stripFields(child, fields)
