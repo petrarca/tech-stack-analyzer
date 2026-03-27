@@ -1,194 +1,19 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
 
 	"log/slog"
 
-	"github.com/petrarca/tech-stack-analyzer/internal/aggregator"
-	"github.com/petrarca/tech-stack-analyzer/internal/codestats"
 	"github.com/petrarca/tech-stack-analyzer/internal/config"
 	gitpkg "github.com/petrarca/tech-stack-analyzer/internal/git"
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner"
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
 	"github.com/spf13/cobra"
 )
-
-// finalizeCodeStats attaches global, per-component, and subsystem code stats to the payload.
-func finalizeCodeStats(payload *types.Payload, analyzer codestats.Analyzer, statsDepth int, resolveKey subsystemKeyResolver, groups map[string]config.SubsystemGroup) {
-	if !analyzer.IsEnabled() {
-		return
-	}
-	stats := analyzer.GetStats()
-	payload.CodeStats = stats
-
-	if stats != nil && stats.ByType.Programming != nil && stats.ByType.Programming.Metrics != nil {
-		payload.PrimaryLanguages = convertPrimaryLanguages(stats.ByType.Programming.Metrics.PrimaryLanguages)
-	}
-
-	attachComponentCodeStats(payload, analyzer, statsDepth)
-	attachSubsystemStats(payload, analyzer, resolveKey, groups)
-}
-
-// attachComponentCodeStats attaches per-component code stats to child components up to statsDepth.
-// Root keeps the global stats; only children at depth 1..statsDepth receive per-component stats.
-// statsDepth=0 is a no-op.
-func attachComponentCodeStats(payload *types.Payload, analyzer codestats.Analyzer, statsDepth int) {
-	if statsDepth <= 0 {
-		return
-	}
-	for _, child := range payload.Children {
-		attachComponentCodeStatsRecursive(child, analyzer, 1, statsDepth)
-	}
-}
-
-// attachComponentCodeStatsRecursive attaches stats to components at depth <= maxDepth.
-func attachComponentCodeStatsRecursive(payload *types.Payload, analyzer codestats.Analyzer, depth, maxDepth int) {
-	if depth <= maxDepth {
-		key := payload.ComponentPath()
-		if stats := analyzer.GetComponentStats(key); stats != nil {
-			payload.CodeStats = stats
-		}
-	}
-	if depth < maxDepth {
-		for _, child := range payload.Children {
-			attachComponentCodeStatsRecursive(child, analyzer, depth+1, maxDepth)
-		}
-	}
-}
-
-// attachSubsystemStats populates payload.SubsystemStats from the analyzer's subsystem buckets.
-// Each entry is one subsystem key with its rolled-up code stats and component count.
-// This is a no-op when subsystem tracking is disabled.
-// subsystemKeyResolver is a function that maps a depth-1 path prefix to a subsystem key.
-type subsystemKeyResolver func(depthOnePath string) string
-
-func attachSubsystemStats(payload *types.Payload, analyzer codestats.Analyzer, resolve subsystemKeyResolver, groups map[string]config.SubsystemGroup) {
-	sa, ok := analyzer.(codestats.SubsystemAnalyzer)
-	if !ok {
-		return
-	}
-	keys := sa.SubsystemKeys()
-	if len(keys) == 0 {
-		return
-	}
-	// Count components per subsystem by resolving each component's path to a subsystem key
-	counts := countComponentsBySubsystem(payload, resolve)
-
-	stats := make([]types.SubsystemStat, 0, len(keys))
-	for _, key := range keys {
-		cs := sa.GetSubsystemStats(key)
-		if cs == nil {
-			continue
-		}
-		entry := types.SubsystemStat{
-			Path:           key,
-			ComponentCount: counts[key],
-			CodeStats:      cs,
-		}
-		if g, ok := groups[key]; ok {
-			entry.Paths = g.Paths
-			entry.Description = g.Description
-		}
-		stats = append(stats, entry)
-	}
-	sortSubsystemStatsByCode(stats)
-	payload.SubsystemStats = stats
-}
-
-// countComponentsBySubsystem counts components per subsystem using the resolver function.
-// The resolver maps each component's full path to a subsystem key (longest-prefix match).
-func countComponentsBySubsystem(payload *types.Payload, resolve subsystemKeyResolver) map[string]int {
-	counts := make(map[string]int)
-	countComponentsBySubsystemRecursive(payload, counts, resolve)
-	return counts
-}
-
-func countComponentsBySubsystemRecursive(payload *types.Payload, counts map[string]int, resolve subsystemKeyResolver) {
-	cp := payload.ComponentPath()
-	if cp != "" {
-		if key := resolve(cp); key != "" {
-			counts[key]++
-		}
-	}
-	for _, child := range payload.Children {
-		countComponentsBySubsystemRecursive(child, counts, resolve)
-	}
-}
-
-// sortSubsystemStatsByCode sorts subsystem stats by total code lines descending.
-func sortSubsystemStatsByCode(stats []types.SubsystemStat) {
-	sort.Slice(stats, func(i, j int) bool {
-		ci := codeLines(stats[i].CodeStats)
-		cj := codeLines(stats[j].CodeStats)
-		if ci != cj {
-			return ci > cj
-		}
-		return stats[i].Path < stats[j].Path
-	})
-}
-
-// codeLines extracts total code lines from a CodeStats interface value.
-func codeLines(cs interface{}) int64 {
-	if cs == nil {
-		return 0
-	}
-	if typed, ok := cs.(*codestats.CodeStats); ok {
-		return typed.Total.Code
-	}
-	return 0
-}
-
-// convertPrimaryLanguages converts codestats.PrimaryLanguage to types.PrimaryLanguage
-func convertPrimaryLanguages(src []codestats.PrimaryLanguage) []types.PrimaryLanguage {
-	if len(src) == 0 {
-		return nil
-	}
-	result := make([]types.PrimaryLanguage, len(src))
-	for i, pl := range src {
-		result[i] = types.PrimaryLanguage{
-			Language: pl.Language,
-			Pct:      pl.Pct,
-		}
-	}
-	return result
-}
-
-// buildCodeStatsAnalyzer creates the code stats analyzer from settings.
-func buildCodeStatsAnalyzer(s *config.Settings) codestats.Analyzer {
-	if s.NoCodeStats {
-		return codestats.NewNoopAnalyzer()
-	}
-	return codestats.NewAnalyzer(codestats.AnalyzerConfig{
-		PerComponent:     s.ComponentStatsDepth > 0,
-		Subsystem:        s.SubsystemDepth > 0 || len(s.SubsystemGroups) > 0,
-		PrimaryThreshold: s.PrimaryLanguageThreshold,
-		MaxPrimaryLangs:  5,
-	})
-}
-
-// parseLogLevel converts string log level to slog.Level
-func parseLogLevel(level string) (slog.Level, error) {
-	switch strings.ToLower(level) {
-	case "debug":
-		return slog.LevelDebug, nil
-	case "info":
-		return slog.LevelInfo, nil
-	case "warn", "warning":
-		return slog.LevelWarn, nil
-	case "error":
-		return slog.LevelError, nil
-	case "fatal":
-		return slog.LevelError, nil // slog doesn't have fatal, use error
-	default:
-		return slog.LevelInfo, fmt.Errorf("invalid log level: %s", level)
-	}
-}
 
 var (
 	settings       *config.Settings
@@ -222,10 +47,8 @@ Examples:
 func init() {
 	rootCmd.AddCommand(scanCmd)
 
-	// Initialize settings with defaults and environment variables
 	settings = config.LoadSettingsFromEnvironment()
 
-	// Store environment variable values for flag defaults
 	outputFile := settings.OutputFile
 	aggregate := settings.Aggregate
 	prettyPrint := settings.PrettyPrint
@@ -237,7 +60,6 @@ func init() {
 	logFormat := settings.LogFormat
 	logFile := settings.LogFile
 
-	// Set up flags with defaults from environment variables
 	scanCmd.Flags().StringVarP(&settings.OutputFile, "output", "o", outputFile, "Output file path (default: stack-analysis.json)")
 	scanCmd.Flags().StringVar(&settings.Aggregate, "aggregate", aggregate, "Aggregate fields: tech,techs,languages,licenses,dependencies,git,all")
 	scanCmd.Flags().BoolVar(&settings.PrettyPrint, "pretty", prettyPrint, "Pretty print JSON output")
@@ -245,41 +67,21 @@ func init() {
 	scanCmd.Flags().BoolVarP(&settings.Debug, "debug", "d", debug, "Show progress with tree structure (cannot be used with --verbose)")
 	scanCmd.Flags().BoolVar(&settings.TraceTimings, "trace-timings", traceTimings, "Show timing information for each directory (requires --verbose or --debug)")
 	scanCmd.Flags().BoolVar(&settings.TraceRules, "trace-rules", traceRules, "Show detailed rule matching information (requires --verbose or --debug)")
-
-	// Exclude patterns - support multiple flags or comma-separated values
 	scanCmd.Flags().StringSliceVar(&settings.ExcludePatterns, "exclude", settings.ExcludePatterns, "Patterns to exclude (supports glob patterns, can be specified multiple times)")
-
-	// Rule filtering for debugging
 	scanCmd.Flags().StringSliceVar(&settings.FilterRules, "rules", settings.FilterRules, "Only use these rules (comma-separated tech names, e.g., c,cplusplus,nodejs - for debugging)")
-
-	// Code statistics flag (enabled by default)
 	scanCmd.Flags().BoolVar(&settings.NoCodeStats, "no-code-stats", settings.NoCodeStats, "Disable code statistics (lines of code, comments, blanks, complexity)")
-
-	// Component stats depth: collect and include code_stats on components up to this tree depth (0=disabled)
 	scanCmd.Flags().IntVar(&settings.ComponentStatsDepth, "component-stats-depth", 0, "Include code_stats on components up to this tree depth in output (0=none, 1=top-level only, 2=two levels deep, ...)")
-
-	// Subsystem depth: collect and include subsystem_stats rolled up per depth-N path prefix (0=disabled)
 	scanCmd.Flags().IntVar(&settings.SubsystemDepth, "subsystem-depth", 0, "Produce subsystem_stats[] rolled up per depth-N path prefix (0=none, 1=top-level folders). Useful for large monorepos.")
-
-	// Root ID override flag for deterministic scans
 	scanCmd.Flags().StringVar(&settings.RootID, "root-id", "", "Override random root ID for deterministic scans (e.g., 'my-project-2024')")
-
-	// Logging flags - use defaults from environment variables
 	scanCmd.Flags().String("log-level", logLevel, "Log level: trace, debug, error, fatal")
 	scanCmd.Flags().String("log-format", logFormat, "Log format: text or json")
 	scanCmd.Flags().String("log-file", logFile, "Log file path (default: stderr)")
-
-	// Scan configuration flag
 	scanCmd.Flags().StringVar(&scanConfigPath, "config", "", "Scan configuration file path or inline JSON")
-
-	// Output field omission flag
 	scanCmd.Flags().StringSliceVar(&settings.OmitFields, "omit-fields", settings.OmitFields, "Fields to omit from output (e.g. reason,path,edges). Applies to all components recursively.")
-
-	// Also-aggregate flag — produce both full and aggregate output in one scan pass
 	scanCmd.Flags().StringVar(&settings.AlsoAggregate, "also-aggregate", "", "Also produce an aggregate output alongside the full output. Suffix -agg is added to the output filename. (e.g. tech,techs,languages,dependencies,git)")
 }
 
-// configureLogging sets up logging based on command flags
+// configureLogging sets up logging based on command flags.
 func configureLogging(cmd *cobra.Command) *slog.Logger {
 	logLevel, _ := cmd.Flags().GetString("log-level")
 	logFormat, _ := cmd.Flags().GetString("log-format")
@@ -294,7 +96,126 @@ func configureLogging(cmd *cobra.Command) *slog.Logger {
 	return settings.ConfigureLogger()
 }
 
-// resolveScanPath resolves and validates the scan path from args
+// parseLogLevel converts a string log level to slog.Level.
+func parseLogLevel(level string) (slog.Level, error) {
+	switch strings.ToLower(level) {
+	case "debug":
+		return slog.LevelDebug, nil
+	case "info":
+		return slog.LevelInfo, nil
+	case "warn", "warning":
+		return slog.LevelWarn, nil
+	case "error", "fatal":
+		return slog.LevelError, nil
+	default:
+		return slog.LevelInfo, fmt.Errorf("invalid log level: %s", level)
+	}
+}
+
+// configureExcludePatterns processes exclude patterns from command flags.
+func configureExcludePatterns(cmd *cobra.Command) {
+	excludeList, _ := cmd.Flags().GetStringSlice("exclude")
+	for i, pattern := range excludeList {
+		excludeList[i] = strings.TrimSpace(pattern)
+	}
+	settings.ExcludePatterns = excludeList
+}
+
+func runScan(cmd *cobra.Command, args []string) {
+	logger := configureLogging(cmd)
+	scanConfig = loadAndMergeScanConfig(logger)
+
+	if len(args) > 1 {
+		runMultiPathScan(args, cmd, logger)
+	} else {
+		runSinglePathScan(args, cmd, logger)
+	}
+}
+
+// runSinglePathScan scans a single path and writes output.
+// Note: runScanner already calls finalizeCodeStats and an initial computePrimaryTechs.
+// enhanceSinglePayload may add config-injected techs, so primary_techs is recomputed after.
+func runSinglePathScan(args []string, cmd *cobra.Command, logger *slog.Logger) {
+	absPath, isFile := resolveScanPath(args, logger)
+	configureExcludePatterns(cmd)
+	setupScanSettings(logger)
+
+	_, mergedConfig := loadAndMergeProjectConfig(absPath, logger)
+	payload := runScanner(absPath, isFile, mergedConfig, logger)
+
+	// Recompute primary_techs after enhancement so config-injected techs are included.
+	enhanceSinglePayload(payload, mergedConfig)
+	if p, ok := payload.(*types.Payload); ok {
+		p.PrimaryTechs = computePrimaryTechsFromPayload(p)
+	}
+
+	generateAndWriteOutput(payload, logger)
+}
+
+// runMultiPathScan scans multiple directories as a single unified project.
+func runMultiPathScan(args []string, cmd *cobra.Command, logger *slog.Logger) {
+	commonParent, relPaths, absPaths := resolveMultiScanPaths(args, logger)
+	configureExcludePatterns(cmd)
+	setupScanSettings(logger)
+
+	_, mergedConfig := loadAndMergeProjectConfig(commonParent, logger)
+	loadAndMergeScanConfig(logger)
+
+	rootID := settings.RootID
+	if rootID == "" {
+		rootID = gitpkg.GenerateRootIDFromMultiPaths(commonParent, relPaths)
+	}
+
+	fmt.Fprintf(os.Stderr, "Scanning %d paths under: %s\n", len(absPaths), commonParent)
+	for _, p := range absPaths {
+		fmt.Fprintf(os.Stderr, "  - %s\n", p)
+	}
+
+	logger.Debug("Multi-path scan",
+		"common_parent", commonParent,
+		"include_paths", relPaths,
+		"root_id", rootID,
+	)
+
+	codeStatsAnalyzer := buildCodeStatsAnalyzer(settings)
+
+	s, err := scanner.NewScannerWithOptionsAndLogger(
+		commonParent,
+		settings.ExcludePatterns,
+		settings.Verbose,
+		settings.Debug,
+		settings.TraceTimings,
+		settings.TraceRules,
+		codeStatsAnalyzer,
+		logger,
+		rootID,
+		mergedConfig,
+	)
+	if err != nil {
+		logger.Error("Failed to create scanner", "error", err)
+		os.Exit(1)
+	}
+
+	s.SetSubsystemDepth(settings.SubsystemDepth)
+	s.SetSubsystemGroups(settings.SubsystemGroups)
+	s.SetIncludePaths(relPaths)
+
+	payload, err := s.Scan()
+	if err != nil {
+		logger.Error("Failed to scan", "error", err)
+		os.Exit(1)
+	}
+
+	finalizeCodeStats(payload, codeStatsAnalyzer, settings.ComponentStatsDepth, s.ResolveSubsystemKeyFromPath, settings.SubsystemGroups)
+
+	// Enhance before computing primary_techs so config techs are included.
+	enhanceSinglePayload(payload, mergedConfig)
+	payload.PrimaryTechs = computePrimaryTechsFromPayload(payload)
+
+	generateAndWriteOutput(payload, logger)
+}
+
+// resolveScanPath resolves and validates the scan path from args.
 func resolveScanPath(args []string, logger *slog.Logger) (absPath string, isFile bool) {
 	path := "."
 	if len(args) > 0 {
@@ -320,53 +241,7 @@ func resolveScanPath(args []string, logger *slog.Logger) (absPath string, isFile
 	return absPath, !fileInfo.IsDir()
 }
 
-// configureExcludePatterns processes exclude patterns from command flags
-func configureExcludePatterns(cmd *cobra.Command) {
-	excludeList, _ := cmd.Flags().GetStringSlice("exclude")
-	for i, pattern := range excludeList {
-		excludeList[i] = strings.TrimSpace(pattern)
-	}
-	settings.ExcludePatterns = excludeList
-}
-
-func runScan(cmd *cobra.Command, args []string) {
-	logger := configureLogging(cmd)
-
-	// Load and merge scan configuration
-	scanConfig = loadAndMergeScanConfig(logger)
-
-	if len(args) > 1 {
-		// Multi-path scan
-		runMultiPathScan(args, cmd, logger)
-	} else {
-		// Single path scan - use command line argument or default to current directory
-		runSinglePathScan(args, cmd, logger)
-	}
-}
-
-// runSinglePathScan executes a single path scan with all the logic
-func runSinglePathScan(args []string, cmd *cobra.Command, logger *slog.Logger) {
-	absPath, isFile := resolveScanPath(args, logger)
-	configureExcludePatterns(cmd)
-
-	// Setup and validate scan settings
-	setupScanSettings(logger)
-
-	// Load project config and merge with scan config
-	_, mergedConfig := loadAndMergeProjectConfig(absPath, logger)
-
-	// Initialize and run scanner
-	payload := runScanner(absPath, isFile, mergedConfig, logger)
-
-	// Enhance payload with configuration data
-	enhanceSinglePayload(payload, mergedConfig)
-
-	// Generate and write output
-	generateAndWriteOutput(payload, logger)
-}
-
-// computeCommonParent computes the deepest common parent directory of the given absolute paths.
-// All paths must be absolute. Returns the common parent path.
+// computeCommonParent returns the deepest common parent directory of the given absolute paths.
 func computeCommonParent(paths []string) string {
 	if len(paths) == 0 {
 		return "."
@@ -375,13 +250,11 @@ func computeCommonParent(paths []string) string {
 		return paths[0]
 	}
 
-	// Split all paths into components
 	splitPaths := make([][]string, len(paths))
 	for i, p := range paths {
 		splitPaths[i] = strings.Split(filepath.Clean(p), string(filepath.Separator))
 	}
 
-	// Find common prefix across all split paths
 	common := splitPaths[0]
 	for _, sp := range splitPaths[1:] {
 		minLen := len(common)
@@ -403,27 +276,16 @@ func computeCommonParent(paths []string) string {
 	}
 
 	result := strings.Join(common, string(filepath.Separator))
-	// On Unix, absolute paths start with "/" but Split gives "" as first element
 	if result == "" {
 		return string(filepath.Separator)
 	}
 	return result
 }
 
-// isSystemRoot returns true if the path is a filesystem root or a well-known system directory
-// that should not be used as a scan root.
+// isSystemRoot returns true if the path is a filesystem root or well-known system directory.
 func isSystemRoot(path string) bool {
 	cleaned := filepath.Clean(path)
-	systemRoots := []string{
-		"/",
-		"/home",
-		"/Users",
-		"/tmp",
-		"/var",
-		"/opt",
-		"/usr",
-	}
-	for _, root := range systemRoots {
+	for _, root := range []string{"/", "/home", "/Users", "/tmp", "/var", "/opt", "/usr"} {
 		if cleaned == root {
 			return true
 		}
@@ -476,444 +338,14 @@ func resolveMultiScanPaths(args []string, logger *slog.Logger) (commonParent str
 		relPaths = append(relPaths, rel)
 	}
 
-	// Warn when one input path is an ancestor of another. In that case the ancestor
-	// becomes the common parent itself (rel == "."), so the include-path filter only
-	// recurses into the explicit descendant sub-paths — not all children of the ancestor.
-	// Users who want the full ancestor tree should just scan the ancestor alone.
+	// Warn when one input path is an ancestor of another.
 	for i, a := range absPaths {
 		for j, b := range absPaths {
-			if i == j {
-				continue
-			}
-			if strings.HasPrefix(b+string(filepath.Separator), a+string(filepath.Separator)) {
+			if i != j && strings.HasPrefix(b+string(filepath.Separator), a+string(filepath.Separator)) {
 				fmt.Fprintf(os.Stderr, "Warning: %q is an ancestor of %q; only the explicitly listed sub-paths will be scanned under it.\n", a, b)
 			}
 		}
 	}
 
 	return commonParent, relPaths, absPaths
-}
-
-// runMultiPathScan orchestrates scanning multiple directories as a single unified project.
-// It computes a common parent, creates one scanner rooted there with include-path filtering,
-// and generates a multi-path-aware root ID.
-func runMultiPathScan(args []string, cmd *cobra.Command, logger *slog.Logger) {
-	commonParent, relPaths, absPaths := resolveMultiScanPaths(args, logger)
-	configureExcludePatterns(cmd)
-	setupScanSettings(logger)
-
-	// Load project config from the common parent, then overlay --config if provided
-	_, mergedConfig := loadAndMergeProjectConfig(commonParent, logger)
-	loadAndMergeScanConfig(logger)
-
-	// Determine root ID for multi-path scan
-	rootID := settings.RootID
-	if rootID == "" {
-		rootID = gitpkg.GenerateRootIDFromMultiPaths(commonParent, relPaths)
-	}
-
-	// Show scan start message
-	fmt.Fprintf(os.Stderr, "Scanning %d paths under: %s\n", len(absPaths), commonParent)
-	for _, p := range absPaths {
-		fmt.Fprintf(os.Stderr, "  - %s\n", p)
-	}
-
-	logger.Debug("Multi-path scan",
-		"common_parent", commonParent,
-		"include_paths", relPaths,
-		"root_id", rootID,
-	)
-
-	codeStatsAnalyzer := buildCodeStatsAnalyzer(settings)
-
-	// Create scanner rooted at common parent with include-path filtering
-	s, err := scanner.NewScannerWithOptionsAndLogger(
-		commonParent,
-		settings.ExcludePatterns,
-		settings.Verbose,
-		settings.Debug,
-		settings.TraceTimings,
-		settings.TraceRules,
-		codeStatsAnalyzer,
-		logger,
-		rootID,
-		mergedConfig,
-	)
-	if err != nil {
-		logger.Error("Failed to create scanner", "error", err)
-		os.Exit(1)
-	}
-
-	s.SetSubsystemDepth(settings.SubsystemDepth)
-	s.SetSubsystemGroups(settings.SubsystemGroups)
-
-	// Set include paths so only specified subdirectories are scanned
-	s.SetIncludePaths(relPaths)
-
-	// Run the scan
-	payload, err := s.Scan()
-	if err != nil {
-		logger.Error("Failed to scan", "error", err)
-		os.Exit(1)
-	}
-
-	finalizeCodeStats(payload, codeStatsAnalyzer, settings.ComponentStatsDepth, s.ResolveSubsystemKeyFromPath, settings.SubsystemGroups)
-
-	// Enhance payload with configuration data (must run before primary_techs so config techs are included)
-	enhanceSinglePayload(payload, mergedConfig)
-
-	// Compute primary_techs via aggregator's flat component list (deterministic, single code path)
-	tempAgg := aggregator.NewAggregator([]string{"tech", "components"})
-	tempOutput := tempAgg.Aggregate(payload)
-	payload.PrimaryTechs = tempOutput.PrimaryTechs
-
-	// Generate and write output
-	generateAndWriteOutput(payload, logger)
-}
-
-// loadAndMergeScanConfig loads scan configuration and merges with settings
-func loadAndMergeScanConfig(logger *slog.Logger) *config.ScanConfigFile {
-	if scanConfigPath == "" {
-		return nil
-	}
-
-	scanConfig, err := config.LoadScanConfig(scanConfigPath)
-	if err != nil {
-		logger.Error("Failed to load scan configuration", "error", err)
-		os.Exit(1)
-	}
-
-	// Merge config with settings (CLI flags take precedence)
-	scanConfig.MergeWithSettings(settings)
-	return scanConfig
-}
-
-func setupScanSettings(logger *slog.Logger) {
-	// Handle special case: -o - means stdout
-	if settings.OutputFile == "-" {
-		settings.OutputFile = ""
-	}
-
-	// Check for mutually exclusive flags
-	if settings.Verbose && settings.Debug {
-		logger.Error("Cannot use --verbose and --debug together. Choose one.")
-		os.Exit(1)
-	}
-
-	// Validate trace flags require explicit mode selection
-	if (settings.TraceRules || settings.TraceTimings) && !settings.Verbose && !settings.Debug {
-		var flags []string
-		if settings.TraceTimings {
-			flags = append(flags, "--trace-timings")
-		}
-		if settings.TraceRules {
-			flags = append(flags, "--trace-rules")
-		}
-
-		fmt.Fprintf(os.Stderr, "Error: %s requires --verbose or --debug\n", strings.Join(flags, " and "))
-		fmt.Fprintf(os.Stderr, "\nUsage:\n")
-		fmt.Fprintf(os.Stderr, "  stack-analyzer scan . --verbose %s  # Human-readable output\n", strings.Join(flags, " "))
-		fmt.Fprintf(os.Stderr, "  stack-analyzer scan . --debug %s    # Machine-readable CSV output\n", strings.Join(flags, " "))
-		fmt.Fprintf(os.Stderr, "\nSee --help for more information.\n")
-		os.Exit(1)
-	}
-
-	// Validate settings
-	if err := settings.Validate(); err != nil {
-		logger.Error("Invalid settings", "error", err)
-		os.Exit(1)
-	}
-}
-
-// loadAndMergeProjectConfig loads project config and merges with scan config
-func loadAndMergeProjectConfig(absPath string, logger *slog.Logger) (*config.ScanConfig, *config.ScanConfig) {
-	// Load project config for additional metadata and excludes
-	projectConfig, err := config.LoadConfig(absPath)
-	if err != nil {
-		logger.Error("Failed to load project configuration", "error", err)
-		os.Exit(1)
-	}
-
-	// Merge scan config with project config
-	var mergedConfig *config.ScanConfig
-	if scanConfig != nil {
-		mergedConfig = scanConfig.GetMergedConfig(projectConfig)
-	} else {
-		mergedConfig = projectConfig
-	}
-
-	// Apply merged excludes to settings
-	settings.ExcludePatterns = mergedConfig.MergeExcludes(settings.ExcludePatterns)
-
-	// Apply root ID from config if not set by CLI (CLI takes precedence)
-	if settings.RootID == "" && mergedConfig.RootID != "" {
-		settings.RootID = mergedConfig.RootID
-	}
-
-	return projectConfig, mergedConfig
-}
-
-// runScanner creates and runs the scanner
-func runScanner(absPath string, isFile bool, mergedConfig *config.ScanConfig, logger *slog.Logger) interface{} {
-	// Initialize scanner
-	scannerPath := absPath
-	if isFile {
-		scannerPath = filepath.Dir(absPath)
-	}
-
-	// Show scan start message (always, even without verbose)
-	if isFile {
-		fmt.Fprintf(os.Stderr, "Scanning file: %s\n", absPath)
-	} else {
-		fmt.Fprintf(os.Stderr, "Scanning: %s\n", scannerPath)
-	}
-
-	// Show filtered rules if specified
-	if len(settings.FilterRules) > 0 {
-		fmt.Fprintf(os.Stderr, "Active rules: %s\n", strings.Join(settings.FilterRules, ", "))
-	}
-
-	logger.Debug("Initializing scanner",
-		"path", scannerPath,
-		"exclude_patterns", settings.ExcludePatterns,
-		"code_stats", !settings.NoCodeStats)
-
-	codeStatsAnalyzer := buildCodeStatsAnalyzer(settings)
-
-	s, err := scanner.NewScannerWithOptionsAndLogger(scannerPath, settings.ExcludePatterns, settings.Verbose, settings.Debug, settings.TraceTimings, settings.TraceRules, codeStatsAnalyzer, logger, settings.RootID, mergedConfig)
-	if err != nil {
-		logger.Error("Failed to create scanner", "error", err)
-		os.Exit(1)
-	}
-	s.SetSubsystemDepth(settings.SubsystemDepth)
-	s.SetSubsystemGroups(settings.SubsystemGroups)
-
-	// Scan project or file
-	var payload interface{}
-	if isFile {
-		logger.Debug("Scanning file", "file", absPath)
-		payload, err = s.ScanFile(filepath.Base(absPath))
-	} else {
-		logger.Debug("Scanning directory", "directory", absPath)
-		payload, err = s.Scan()
-	}
-
-	if err != nil {
-		logger.Error("Failed to scan", "error", err)
-		os.Exit(1)
-	}
-
-	if p, ok := payload.(*types.Payload); ok {
-		finalizeCodeStats(p, codeStatsAnalyzer, settings.ComponentStatsDepth, s.ResolveSubsystemKeyFromPath, settings.SubsystemGroups)
-		tempAgg := aggregator.NewAggregator([]string{"tech", "components"})
-		tempOutput := tempAgg.Aggregate(p)
-		p.PrimaryTechs = tempOutput.PrimaryTechs
-	}
-
-	return payload
-}
-
-// enhanceSinglePayload adds configuration data to the payload
-func enhanceSinglePayload(payload interface{}, mergedConfig *config.ScanConfig) {
-	if mergedConfig == nil {
-		return
-	}
-	// Add merged config properties to payload metadata
-	if p, ok := payload.(*types.Payload); ok && len(mergedConfig.Properties) > 0 {
-		if p.Properties == nil {
-			p.Properties = make(map[string]interface{})
-		}
-		for k, v := range mergedConfig.Properties {
-			p.Properties[k] = v
-		}
-	}
-
-	// Add configured techs to payload with validation
-	if p, ok := payload.(*types.Payload); ok && len(mergedConfig.Techs) > 0 {
-		// Load rules for tech validation
-		allRules, _ := LoadRulesAndCategories()
-		ruleMap := make(map[string]*types.Rule)
-		for i := range allRules {
-			ruleMap[allRules[i].Tech] = &allRules[i]
-		}
-
-		for _, configTech := range mergedConfig.Techs {
-			// Check if tech exists in taxonomy
-			techKey := configTech.Tech
-			reason := configTech.Reason
-
-			// If tech doesn't exist, map to unmapped_unknown
-			if _, exists := ruleMap[techKey]; !exists {
-				techKey = "unmapped_unknown"
-				if reason == "" {
-					reason = fmt.Sprintf("configured tech: %s (source: config)", configTech.Tech)
-				} else {
-					reason = fmt.Sprintf("configured tech: %s (source: config) - %s", configTech.Tech, reason)
-				}
-			} else if reason == "" {
-				reason = "configured tech (source: config)"
-			}
-
-			// Add tech to payload using existing AddTech method
-			p.AddTech(techKey, reason)
-		}
-	}
-}
-
-// generateAndWriteOutput generates output and writes to file or stdout
-func generateAndWriteOutput(payload interface{}, logger *slog.Logger) {
-	// Generate output (aggregated or full payload)
-	logger.Debug("Generating output",
-		"aggregate", settings.Aggregate,
-		"also_aggregate", settings.AlsoAggregate,
-		"pretty_print", settings.PrettyPrint)
-
-	jsonData, err := generateOutput(payload, settings.Aggregate, settings.PrettyPrint, settings.OmitFields)
-	if err != nil {
-		logger.Error("Failed to marshal JSON", "error", err)
-		os.Exit(1)
-	}
-
-	// Write primary output
-	writeOutput(jsonData)
-
-	// Also produce aggregate output alongside full output if requested
-	if settings.AlsoAggregate != "" && settings.Aggregate == "" {
-		aggFile := aggregateOutputFile(settings.OutputFile)
-		aggData, err := generateOutput(payload, settings.AlsoAggregate, settings.PrettyPrint, nil)
-		if err != nil {
-			logger.Error("Failed to marshal aggregate JSON", "error", err)
-			os.Exit(1)
-		}
-		if aggFile != "" {
-			err = os.WriteFile(aggFile, aggData, 0644)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "Failed to write aggregate output file: %v\n", err)
-				os.Exit(1)
-			}
-			fmt.Fprintf(os.Stderr, "Aggregate results written to %s\n", aggFile)
-		} else {
-			// stdout mode — skip aggregate (can't write two JSON blobs to stdout)
-			logger.Debug("Skipping aggregate output: primary output is stdout")
-		}
-	}
-}
-
-// aggregateOutputFile derives the aggregate output filename from the primary output filename.
-// Returns empty string if primary output is stdout.
-// Example: "output.json" -> "output-agg.json"
-func aggregateOutputFile(outputFile string) string {
-	if outputFile == "" {
-		return ""
-	}
-	ext := filepath.Ext(outputFile)
-	base := strings.TrimSuffix(outputFile, ext)
-	return base + "-agg" + ext
-}
-
-// stripFields recursively removes the specified fields from a payload tree.
-// Valid field names: "reason", "path", "edges", "licenses", "dependencies",
-// "component_refs", "properties", "code_stats", "primary_languages".
-func stripFields(p *types.Payload, fields map[string]bool) {
-	if p == nil {
-		return
-	}
-	if fields["reason"] {
-		p.Reason = nil
-	}
-	if fields["path"] {
-		p.Path = nil
-	}
-	if fields["edges"] {
-		p.Edges = nil
-	}
-	if fields["licenses"] {
-		p.Licenses = nil
-	}
-	if fields["dependencies"] {
-		p.Dependencies = nil
-	}
-	if fields["component_refs"] {
-		p.ComponentRefs = nil
-	}
-	if fields["properties"] {
-		p.Properties = nil
-	}
-	if fields["code_stats"] {
-		p.CodeStats = nil
-	}
-	if fields["primary_languages"] {
-		p.PrimaryLanguages = nil
-	}
-	if fields["primary_techs"] {
-		p.PrimaryTechs = nil
-	}
-	for _, child := range p.Children {
-		stripFields(child, fields)
-	}
-}
-
-func generateOutput(payload interface{}, aggregateFields string, prettyPrint bool, omitFields []string) ([]byte, error) {
-	var result interface{}
-
-	// Apply field omission to full payload (before aggregation)
-	if len(omitFields) > 0 {
-		if p, ok := payload.(*types.Payload); ok {
-			omitSet := make(map[string]bool, len(omitFields))
-			for _, f := range omitFields {
-				omitSet[strings.TrimSpace(f)] = true
-			}
-			stripFields(p, omitSet)
-		}
-	}
-
-	if aggregateFields != "" {
-		// Parse aggregate fields
-		fields := strings.Split(aggregateFields, ",")
-		for i, field := range fields {
-			fields[i] = strings.TrimSpace(field)
-		}
-
-		// Handle "all" as special case - aggregate all available fields
-		if len(fields) == 1 && fields[0] == "all" {
-			fields = []string{"tech", "techs", "reason", "languages", "licenses", "dependencies", "git", "components"}
-		}
-
-		// Validate fields
-		validFields := map[string]bool{
-			"tech": true, "techs": true, "reason": true, "languages": true,
-			"licenses": true, "dependencies": true, "git": true, "components": true,
-		}
-		for _, field := range fields {
-			if !validFields[field] {
-				return nil, fmt.Errorf("invalid aggregate field: %s. Valid fields: tech, techs, reason, languages, licenses, dependencies, git, components, all", field)
-			}
-		}
-
-		// Create aggregator and aggregate
-		agg := aggregator.NewAggregator(fields)
-		result = agg.Aggregate(payload.(*types.Payload))
-	} else {
-		result = payload
-	}
-
-	// Marshal to JSON
-	if prettyPrint {
-		return json.MarshalIndent(result, "", "  ")
-	}
-	return json.Marshal(result)
-}
-
-// writeOutput writes the JSON data to file or stdout
-func writeOutput(jsonData []byte) {
-	if settings.OutputFile != "" {
-		err := os.WriteFile(settings.OutputFile, jsonData, 0644)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to write output file: %v\n", err)
-			os.Exit(1)
-		}
-		fmt.Fprintf(os.Stderr, "Results written to %s\n", settings.OutputFile)
-	} else {
-		fmt.Println(string(jsonData))
-	}
 }
