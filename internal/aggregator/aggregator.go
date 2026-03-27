@@ -100,7 +100,7 @@ func (a *Aggregator) Aggregate(payload *types.Payload) *AggregateOutput {
 	output.PrimaryLanguages = payload.PrimaryLanguages
 
 	// Compute primary_techs from flat component list (always, after components and tech are collected)
-	output.PrimaryTechs = computePrimaryTechs(output.Components, output.Tech)
+	output.PrimaryTechs = computePrimaryTechs(output.Components, output.Tech, output.PrimaryLanguages)
 
 	// Copy subsystem stats if present (populated by cmd/scan.go after scanning)
 	output.SubsystemStats = payload.SubsystemStats
@@ -367,7 +367,11 @@ func collectComponentsRecursive(payload *types.Payload, components *[]ComponentE
 // Uses code-line weighting (≥1% of total typed code) when per-component code_stats
 // cover ≥50% of typed components. Falls back to component-count threshold
 // (≤10 typed: all; >10: ≥3% of typed component count) when stats are sparse.
-func computePrimaryTechs(components []ComponentEntry, techEligible []string) []string {
+//
+// Languages that dominate primary_languages (≥50%) but have no typed components
+// (e.g. C++ in legacy codebases without detected build manifests) are promoted
+// from tech[] into primary_techs so the graph ingestion captures them correctly.
+func computePrimaryTechs(components []ComponentEntry, techEligible []string, primaryLangs []types.PrimaryLanguage) []string {
 	if len(techEligible) == 0 {
 		return nil
 	}
@@ -390,10 +394,90 @@ func computePrimaryTechs(components []ComponentEntry, techEligible []string) []s
 	}
 
 	// Use code-weight when stats cover ≥50% of typed components
+	var result []string
 	if withStats > 0 && withStats*2 >= typedCount {
-		return computeByCodeWeight(components, eligible)
+		result = computeByCodeWeight(components, eligible)
+	} else {
+		result = computeByComponentCount(components, eligible, typedCount)
 	}
-	return computeByComponentCount(components, eligible, typedCount)
+
+	// Promote dominant languages that are eligible (in tech[]) but have no typed
+	// components — e.g. C++ codebases without detected build manifests.
+	result = promoteDominantLanguages(result, eligible, components, primaryLangs)
+
+	return result
+}
+
+// promoteDominantLanguages adds eligible languages that dominate primary_languages
+// (≥50% of code) but are absent from the computed primary_techs because no typed
+// components carry them (build manifests not detected).
+func promoteDominantLanguages(result []string, eligible map[string]bool, components []ComponentEntry, primaryLangs []types.PrimaryLanguage) []string {
+	if len(primaryLangs) == 0 {
+		return result
+	}
+
+	// Build set of techs already in result for O(1) lookup
+	inResult := make(map[string]bool, len(result))
+	for _, t := range result {
+		inResult[t] = true
+	}
+
+	// Build set of techs carried by ANY typed component
+	inTypedComponent := make(map[string]bool)
+	for _, comp := range components {
+		if comp.Type == "" {
+			continue
+		}
+		for _, t := range comp.Tech {
+			inTypedComponent[t] = true
+		}
+	}
+
+	promoted := false
+	for _, pl := range primaryLangs {
+		if pl.Pct < 0.50 {
+			continue
+		}
+		// Map language name to tech key (primary_languages uses display name, tech[] uses scanner key)
+		techKey := languageNameToTechKey(pl.Language)
+		if techKey == "" || !eligible[techKey] {
+			continue
+		}
+		// Only promote if not already in result and not present in any typed component
+		if !inResult[techKey] && !inTypedComponent[techKey] {
+			result = append(result, techKey)
+			promoted = true
+		}
+	}
+
+	if promoted {
+		return sortStrings(result)
+	}
+	return result
+}
+
+// languageNameToTechKey maps a primary_languages display name to its scanner tech key.
+// Only covers languages that can dominate a codebase without detectable build manifests
+// (i.e. where the scanner creates a virtual node rather than a typed component).
+// This mapping mirrors the `name` field in the corresponding rule YAML files.
+// If a new language rule is added for such a language, add it here too.
+func languageNameToTechKey(lang string) string {
+	switch lang {
+	case "C++":
+		return "cplusplus"
+	case "C":
+		return "c"
+	case "Delphi":
+		return "delphi"
+	case "COBOL":
+		return "cobol"
+	case "Fortran":
+		return "fortran"
+	case "Assembly":
+		return "assembly"
+	default:
+		return ""
+	}
 }
 
 // computeByCodeWeight sums code lines per eligible tech and applies 1% threshold.

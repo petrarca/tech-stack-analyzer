@@ -188,6 +188,7 @@ func enhanceSinglePayload(payload interface{}, mergedConfig *config.ScanConfig) 
 // computePrimaryTechsFromPayload computes primary_techs via a temporary aggregation
 // over the flat component list. This ensures a single, deterministic code path for
 // both full and aggregated output formats.
+// primary_languages must already be set on the payload before calling this.
 func computePrimaryTechsFromPayload(p *types.Payload) []string {
 	agg := aggregator.NewAggregator([]string{"tech", "components"})
 	return agg.Aggregate(p).PrimaryTechs
