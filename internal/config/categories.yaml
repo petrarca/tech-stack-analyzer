@@ -1,228 +1,293 @@
 # Technology Category Definitions
 # Determines default component behavior for each technology category
-# Individual rules can override with is_component field
+# Individual rules can override with is_component / is_primary_tech fields
+#
+# is_component:    true  = creates a virtual node in the component graph (infrastructure/service topology)
+# is_primary_tech: true  = promoted to tech[] (primary application stack identification)
+#                  false = only in techs[] (full inventory)
+#                  (default: same as is_component when not set)
+#
+# Key distinction: is_component drives graph topology; is_primary_tech drives stack identity.
+# A technology can be is_component=true (warrants its own node) but is_primary_tech=false
+# (e.g. docker, nginx — infrastructure, not part of the app's development identity).
+# Conversely, is_component=false but is_primary_tech=true for frameworks/runtimes that
+# define what the product is built with (e.g. angular, fastapi, nodejs).
 
 categories:
-  # Infrastructure & Data - CREATE components
+  # Infrastructure & Data - CREATE components, NOT primary tech (infrastructure concerns)
   os:
     is_component: true
+    is_primary_tech: false
     description: "Operating systems like Linux, MacOS, ..."
 
   database:
     is_component: true
+    is_primary_tech: true
     create_edges: true
     description: "Database systems (PostgreSQL, MongoDB, Redis, etc.)"
   
   storage:
     is_component: true
+    is_primary_tech: false
     create_edges: true
     description: "Storage services (S3, Cloudinary, etc.)"
   
   messaging:
     is_component: true
+    is_primary_tech: true
     create_edges: true
     description: "Message brokers and queues (Kafka, RabbitMQ, SQS, etc.)"
   
   containerization:
     is_component: true
+    is_primary_tech: false
     description: "Container tools (Docker, Podman, containerd)"
   
   orchestration:
     is_component: true
+    is_primary_tech: false
     description: "Container orchestration (Kubernetes, Docker Swarm, Nomad)"
   
   package_manager:
     is_component: false
+    is_primary_tech: false
     description: "Package managers (npm, pip, cargo, maven)"
   
-  # Hosting & Cloud - CREATE components
+  # Hosting & Cloud - CREATE components, NOT primary tech
   hosting:
     is_component: true
+    is_primary_tech: false
     create_edges: false
     description: "Hosting platforms (Vercel, Netlify, AWS, etc.)"
   
   cloud:
     is_component: true
+    is_primary_tech: false
     create_edges: false
     description: "Cloud providers (AWS, GCP, Azure, etc.)"
   
-  # Services - CREATE components
+  # Services - CREATE components, NOT primary tech (external dependencies, not app identity)
   saas:
     is_component: true
+    is_primary_tech: false
     description: "SaaS platforms"
   
   cms:
     is_component: true
+    is_primary_tech: true
     description: "Content management systems"
   
   monitoring:
     is_component: true
+    is_primary_tech: false
     description: "Monitoring services (Datadog, Sentry, etc.)"
   
   analytics:
     is_component: true
+    is_primary_tech: false
     description: "Analytics platforms (Google Analytics, Mixpanel, etc.)"
   
   identity:
     is_component: true
+    is_primary_tech: true
     description: "Identity & access management (Auth0, Okta, Keycloak, etc.)"
   
   payment:
     is_component: true
+    is_primary_tech: false
     description: "Payment processors (Stripe, PayPal, etc.)"
   
   notification:
     is_component: true
+    is_primary_tech: false
     description: "Notification services (SendGrid, Twilio, etc.)"
   
   communication:
     is_component: true
+    is_primary_tech: false
     description: "Communication tools (Slack, Discord, etc.)"
   
   collaboration:
     is_component: true
+    is_primary_tech: false
     description: "Collaboration platforms"
   
   # Applications & Tools - CREATE components
   etl:
     is_component: true
+    is_primary_tech: false
     description: "ETL tools"
   
   automation:
     is_component: true
-    description: "Automation tools"
+    is_primary_tech: false
+    description: "Automation tools (Selenium, Playwright, etc.) — test/automation infra, not app stack"
   
   security:
     is_component: true
+    is_primary_tech: false
     description: "Security services"
   
   crm:
     is_component: true
+    is_primary_tech: false
     description: "CRM systems"
   
   network:
     is_component: true
-    description: "Network services"
+    is_primary_tech: false
+    description: "Network services (nginx, traefik, haproxy)"
   
   ssg:
     is_component: true
+    is_primary_tech: true
     description: "Static site generators (when used as main tech)"
   
   ai_service:
     is_component: true
+    is_primary_tech: true
     description: "AI cloud services and APIs (OpenAI, Anthropic, AWS Bedrock, etc.)"
-  
-  # Development Tools - DO NOT create components
-  ide:
-    is_component: false
-    description: "Integrated development environments (Delphi, Visual Studio, PowerBuilder, etc.)"
 
-  ai:
-    is_component: false
-    description: "AI libraries and frameworks (LangChain, PyTorch, PydanticAI, etc.)"
+  appserver:
+    is_component: true
+    is_primary_tech: false
+    description: "Application servers (JBoss, Tomcat, WebLogic, etc.) — runtime infra, not app framework"
 
-  library:
-    is_component: false
-    description: "Utility libraries (JSON processing, validation, cryptography, etc.)"
-  
+  # Development stack — primary tech (these define what the product is built with)
   backend_framework:
     is_component: false
+    is_primary_tech: true
     description: "Backend frameworks (Django, Spring, Express, NestJS, etc.)"
-  
-  mobile_framework:
-    is_component: false
-    description: "Mobile frameworks (React Native, Flutter, Swift, Kotlin, etc.)"
-  
-  desktop_framework:
-    is_component: false
-    description: "Desktop frameworks (Qt, MFC, Win32, Electron, etc.)"
-  
+
   web_framework:
     is_component: false
+    is_primary_tech: true
     description: "Web frameworks (React, Vue, Angular, Svelte, etc.)"
   
   fullstack_framework:
     is_component: false
+    is_primary_tech: true
     description: "Full-stack frameworks (Next.js, Nuxt, Remix, etc.)"
+
+  mobile_framework:
+    is_component: false
+    is_primary_tech: true
+    description: "Mobile frameworks (React Native, Flutter, Ionic, etc.)"
+  
+  desktop_framework:
+    is_component: false
+    is_primary_tech: true
+    description: "Desktop frameworks (Qt, MFC, Electron, WPF, etc.)"
+
+  runtime:
+    is_component: false
+    is_primary_tech: true
+    description: "Runtime environments (Node.js, .NET, etc.)"
+
+  language:
+    is_component: false
+    is_primary_tech: true
+    description: "Programming languages (Python, JavaScript, etc.)"
+
+  orm:
+    is_component: false
+    is_primary_tech: true
+    description: "Object-relational mappers (Hibernate, SQLAlchemy, Prisma, etc.)"
+
+  ai:
+    is_component: false
+    is_primary_tech: true
+    description: "AI libraries and frameworks (LangChain, PyTorch, PydanticAI, etc.)"
+
+  # Development Tools - NOT primary tech
+  ide:
+    is_component: false
+    is_primary_tech: false
+    description: "Integrated development environments (Delphi, Visual Studio, PowerBuilder, etc.)"
+
+  library:
+    is_component: false
+    is_primary_tech: false
+    description: "Utility libraries (JSON processing, validation, cryptography, etc.)"
 
   api:
     is_component: false
+    is_primary_tech: false
     description: "API protocols and specifications (GraphQL, REST, gRPC, etc.)"
   
   cicd:
     is_component: false
+    is_primary_tech: false
     description: "CI/CD tools (GitHub Actions, Jenkins, CircleCI, etc.)"
   
   vcs:
     is_component: false
+    is_primary_tech: false
     description: "Version control systems (Git, SVN, Mercurial, etc.)"
-  
-  language:
-    is_component: false
-    description: "Programming languages (Python, JavaScript, etc.)"
-  
-  runtime:
-    is_component: false
-    description: "Runtime environments (Node.js runtime, Python runtime, etc.)"
   
   tool:
     is_component: false
+    is_primary_tech: false
     description: "General development tools"
   
   dbmigration:
     is_component: false
+    is_primary_tech: false
     description: "Database migration tools (Flyway, Liquibase, etc.)"
   
   codequality:
     is_component: false
+    is_primary_tech: false
     description: "Code quality and static analysis tools (ESLint, Prettier, Sonarlint, RuboCop, etc.)"
   
   validation:
     is_component: false
+    is_primary_tech: false
     description: "Validation libraries"
   
   test:
     is_component: false
+    is_primary_tech: false
     description: "Testing frameworks (Jest, Pytest, JUnit, Mocha, etc.)"
-  
-  orm:
-    is_component: false
-    description: "Object-relational mappers (SQLAlchemy, Prisma, etc.)"
   
   ui:
     is_component: false
-    description: "UI components and frameworks (MUI, shadcn, Qt, MFC)"
+    is_primary_tech: false
+    description: "UI component libraries (MUI, shadcn, Radix, Ant Design, etc.)"
   
   iac:
     is_component: false
+    is_primary_tech: false
     description: "Infrastructure as Code tools (Terraform, Pulumi, etc.)"
   
   build:
     is_component: false
-    description: "Build tools (Maven, Gradle, etc.)"
+    is_primary_tech: false
+    description: "Build tools (Maven, Gradle, Webpack, Vite, etc.)"
   
   logging:
     is_component: false
+    is_primary_tech: false
     description: "Logging libraries (Log4j, Logback, SLF4J, etc.)"
-  
-  appserver:
-    is_component: true
-    description: "Application servers (JBoss, Tomcat, WebLogic, etc.)"
   
   healthcare:
     is_component: false
+    is_primary_tech: false
     description: "Healthcare standards and systems (FHIR, HL7, DICOM, etc.)"
   
   platform:
     is_component: false
-    description: "Low-code platforms, operating systems (Uniface, Windows, Linux)"
+    is_primary_tech: false
+    description: "Low-code platforms (Uniface, Windows, Linux)"
 
   # External/Unmapped Technologies
   unmapped:
     is_component: false
+    is_primary_tech: false
     description: "Technologies from external sources not in official taxonomy (naming: unmapped_<tech>)"
 
   # In-house/Proprietary Technologies
   proprietary:
     is_component: false
+    is_primary_tech: false
     description: "In-house/internal technologies (naming: prop_<name> or prop_<org>_<name>)"

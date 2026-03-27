@@ -41,7 +41,16 @@ func ShouldAddPrimaryTech(rule types.Rule) bool {
 		return *rule.IsPrimaryTech
 	}
 
-	// Priority 2: Use current logic - if component is created, add primary tech
+	// Priority 2: Check categories configuration from categories.yaml
+	if categoriesConfig != nil {
+		if typeDef, exists := categoriesConfig.Categories[rule.Type]; exists {
+			if typeDef.IsPrimaryTech != nil {
+				return *typeDef.IsPrimaryTech
+			}
+		}
+	}
+
+	// Priority 3: Fall back to is_component (legacy behaviour)
 	return ShouldCreateComponent(rule)
 }
 
