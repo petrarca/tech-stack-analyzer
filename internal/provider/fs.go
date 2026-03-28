@@ -40,6 +40,12 @@ func (p *FSProvider) ListDir(path string) ([]types.File, error) {
 		fileType := "file"
 		if entry.IsDir() {
 			fileType = "dir"
+		} else if entry.Type()&os.ModeSymlink != 0 {
+			// Symlink: follow it to determine if target is a directory.
+			// os.Stat follows symlinks, unlike entry.IsDir() which does not.
+			if target, err := os.Stat(filepath.Join(fullPath, entry.Name())); err == nil && target.IsDir() {
+				fileType = "dir"
+			}
 		}
 
 		files = append(files, types.File{
