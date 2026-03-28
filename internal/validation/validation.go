@@ -2,6 +2,7 @@ package validation
 
 import (
 	"embed"
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -25,6 +26,16 @@ func (e ValidationError) Error() string {
 		return fmt.Sprintf("validation failed: %s", e.Errors[0])
 	}
 	return fmt.Sprintf("validation failed: %s", strings.Join(e.Errors, "; "))
+}
+
+// ValidateJSONBytes validates raw JSON bytes against an embedded JSON schema.
+// Prefer this over ValidateJSON when you have raw bytes — avoids double-parsing.
+func ValidateJSONBytes(schemaName string, data []byte) error {
+	var parsed interface{}
+	if err := json.Unmarshal(data, &parsed); err != nil {
+		return fmt.Errorf("failed to parse JSON: %w", err)
+	}
+	return ValidateJSON(schemaName, parsed)
 }
 
 // ValidateJSON validates a data structure against an embedded JSON schema

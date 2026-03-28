@@ -218,6 +218,5 @@
             }
         }
     },
-    "additionalProperties": false,
-    "maxProperties": 11
+    "additionalProperties": false
 }
