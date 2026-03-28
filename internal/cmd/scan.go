@@ -125,6 +125,12 @@ func runScan(cmd *cobra.Command, args []string) {
 	logger := configureLogging(cmd)
 	scanConfig = loadAndMergeScanConfig(logger)
 
+	// If no CLI paths provided, use paths from config file
+	if len(args) == 0 && scanConfig != nil && len(scanConfig.Paths) > 0 {
+		args = scanConfig.Paths
+		logger.Debug("Using paths from config file", "paths", args)
+	}
+
 	if len(args) > 1 {
 		runMultiPathScan(args, cmd, logger)
 	} else {

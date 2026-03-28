@@ -34,6 +34,17 @@
                 }
             ]
         },
+        "paths": {
+            "type": "array",
+            "description": "Paths to scan. Used as fallback when no CLI positional arguments are provided. Supports single or multiple paths (scanned as a unified project).",
+            "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1024
+            },
+            "minItems": 1,
+            "maxItems": 500
+        },
         "exclude": {
             "type": "array",
             "description": "Files and directories to exclude from scanning (supports glob patterns)",
@@ -101,6 +112,11 @@
                     "type": "string",
                     "pattern": "^$|^(tech|techs|languages|licenses|dependencies|git|all)(,(tech|techs|languages|licenses|dependencies|git|all))*$",
                     "description": "Aggregate fields (comma-separated list: tech,techs,languages,licenses,dependencies,git,all)"
+                },
+                "also_aggregate": {
+                    "type": "string",
+                    "pattern": "^$|^(tech|techs|languages|licenses|dependencies|git|all)(,(tech|techs|languages|licenses|dependencies|git|all))*$",
+                    "description": "Also produce an aggregate output alongside the full output. Suffix -agg is added to the output filename. (matches --also-aggregate flag)"
                 },
                 "verbose": {
                     "type": "boolean",
@@ -203,5 +219,5 @@
         }
     },
     "additionalProperties": false,
-    "maxProperties": 11
+    "maxProperties": 12
 }
