@@ -125,9 +125,9 @@ func runScan(cmd *cobra.Command, args []string) {
 	logger := configureLogging(cmd)
 	scanConfig = loadAndMergeScanConfig(logger)
 
-	// If no CLI paths provided, use paths from config file
-	if len(args) == 0 && scanConfig != nil && len(scanConfig.Paths) > 0 {
-		args = scanConfig.Paths
+	// If no CLI paths provided, use paths from config file (scan.paths)
+	if len(args) == 0 && scanConfig != nil && len(scanConfig.Scan.Paths) > 0 {
+		args = scanConfig.Scan.Paths
 		logger.Debug("Using paths from config file", "paths", args)
 	}
 

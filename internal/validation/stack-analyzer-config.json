@@ -34,17 +34,6 @@
                 }
             ]
         },
-        "paths": {
-            "type": "array",
-            "description": "Paths to scan. Used as fallback when no CLI positional arguments are provided. Supports single or multiple paths (scanned as a unified project).",
-            "items": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 1024
-            },
-            "minItems": 1,
-            "maxItems": 500
-        },
         "exclude": {
             "type": "array",
             "description": "Files and directories to exclude from scanning (supports glob patterns)",
@@ -107,6 +96,17 @@
                 "pretty": {
                     "type": "boolean",
                     "description": "Pretty print JSON output (matches --pretty flag)"
+                },
+                "paths": {
+                    "type": "array",
+                    "description": "Paths to scan. Used as fallback when no CLI positional arguments are provided. Supports single or multiple paths (scanned as a unified project). Environment variables (e.g. ${SOURCES_ROOT}) are expanded after parsing.",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 1024
+                    },
+                    "minItems": 1,
+                    "maxItems": 500
                 },
                 "aggregate": {
                     "type": "string",
@@ -219,5 +219,5 @@
         }
     },
     "additionalProperties": false,
-    "maxProperties": 12
+    "maxProperties": 11
 }

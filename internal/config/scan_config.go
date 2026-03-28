@@ -15,10 +15,11 @@ import (
 // This is the single source of truth for all option fields
 type ScanOptions struct {
 	// Output settings
-	OutputFile    string `yaml:"output_file,omitempty" json:"output_file,omitempty" default:"stack-analysis.json"`
-	PrettyPrint   bool   `yaml:"pretty,omitempty" json:"pretty,omitempty" default:"true"`
-	Aggregate     string `yaml:"aggregate,omitempty" json:"aggregate,omitempty" default:""`
-	AlsoAggregate string `yaml:"also_aggregate,omitempty" json:"also_aggregate,omitempty" default:""`
+	OutputFile    string   `yaml:"output_file,omitempty" json:"output_file,omitempty" default:"stack-analysis.json"`
+	PrettyPrint   bool     `yaml:"pretty,omitempty" json:"pretty,omitempty" default:"true"`
+	Paths         []string `yaml:"paths,omitempty" json:"paths,omitempty"`
+	Aggregate     string   `yaml:"aggregate,omitempty" json:"aggregate,omitempty" default:""`
+	AlsoAggregate string   `yaml:"also_aggregate,omitempty" json:"also_aggregate,omitempty" default:""`
 
 	// Scan behavior
 	ExcludePatterns          []string `yaml:"exclude_patterns,omitempty" json:"exclude_patterns,omitempty"`
@@ -53,12 +54,6 @@ type ScanConfigFile struct {
 
 	// Root-level additional technologies (consistent with .stack-analyzer.yml)
 	Techs []ConfigTech `yaml:"techs,omitempty" json:"techs,omitempty"`
-
-	// Paths to scan. Used when no CLI positional arguments are provided.
-	// Supports single path or multiple paths (scanned as a unified project).
-	// Environment variables like ${SOURCES_ROOT} are NOT expanded by the scanner —
-	// the caller must expand them before passing to the scanner.
-	Paths []string `yaml:"paths,omitempty" json:"paths,omitempty"`
 
 	// Optional named subsystem groups for subsystem_stats rollup.
 	// Keys are group names (e.g. "core-platform"), values define paths and description.
@@ -136,8 +131,8 @@ func loadScanConfigFromJSON(jsonStr string) (*ScanConfigFile, error) {
 
 // expandEnvVars expands environment variables in config fields that support them.
 func (c *ScanConfigFile) expandEnvVars() {
-	for i, p := range c.Paths {
-		c.Paths[i] = os.ExpandEnv(p)
+	for i, p := range c.Scan.Paths {
+		c.Scan.Paths[i] = os.ExpandEnv(p)
 	}
 }
 
