@@ -20,6 +20,7 @@ type Settings struct {
 
 	// Scan behavior
 	ExcludePatterns          []string
+	Quiet                    bool
 	Verbose                  bool
 	Debug                    bool
 	TraceTimings             bool

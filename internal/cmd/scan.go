@@ -63,6 +63,7 @@ func init() {
 	scanCmd.Flags().StringVarP(&settings.OutputFile, "output", "o", outputFile, "Output file path (default: stack-analysis.json)")
 	scanCmd.Flags().StringVar(&settings.Aggregate, "aggregate", aggregate, "Aggregate fields: tech,techs,languages,licenses,dependencies,git,all")
 	scanCmd.Flags().BoolVar(&settings.PrettyPrint, "pretty", prettyPrint, "Pretty print JSON output")
+	scanCmd.Flags().BoolVarP(&settings.Quiet, "quiet", "q", false, "Suppress all progress output")
 	scanCmd.Flags().BoolVarP(&settings.Verbose, "verbose", "v", verbose, "Show progress with simple output")
 	scanCmd.Flags().BoolVarP(&settings.Debug, "debug", "d", debug, "Show progress with tree structure (cannot be used with --verbose)")
 	scanCmd.Flags().BoolVar(&settings.TraceTimings, "trace-timings", traceTimings, "Show timing information for each directory (requires --verbose or --debug)")
@@ -172,9 +173,11 @@ func runMultiPathScan(args []string, cmd *cobra.Command, logger *slog.Logger) {
 		rootID = gitpkg.GenerateRootIDFromMultiPaths(commonParent, relPaths)
 	}
 
-	fmt.Fprintf(os.Stderr, "Scanning %d paths under: %s\n", len(absPaths), commonParent)
-	for _, p := range absPaths {
-		fmt.Fprintf(os.Stderr, "  - %s\n", p)
+	if !settings.Quiet {
+		fmt.Fprintf(os.Stderr, "Scanning %d paths under: %s\n", len(absPaths), commonParent)
+		for _, p := range absPaths {
+			fmt.Fprintf(os.Stderr, "  - %s\n", p)
+		}
 	}
 
 	logger.Debug("Multi-path scan",
@@ -188,6 +191,7 @@ func runMultiPathScan(args []string, cmd *cobra.Command, logger *slog.Logger) {
 	s, err := scanner.NewScannerWithOptionsAndLogger(
 		commonParent,
 		settings.ExcludePatterns,
+		settings.Quiet,
 		settings.Verbose,
 		settings.Debug,
 		settings.TraceTimings,
@@ -201,7 +205,6 @@ func runMultiPathScan(args []string, cmd *cobra.Command, logger *slog.Logger) {
 		logger.Error("Failed to create scanner", "error", err)
 		os.Exit(1)
 	}
-
 	s.SetSubsystemDepth(settings.SubsystemDepth)
 	s.SetSubsystemGroups(settings.SubsystemGroups)
 	s.SetIncludePaths(relPaths)

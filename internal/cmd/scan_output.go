@@ -41,7 +41,9 @@ func generateAndWriteOutput(payload interface{}, logger *slog.Logger) {
 				fmt.Fprintf(os.Stderr, "Failed to write aggregate output file: %v\n", err)
 				os.Exit(1)
 			}
-			fmt.Fprintf(os.Stderr, "Aggregate results written to %s\n", aggFile)
+			if !settings.Quiet {
+				fmt.Fprintf(os.Stderr, "Aggregate results written to %s\n", aggFile)
+			}
 		} else {
 			// stdout mode — two JSON blobs cannot be written to stdout.
 			logger.Debug("Skipping aggregate output: primary output is stdout")

@@ -60,7 +60,9 @@ func OutputToFile(o Outputter, format string, outputFile string) {
 		if err != nil {
 			log.Fatalf("Failed to write output file: %v", err)
 		}
-		fmt.Fprintf(os.Stderr, "Results written to %s\n", outputFile)
+		if !settings.Quiet {
+			fmt.Fprintf(os.Stderr, "Results written to %s\n", outputFile)
+		}
 	} else {
 		fmt.Print(string(data))
 	}

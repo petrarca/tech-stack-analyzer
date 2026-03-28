@@ -10,6 +10,7 @@ import (
 	"log/slog"
 
 	"github.com/bmatcuk/doublestar/v4"
+	"github.com/mattn/go-isatty"
 	"github.com/petrarca/tech-stack-analyzer/internal/codestats"
 	"github.com/petrarca/tech-stack-analyzer/internal/config"
 	"github.com/petrarca/tech-stack-analyzer/internal/git"
@@ -83,16 +84,16 @@ func NewScannerWithExcludes(path string, excludePatterns []string, verbose bool,
 
 // NewScannerWithOptions creates a new scanner with all options including code stats
 func NewScannerWithOptions(path string, excludePatterns []string, verbose bool, useTreeView bool, traceTimings bool, traceRules bool, codeStats CodeStatsAnalyzer) (*Scanner, error) {
-	return NewScannerWithOptionsAndLogger(path, excludePatterns, verbose, useTreeView, traceTimings, traceRules, codeStats, nil, "", nil)
+	return NewScannerWithOptionsAndLogger(path, excludePatterns, false, verbose, useTreeView, traceTimings, traceRules, codeStats, nil, "", nil)
 }
 
 // NewScannerWithOptionsAndRootID creates a new scanner with root ID override
 func NewScannerWithOptionsAndRootID(path string, excludePatterns []string, verbose bool, useTreeView bool, traceTimings bool, traceRules bool, codeStats CodeStatsAnalyzer, rootID string) (*Scanner, error) {
-	return NewScannerWithOptionsAndLogger(path, excludePatterns, verbose, useTreeView, traceTimings, traceRules, codeStats, nil, rootID, nil)
+	return NewScannerWithOptionsAndLogger(path, excludePatterns, false, verbose, useTreeView, traceTimings, traceRules, codeStats, nil, rootID, nil)
 }
 
 // NewScannerWithOptionsAndLogger creates a new scanner with all options including logger
-func NewScannerWithOptionsAndLogger(path string, excludePatterns []string, verbose bool, useTreeView bool, traceTimings bool, traceRules bool, codeStats CodeStatsAnalyzer, logger *slog.Logger, rootID string, mergedConfig *config.ScanConfig) (*Scanner, error) {
+func NewScannerWithOptionsAndLogger(path string, excludePatterns []string, quiet bool, verbose bool, useTreeView bool, traceTimings bool, traceRules bool, codeStats CodeStatsAnalyzer, logger *slog.Logger, rootID string, mergedConfig *config.ScanConfig) (*Scanner, error) {
 	// Create provider for the target path
 	tInit := time.Now()
 	provider := provider.NewFSProvider(path)
@@ -108,14 +109,16 @@ func NewScannerWithOptionsAndLogger(path string, excludePatterns []string, verbo
 
 	// Create progress reporter
 	var prog *progress.Progress
-	if verbose || useTreeView {
-		if useTreeView {
-			prog = progress.New(true, progress.NewTreeHandler(os.Stderr))
-		} else {
-			prog = progress.New(true, progress.NewSimpleHandler(os.Stderr))
-		}
-	} else {
+	switch {
+	case quiet:
 		prog = progress.New(false, progress.NewNullHandler())
+	case useTreeView:
+		prog = progress.New(true, progress.NewTreeHandler(os.Stderr))
+	case verbose:
+		prog = progress.New(true, progress.NewSimpleHandler(os.Stderr))
+	default:
+		isTTY := isatty.IsTerminal(os.Stderr.Fd()) || isatty.IsCygwinTerminal(os.Stderr.Fd())
+		prog = progress.New(true, progress.NewSummaryHandler(os.Stderr, isTTY))
 	}
 
 	// Initialize stack-based gitignore loader
@@ -177,6 +180,7 @@ func NewScannerWithSettings(path string, settings *config.Settings, mergedConfig
 	scanner, err := NewScannerWithOptionsAndLogger(
 		path,
 		settings.ExcludePatterns,
+		settings.Quiet,
 		settings.Verbose,
 		false, // useTreeView - not in settings
 		settings.TraceTimings,

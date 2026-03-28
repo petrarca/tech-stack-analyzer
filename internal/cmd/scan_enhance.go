@@ -36,6 +36,11 @@ func setupScanSettings(logger *slog.Logger) {
 		settings.OutputFile = ""
 	}
 
+	if settings.Quiet && (settings.Verbose || settings.Debug) {
+		logger.Error("Cannot use --quiet with --verbose or --debug.")
+		os.Exit(1)
+	}
+
 	if settings.Verbose && settings.Debug {
 		logger.Error("Cannot use --verbose and --debug together. Choose one.")
 		os.Exit(1)
@@ -95,14 +100,16 @@ func runScanner(absPath string, isFile bool, mergedConfig *config.ScanConfig, lo
 		scannerPath = filepath.Dir(absPath)
 	}
 
-	if isFile {
-		fmt.Fprintf(os.Stderr, "Scanning file: %s\n", absPath)
-	} else {
-		fmt.Fprintf(os.Stderr, "Scanning: %s\n", scannerPath)
-	}
+	if !settings.Quiet {
+		if isFile {
+			fmt.Fprintf(os.Stderr, "Scanning file: %s\n", absPath)
+		} else {
+			fmt.Fprintf(os.Stderr, "Scanning: %s\n", scannerPath)
+		}
 
-	if len(settings.FilterRules) > 0 {
-		fmt.Fprintf(os.Stderr, "Active rules: %s\n", strings.Join(settings.FilterRules, ", "))
+		if len(settings.FilterRules) > 0 {
+			fmt.Fprintf(os.Stderr, "Active rules: %s\n", strings.Join(settings.FilterRules, ", "))
+		}
 	}
 
 	logger.Debug("Initializing scanner",
@@ -112,7 +119,7 @@ func runScanner(absPath string, isFile bool, mergedConfig *config.ScanConfig, lo
 
 	codeStatsAnalyzer := buildCodeStatsAnalyzer(settings)
 
-	s, err := scanner.NewScannerWithOptionsAndLogger(scannerPath, settings.ExcludePatterns, settings.Verbose, settings.Debug, settings.TraceTimings, settings.TraceRules, codeStatsAnalyzer, logger, settings.RootID, mergedConfig)
+	s, err := scanner.NewScannerWithOptionsAndLogger(scannerPath, settings.ExcludePatterns, settings.Quiet, settings.Verbose, settings.Debug, settings.TraceTimings, settings.TraceRules, codeStatsAnalyzer, logger, settings.RootID, mergedConfig)
 	if err != nil {
 		logger.Error("Failed to create scanner", "error", err)
 		os.Exit(1)

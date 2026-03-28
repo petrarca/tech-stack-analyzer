@@ -22,6 +22,7 @@ stack-analyzer scan [path] [flags]
 - `--component-stats-depth N` - Include `code_stats` on components up to depth N in output (default: 0 = none)
 - `--subsystem-depth N` - Produce `subsystem_stats[]` rolled up per depth-N path prefix (default: 0 = none)
 - `--pretty` - Pretty print JSON output (default: true)
+- `--quiet, -q` - Suppress all progress output (default: false)
 - `--verbose, -v` - Show detailed progress information on stderr (default: false)
 - `--log-level` - Log level: trace, debug, error, fatal (default: error)
 - `--log-format` - Log format: text or json (default: text)
@@ -275,41 +276,36 @@ Key points:
 
 The analyzer automatically detects git repositories at both root and component levels, enabling tracking of multiple repositories within a single scan. Each component shows its own git information (branch, commit, dirty status, remote URL), making it ideal for monorepos, workspace scans, and CI/CD pipelines where different sub-projects may be in different git states.
 
-## Verbose Mode
+## Progress Output
 
-Show detailed progress information during scanning with the `--verbose` or `-v` flag:
+By default the scanner shows a single updating progress line on stderr with a spinner, file/directory/component counts, and elapsed time. When the scan completes it resolves to a one-line summary:
+
+```
+  ✓  852 files, 195 dirs, 4 components  (3s)
+```
+
+Progress is suppressed automatically when stderr is not a TTY (piped output).
+
+**Flags:**
+- `--quiet, -q` — suppress all progress output
+- `--verbose, -v` — show per-directory and per-component events (detailed)
+- `--debug, -d` — show tree-structured output
 
 ```bash
-# Enable verbose mode
-./bin/stack-analyzer scan --verbose /path/to/project
-./bin/stack-analyzer scan -v /path/to/project
+# Default (summary progress line)
+./bin/stack-analyzer scan /path/to/project
 
-# Combine with other flags
-./bin/stack-analyzer scan -v --exclude node_modules --output results.json /path
+# Quiet (no output to stderr)
+./bin/stack-analyzer scan --quiet --output results.json /path
+
+# Verbose (per-event detail)
+./bin/stack-analyzer scan --verbose /path/to/project
 
 # Environment variable
 STACK_ANALYZER_VERBOSE=true ./bin/stack-analyzer scan /path
 ```
 
-**Verbose Output Example:**
-```
-[SCAN] Starting: /path/to/project
-[DIR]  Entering: /path/to/project
-[COMP] Detected: backend (nodejs) at /path/to/project/backend
-[DIR]  Entering: /path/to/project/backend/src
-[SKIP] Excluding: /path/to/project/node_modules (excluded)
-[COMP] Detected: frontend (nodejs) at /path/to/project/frontend
-[DIR]  Entering: /path/to/project/frontend/src
-[SCAN] Completed: 3247 files, 412 directories in 2.3s
-```
-
-**Event Types:**
-- `[SCAN]` - Scan start and completion with statistics
-- `[DIR]` - Directory traversal
-- `[COMP]` - Component detection (projects, services)
-- `[SKIP]` - Excluded directories (node_modules, .git, etc.)
-
-Verbose output is sent to **stderr**, keeping it separate from JSON data output. This allows piping JSON to tools while still seeing progress.
+Progress output is always sent to **stderr**, keeping it separate from JSON output. This allows piping JSON to tools while still seeing progress.
 
 ## Component Classification
 
