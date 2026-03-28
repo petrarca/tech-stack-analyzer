@@ -108,9 +108,10 @@ func TestValidateJSON_ValidConfig(t *testing.T) {
 			map[string]interface{}{"tech": "postgresql"},
 		},
 		"scan": map[string]interface{}{
-			"output_file": "output.json",
-			"pretty":      true,
-			"aggregate":   "tech,dependencies",
+			"output_file":    "output.json",
+			"pretty":         true,
+			"aggregate":      "tech,dependencies",
+			"also_aggregate": "tech,techs,languages,dependencies,git,components",
 		},
 	}
 

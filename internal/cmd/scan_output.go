@@ -124,7 +124,7 @@ func generateOutput(payload interface{}, aggregateFields string, prettyPrint boo
 		}
 
 		if len(fields) == 1 && fields[0] == "all" {
-			fields = []string{"tech", "techs", "reason", "languages", "licenses", "dependencies", "git", "components"}
+			fields = []string{"tech", "techs", "languages", "licenses", "dependencies", "git", "components"}
 		}
 
 		validFields := map[string]bool{

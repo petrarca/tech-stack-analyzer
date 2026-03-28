@@ -110,12 +110,12 @@
                 },
                 "aggregate": {
                     "type": "string",
-                    "pattern": "^$|^(tech|techs|languages|licenses|dependencies|git|all)(,(tech|techs|languages|licenses|dependencies|git|all))*$",
-                    "description": "Aggregate fields (comma-separated list: tech,techs,languages,licenses,dependencies,git,all)"
+                    "pattern": "^$|^(tech|techs|languages|licenses|dependencies|git|components|all)(,(tech|techs|languages|licenses|dependencies|git|components|all))*$",
+                    "description": "Aggregate fields (comma-separated list: tech,techs,languages,licenses,dependencies,git,components,all)"
                 },
                 "also_aggregate": {
                     "type": "string",
-                    "pattern": "^$|^(tech|techs|languages|licenses|dependencies|git|all)(,(tech|techs|languages|licenses|dependencies|git|all))*$",
+                    "pattern": "^$|^(tech|techs|languages|licenses|dependencies|git|components|all)(,(tech|techs|languages|licenses|dependencies|git|components|all))*$",
                     "description": "Also produce an aggregate output alongside the full output. Suffix -agg is added to the output filename. (matches --also-aggregate flag)"
                 },
                 "verbose": {
