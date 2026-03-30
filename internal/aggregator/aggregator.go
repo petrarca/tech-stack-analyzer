@@ -55,10 +55,14 @@ func NewAggregator(fields []string) *Aggregator {
 func (a *Aggregator) Aggregate(payload *types.Payload) *AggregateOutput {
 	output := &AggregateOutput{}
 
-	// Include metadata from the root payload and update format
-	output.Metadata = payload.Metadata
+	// Copy metadata rather than mutating the original payload.
+	// Aggregate() must be safe to call without side-effects on its input.
 	if meta, ok := payload.Metadata.(*metadata.ScanMetadata); ok {
-		meta.SetFormat("aggregated")
+		cloned := *meta
+		cloned.Format = "aggregated"
+		output.Metadata = &cloned
+	} else {
+		output.Metadata = payload.Metadata
 	}
 
 	if a.fields["git"] {
