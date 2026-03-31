@@ -14,6 +14,3 @@ dependencies:
   - type: nuget
     name: CommunityToolkit.Maui
     example: CommunityToolkit.Maui
-  - type: nuget
-    name: CommunityToolkit.Mvvm
-    example: CommunityToolkit.Mvvm
