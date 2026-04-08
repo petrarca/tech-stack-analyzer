@@ -7,6 +7,7 @@ import (
 	licensenormalizer "github.com/petrarca/tech-stack-analyzer/internal/license"
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/components"
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/parsers"
+	"github.com/petrarca/tech-stack-analyzer/internal/scanner/providers"
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
 
@@ -224,4 +225,14 @@ func (d *Detector) extractConanLicense(content string) string {
 
 func init() {
 	components.Register(&Detector{})
+
+	// Register vcxproj-ref provider for inter-component dependency resolution.
+	// Matches ProjectReference dependencies against msbuild_cpp project_name properties.
+	providers.Register(&providers.PackageProvider{
+		DependencyType:      "vcxproj-ref",
+		ExtractPackageNames: providers.SinglePropertyExtractor("msbuild_cpp", "project_name"),
+		MatchFunc: func(componentPkgName, dependencyName string) bool {
+			return strings.EqualFold(componentPkgName, dependencyName)
+		},
+	})
 }
