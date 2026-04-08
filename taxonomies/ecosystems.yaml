@@ -1,0 +1,153 @@
+ecosystems:
+    - name: JVM
+      description: Java Virtual Machine platform (Java, Kotlin, Scala, Groovy, Clojure)
+      componenttypes:
+        - maven
+        - gradle
+      techs:
+        - spring
+        - springboot
+        - quarkus
+        - hibernate
+        - java
+        - ktor
+      languages:
+        - Java
+        - Kotlin
+        - Scala
+        - Groovy
+        - Clojure
+    - name: .NET
+      description: Microsoft .NET platform (C#, VB.NET, F#) -- both Framework and modern .NET
+      componenttypes:
+        - dotnet
+      techs:
+        - dotnet
+        - dotnetcore
+        - aspnet
+        - entityframework
+        - wpf
+        - maui
+        - autofac
+        - csharp
+        - vbnet
+      languages:
+        - C#
+        - Visual Basic .NET
+        - F#
+    - name: Node.js
+      description: JavaScript/TypeScript server runtime and npm/pnpm/yarn ecosystem
+      componenttypes:
+        - nodejs
+        - nx
+      techs:
+        - nodejs
+        - express
+        - nestjs
+        - fastify
+        - honojs
+        - adonisjs
+        - electron
+      languages: []
+    - name: Python
+      description: CPython runtime and pip/poetry/uv ecosystem
+      componenttypes:
+        - python
+      techs:
+        - django
+        - fastapi
+        - flask
+        - python
+      languages:
+        - Python
+    - name: Go
+      description: Go toolchain and module system
+      componenttypes:
+        - golang
+      techs:
+        - golang
+      languages:
+        - Go
+    - name: Rust
+      description: Rust toolchain and Cargo ecosystem
+      componenttypes:
+        - cargo
+      techs: []
+      languages:
+        - Rust
+    - name: C/C++
+      description: Native C/C++ with CMake, Make, Conan, vcpkg build systems
+      componenttypes:
+        - cmake
+        - conan
+      techs:
+        - cplusplus
+        - c
+        - cmake
+        - mfc
+        - qt
+      languages:
+        - C++
+        - C
+    - name: Delphi
+      description: Embarcadero Delphi / Object Pascal (VCL, FMX)
+      componenttypes:
+        - delphi
+      techs:
+        - delphi
+        - vcl
+      languages:
+        - Pascal
+    - name: PHP
+      description: PHP runtime and Composer ecosystem
+      componenttypes:
+        - composer
+        - php
+      techs:
+        - laravel
+        - symfony
+        - yii2
+        - wordpress
+        - drupal
+      languages:
+        - PHP
+    - name: Ruby
+      description: Ruby runtime and Bundler/Gems ecosystem
+      componenttypes:
+        - ruby
+      techs:
+        - rails
+      languages:
+        - Ruby
+    - name: Swift
+      description: Apple Swift and Objective-C (SPM, CocoaPods, Xcode)
+      componenttypes:
+        - swift
+        - cocoapods
+      techs: []
+      languages:
+        - Swift
+        - Objective-C
+    - name: Dart
+      description: Dart runtime and Flutter / pub ecosystem
+      componenttypes:
+        - dart
+        - flutter
+      techs: []
+      languages:
+        - Dart
+    - name: Elixir
+      description: Elixir / Erlang BEAM VM (Mix, Hex)
+      componenttypes:
+        - mix
+      techs: []
+      languages:
+        - Elixir
+        - Erlang
+    - name: VB6
+      description: Visual Basic 6.0 (Classic VB, COM) -- no package manager, language-only detection
+      componenttypes: []
+      techs: []
+      languages:
+        - Visual Basic 6.0
+count: 14

@@ -121,6 +121,26 @@ type CategoriesConfig struct {
 	Categories map[string]CategoryDefinition `yaml:"categories" json:"categories"`
 }
 
+// EcosystemDefinition represents a technology ecosystem from ecosystems.yaml
+type EcosystemDefinition struct {
+	Name           string   `yaml:"name" json:"name"`
+	Description    string   `yaml:"description,omitempty" json:"description,omitempty"`
+	ComponentTypes []string `yaml:"component_types" json:"component_types"`
+	Techs          []string `yaml:"techs" json:"techs"`
+	Languages      []string `yaml:"languages" json:"languages"`
+}
+
+// EcosystemsConfig represents the ecosystems.yaml configuration file
+type EcosystemsConfig struct {
+	Ecosystems []EcosystemDefinition `yaml:"ecosystems" json:"ecosystems"`
+}
+
+// EcosystemEntry represents a detected ecosystem in the aggregated output
+type EcosystemEntry struct {
+	Ecosystem  string `json:"ecosystem"`
+	Components int    `json:"components"`
+}
+
 // Compile compiles a dependency pattern to regex for performance
 func (d *Dependency) Compile() (*CompiledDependency, error) {
 	pattern := d.Name

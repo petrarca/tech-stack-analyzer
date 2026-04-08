@@ -14,6 +14,9 @@ import (
 //go:embed categories.yaml
 var categoriesConfigData []byte
 
+//go:embed ecosystems.yaml
+var ecosystemsConfigData []byte
+
 // ScanConfig represents the .stack-analyzer.yml configuration file
 type ScanConfig struct {
 	Properties map[string]interface{} `yaml:"properties,omitempty"`
@@ -93,6 +96,16 @@ func LoadCategoriesConfig() (*types.CategoriesConfig, error) {
 	var config types.CategoriesConfig
 	if err := yaml.Unmarshal(categoriesConfigData, &config); err != nil {
 		return nil, fmt.Errorf("failed to parse categories.yaml: %w", err)
+	}
+
+	return &config, nil
+}
+
+// LoadEcosystemsConfig loads the ecosystem definitions from ecosystems.yaml
+func LoadEcosystemsConfig() (*types.EcosystemsConfig, error) {
+	var config types.EcosystemsConfig
+	if err := yaml.Unmarshal(ecosystemsConfigData, &config); err != nil {
+		return nil, fmt.Errorf("failed to parse ecosystems.yaml: %w", err)
 	}
 
 	return &config, nil

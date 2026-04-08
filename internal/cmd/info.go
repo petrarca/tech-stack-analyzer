@@ -17,4 +17,5 @@ func init() {
 	infoCmd.AddCommand(languagesCmd)
 	infoCmd.AddCommand(categoriesCmd)
 	infoCmd.AddCommand(techTaxonomyCmd)
+	infoCmd.AddCommand(ecosystemsCmd)
 }

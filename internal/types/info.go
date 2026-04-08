@@ -16,3 +16,12 @@ type CategoryInfo struct {
 	IsComponent bool   `json:"is_component"`
 	Description string `json:"description"`
 }
+
+// EcosystemInfo represents an ecosystem entry for the info command
+type EcosystemInfo struct {
+	Name           string   `json:"name"`
+	Description    string   `json:"description,omitempty"`
+	ComponentTypes []string `json:"component_types"`
+	Techs          []string `json:"techs"`
+	Languages      []string `json:"languages"`
+}

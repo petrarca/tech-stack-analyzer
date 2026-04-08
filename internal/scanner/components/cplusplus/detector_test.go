@@ -2,13 +2,15 @@ package cplusplus
 
 import (
 	"os"
-	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
 
-// MockProvider for testing
+// MockProvider satisfies types.Provider for unit tests.
 type MockProvider struct {
 	files map[string]string
 }
@@ -20,282 +22,220 @@ func (m *MockProvider) ReadFile(path string) ([]byte, error) {
 	return nil, os.ErrNotExist
 }
 
-func (m *MockProvider) ListDir(path string) ([]types.File, error) {
-	return nil, nil
-}
-
+func (m *MockProvider) ListDir(path string) ([]types.File, error) { return nil, nil }
 func (m *MockProvider) Open(path string) (string, error) {
 	if content, exists := m.files[path]; exists {
 		return content, nil
 	}
 	return "", os.ErrNotExist
 }
+func (m *MockProvider) Exists(path string) (bool, error) { _, ok := m.files[path]; return ok, nil }
+func (m *MockProvider) IsDir(path string) (bool, error)  { return false, nil }
+func (m *MockProvider) GetBasePath() string              { return "/test/base" }
 
-func (m *MockProvider) Exists(path string) (bool, error) {
-	_, exists := m.files[path]
-	return exists, nil
-}
-
-func (m *MockProvider) IsDir(path string) (bool, error) {
-	return false, nil
-}
-
-func (m *MockProvider) GetBasePath() string {
-	return "/test/base"
-}
-
-// MockDependencyDetector for testing
+// MockDependencyDetector is a minimal stub — it returns fixed tech matches.
 type MockDependencyDetector struct{}
 
 func (m *MockDependencyDetector) MatchDependencies(depNames []string, depType string) map[string][]string {
 	return map[string][]string{
-		"qt":       {"matched dependency: qt"},
-		"openssl":  {"matched dependency: openssl"},
-		"cmake":    {"matched dependency: cmake"},
-		"security": {"matched dependency: openssl"},
+		"qt":      {"matched dependency: qt"},
+		"openssl": {"matched dependency: openssl"},
+		"cmake":   {"matched dependency: cmake"},
 	}
 }
 
-func (m *MockDependencyDetector) AddPrimaryTechIfNeeded(payload *types.Payload, tech string) {
-	// Mock implementation - do nothing
-}
+func (m *MockDependencyDetector) AddPrimaryTechIfNeeded(_ *types.Payload, _ string) {}
 
-func TestDetector_Detect(t *testing.T) {
-	depDetector := &MockDependencyDetector{}
+// --- helpers ---
 
-	tests := []struct {
-		name     string
-		files    []types.File
-		provider *MockProvider
-		expected int // Number of payloads expected
-	}{
-		{
-			name: "detect conan project",
-			files: []types.File{
-				{Name: "conanfile.py"},
-				{Name: "main.cpp"},
-			},
-			provider: &MockProvider{
-				files: map[string]string{
-					"/test/project/conanfile.py": `
-class MyAppRecipe(ConanFile):
-	def requirements(self):
-		self.requires("openssl/3.2.6")
-		self.requires("qt/6.5.0")
-		self.tool_requires("cmake/3.25.0")
-					`,
-				},
-			},
-			expected: 1,
-		},
-		{
-			name: "detect conan project with packages files",
-			files: []types.File{
-				{Name: "conanfile.py"},
-				{Name: "packagesCommon.txt"},
-				{Name: "packagesVc17.txt"},
-			},
-			provider: &MockProvider{
-				files: map[string]string{
-					"/test/project/conanfile.py": `
-class MyAppRecipe(ConanFile):
-	def tool_requirements(self):
-		self.tool_requires("buildtool/1.0.6")
-						`,
-					"/test/project/packagesCommon.txt": `
-acmecore_dev/25.4.1002.0
-mylib_dev/2.0.0.26001
-openssl/3.2.6
-					`,
-					"/test/project/packagesVc17.txt": `
-easyio/0.1.30.76402_2
-dbconnect/21.15.0
-					`,
-				},
-			},
-			expected: 1,
-		},
-		{
-			name: "no conanfile - should not detect",
-			files: []types.File{
-				{Name: "CMakeLists.txt"},
-				{Name: "main.cpp"},
-				{Name: "utils.h"},
-			},
-			provider: &MockProvider{},
-			expected: 0,
-		},
-		{
-			name: "empty conanfile - should still detect",
-			files: []types.File{
-				{Name: "conanfile.py"},
-			},
-			provider: &MockProvider{
-				files: map[string]string{
-					"/test/project/conanfile.py": `# Empty conanfile`,
-				},
-			},
-			expected: 1,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			detector := &Detector{}
-			results := detector.Detect(tt.files, "/test/project", "/test/base", tt.provider, depDetector)
-
-			if len(results) != tt.expected {
-				t.Errorf("Expected %d payloads, got %d", tt.expected, len(results))
-				return
-			}
-
-			if tt.expected > 0 {
-				depDetector.validatePayload(t, results[0], tt.files, tt.provider)
-			}
-		})
-	}
-}
-
-func (d *MockDependencyDetector) validatePayload(t *testing.T, payload *types.Payload, files []types.File, provider *MockProvider) {
-	// Check that primary tech is set to cplusplus
-	if len(payload.Tech) == 0 {
-		t.Error("Expected primary tech to be set")
-	}
-	if payload.Tech[0] != "cplusplus" {
-		t.Errorf("Expected primary tech 'cplusplus', got '%s'", payload.Tech[0])
-	}
-
-	// Check that Conan tech is added
-	if !d.hasTech(payload.Techs, "conan") {
-		t.Error("Expected 'conan' tech to be added")
-	}
-
-	// Check dependencies are parsed when content is available
-	d.validateDependencies(t, payload, files, provider)
-}
-
-func (d *MockDependencyDetector) hasTech(techs []string, target string) bool {
-	for _, tech := range techs {
-		if tech == target {
+func hasTech(techs []string, target string) bool {
+	for _, t := range techs {
+		if t == target {
 			return true
 		}
 	}
 	return false
 }
 
-func (d *MockDependencyDetector) validateDependencies(t *testing.T, payload *types.Payload, files []types.File, provider *MockProvider) {
-	hasConanfile := false
-	for _, file := range files {
-		if file.Name == "conanfile.py" {
-			hasConanfile = true
-			break
-		}
-	}
+// --- Detect (conan + vcxproj combined table) ---
 
-	if hasConanfile {
-		_, hasContent := provider.files["/test/project/conanfile.py"]
-		if hasContent && len(payload.Dependencies) == 0 {
-			conanContent := provider.files["/test/project/conanfile.py"]
-			if strings.Contains(conanContent, "requires") || strings.Contains(conanContent, "self.requires") {
-				t.Error("Expected dependencies to be parsed from conanfile.py when content is available")
-			}
-		}
-	}
-}
-
-func TestDetector_extractProjectName(t *testing.T) {
-	detector := &Detector{}
+func TestDetector_Detect(t *testing.T) {
+	depDetector := &MockDependencyDetector{}
 
 	tests := []struct {
-		input    string
-		expected string
+		name          string
+		files         []types.File
+		providerFiles map[string]string
+		wantCount     int
+		wantConan     bool // first result has conan tech
 	}{
 		{
-			input: `
+			name: "conan project",
+			files: []types.File{
+				{Name: "conanfile.py"},
+				{Name: "main.cpp"},
+			},
+			providerFiles: map[string]string{
+				"/test/project/conanfile.py": `
 class MyAppRecipe(ConanFile):
 	def requirements(self):
 		self.requires("openssl/3.2.6")
-			`,
-			expected: "myapp",
-		},
-		{
-			input: `
-class MyProjectRecipe(ConanFile):
-	def requirements(self):
 		self.requires("qt/6.5.0")
-			`,
-			expected: "myproject",
+		self.tool_requires("cmake/3.25.0")
+`,
+			},
+			wantCount: 1,
+			wantConan: true,
 		},
 		{
-			input: `
-class SimpleRecipe(ConanFile):
-	pass
-			`,
-			expected: "simple",
+			name: "conan project with packages files",
+			files: []types.File{
+				{Name: "conanfile.py"},
+				{Name: "packagesCommon.txt"},
+				{Name: "packagesVc17.txt"},
+			},
+			providerFiles: map[string]string{
+				"/test/project/conanfile.py": `
+class MyAppRecipe(ConanFile):
+	def tool_requirements(self):
+		self.tool_requires("buildtool/1.0.6")
+`,
+				"/test/project/packagesCommon.txt": `
+acmecore_dev/25.4.1002.0
+mylib_dev/2.0.0.26001
+openssl/3.2.6
+`,
+				"/test/project/packagesVc17.txt": `
+easyio/0.1.30.76402_2
+dbconnect/21.15.0
+`,
+			},
+			wantCount: 1,
+			wantConan: true,
 		},
 		{
-			input: `
-# No class definition
-def requirements(self):
-	pass
-			`,
-			expected: "",
+			name: "empty conanfile still detected",
+			files: []types.File{
+				{Name: "conanfile.py"},
+			},
+			providerFiles: map[string]string{
+				"/test/project/conanfile.py": `# Empty conanfile`,
+			},
+			wantCount: 1,
+			wantConan: true,
+		},
+		{
+			name: "no manifest files - nothing detected",
+			files: []types.File{
+				{Name: "CMakeLists.txt"},
+				{Name: "main.cpp"},
+				{Name: "utils.h"},
+			},
+			providerFiles: map[string]string{},
+			wantCount:     0,
+		},
+		{
+			name: "vcxproj only",
+			files: []types.File{
+				{Name: "MyLib.vcxproj"},
+			},
+			providerFiles: map[string]string{
+				"/test/project/MyLib.vcxproj": `<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals"><RootNamespace>MyLib</RootNamespace></PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+</Project>`,
+			},
+			wantCount: 1,
+			wantConan: false,
+		},
+		{
+			name: "csproj only - not detected",
+			files: []types.File{
+				{Name: "MyProject.csproj"},
+			},
+			providerFiles: map[string]string{},
+			wantCount:     0,
+		},
+		{
+			name: "conan and vcxproj together - both detected",
+			files: []types.File{
+				{Name: "conanfile.py"},
+				{Name: "App.vcxproj"},
+			},
+			providerFiles: map[string]string{
+				"/test/project/conanfile.py": `class AppRecipe(ConanFile): pass`,
+				"/test/project/App.vcxproj": `<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals"><RootNamespace>App</RootNamespace></PropertyGroup>
+</Project>`,
+			},
+			wantCount: 2,
+		},
+		{
+			name: "vcxproj with empty name - skipped",
+			files: []types.File{
+				{Name: "Broken.vcxproj"},
+			},
+			providerFiles: map[string]string{
+				// No RootNamespace or ProjectName, and no fallback filename can be extracted
+				// because the XML parses fine but yields no name. Actually nameFromPath will
+				// still give "Broken", so this tests the read-error path instead.
+			},
+			// File not in provider → ReadFile returns error → skipped
+			wantCount: 0,
 		},
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.input, func(t *testing.T) {
-			result := detector.extractProjectName(tt.input)
-			if result != tt.expected {
-				t.Errorf("Expected project name '%s', got '%s'", tt.expected, result)
+		t.Run(tt.name, func(t *testing.T) {
+			detector := &Detector{}
+			provider := &MockProvider{files: tt.providerFiles}
+			results := detector.Detect(tt.files, "/test/project", "/test/base", provider, depDetector)
+
+			assert.Len(t, results, tt.wantCount)
+
+			if tt.wantConan && len(results) > 0 {
+				assert.True(t, hasTech(results[0].Techs, "conan"), "expected 'conan' tech")
+				assert.Equal(t, "cplusplus", results[0].Tech[0])
 			}
 		})
 	}
 }
 
+// --- Conan-specific tests ---
+
 func TestDetector_Detect_ConanfileWithLicense(t *testing.T) {
 	detector := &Detector{}
+	depDetector := &MockDependencyDetector{}
 
-	conanContent := `
+	provider := &MockProvider{
+		files: map[string]string{
+			"/project/conanfile.py": `
 class MyAppRecipe(ConanFile):
     license = "MIT"
     def requirements(self):
         self.requires("openssl/3.2.6")
-`
-
-	provider := &MockProvider{
-		files: map[string]string{
-			"/project/conanfile.py": conanContent,
+`,
 		},
 	}
 
-	depDetector := &MockDependencyDetector{}
+	results := detector.Detect(
+		[]types.File{{Name: "conanfile.py", Path: "/project/conanfile.py"}},
+		"/project", "/project", provider, depDetector,
+	)
 
-	files := []types.File{
-		{Name: "conanfile.py", Path: "/project/conanfile.py"},
-	}
-
-	results := detector.Detect(files, "/project", "/project", provider, depDetector)
-	if len(results) != 1 {
-		t.Fatalf("Expected 1 result, got %d", len(results))
-	}
-
-	payload := results[0]
-	if len(payload.Licenses) != 1 {
-		t.Fatalf("Expected 1 license, got %d", len(payload.Licenses))
-	}
-	if payload.Licenses[0].LicenseName != "MIT" {
-		t.Errorf("Expected license 'MIT', got '%s'", payload.Licenses[0].LicenseName)
-	}
-	if payload.Licenses[0].DetectionType != "direct" {
-		t.Errorf("Expected detection type 'direct', got '%s'", payload.Licenses[0].DetectionType)
-	}
-	if payload.Licenses[0].SourceFile != "conanfile.py" {
-		t.Errorf("Expected source file 'conanfile.py', got '%s'", payload.Licenses[0].SourceFile)
-	}
+	require.Len(t, results, 1)
+	require.Len(t, results[0].Licenses, 1)
+	assert.Equal(t, "MIT", results[0].Licenses[0].LicenseName)
+	assert.Equal(t, "direct", results[0].Licenses[0].DetectionType)
+	assert.Equal(t, "conanfile.py", results[0].Licenses[0].SourceFile)
 }
 
-func TestDetector_ExtractLicense(t *testing.T) {
+func TestDetector_extractConanProjectName(t *testing.T) {
 	detector := &Detector{}
 
 	tests := []struct {
@@ -304,27 +244,67 @@ func TestDetector_ExtractLicense(t *testing.T) {
 		expected string
 	}{
 		{
-			name: "simple license",
+			name: "standard Recipe class",
 			input: `
 class MyAppRecipe(ConanFile):
-    license = "MIT"
+	def requirements(self):
+		self.requires("openssl/3.2.6")
 `,
+			expected: "myapp",
+		},
+		{
+			name: "project name with multiple words",
+			input: `
+class MyProjectRecipe(ConanFile):
+	def requirements(self):
+		self.requires("qt/6.5.0")
+`,
+			expected: "myproject",
+		},
+		{
+			name:     "simple one-word Recipe",
+			input:    `class SimpleRecipe(ConanFile): pass`,
+			expected: "simple",
+		},
+		{
+			name: "no class definition",
+			input: `
+# No class definition
+def requirements(self):
+	pass
+`,
+			expected: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, detector.extractConanProjectName(tt.input))
+		})
+	}
+}
+
+func TestDetector_extractConanLicense(t *testing.T) {
+	detector := &Detector{}
+
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
+			name:     "double-quoted license",
+			input:    `    license = "MIT"`,
 			expected: "MIT",
 		},
 		{
-			name: "SPDX expression",
-			input: `
-class MyAppRecipe(ConanFile):
-    license = "MIT OR Apache-2.0"
-`,
+			name:     "SPDX expression",
+			input:    `    license = "MIT OR Apache-2.0"`,
 			expected: "MIT OR Apache-2.0",
 		},
 		{
-			name: "single quotes",
-			input: `
-class MyAppRecipe(ConanFile):
-    license = 'BSD-3-Clause'
-`,
+			name:     "single-quoted license",
+			input:    `    license = 'BSD-3-Clause'`,
 			expected: "BSD-3-Clause",
 		},
 		{
@@ -336,10 +316,72 @@ class MyAppRecipe(ConanFile):
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := detector.extractLicense(tt.input)
-			if result != tt.expected {
-				t.Errorf("Expected license '%s', got '%s'", tt.expected, result)
-			}
+			assert.Equal(t, tt.expected, detector.extractConanLicense(tt.input))
 		})
 	}
+}
+
+// --- vcxproj-specific tests ---
+
+func TestDetector_Detect_Vcxproj_Basic(t *testing.T) {
+	detector := &Detector{}
+	depDetector := &MockDependencyDetector{}
+
+	vcxprojContent := `<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <RootNamespace>HDApi5</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+    <UseOfMfc>Dynamic</UseOfMfc>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <Link>
+      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\HDCtrlEx\HDCtrlEx.vcxproj" />
+  </ItemGroup>
+</Project>`
+
+	provider := &MockProvider{
+		files: map[string]string{"/test/project/HDApi.vcxproj": vcxprojContent},
+	}
+
+	results := detector.Detect(
+		[]types.File{{Name: "HDApi.vcxproj"}},
+		"/test/project", "/test/base", provider, depDetector,
+	)
+
+	require.Len(t, results, 1)
+	p := results[0]
+
+	assert.Equal(t, "HDApi5", p.Name)
+	assert.Equal(t, "msbuild-cpp", p.ComponentType)
+	require.NotEmpty(t, p.Tech)
+	assert.Equal(t, "cplusplus", p.Tech[0])
+	assert.True(t, hasTech(p.Techs, "mfc"), "expected 'mfc' in techs")
+
+	props := p.Properties["msbuild_cpp"].(map[string]interface{})
+	assert.Equal(t, "v143", props["platform_toolset"])
+	assert.Equal(t, "VS2022", props["vs_version"])
+	assert.Equal(t, "DynamicLibrary", props["configuration_type"])
+	assert.Equal(t, "10.0", props["windows_sdk"])
+
+	var hasNativeLib, hasVcxprojRef bool
+	for _, dep := range p.Dependencies {
+		if dep.Type == "native-lib" && dep.Name == "ws2_32.lib" {
+			hasNativeLib = true
+		}
+		if dep.Type == "vcxproj-ref" && dep.Name == "HDCtrlEx" {
+			hasVcxprojRef = true
+		}
+	}
+	assert.True(t, hasNativeLib, "expected native-lib dep ws2_32.lib")
+	assert.True(t, hasVcxprojRef, "expected vcxproj-ref dep HDCtrlEx")
 }

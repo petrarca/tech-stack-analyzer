@@ -96,6 +96,7 @@ const (
 	// C/C++ ecosystem
 	MetadataSourceConanfile   = "conanfile.txt"
 	MetadataSourceConanfilePy = "conanfile.py"
+	MetadataSourceVcxproj     = ".vcxproj"
 
 	// Delphi ecosystem
 	MetadataSourceDproj = ".dproj"

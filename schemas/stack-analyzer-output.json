@@ -545,6 +545,26 @@
                 "code_stats": {
                     "$ref": "#/definitions/code_stats"
                 },
+                "ecosystems": {
+                    "type": "array",
+                    "description": "Detected technology ecosystems (derived from component types, techs, and primary languages). Sorted by component count descending.",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "ecosystem": {
+                                "type": "string",
+                                "description": "Ecosystem name (e.g., 'JVM', '.NET', 'Node.js', 'C/C++', 'Delphi')"
+                            },
+                            "components": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "description": "Number of components belonging to this ecosystem"
+                            }
+                        },
+                        "required": ["ecosystem", "components"],
+                        "additionalProperties": false
+                    }
+                },
                 "properties": {
                     "type": "object",
                     "description": "Technology-specific properties extracted during scanning",
