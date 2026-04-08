@@ -57,6 +57,10 @@ func DepthPrefix(path string, depth int) string {
 	if path == "" || path == "/" || depth <= 0 {
 		return ""
 	}
+	// Normalize: ensure leading slash so split produces ["", "seg1", "seg2", ...]
+	if path[0] != '/' {
+		path = "/" + path
+	}
 	parts := strings.SplitN(path, "/", depth+2)
 	if len(parts) < depth+1 || parts[depth] == "" {
 		return ""
