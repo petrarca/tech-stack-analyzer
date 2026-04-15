@@ -27,11 +27,15 @@ func NewLicenseDetector() *LicenseDetector {
 // DetectLicensesInDirectory detects licenses from LICENSE files in a directory
 // Returns a list of detected licenses with metadata (confidence > 0.9)
 func (d *LicenseDetector) DetectLicensesInDirectory(dirPath string) []LicenseMatch {
-	// Create a filer for the directory
-	fs, err := filer.FromDirectory(dirPath)
+	// Wrap the directory filer in a safeFiler that skips binary and oversized files.
+	// The upstream go-license-detector matches filenames containing license keywords
+	// (e.g. "lgpl", "mit") and runs expensive Unicode normalization on the full content.
+	// Binary files with license-related names would cause effectively infinite CPU consumption.
+	raw, err := filer.FromDirectory(dirPath)
 	if err != nil {
 		return nil
 	}
+	fs := newSafeFiler(raw, dirPath)
 
 	// Detect licenses
 	matches, err := licensedb.Detect(fs)
