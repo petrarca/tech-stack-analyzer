@@ -12,7 +12,38 @@ import (
 	"github.com/petrarca/tech-stack-analyzer/internal/progress"
 )
 
-// loadPatternsFromGitignore loads patterns from a specific .gitignore file
+// Pattern represents a single parsed gitignore pattern with metadata.
+type Pattern struct {
+	Glob    string // The glob expression (without leading ! or trailing /)
+	Negate  bool   // True if this is a negation pattern (re-includes a previously excluded path)
+	DirOnly bool   // True if the original pattern had a trailing slash (matches directories only)
+}
+
+// ParsePatterns parses gitignore-style lines into structured Pattern values.
+func ParsePatterns(lines []string) []Pattern {
+	var patterns []Pattern
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		p := Pattern{}
+		if strings.HasPrefix(line, "!") {
+			p.Negate = true
+			line = line[1:]
+		}
+		if strings.HasSuffix(line, "/") {
+			p.DirOnly = true
+			line = strings.TrimSuffix(line, "/")
+		}
+		p.Glob = line
+		patterns = append(patterns, p)
+	}
+	return patterns
+}
+
+// loadPatternsFromGitignore loads patterns from a specific .gitignore file.
+// Returns raw non-empty, non-comment lines preserving negation (!) and trailing slash (/) syntax.
 func loadPatternsFromGitignore(gitignorePath string) ([]string, error) {
 	file, err := os.Open(gitignorePath)
 	if err != nil {
@@ -20,33 +51,19 @@ func loadPatternsFromGitignore(gitignorePath string) ([]string, error) {
 	}
 	defer file.Close()
 
-	var patterns []string
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
-
-		// Skip empty lines and comments
+	var lines []string
+	sc := bufio.NewScanner(file)
+	for sc.Scan() {
+		line := strings.TrimSpace(sc.Text())
 		if line == "" || strings.HasPrefix(line, "#") {
 			continue
 		}
-
-		// Remove trailing slashes for consistency (dir/ -> dir)
-		pattern := strings.TrimSuffix(line, "/")
-
-		// Skip negation patterns for now (they start with !)
-		// These are complex to handle properly in a glob matcher
-		if strings.HasPrefix(pattern, "!") {
-			continue
-		}
-
-		patterns = append(patterns, pattern)
+		lines = append(lines, line)
 	}
-
-	if err := scanner.Err(); err != nil {
+	if err := sc.Err(); err != nil {
 		return nil, fmt.Errorf("error reading .gitignore: %w", err)
 	}
-
-	return patterns, nil
+	return lines, nil
 }
 
 // gitignoreLogger provides common logging functionality for gitignore operations
@@ -77,8 +94,8 @@ type GitignoreStack struct {
 
 // PatternSet represents patterns from a single .gitignore file
 type PatternSet struct {
-	Directory string   // Directory where this .gitignore was found
-	Patterns  []string // Patterns from this .gitignore
+	Directory string    // Directory where this .gitignore was found
+	Patterns  []Pattern // Parsed patterns from this .gitignore
 }
 
 // NewGitignoreStack creates a new empty gitignore stack
@@ -88,17 +105,13 @@ func NewGitignoreStack() *GitignoreStack {
 	}
 }
 
-// Push adds patterns from a .gitignore file to the stack
-func (gs *GitignoreStack) Push(directory string, patterns []string) {
-	if len(patterns) == 0 {
-		return // Don't push empty pattern sets
+// Push parses raw gitignore lines and adds them to the stack.
+func (gs *GitignoreStack) Push(directory string, rawLines []string) {
+	parsed := ParsePatterns(rawLines)
+	if len(parsed) == 0 {
+		return
 	}
-
-	patternSet := &PatternSet{
-		Directory: directory,
-		Patterns:  patterns,
-	}
-	gs.stack = append(gs.stack, patternSet)
+	gs.stack = append(gs.stack, &PatternSet{Directory: directory, Patterns: parsed})
 }
 
 // Pop removes the top pattern set from the stack
@@ -108,33 +121,34 @@ func (gs *GitignoreStack) Pop() {
 	}
 }
 
-// GetAllPatterns returns all patterns from the entire stack (in order)
-func (gs *GitignoreStack) GetAllPatterns() []string {
-	var allPatterns []string
-	for _, patternSet := range gs.stack {
-		allPatterns = append(allPatterns, patternSet.Patterns...)
+// ShouldExclude checks if a path should be excluded based on the current stack.
+// Implements gitignore last-match-wins semantics: the last matching pattern
+// determines whether the path is excluded (positive match) or re-included (negation).
+// isDir should be true when checking a directory path.
+func (gs *GitignoreStack) ShouldExclude(name, relativePath string, isDir bool) bool {
+	excluded := false
+	for _, ps := range gs.stack {
+		for _, p := range ps.Patterns {
+			if p.DirOnly && !isDir {
+				continue
+			}
+			if !matchPattern(p.Glob, name, relativePath) {
+				continue
+			}
+			excluded = !p.Negate
+		}
 	}
-	return allPatterns
+	return excluded
 }
 
-// ShouldExclude checks if a file/directory should be excluded based on the current stack
-func (gs *GitignoreStack) ShouldExclude(name, relativePath string) bool {
-	patterns := gs.GetAllPatterns()
-
-	for _, pattern := range patterns {
-		// Try glob match against relative path
-		matched, err := doublestar.Match(pattern, relativePath)
-		if err == nil && matched {
-			return true
-		}
-
-		// Also try matching just the filename
-		matched, err = doublestar.Match(pattern, name)
-		if err == nil && matched {
-			return true
-		}
+// matchPattern checks whether a glob matches a name or relative path.
+func matchPattern(glob, name, relativePath string) bool {
+	if matched, err := doublestar.Match(glob, relativePath); err == nil && matched {
+		return true
 	}
-
+	if matched, err := doublestar.Match(glob, name); err == nil && matched {
+		return true
+	}
 	return false
 }
 
@@ -149,21 +163,6 @@ type StackBasedLoader struct {
 	logger   *slog.Logger
 	stack    *GitignoreStack
 	basePath string // Store base path for .git/info/exclude
-}
-
-// NewStackBasedLoader creates a new stack-based gitignore loader
-func NewStackBasedLoader() *StackBasedLoader {
-	return &StackBasedLoader{
-		stack: NewGitignoreStack(),
-	}
-}
-
-// NewStackBasedLoaderWithProgress creates a new stack-based gitignore loader with progress reporting
-func NewStackBasedLoaderWithProgress(prog *progress.Progress) *StackBasedLoader {
-	return &StackBasedLoader{
-		progress: prog,
-		stack:    NewGitignoreStack(),
-	}
 }
 
 // NewStackBasedLoaderWithLogger creates a new stack-based gitignore loader with logging
@@ -250,9 +249,10 @@ func (l *StackBasedLoader) PopGitignore() {
 	}
 }
 
-// ShouldExclude checks if a file/directory should be excluded based on current stack
-func (l *StackBasedLoader) ShouldExclude(name, relativePath string) bool {
-	return l.stack.ShouldExclude(name, relativePath)
+// ShouldExclude checks if a file/directory should be excluded based on current stack.
+// isDir should be true when checking a directory path.
+func (l *StackBasedLoader) ShouldExclude(name, relativePath string, isDir bool) bool {
+	return l.stack.ShouldExclude(name, relativePath, isDir)
 }
 
 // GetStack returns the current gitignore stack (for testing/debugging)
@@ -271,139 +271,10 @@ func (l *StackBasedLoader) loadGitInfoExclude() ([]string, error) {
 	return loadGitInfoExclude(gitDir)
 }
 
-// Loader handles loading ignore patterns from .gitignore files (legacy approach)
-type Loader struct {
-	progress *progress.Progress
-	logger   *slog.Logger
-}
-
-// NewGitignoreLoader creates a new gitignore loader
-func NewGitignoreLoader() *Loader {
-	return &Loader{}
-}
-
-// NewGitignoreLoaderWithProgress creates a new gitignore loader with progress reporting
-func NewGitignoreLoaderWithProgress(prog *progress.Progress) *Loader {
-	return &Loader{
-		progress: prog,
-	}
-}
-
-// NewGitignoreLoaderWithLogger creates a new gitignore loader with logging
-func NewGitignoreLoaderWithLogger(prog *progress.Progress, logger *slog.Logger) *Loader {
-	return &Loader{
-		progress: prog,
-		logger:   logger,
-	}
-}
-
-// LoadPatterns loads ignore patterns from .gitignore files recursively
-// Searches from the scan path down through all subdirectories
-// Skips .gitignore files in directories that are typically cache/temp directories
-func (l *Loader) LoadPatterns(scanPath string) ([]string, error) {
-	var allPatterns []string
-	var gitignoreFiles []string
-
-	// Find all .gitignore files recursively
-	err := filepath.Walk(scanPath, l.processGitignoreFile(&allPatterns, &gitignoreFiles))
-	if err != nil {
-		return nil, fmt.Errorf("error walking directory tree: %w", err)
-	}
-
-	// Report gitignore loading info through progress system (consistent across verbose/debug)
-	l.reportLoadingProgress(len(allPatterns), len(gitignoreFiles))
-
-	// Detailed debug logging
-	l.logLoadingDetails(gitignoreFiles, allPatterns)
-
-	// Deduplicate patterns
-	return l.deduplicatePatterns(allPatterns), nil
-}
-
-// processGitignoreFile returns a filepath.WalkFunc that processes .gitignore files
-func (l *Loader) processGitignoreFile(allPatterns *[]string, gitignoreFiles *[]string) filepath.WalkFunc {
-	return func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err // Skip if we can't access a path
-		}
-
-		// Only process .gitignore files
-		if info.Name() == ".gitignore" && !info.IsDir() {
-			if l.handleGitignoreFile(path, allPatterns, gitignoreFiles) {
-				return nil // File was processed successfully
-			}
-		}
-
-		return nil
-	}
-}
-
-// handleGitignoreFile processes a single .gitignore file and returns true if successful
-func (l *Loader) handleGitignoreFile(path string, allPatterns *[]string, gitignoreFiles *[]string) bool {
-	*gitignoreFiles = append(*gitignoreFiles, path)
-	patterns, err := loadPatternsFromGitignore(path)
-	if err != nil {
-		l.log().logError(path, err)
-		return false
-	}
-
-	l.log().logLoaded(path, patterns)
-	*allPatterns = append(*allPatterns, patterns...)
-	return true
-}
-
-// log returns a gitignoreLogger for this loader
-func (l *Loader) log() *gitignoreLogger {
-	return &gitignoreLogger{progress: l.progress, logger: l.logger}
-}
-
-// reportLoadingProgress reports loading progress through the progress system
-func (l *Loader) reportLoadingProgress(patternCount, fileCount int) {
-	if l.progress != nil {
-		if fileCount > 0 {
-			l.progress.Info(fmt.Sprintf("Loaded %d patterns from %d .gitignore files", patternCount, fileCount))
-		} else {
-			l.progress.Info("No .gitignore files found")
-		}
-	}
-}
-
-// logLoadingDetails provides detailed debug logging about the loading process
-func (l *Loader) logLoadingDetails(gitignoreFiles []string, allPatterns []string) {
-	if l.logger != nil {
-		l.logger.Debug("Gitignore loading complete:")
-		l.logger.Debug("  - Total .gitignore files processed", "count", len(gitignoreFiles))
-		for _, file := range gitignoreFiles {
-			l.logger.Debug("    - " + file)
-		}
-		l.logger.Debug("  - Total unique patterns after deduplication", "count", len(l.deduplicatePatterns(allPatterns)))
-	}
-}
-
-// LoadPatternsFromFile loads patterns from a specific .gitignore file path
-// Useful for testing or custom paths
-func (l *Loader) LoadPatternsFromFile(gitignorePath string) ([]string, error) {
+// LoadPatternsFromFile loads raw (non-empty, non-comment) lines from a .gitignore file.
+// The returned lines preserve negation (!) and trailing slash (/) syntax for use with ParsePatterns.
+func LoadPatternsFromFile(gitignorePath string) ([]string, error) {
 	return loadPatternsFromGitignore(gitignorePath)
-}
-
-// deduplicatePatterns removes duplicate patterns while preserving order
-func (l *Loader) deduplicatePatterns(patterns []string) []string {
-	// Return empty slice if no patterns
-	if len(patterns) == 0 {
-		return []string{}
-	}
-
-	seen := make(map[string]bool)
-	var result []string
-
-	for _, pattern := range patterns {
-		if !seen[pattern] {
-			seen[pattern] = true
-			result = append(result, pattern)
-		}
-	}
-
-	return result
 }
 
 // loadGitInfoExclude loads patterns from .git/info/exclude

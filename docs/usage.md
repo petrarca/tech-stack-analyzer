@@ -17,7 +17,7 @@ stack-analyzer scan [path] [flags]
 - `--aggregate` - Aggregate fields: `tech,techs,languages,licenses,dependencies,git,components,all` (use `all` for all aggregated fields). The `components` field produces a flat list of all components with `id`, `name`, `type`, `tech`, `techs`, `path`.
 - `--also-aggregate` - Produce both full and aggregate output in one scan pass. The aggregate file gets a `-agg` suffix (e.g. `output.json` → `output-agg.json`). Cannot be combined with `--aggregate`. Useful for large codebases where scanning twice would be too slow.
 - `--omit-fields` - Strip fields from the full output tree before writing (e.g. `reason,edges`). Applied recursively to all components. Useful to reduce file size when downstream consumers don't need certain fields.
-- `--exclude` - Additional patterns to exclude (combined with .gitignore; supports glob patterns like `**/__tests__/**`, `*.log`; can be specified multiple times)
+- `--exclude` - Additional patterns to exclude (combined with `.gitignore`; full gitignore semantics including `**` globs, `!` negation, trailing `/` for dir-only; can be specified multiple times)
 - `--no-code-stats` - Disable code statistics collection (enabled by default)
 - `--component-stats-depth N` - Include `code_stats` on components up to depth N in output (default: 0 = none)
 - `--subsystem-depth N` - Produce `subsystem_stats[]` rolled up per depth-N path prefix (default: 0 = none)
@@ -120,15 +120,26 @@ Common patterns that work out of the box:
 - **OS Files**: `.DS_Store`, `Thumbs.db`
 - **Cache/Temp**: `.cache`, `.tmp`, `*.log`
 
-### Override .gitignore
+### Exclude Patterns
 
-Use `--exclude` flags to add additional exclusions or override .gitignore patterns:
+Use `--exclude` flags to add additional exclusions. These support full gitignore semantics:
 ```bash
 # Add extra exclusions beyond .gitignore
 ./bin/stack-analyzer scan /path/to/project --exclude "build-cache" --exclude "*.tmp"
 
-# .gitignore patterns are still respected, these are additional
+# Dir-only pattern: exclude directory named "build", but not a file named "build"
+./bin/stack-analyzer scan /path/to/project --exclude "build/"
+
+# Negation: exclude vendor but re-include a specific subdirectory
+./bin/stack-analyzer scan /path/to/project --exclude "vendor/**" --exclude "!vendor/important/**"
+
+# Negation: re-include .NET directory (overrides dot-dir default exclusion)
+./bin/stack-analyzer scan /path/to/project --exclude "!.NET/**"
 ```
+
+All `--exclude` patterns, config `exclude:` patterns, and `.gitignore` files are evaluated
+together using **last-match-wins** semantics — the last matching pattern determines whether
+a path is excluded or included.
 
 ### Performance Benefits
 

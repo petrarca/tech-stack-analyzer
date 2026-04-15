@@ -15,13 +15,14 @@ properties:
   owner: "engineering@company.com"
 
 # Files and directories to exclude from scanning
-# These patterns are ADDED to .gitignore exclusions
-# Supports glob patterns (**, *, ?)
+# These patterns use full gitignore semantics (**, *, ?, negation, dir-only)
 exclude:
-  - "build-cache"      # Additional build cache not in .gitignore
-  - "*.tmp"            # Temporary files
-  - "**/__tests__/**"  # Test directories (if not in .gitignore)
-  - "**/*.test.js"     # Test files (if not in .gitignore)
+  - "build-cache"          # Exclude build cache directory
+  - "*.tmp"                # Exclude temporary files
+  - "**/__tests__/**"      # Exclude test directories
+  - "vendor/"              # Exclude vendor directory only (not files named "vendor")
+  - "!vendor/important/**" # Re-include important vendor subdirectory (negation)
+  - "!.NET/**"             # Re-include .NET directory (overrides dot-dir default exclusion)
 
 # Technologies to add to scan results (even if not auto-detected)
 techs:
@@ -44,11 +45,13 @@ scan:
   - Any key-value pairs relevant to your project
 
 - **`exclude`** - Additional patterns to exclude from scanning
-  - **Combined with .gitignore**: These patterns are added to automatic .gitignore exclusions
-  - Supports glob patterns: `**`, `*`, `?`
-  - Matches files and directories
-  - Use for patterns not in your .gitignore or project-specific exclusions
-  - Merged with CLI `--exclude` flags
+  - **Combined with .gitignore**: These patterns are added to automatic `.gitignore` exclusions
+  - **Full gitignore semantics**: supports the same pattern syntax as `.gitignore` files
+    - Glob patterns: `**` (recursive), `*` (single segment), `?` (single char)
+    - **Negation**: prefix with `!` to re-include a previously excluded path (e.g. `!.NET/**`)
+    - **Dir-only**: trailing `/` matches only directories, not files (e.g. `build/`)
+    - **Last-match-wins**: when multiple patterns match, the last one determines the outcome
+  - Merged with CLI `--exclude` flags and `.gitignore` files into a single evaluation stack
 
 - **`techs`** - Technologies to force-add to scan results
   - Useful for external dependencies (AWS, SaaS services)

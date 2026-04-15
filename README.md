@@ -21,7 +21,7 @@ Detection is powered by **800+ technology rules** across 48 categories, using fi
 - **800+ Technology Rules** - Comprehensive detection across 48 categories
 - **Lock File Support** - Extracts exact resolved versions from package-lock.json, Cargo.lock, uv.lock, etc.
 - **Code Statistics** - Lines of code, complexity metrics, and language breakdown via SCC
-- **Automatic .gitignore** - Respects existing .gitignore files for intelligent exclusions
+- **Automatic .gitignore** - Respects `.gitignore` files with full gitignore semantics (negation `!`, dir-only `/`, last-match-wins)
 - **Hierarchical Output** - Component-based analysis with parent-child relationships
 - **Aggregated Views** - Rollup summaries for quick technology stack overviews
 - **Content-Based Detection** - Validates technologies through regex pattern matching in file contents

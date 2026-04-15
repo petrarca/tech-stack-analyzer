@@ -9,14 +9,26 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestLoadPatterns(t *testing.T) {
+// loadPatternsFromDir is a test helper that loads raw lines from a .gitignore in a directory.
+func loadPatternsFromDir(t *testing.T, dir string) []string {
+	t.Helper()
+	gitignorePath := filepath.Join(dir, ".gitignore")
+	if _, err := os.Stat(gitignorePath); os.IsNotExist(err) {
+		return nil
+	}
+	lines, err := LoadPatternsFromFile(gitignorePath)
+	require.NoError(t, err)
+	return lines
+}
+
+func TestLoadPatternsFromFile(t *testing.T) {
 	tests := []struct {
 		name     string
 		content  string
 		expected []string
 	}{
 		{
-			name: "basic patterns",
+			name: "basic patterns (trailing slashes preserved)",
 			content: `# Comment
 .venv/
 node_modules
@@ -24,7 +36,7 @@ dist/
 build/
 *.log
 `,
-			expected: []string{".venv", "node_modules", "dist", "build", "*.log"},
+			expected: []string{".venv/", "node_modules", "dist/", "build/", "*.log"},
 		},
 		{
 			name: "with empty lines and comments",
@@ -39,10 +51,10 @@ node_modules
 dist/
 build/
 `,
-			expected: []string{"__pycache__", "*.pyc", "node_modules", "dist", "build"},
+			expected: []string{"__pycache__/", "*.pyc", "node_modules", "dist/", "build/"},
 		},
 		{
-			name: "with negation patterns (should be skipped)",
+			name: "with negation patterns (preserved)",
 			content: `# Ignore everything
 *
 # But not this file
@@ -50,12 +62,12 @@ build/
 # And not this config
 !config.json
 `,
-			expected: []string{"*"},
+			expected: []string{"*", "!.gitignore", "!config.json"},
 		},
 		{
 			name:     "empty file",
 			content:  "",
-			expected: []string{},
+			expected: nil,
 		},
 		{
 			name: "only comments",
@@ -63,66 +75,32 @@ build/
 # So is this
 	# Indented comment
 `,
-			expected: []string{},
+			expected: nil,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Create temporary directory and .gitignore file
 			tmpDir := t.TempDir()
 			gitignorePath := filepath.Join(tmpDir, ".gitignore")
 
 			err := os.WriteFile(gitignorePath, []byte(tt.content), 0644)
 			require.NoError(t, err)
 
-			// Test loading patterns
-			loader := NewGitignoreLoader() // No fallback for testing
-			patterns, err := loader.LoadPatterns(tmpDir)
-
+			lines, err := LoadPatternsFromFile(gitignorePath)
 			require.NoError(t, err)
-			assert.Equal(t, tt.expected, patterns)
+			assert.Equal(t, tt.expected, lines)
 		})
 	}
 }
 
-func TestLoadPatterns_NoGitignore(t *testing.T) {
+func TestLoadPatternsFromFile_NoFile(t *testing.T) {
 	tmpDir := t.TempDir()
-	loader := NewGitignoreLoader()
-
-	patterns, err := loader.LoadPatterns(tmpDir)
-
-	// Should not error and should return empty patterns
-	assert.NoError(t, err)
-	assert.Empty(t, patterns)
+	lines := loadPatternsFromDir(t, tmpDir)
+	assert.Empty(t, lines)
 }
 
-func TestLoadPatternsFromFile(t *testing.T) {
-	content := `# Test gitignore
-.venv/
-node_modules
-dist/
-*.log
-`
-	expected := []string{".venv", "node_modules", "dist", "*.log"}
-
-	// Create temporary .gitignore file
-	tmpDir := t.TempDir()
-	gitignorePath := filepath.Join(tmpDir, ".gitignore")
-
-	err := os.WriteFile(gitignorePath, []byte(content), 0644)
-	require.NoError(t, err)
-
-	// Test loading from specific file
-	loader := NewGitignoreLoader()
-	patterns, err := loader.LoadPatternsFromFile(gitignorePath)
-
-	require.NoError(t, err)
-	assert.Equal(t, expected, patterns)
-}
-
-func TestLoadPatterns_RealWorld(t *testing.T) {
-	// Test with a realistic .gitignore content
+func TestLoadPatternsFromFile_RealWorld(t *testing.T) {
 	content := `# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -168,25 +146,110 @@ venv.bak/
 Thumbs.db
 `
 	expected := []string{
-		"__pycache__", "*.py[cod]", "*$py.class", "*.so", ".Python",
-		"build", "develop-eggs", "dist", "downloads", "eggs", ".eggs",
-		"lib", "lib64", "parts", "sdist", "var", "wheels", "*.egg-info",
-		".installed.cfg", "*.egg", ".venv", "env", "venv", "ENV",
-		"env.bak", "venv.bak", ".vscode", ".idea", "*.swp", "*.swo",
+		"__pycache__/", "*.py[cod]", "*$py.class", "*.so", ".Python",
+		"build/", "develop-eggs/", "dist/", "downloads/", "eggs/", ".eggs/",
+		"lib/", "lib64/", "parts/", "sdist/", "var/", "wheels/", "*.egg-info/",
+		".installed.cfg", "*.egg", ".venv", "env/", "venv/", "ENV/",
+		"env.bak/", "venv.bak/", ".vscode/", ".idea/", "*.swp", "*.swo",
 		".DS_Store", "Thumbs.db",
 	}
 
-	// Create temporary .gitignore file
 	tmpDir := t.TempDir()
 	gitignorePath := filepath.Join(tmpDir, ".gitignore")
-
 	err := os.WriteFile(gitignorePath, []byte(content), 0644)
 	require.NoError(t, err)
 
-	// Test loading patterns
-	loader := NewGitignoreLoader()
-	patterns, err := loader.LoadPatterns(tmpDir)
-
+	lines, err := LoadPatternsFromFile(gitignorePath)
 	require.NoError(t, err)
-	assert.Equal(t, expected, patterns)
+	assert.Equal(t, expected, lines)
+}
+
+// --- ParsePatterns tests ---
+
+func TestParsePatterns(t *testing.T) {
+	tests := []struct {
+		name     string
+		lines    []string
+		expected []Pattern
+	}{
+		{
+			name:  "basic patterns",
+			lines: []string{"*.log", "build/", "node_modules"},
+			expected: []Pattern{
+				{Glob: "*.log", Negate: false, DirOnly: false},
+				{Glob: "build", Negate: false, DirOnly: true},
+				{Glob: "node_modules", Negate: false, DirOnly: false},
+			},
+		},
+		{
+			name:  "negation patterns",
+			lines: []string{"*", "!.gitignore", "!src/"},
+			expected: []Pattern{
+				{Glob: "*", Negate: false, DirOnly: false},
+				{Glob: ".gitignore", Negate: true, DirOnly: false},
+				{Glob: "src", Negate: true, DirOnly: true},
+			},
+		},
+		{
+			name:  "comments and blanks are skipped",
+			lines: []string{"# comment", "", "  ", "*.log"},
+			expected: []Pattern{
+				{Glob: "*.log", Negate: false, DirOnly: false},
+			},
+		},
+		{
+			name:     "empty input",
+			lines:    []string{},
+			expected: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := ParsePatterns(tt.lines)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+// --- ShouldExclude tests ---
+
+func TestShouldExclude_LastMatchWins(t *testing.T) {
+	gs := NewGitignoreStack()
+	gs.Push("/project", []string{"*", "!.NET/**"})
+
+	assert.False(t, gs.ShouldExclude(".NET", ".NET", true))
+	assert.False(t, gs.ShouldExclude("foo.cs", ".NET/foo.cs", false))
+	assert.True(t, gs.ShouldExclude("bar.txt", "bar.txt", false))
+	assert.True(t, gs.ShouldExclude("src", "src", true))
+}
+
+func TestShouldExclude_DirOnlyPattern(t *testing.T) {
+	gs := NewGitignoreStack()
+	gs.Push("/project", []string{"build/"})
+
+	assert.True(t, gs.ShouldExclude("build", "build", true))
+	assert.False(t, gs.ShouldExclude("build", "build", false))
+}
+
+func TestShouldExclude_NegationReIncludes(t *testing.T) {
+	gs := NewGitignoreStack()
+	gs.Push("/project", []string{"vendor/**", "!vendor/important.go"})
+
+	assert.True(t, gs.ShouldExclude("junk.go", "vendor/junk.go", false))
+	assert.False(t, gs.ShouldExclude("important.go", "vendor/important.go", false))
+}
+
+func TestShouldExclude_StackLayers(t *testing.T) {
+	gs := NewGitignoreStack()
+	gs.Push("/project", []string{"*.log"})
+	gs.Push("/project/sub", []string{"!debug.log"})
+
+	assert.True(t, gs.ShouldExclude("error.log", "sub/error.log", false))
+	assert.False(t, gs.ShouldExclude("debug.log", "sub/debug.log", false))
+}
+
+func TestShouldExclude_NoPatterns(t *testing.T) {
+	gs := NewGitignoreStack()
+	assert.False(t, gs.ShouldExclude("anything.txt", "anything.txt", false))
 }

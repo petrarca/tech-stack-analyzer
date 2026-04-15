@@ -9,7 +9,6 @@ import (
 
 	"log/slog"
 
-	"github.com/bmatcuk/doublestar/v4"
 	"github.com/mattn/go-isatty"
 	"github.com/petrarca/tech-stack-analyzer/internal/codestats"
 	"github.com/petrarca/tech-stack-analyzer/internal/config"
@@ -1074,82 +1073,32 @@ func (s *Scanner) addTechWithPrimaryCheck(payload *types.Payload, tech string, r
 	}
 }
 
-// shouldExcludeFileStackBased checks if a file should be excluded using stack-based gitignore approach
-// This implements proper gitignore hierarchy where patterns only apply to their directory and subdirectories
-func (s *Scanner) shouldExcludeFileStackBased(fileName, currentPath string) bool {
-	// Get relative path from base path
-	basePath := s.provider.GetBasePath()
-	fullPath := filepath.Join(currentPath, fileName)
-	relPath, err := filepath.Rel(basePath, fullPath)
+// shouldExclude resolves the relative path and delegates to the gitignore stack.
+// All exclude sources (CLI, config, .gitignore files) are already in the stack via
+// InitializeWithTopLevelExcludes and LoadAndPushGitignore.
+func (s *Scanner) shouldExclude(name, parentPath string, isDir bool) bool {
+	fullPath := filepath.Join(parentPath, name)
+	relPath, err := filepath.Rel(s.provider.GetBasePath(), fullPath)
 	if err != nil {
-		relPath = fileName // Fallback to just filename
+		relPath = name
 	}
+	return s.gitignoreStack.ShouldExclude(name, relPath, isDir)
+}
 
-	// Check against CLI exclude patterns first (these apply globally)
-	for _, pattern := range s.excludePatterns {
-		// Try glob match against relative path
-		matched, err := doublestar.Match(pattern, relPath)
-		if err == nil && matched {
-			return true
-		}
-
-		// Also try matching just the filename
-		matched, err = doublestar.Match(pattern, fileName)
-		if err == nil && matched {
-			return true
-		}
-	}
-
-	// Check against stack-based gitignore patterns (proper hierarchy)
-	if s.gitignoreStack.ShouldExclude(fileName, relPath) {
-		return true
-	}
-
-	return false
+// shouldExcludeFileStackBased checks if a file should be excluded.
+func (s *Scanner) shouldExcludeFileStackBased(fileName, currentPath string) bool {
+	return s.shouldExclude(fileName, currentPath, false)
 }
 
 // shouldSkipDirectory combines gitignore/exclude checks with include-path filtering.
 // A directory is skipped if it matches exclude patterns OR is not in the include paths.
 func (s *Scanner) shouldSkipDirectory(name, parentPath, fullPath string) bool {
-	if s.shouldIgnoreDirectoryStackBased(name, parentPath) {
+	if s.shouldExclude(name, parentPath, true) {
 		return true
 	}
 	if !s.isIncludedPath(fullPath) {
 		return true
 	}
-	return false
-}
-
-// shouldIgnoreDirectoryStackBased checks if a directory should be ignored using stack-based gitignore approach
-func (s *Scanner) shouldIgnoreDirectoryStackBased(name, parentPath string) bool {
-	// Check user-specified exclude patterns first (supports glob patterns)
-	if len(s.excludePatterns) > 0 {
-		for _, pattern := range s.excludePatterns {
-			// Try glob match first
-			matched, err := doublestar.Match(pattern, name)
-			if err == nil && matched {
-				return true
-			}
-
-			// Fallback to simple name match for backward compatibility
-			if strings.EqualFold(name, pattern) {
-				return true
-			}
-		}
-	}
-
-	// Check against stack-based gitignore patterns
-	fullDirPath := filepath.Join(parentPath, name)
-	basePath := s.provider.GetBasePath()
-	relPath, err := filepath.Rel(basePath, fullDirPath)
-	if err != nil {
-		relPath = name // Fallback to just directory name
-	}
-
-	if s.gitignoreStack.ShouldExclude(name, relPath) {
-		return true
-	}
-
 	return false
 }
 
