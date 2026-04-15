@@ -566,6 +566,21 @@ func extractCode(stats interface{}) int64 {
 	return 0
 }
 
+// ComputeEcosystemsFromPayload derives technology ecosystems directly from a Payload tree.
+// Used to populate the ecosystems field on the full (non-aggregated) output so consumers
+// don't need to cross-reference the -agg file.
+func ComputeEcosystemsFromPayload(payload *types.Payload) []types.EcosystemEntry {
+	components := collectComponentsFromPayload(payload)
+	return computeEcosystems(components, payload.PrimaryLanguages)
+}
+
+// collectComponentsFromPayload walks the payload tree and collects all components.
+func collectComponentsFromPayload(payload *types.Payload) []ComponentEntry {
+	var components []ComponentEntry
+	collectComponentsRecursive(payload, &components, false)
+	return components
+}
+
 // computeEcosystems derives technology ecosystems from the flat component list and primary languages.
 // Detection priority:
 //  1. component_types -- strongest signal (package manager / build system)

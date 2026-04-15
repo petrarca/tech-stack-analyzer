@@ -8,6 +8,7 @@ import (
 
 	"log/slog"
 
+	"github.com/petrarca/tech-stack-analyzer/internal/aggregator"
 	"github.com/petrarca/tech-stack-analyzer/internal/config"
 	gitpkg "github.com/petrarca/tech-stack-analyzer/internal/git"
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner"
@@ -154,6 +155,7 @@ func runSinglePathScan(args []string, cmd *cobra.Command, logger *slog.Logger) {
 	enhanceSinglePayload(payload, mergedConfig)
 	if p, ok := payload.(*types.Payload); ok {
 		p.PrimaryTechs = computePrimaryTechsFromPayload(p)
+		p.Ecosystems = aggregator.ComputeEcosystemsFromPayload(p)
 	}
 
 	generateAndWriteOutput(payload, logger)
@@ -220,6 +222,7 @@ func runMultiPathScan(args []string, cmd *cobra.Command, logger *slog.Logger) {
 	// Enhance before computing primary_techs so config techs are included.
 	enhanceSinglePayload(payload, mergedConfig)
 	payload.PrimaryTechs = computePrimaryTechsFromPayload(payload)
+	payload.Ecosystems = aggregator.ComputeEcosystemsFromPayload(payload)
 
 	generateAndWriteOutput(payload, logger)
 }

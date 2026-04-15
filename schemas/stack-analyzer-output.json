@@ -292,6 +292,57 @@
                 "code_stats": {
                     "$ref": "#/definitions/code_stats"
                 },
+                "subsystem_stats": {
+                    "type": "array",
+                    "description": "Per-subsystem code stats rollup (root only, when --subsystem-depth > 0)",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "path": {
+                                "type": "string",
+                                "description": "Group name or depth-N prefix (e.g. '/med' or 'core-platform')"
+                            },
+                            "paths": {
+                                "type": "array",
+                                "items": { "type": "string" },
+                                "description": "Source path prefixes (from subsystem-groups config; absent in depth mode)"
+                            },
+                            "description": {
+                                "type": "string",
+                                "description": "Human-readable description (from subsystem-groups config)"
+                            },
+                            "component_count": {
+                                "type": "integer",
+                                "description": "Number of components under this subsystem"
+                            },
+                            "code_stats": {
+                                "$ref": "#/definitions/code_stats"
+                            }
+                        },
+                        "required": ["path", "component_count", "code_stats"],
+                        "additionalProperties": false
+                    }
+                },
+                "ecosystems": {
+                    "type": "array",
+                    "description": "Detected technology ecosystems (root only, derived from component types, techs, and primary languages). Sorted by component count descending.",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "ecosystem": {
+                                "type": "string",
+                                "description": "Ecosystem name (e.g., 'JVM', '.NET', 'Node.js', 'Go', 'Python')"
+                            },
+                            "components": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "description": "Number of components belonging to this ecosystem"
+                            }
+                        },
+                        "required": ["ecosystem", "components"],
+                        "additionalProperties": false
+                    }
+                },
                 "git": {
                     "type": "object",
                     "properties": {
