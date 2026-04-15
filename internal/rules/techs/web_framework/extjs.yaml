@@ -1,7 +1,17 @@
 tech: extjs
 name: Ext JS
+files:
+  # Core ExtJS bundle (present in vendored SDK distributions)
+  - ext-all.js
 dependencies:
   - type: npm
     name: extjs
   - type: npm
     name: /^@extjs/
+  # Maven WebJars
+  - type: maven
+    name: org.webjars:extjs
+  - type: maven
+    name: org.webjars.npm:extjs
+  - type: maven
+    name: org.webjars.bower:extjs

@@ -62,6 +62,14 @@ func (d *Detector) processPackageJSON(file types.File, currentPath, basePath str
 		return nil
 	}
 
+	// Skip build-tooling-only packages: if a package.json has zero runtime
+	// dependencies (only devDependencies), it is not a Node.js application or
+	// library -- it is build tooling (e.g., grunt/webpack for a Java or Perl
+	// project). Creating a nodejs component for it misrepresents the tech stack.
+	if len(packageJSON.Dependencies) == 0 {
+		return nil
+	}
+
 	// Create payload with specific file path
 	relativeFilePath, _ := filepath.Rel(basePath, filepath.Join(currentPath, file.Name))
 	if relativeFilePath == "." {

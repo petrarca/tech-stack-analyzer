@@ -318,7 +318,9 @@ func TestDetector_Detect_FileReadError(t *testing.T) {
 func TestDetector_Detect_PackageJsonWithOnlyDevDependencies(t *testing.T) {
 	detector := &Detector{}
 
-	// Create mock package.json content with only dev dependencies
+	// A package.json with only devDependencies (no runtime dependencies) is
+	// build tooling (e.g., grunt/webpack for a Java or Perl project), not a
+	// Node.js application or library. It should NOT create a component.
 	packageJsonContent := `{
   "name": "dev-only-app",
   "version": "1.0.0",
@@ -350,31 +352,15 @@ func TestDetector_Detect_PackageJsonWithOnlyDevDependencies(t *testing.T) {
 	// Test detection
 	results := detector.Detect(files, "/project", "/project", provider, depDetector)
 
-	// Verify results
-	require.Len(t, results, 1, "Should detect one Node.js project")
-
-	payload := results[0]
-	assert.Equal(t, "dev-only-app", payload.Name)
-	assert.Contains(t, payload.Tech, "nodejs", "Should have nodejs as primary tech")
-	assert.Contains(t, payload.Techs, "jest", "Should detect jest from dev dependencies")
-
-	// Check dependencies
-	assert.Len(t, payload.Dependencies, 2, "Should have 2 dev dependencies")
-
-	depNames := make(map[string]bool)
-	for _, dep := range payload.Dependencies {
-		depNames[dep.Name] = true
-		assert.Equal(t, "npm", dep.Type, "All dependencies should be npm type")
-	}
-
-	assert.True(t, depNames["jest"], "Should have jest dependency")
-	assert.True(t, depNames["eslint"], "Should have eslint dependency")
+	// Should skip: zero runtime dependencies means this is build tooling
+	assert.Empty(t, results, "Should not detect a nodejs component for devDependencies-only package")
 }
 
 func TestDetector_Detect_PackageJsonWithEmptyDependencies(t *testing.T) {
 	detector := &Detector{}
 
-	// Create mock package.json content with empty dependencies
+	// A package.json with empty dependencies (both runtime and dev) should
+	// NOT create a component -- there is no evidence of a real Node.js project.
 	packageJsonContent := `{
   "name": "no-deps-app",
   "version": "1.0.0",
@@ -402,22 +388,20 @@ func TestDetector_Detect_PackageJsonWithEmptyDependencies(t *testing.T) {
 	// Test detection
 	results := detector.Detect(files, "/project", "/project", provider, depDetector)
 
-	// Verify results
-	require.Len(t, results, 1, "Should detect one Node.js project")
-
-	payload := results[0]
-	assert.Equal(t, "no-deps-app", payload.Name)
-	assert.Contains(t, payload.Tech, "nodejs", "Should have nodejs as primary tech")
-	assert.Empty(t, payload.Dependencies, "Should have no dependencies")
+	// Should skip: zero runtime dependencies
+	assert.Empty(t, results, "Should not detect a nodejs component for empty-dependencies package")
 }
 
 func TestDetector_Detect_RelativePathHandling(t *testing.T) {
 	detector := &Detector{}
 
-	// Create mock package.json content
+	// Create mock package.json content (must have runtime dependencies to be detected)
 	packageJsonContent := `{
   "name": "path-test-app",
-  "version": "1.0.0"
+  "version": "1.0.0",
+  "dependencies": {
+    "express": "^4.18.0"
+  }
 }`
 
 	// Setup mock provider
