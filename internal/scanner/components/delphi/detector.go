@@ -59,8 +59,8 @@ func (d *Detector) detectDelphiProject(file types.File, currentPath, basePath st
 	payload.AddPrimaryTech("delphi")
 	payload.AddTech("delphi", "matched file: "+file.Name)
 
-	// Add framework info (VCL or FMX)
-	if project.Framework != "" {
+	// Add framework info (VCL or FMX), skip "None" which means no UI framework
+	if project.Framework != "" && !strings.EqualFold(project.Framework, "None") {
 		frameworkLower := strings.ToLower(project.Framework)
 		payload.AddTech(frameworkLower, "framework: "+project.Framework)
 	}
