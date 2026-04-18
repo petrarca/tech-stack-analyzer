@@ -4,3 +4,10 @@ extensions:
   - .kt
   - .ktm
   - .kts
+dependencies:
+  # Matches all Kotlin Gradle plugins (jvm, multiplatform, android, js,
+  # plugin.spring, plugin.jpa, kapt, etc.). The org.jetbrains.kotlin.*
+  # namespace is owned by JetBrains, so a prefix match is safe.
+  - type: gradle.plugin
+    name: /^org\.jetbrains\.kotlin\..*/
+    example: org.jetbrains.kotlin.jvm

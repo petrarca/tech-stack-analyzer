@@ -61,13 +61,7 @@ func (d *Detector) detectConanProjects(files []types.File, currentPath, basePath
 		payload.AddTech("conan", "matched file: conanfile.py")
 
 		if len(dependencies) > 0 {
-			matchedTechs := depDetector.MatchDependencies(depNames, "conan")
-			for tech, reasons := range matchedTechs {
-				for _, reason := range reasons {
-					payload.AddTech(tech, reason)
-				}
-				depDetector.AddPrimaryTechIfNeeded(payload, tech)
-			}
+			depDetector.ApplyMatchesToPayload(payload, depDetector.MatchDependencies(depNames, "conan"))
 			payload.Dependencies = dependencies
 		}
 

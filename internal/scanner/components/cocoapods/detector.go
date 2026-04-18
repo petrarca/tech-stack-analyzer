@@ -100,13 +100,7 @@ func (d *Detector) processPodfile(file types.File, currentPath, basePath string,
 	payload.AddPrimaryTech("cocoapods")
 
 	// Match dependencies against rules
-	matchedTechs := depDetector.MatchDependencies(depNames, "cocoapods")
-	for tech, reasons := range matchedTechs {
-		for _, reason := range reasons {
-			payload.AddTech(tech, reason)
-		}
-		depDetector.AddPrimaryTechIfNeeded(payload, tech)
-	}
+	depDetector.ApplyMatchesToPayload(payload, depDetector.MatchDependencies(depNames, "cocoapods"))
 
 	// Add dependencies to payload
 	payload.Dependencies = append(payload.Dependencies, dependencies...)
@@ -142,13 +136,7 @@ func (d *Detector) processPodfileLock(file types.File, currentPath, basePath str
 	payload.AddPrimaryTech("cocoapods")
 
 	// Match dependencies against rules
-	matchedTechs := depDetector.MatchDependencies(depNames, "cocoapods")
-	for tech, reasons := range matchedTechs {
-		for _, reason := range reasons {
-			payload.AddTech(tech, reason)
-		}
-		depDetector.AddPrimaryTechIfNeeded(payload, tech)
-	}
+	depDetector.ApplyMatchesToPayload(payload, depDetector.MatchDependencies(depNames, "cocoapods"))
 
 	// Add dependencies to payload
 	payload.Dependencies = append(payload.Dependencies, dependencies...)

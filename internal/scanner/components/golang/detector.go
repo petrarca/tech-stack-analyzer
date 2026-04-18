@@ -103,13 +103,7 @@ func (d *Detector) detectGoMod(file types.File, currentPath, basePath string, pr
 
 	// Match dependencies against rules
 	if len(depNames) > 0 {
-		matchedTechs := depDetector.MatchDependencies(depNames, "golang")
-		for tech, reasons := range matchedTechs {
-			for _, reason := range reasons {
-				payload.AddTech(tech, reason)
-			}
-			depDetector.AddPrimaryTechIfNeeded(payload, tech)
-		}
+		depDetector.ApplyMatchesToPayload(payload, depDetector.MatchDependencies(depNames, "golang"))
 	}
 
 	return payload

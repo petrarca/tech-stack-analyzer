@@ -74,14 +74,7 @@ func (d *Detector) detectComposerJSON(file types.File, currentPath, basePath str
 
 	// Match dependencies against rules
 	if len(dependencies) > 0 {
-		matchedTechs := depDetector.MatchDependencies(depNames, "php")
-		for tech, reasons := range matchedTechs {
-			for _, reason := range reasons {
-				payload.AddTech(tech, reason)
-			}
-			depDetector.AddPrimaryTechIfNeeded(payload, tech)
-		}
-
+		depDetector.ApplyMatchesToPayload(payload, depDetector.MatchDependencies(depNames, "php"))
 		payload.Dependencies = dependencies
 	}
 

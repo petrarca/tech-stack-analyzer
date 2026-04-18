@@ -212,14 +212,7 @@ func (d *Detector) matchAndAddTechs(dependencies []types.Dependency, depDetector
 		depNames = append(depNames, dep.Name)
 	}
 
-	matchedTechs := depDetector.MatchDependencies(depNames, "npm")
-	for tech, reasons := range matchedTechs {
-		for _, reason := range reasons {
-			payload.AddTech(tech, reason)
-		}
-		// Check if this tech should be a primary tech
-		depDetector.AddPrimaryTechIfNeeded(payload, tech)
-	}
+	depDetector.ApplyMatchesToPayload(payload, depDetector.MatchDependencies(depNames, "npm"))
 }
 
 // processLicense handles license processing for package.json

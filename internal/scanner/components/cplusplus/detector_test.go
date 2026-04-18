@@ -46,6 +46,15 @@ func (m *MockDependencyDetector) MatchDependencies(depNames []string, depType st
 
 func (m *MockDependencyDetector) AddPrimaryTechIfNeeded(_ *types.Payload, _ string) {}
 
+func (m *MockDependencyDetector) ApplyMatchesToPayload(payload *types.Payload, matches map[string][]string) {
+	for tech, reasons := range matches {
+		for _, reason := range reasons {
+			payload.AddTech(tech, reason)
+		}
+		m.AddPrimaryTechIfNeeded(payload, tech)
+	}
+}
+
 // --- helpers ---
 
 func hasTech(techs []string, target string) bool {

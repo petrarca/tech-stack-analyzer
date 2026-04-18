@@ -209,3 +209,82 @@ dependencies {
 	assert.Equal(t, "gradle", gradleDepMap["org.projectlombok:lombok"].Type)
 	assert.Equal(t, "1.18.24", gradleDepMap["org.projectlombok:lombok"].Version)
 }
+
+func TestParsePlugins(t *testing.T) {
+	parser := NewGradleParser()
+
+	// pluginMap builds an id->version map from a slice for order-independent assertions.
+	pluginMap := func(plugins []GradlePlugin) map[string]string {
+		m := make(map[string]string, len(plugins))
+		for _, p := range plugins {
+			m[p.ID] = p.Version
+		}
+		return m
+	}
+
+	tests := []struct {
+		name     string
+		content  string
+		expected map[string]string // id -> version
+	}{
+		{
+			name: "Kotlin DSL with id() and version",
+			content: `plugins {
+    kotlin("jvm") version "2.1.10"
+    kotlin("plugin.spring") version "2.1.10"
+    id("org.springframework.boot") version "3.4.3"
+    id("io.spring.dependency-management") version "1.1.7"
+}`,
+			expected: map[string]string{
+				"org.jetbrains.kotlin.jvm":           "2.1.10",
+				"org.jetbrains.kotlin.plugin.spring": "2.1.10",
+				"org.springframework.boot":           "3.4.3",
+				"io.spring.dependency-management":    "1.1.7",
+			},
+		},
+		{
+			name: "Groovy DSL without parens",
+			content: `plugins {
+    id 'org.springframework.boot' version '2.7.0'
+    id 'java'
+}`,
+			expected: map[string]string{
+				"org.springframework.boot": "2.7.0",
+				"java":                     "",
+			},
+		},
+		{
+			name: "kotlin() without version (version catalog)",
+			content: `plugins {
+    kotlin("jvm")
+    id("io.quarkus")
+}`,
+			expected: map[string]string{
+				"org.jetbrains.kotlin.jvm": "",
+				"io.quarkus":               "",
+			},
+		},
+		{
+			name:     "no plugins block",
+			content:  `dependencies { implementation("com.example:lib:1.0") }`,
+			expected: map[string]string{},
+		},
+		{
+			name: "duplicate plugin IDs deduplicated",
+			content: `plugins {
+    id("org.springframework.boot") version "3.4.3"
+    id("org.springframework.boot") version "3.4.3"
+}`,
+			expected: map[string]string{
+				"org.springframework.boot": "3.4.3",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := pluginMap(parser.ParsePlugins(tt.content))
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}

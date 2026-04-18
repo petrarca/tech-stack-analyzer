@@ -176,7 +176,9 @@ func (d *Detector) detectPomXML(file types.File, currentPath, basePath string, p
 	payload := types.NewPayloadWithPath(projectName, relativeFilePath)
 	payload.SetComponentType("maven")
 
-	// Set tech field to java (covers both Java and Kotlin projects)
+	// Mark java as a primary tech for any Maven project (the JVM is the
+	// default target). Kotlin, Scala and Groovy are added separately by
+	// dependency matches when their plugins/runtimes are declared.
 	payload.AddPrimaryTech("java")
 
 	// Extract Maven project info and add as properties
@@ -220,14 +222,7 @@ func (d *Detector) detectPomXML(file types.File, currentPath, basePath string, p
 
 	// Match dependencies against rules
 	if len(dependencies) > 0 {
-		matchedTechs := depDetector.MatchDependencies(depNames, "maven")
-		for tech, reasons := range matchedTechs {
-			for _, reason := range reasons {
-				payload.AddTech(tech, reason)
-			}
-			depDetector.AddPrimaryTechIfNeeded(payload, tech)
-		}
-
+		depDetector.ApplyMatchesToPayload(payload, depDetector.MatchDependencies(depNames, "maven"))
 		payload.Dependencies = dependencies
 	}
 
@@ -258,7 +253,10 @@ func (d *Detector) detectGradle(file types.File, currentPath, basePath string, p
 	payload := types.NewPayloadWithPath(projectName, relativeFilePath)
 	payload.SetComponentType("gradle")
 
-	// Set tech field to java (covers both Java and Kotlin projects)
+	// Every Gradle project targets the JVM by default, so mark java as a
+	// primary tech. Kotlin (and Groovy/Scala when used) is added separately
+	// by the gradle.plugin match below when the corresponding plugin is
+	// declared in plugins{} / buildscript{}.
 	payload.AddPrimaryTech("java")
 
 	// Extract Gradle project info and add as properties
@@ -287,17 +285,26 @@ func (d *Detector) detectGradle(file types.File, currentPath, basePath string, p
 	// Always add gradle tech
 	payload.AddTech("gradle", "matched file: "+file.Name)
 
-	// Match dependencies against rules
-	if len(dependencies) > 0 {
-		matchedTechs := depDetector.MatchDependencies(depNames, "gradle")
-		for tech, reasons := range matchedTechs {
-			for _, reason := range reasons {
-				payload.AddTech(tech, reason)
-			}
-			depDetector.AddPrimaryTechIfNeeded(payload, tech)
-		}
+	// Extract plugin IDs declared in plugins{} / buildscript{} blocks.
+	// These are matched against "gradle.plugin" rules — the authoritative
+	// signal for Kotlin, Spring Boot, Quarkus, etc. when no explicit
+	// starter coordinates are present in dependencies{}.
+	plugins := gradleParser.ParsePlugins(string(content))
+	var pluginIDs []string
+	for _, p := range plugins {
+		pluginIDs = append(pluginIDs, p.ID)
+	}
 
+	// Match coordinates and plugin IDs against rules. The dependency
+	// detector aliases "gradle" and "maven" so a single
+	// MatchDependencies("gradle") call covers both rule types — no need to
+	// call both explicitly.
+	if len(dependencies) > 0 {
+		depDetector.ApplyMatchesToPayload(payload, depDetector.MatchDependencies(depNames, "gradle"))
 		payload.Dependencies = dependencies
+	}
+	if len(pluginIDs) > 0 {
+		depDetector.ApplyMatchesToPayload(payload, depDetector.MatchDependencies(pluginIDs, "gradle.plugin"))
 	}
 
 	return payload

@@ -286,13 +286,7 @@ func (d *Detector) addNuGetDependencies(payload *types.Payload, packages []parse
 			Metadata: pkg.Metadata,
 		})
 
-		matchedTechs := depDetector.MatchDependencies([]string{pkg.Name}, "nuget")
-		for tech, reasons := range matchedTechs {
-			for _, reason := range reasons {
-				payload.AddTech(tech, reason)
-			}
-			depDetector.AddPrimaryTechIfNeeded(payload, tech)
-		}
+		depDetector.ApplyMatchesToPayload(payload, depDetector.MatchDependencies([]string{pkg.Name}, "nuget"))
 	}
 }
 
@@ -336,13 +330,7 @@ func (d *Detector) detectPackagesConfig(file types.File, currentPath, basePath s
 
 	// Match dependencies against rules
 	if len(depNames) > 0 {
-		matchedTechs := depDetector.MatchDependencies(depNames, "nuget")
-		for tech, reasons := range matchedTechs {
-			for _, reason := range reasons {
-				payload.AddTech(tech, reason)
-			}
-			depDetector.AddPrimaryTechIfNeeded(payload, tech)
-		}
+		depDetector.ApplyMatchesToPayload(payload, depDetector.MatchDependencies(depNames, "nuget"))
 	}
 
 	return payload

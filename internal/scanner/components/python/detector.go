@@ -149,13 +149,7 @@ func (d *Detector) matchAndAddDependencies(payload *types.Payload, dependencies 
 		depNames = append(depNames, dep.Name)
 	}
 
-	matchedTechs := depDetector.MatchDependencies(depNames, "python")
-	for tech, reasons := range matchedTechs {
-		for _, reason := range reasons {
-			payload.AddTech(tech, reason)
-		}
-		depDetector.AddPrimaryTechIfNeeded(payload, tech)
-	}
+	depDetector.ApplyMatchesToPayload(payload, depDetector.MatchDependencies(depNames, "python"))
 
 	payload.Dependencies = dependencies
 }

@@ -2,3 +2,7 @@ tech: scala
 name: Scala
 extensions:
   - .scala
+dependencies:
+  - type: gradle.plugin
+    name: scala
+    example: scala

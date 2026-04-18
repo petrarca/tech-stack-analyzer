@@ -57,6 +57,15 @@ func (m *MockDependencyDetector) MatchDependencies(dependencies []string, depTyp
 func (m *MockDependencyDetector) AddPrimaryTechIfNeeded(payload *types.Payload, tech string) {
 }
 
+func (m *MockDependencyDetector) ApplyMatchesToPayload(payload *types.Payload, matches map[string][]string) {
+	for tech, reasons := range matches {
+		for _, reason := range reasons {
+			payload.AddTech(tech, reason)
+		}
+		m.AddPrimaryTechIfNeeded(payload, tech)
+	}
+}
+
 func TestDetector_Name(t *testing.T) {
 	detector := &Detector{}
 	assert.Equal(t, "githubactions", detector.Name())

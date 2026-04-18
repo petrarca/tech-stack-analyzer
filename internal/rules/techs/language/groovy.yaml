@@ -5,3 +5,7 @@ extensions:
   - .gvy
   - .gy
   - .gsh
+dependencies:
+  - type: gradle.plugin
+    name: groovy
+    example: groovy

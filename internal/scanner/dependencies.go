@@ -20,6 +20,23 @@ type DependencyDetector struct {
 	rules    []types.Rule                    // Store rules for primary tech checking
 }
 
+// depTypeAliases maps a dependency type to additional types whose matchers
+// should also be consulted when matching that type. This avoids requiring
+// every rule to declare redundant entries for coordinate-equivalent ecosystems.
+//
+// Maven and Gradle both use the group:artifact coordinate format, so a rule
+// that declares `type: maven` is automatically available when matching Gradle
+// dependencies — and vice versa. Rules that explicitly declare both types
+// (e.g. h2.yaml) continue to work correctly; the cross-registration below
+// just fills the gaps where only one type is declared.
+//
+// Treat this map as read-only. It is consulted at detector construction
+// time only and must not be mutated at runtime.
+var depTypeAliases = map[string][]string{
+	"gradle": {"maven"},
+	"maven":  {"gradle"},
+}
+
 // NewDependencyDetector creates a new dependency detector
 func NewDependencyDetector(rules []types.Rule) *DependencyDetector {
 	detector := &DependencyDetector{
@@ -30,33 +47,39 @@ func NewDependencyDetector(rules []types.Rule) *DependencyDetector {
 	// Compile all dependency patterns from rules
 	for _, rule := range rules {
 		for _, dep := range rule.Dependencies {
+			regex, err := compileDependencyPattern(dep.Name)
+			if err != nil {
+				continue // Skip invalid regex
+			}
 			matcher := &DependencyMatcher{
-				Tech: rule.Tech,
-				Type: dep.Type,
+				Regex: regex,
+				Tech:  rule.Tech,
+				Type:  dep.Type,
 			}
 
-			// Compile the dependency name to regex
-			if strings.HasPrefix(dep.Name, "/") && strings.HasSuffix(dep.Name, "/") {
-				// It's already a regex pattern
-				regex, err := regexp.Compile(dep.Name[1 : len(dep.Name)-1])
-				if err != nil {
-					continue // Skip invalid regex
-				}
-				matcher.Regex = regex
-			} else {
-				// Convert to exact match regex
-				regex, err := regexp.Compile("^" + regexp.QuoteMeta(dep.Name) + "$")
-				if err != nil {
-					continue // Skip invalid regex
-				}
-				matcher.Regex = regex
-			}
-
+			// Register under the canonical type
 			detector.matchers[dep.Type] = append(detector.matchers[dep.Type], matcher)
+
+			// Also register under alias types so callers querying e.g.
+			// "gradle" automatically hit "maven" rules and vice versa,
+			// without needing to duplicate entries in every rule YAML.
+			for _, alias := range depTypeAliases[dep.Type] {
+				detector.matchers[alias] = append(detector.matchers[alias], matcher)
+			}
 		}
 	}
 
 	return detector
+}
+
+// compileDependencyPattern compiles a dependency name to a regex. Names
+// wrapped in forward slashes (/pattern/) are treated as raw regex patterns;
+// anything else is compiled as an exact match.
+func compileDependencyPattern(name string) (*regexp.Regexp, error) {
+	if strings.HasPrefix(name, "/") && strings.HasSuffix(name, "/") {
+		return regexp.Compile(name[1 : len(name)-1])
+	}
+	return regexp.Compile("^" + regexp.QuoteMeta(name) + "$")
 }
 
 // MatchDependencies matches a list of package names against dependency patterns
@@ -93,5 +116,20 @@ func (d *DependencyDetector) AddPrimaryTechIfNeeded(payload *types.Payload, tech
 			}
 			return
 		}
+	}
+}
+
+// ApplyMatchesToPayload applies a map of matched techs (as returned by
+// MatchDependencies) to a payload: each tech is added with its reasons, and
+// promoted to primary if the corresponding rule is marked as a primary tech.
+//
+// This consolidates the "for each tech, add reasons, maybe promote" loop that
+// would otherwise be repeated in every component detector.
+func (d *DependencyDetector) ApplyMatchesToPayload(payload *types.Payload, matches map[string][]string) {
+	for tech, reasons := range matches {
+		for _, reason := range reasons {
+			payload.AddTech(tech, reason)
+		}
+		d.AddPrimaryTechIfNeeded(payload, tech)
 	}
 }

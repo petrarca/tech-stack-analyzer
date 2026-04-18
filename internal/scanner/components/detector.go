@@ -16,4 +16,7 @@ type Detector interface {
 type DependencyDetector interface {
 	MatchDependencies(dependencies []string, depType string) map[string][]string
 	AddPrimaryTechIfNeeded(payload *types.Payload, tech string)
+	// ApplyMatchesToPayload applies a match result (tech -> reasons) to a
+	// payload: adds each tech with its reasons and promotes primary techs.
+	ApplyMatchesToPayload(payload *types.Payload, matches map[string][]string)
 }

@@ -37,6 +37,8 @@ func (m *mockDepDetector) MatchDependencies(_ []string, _ string) map[string][]s
 
 func (m *mockDepDetector) AddPrimaryTechIfNeeded(_ *types.Payload, _ string) {}
 
+func (m *mockDepDetector) ApplyMatchesToPayload(_ *types.Payload, _ map[string][]string) {}
+
 func TestDetect_Library(t *testing.T) {
 	d := &Detector{}
 	provider := &mockProvider{

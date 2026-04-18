@@ -56,6 +56,15 @@ func (m *MockDebugDependencyDetector) AddPrimaryTechIfNeeded(payload *types.Payl
 	// Mock implementation - do nothing
 }
 
+func (m *MockDebugDependencyDetector) ApplyMatchesToPayload(payload *types.Payload, matches map[string][]string) {
+	for tech, reasons := range matches {
+		for _, reason := range reasons {
+			payload.AddTech(tech, reason)
+		}
+		m.AddPrimaryTechIfNeeded(payload, tech)
+	}
+}
+
 func TestDebug_Detection(t *testing.T) {
 	detector := &Detector{}
 

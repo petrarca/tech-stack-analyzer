@@ -84,14 +84,7 @@ func (d *Detector) detectDenoLock(file types.File, currentPath, basePath string,
 
 	// Match dependencies against rules
 	if len(dependencies) > 0 {
-		matchedTechs := depDetector.MatchDependencies(depNames, "deno")
-		for tech, reasons := range matchedTechs {
-			for _, reason := range reasons {
-				payload.AddTech(tech, reason)
-			}
-			depDetector.AddPrimaryTechIfNeeded(payload, tech)
-		}
-
+		depDetector.ApplyMatchesToPayload(payload, depDetector.MatchDependencies(depNames, "deno"))
 		payload.Dependencies = dependencies
 	}
 

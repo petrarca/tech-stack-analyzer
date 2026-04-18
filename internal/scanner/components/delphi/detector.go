@@ -71,13 +71,7 @@ func (d *Detector) detectDelphiProject(file types.File, currentPath, basePath st
 	// Match dependencies against rules
 	if len(dependencies) > 0 {
 		payload.Dependencies = dependencies
-		matchedTechs := depDetector.MatchDependencies(project.Packages, "delphi")
-		for tech, reasons := range matchedTechs {
-			for _, reason := range reasons {
-				payload.AddTech(tech, reason)
-			}
-			depDetector.AddPrimaryTechIfNeeded(payload, tech)
-		}
+		depDetector.ApplyMatchesToPayload(payload, depDetector.MatchDependencies(project.Packages, "delphi"))
 	}
 
 	return payload
