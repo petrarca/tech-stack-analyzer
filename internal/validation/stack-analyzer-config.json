@@ -226,7 +226,7 @@
                         "type": "string",
                         "minLength": 1,
                         "maxLength": 255,
-                        "description": "Glob pattern matched relative to scan root (supports **). E.g. '**/*.e', '**/EBM-GENERATE/**'"
+                        "description": "Glob pattern matched relative to scan root (supports **). E.g. '**/*.e', '**/generated/**'"
                     },
                     "language": {
                         "type": "string",

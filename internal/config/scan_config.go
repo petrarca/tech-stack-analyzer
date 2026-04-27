@@ -39,7 +39,7 @@ type ScanOptions struct {
 // When subsystem-groups is defined in the config, --subsystem-depth is ignored and each
 // group produces one subsystem_stats entry aggregating all files under its paths.
 type SubsystemGroup struct {
-	Base        string   `yaml:"base,omitempty" json:"base,omitempty"`               // Optional common prefix prepended to all paths (e.g. "/medicalcloud-zis/next/medical-cloud/libs")
+	Base        string   `yaml:"base,omitempty" json:"base,omitempty"`               // Optional common prefix prepended to all paths (e.g. "/services/platform/libs")
 	Paths       []string `yaml:"paths" json:"paths"`                                 // Path prefixes; relative to base when base is set
 	Description string   `yaml:"description,omitempty" json:"description,omitempty"` // Human-readable description
 }

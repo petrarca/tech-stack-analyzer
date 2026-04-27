@@ -45,25 +45,27 @@ import (
 
 // Scanner handles the recursive directory scanning and technology detection logic
 type Scanner struct {
-	provider         types.Provider
-	rules            []types.Rule
-	depDetector      *DependencyDetector
-	dotenvDetector   *parsers.DotenvDetector
-	licenseDetector  *license.LicenseDetector
-	langDetector     *LanguageDetector
-	contentMatcher   *matchers.ContentMatcherRegistry
-	excludePatterns  []string
-	includePaths     []string // When set, only these relative paths under the root are scanned
-	progress         *progress.Progress
-	codeStats        CodeStatsAnalyzer
-	subsystemDepth   int               // Depth for subsystem stats rollup (0=disabled)
-	subsystemPathMap map[string]string // path prefix → group name (built from SubsystemGroups config)
-	gitignoreStack   *git.StackBasedLoader
-	gitCache         map[string]*git.GitInfo // Cache git info by repo root path
-	gitRootCache     map[string]string       // Cache path -> repo root mapping
-	rootID           string                  // Override root ID for deterministic scans
-	config           *config.ScanConfig      // Merged configuration for metadata properties
-	useLockFiles     bool                    // Use lock files for dependency resolution
+	provider          types.Provider
+	rules             []types.Rule
+	depDetector       *DependencyDetector
+	dotenvDetector    *parsers.DotenvDetector
+	licenseDetector   *license.LicenseDetector
+	langDetector      *LanguageDetector
+	contentMatcher    *matchers.ContentMatcherRegistry
+	excludePatterns   []string
+	includePaths      []string // When set, only these relative paths under the root are scanned
+	progress          *progress.Progress
+	codeStats         CodeStatsAnalyzer
+	subsystemDepth    int               // Depth for subsystem stats rollup (0=disabled)
+	subsystemPathMap  map[string]string // path prefix → group name (built from SubsystemGroups config)
+	subsystemMaxDepth int               // Maximum path depth across all subsystem group paths (loop cap)
+	cachedBasePath    string            // Cached scan root path for fast relative path computation
+	gitignoreStack    *git.StackBasedLoader
+	gitCache          map[string]*git.GitInfo // Cache git info by repo root path
+	gitRootCache      map[string]string       // Cache path -> repo root mapping
+	rootID            string                  // Override root ID for deterministic scans
+	config            *config.ScanConfig      // Merged configuration for metadata properties
+	useLockFiles      bool                    // Use lock files for dependency resolution
 }
 
 // CodeStatsAnalyzer is the interface used by the scanner for code statistics collection.
@@ -231,11 +233,14 @@ func (s *Scanner) ResolveSubsystemKeyFromPath(compPath string) string {
 
 // SetSubsystemGroups builds the path→group lookup map from named group definitions.
 // When set, takes precedence over subsystemDepth for subsystem key resolution.
+// Also computes subsystemMaxDepth — the deepest group path depth — to cap the
+// prefix-matching loop in resolveSubsystemKey to the minimum necessary iterations.
 func (s *Scanner) SetSubsystemGroups(groups map[string]config.SubsystemGroup) {
 	if len(groups) == 0 {
 		return
 	}
 	pathMap := make(map[string]string, len(groups)*3)
+	maxDepth := 0
 	for name, group := range groups {
 		base := strings.TrimRight(group.Base, "/")
 		for _, path := range group.Paths {
@@ -243,9 +248,13 @@ func (s *Scanner) SetSubsystemGroups(groups map[string]config.SubsystemGroup) {
 			combined := base + "/" + strings.Trim(path, "/")
 			p := "/" + strings.TrimLeft(combined, "/")
 			pathMap[p] = name
+			if d := strings.Count(p, "/"); d > maxDepth {
+				maxDepth = d
+			}
 		}
 	}
 	s.subsystemPathMap = pathMap
+	s.subsystemMaxDepth = maxDepth
 }
 
 // SetIncludePaths restricts scanning to only the specified relative paths under the root.
@@ -368,6 +377,7 @@ func initializeScannerComponents(provider types.Provider, path string, logger *s
 // Scan performs the main analysis of the target directory
 func (s *Scanner) Scan() (*types.Payload, error) {
 	basePath := s.provider.GetBasePath()
+	s.cachedBasePath = basePath // cache for use in resolveSubsystemKey hot path
 
 	// Report scan start
 	s.progress.ScanStart(basePath, s.excludePatterns)
@@ -643,9 +653,8 @@ func (s *Scanner) resolveSubsystemKey(compPath, filePath string) string {
 		if path == "" && filePath != "" {
 			// No component path (no build manifest). Derive a scan-root-relative path from
 			// the absolute file path so it can be matched against subsystemPathMap entries.
-			// GetBasePath() is a simple field accessor — no I/O.
-			basePath := s.provider.GetBasePath()
-			if rel, err := filepath.Rel(basePath, filePath); err == nil && rel != "." {
+			// cachedBasePath is set once at Scan() start — no repeated provider calls.
+			if rel, err := filepath.Rel(s.cachedBasePath, filePath); err == nil && rel != "." {
 				path = "/" + filepath.ToSlash(rel)
 			}
 		}
@@ -653,11 +662,14 @@ func (s *Scanner) resolveSubsystemKey(compPath, filePath string) string {
 			return ""
 		}
 		// Try progressively deeper prefixes (longest match wins).
-		// e.g. for "/medicalcloud-zis/zis_server/pom.xml":
-		//   try "/medicalcloud-zis/zis_server", then "/medicalcloud-zis"
-		// This allows group paths at any depth (e.g. "/medicalcloud-zis/next").
-		maxDepth := strings.Count(path, "/")
-		for depth := maxDepth; depth >= 1; depth-- {
+		// Cap at subsystemMaxDepth — the deepest group path in the map — to avoid
+		// iterating over every segment of a deep file path unnecessarily.
+		// e.g. if all group paths are at depth 1, we only ever try one prefix per file.
+		startDepth := s.subsystemMaxDepth
+		if pathDepth := strings.Count(path, "/"); pathDepth < startDepth {
+			startDepth = pathDepth
+		}
+		for depth := startDepth; depth >= 1; depth-- {
 			prefix := types.DepthPrefix(path, depth)
 			if prefix == "" {
 				continue
