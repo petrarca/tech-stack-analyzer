@@ -222,8 +222,11 @@ func (s *Scanner) SetSubsystemDepth(depth int) {
 // ResolveSubsystemKeyFromPath resolves a component path to its subsystem key.
 // Delegates to resolveSubsystemKey — exposed for use by cmd/scan.go during
 // component counting after the scan tree is built.
+//
+// No filePath fallback is needed here: component counting only operates on
+// components that have a non-empty ComponentPath by definition.
 func (s *Scanner) ResolveSubsystemKeyFromPath(compPath string) string {
-	return s.resolveSubsystemKey(compPath)
+	return s.resolveSubsystemKey(compPath, "")
 }
 
 // SetSubsystemGroups builds the path→group lookup map from named group definitions.
@@ -622,25 +625,40 @@ func (s *Scanner) processFile(ctx *types.Payload, dirPath string, fileName strin
 // which means they contribute to global stats only — not to any component or subsystem bucket.
 func (s *Scanner) collectCodeStats(filePath, language, typeOverride string, content []byte, ctx *types.Payload) {
 	compKey := ctx.ComponentPath()
-	subsysKey := s.resolveSubsystemKey(compKey)
+	subsysKey := s.resolveSubsystemKey(compKey, filePath)
 	s.codeStats.ProcessFile(filePath, language, typeOverride, content, compKey, subsysKey)
 }
 
 // resolveSubsystemKey returns the subsystem key for a given component path.
 // If subsystemPathMap is populated (from SubsystemGroups config), it looks up the group name
 // for the depth-1 prefix of the component path. Otherwise falls back to depth-based extraction.
-func (s *Scanner) resolveSubsystemKey(compPath string) string {
-	if compPath == "" {
-		return ""
-	}
+//
+// filePath is the absolute file path — used as a fallback when compPath is empty (files without
+// a build manifest). The file path is converted to a scan-root-relative path with a leading
+// slash for matching against subsystemPathMap entries.
+func (s *Scanner) resolveSubsystemKey(compPath, filePath string) string {
 	if len(s.subsystemPathMap) > 0 {
-		// Group mode: try progressively deeper prefixes (longest match wins).
+		// Group mode: try component path first, then fall back to file path.
+		path := compPath
+		if path == "" && filePath != "" {
+			// No component path (no build manifest). Derive a scan-root-relative path from
+			// the absolute file path so it can be matched against subsystemPathMap entries.
+			// GetBasePath() is a simple field accessor — no I/O.
+			basePath := s.provider.GetBasePath()
+			if rel, err := filepath.Rel(basePath, filePath); err == nil && rel != "." {
+				path = "/" + filepath.ToSlash(rel)
+			}
+		}
+		if path == "" {
+			return ""
+		}
+		// Try progressively deeper prefixes (longest match wins).
 		// e.g. for "/medicalcloud-zis/zis_server/pom.xml":
 		//   try "/medicalcloud-zis/zis_server", then "/medicalcloud-zis"
 		// This allows group paths at any depth (e.g. "/medicalcloud-zis/next").
-		maxDepth := strings.Count(compPath, "/")
+		maxDepth := strings.Count(path, "/")
 		for depth := maxDepth; depth >= 1; depth-- {
-			prefix := types.DepthPrefix(compPath, depth)
+			prefix := types.DepthPrefix(path, depth)
 			if prefix == "" {
 				continue
 			}
@@ -650,7 +668,10 @@ func (s *Scanner) resolveSubsystemKey(compPath string) string {
 		}
 		return "" // path not mapped to any group
 	}
-	// Depth mode: extract depth-N prefix directly
+	// Depth mode: extract depth-N prefix directly (requires component path)
+	if compPath == "" {
+		return ""
+	}
 	return subsystemKey(compPath, s.subsystemDepth)
 }
 
