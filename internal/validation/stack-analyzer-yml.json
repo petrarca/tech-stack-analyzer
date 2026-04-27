@@ -78,6 +78,39 @@
             "maxLength": 100,
             "description": "Override random root ID for deterministic scans (e.g., 'my-project-2024')"
         },
+        "reclassify": {
+            "type": "array",
+            "description": "Override language detection for files matching glob patterns. Useful for correcting misclassified file extensions.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "match": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 255,
+                        "description": "Glob pattern matched relative to scan root (supports **)"
+                    },
+                    "language": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 100,
+                        "description": "Override language label (should be a language known to GitHub Linguist)"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": ["programming", "data", "markup", "prose"],
+                        "description": "Override language type category"
+                    }
+                },
+                "required": ["match"],
+                "anyOf": [
+                    {"required": ["language"]},
+                    {"required": ["type"]}
+                ],
+                "additionalProperties": false
+            },
+            "maxItems": 100
+        },
         "scan": {
             "type": "object",
             "description": "Scan behavior configuration options",

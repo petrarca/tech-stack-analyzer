@@ -55,6 +55,9 @@ type ScanConfigFile struct {
 	// Root-level additional technologies (consistent with .stack-analyzer.yml)
 	Techs []ConfigTech `yaml:"techs,omitempty" json:"techs,omitempty"`
 
+	// Root-level language reclassification rules (consistent with .stack-analyzer.yml)
+	Reclassify []ReclassifyRule `yaml:"reclassify,omitempty" json:"reclassify,omitempty"`
+
 	// Optional named subsystem groups for subsystem_stats rollup.
 	// Keys are group names (e.g. "core-platform"), values define paths and description.
 	// When present, overrides --subsystem-depth — one stat entry per named group.
@@ -166,6 +169,7 @@ func (c *ScanConfigFile) GetMergedConfig(projectConfig *ScanConfig) *ScanConfig 
 		Properties: make(map[string]interface{}),
 		Exclude:    make([]string, 0),
 		Techs:      make([]ConfigTech, 0),
+		Reclassify: make([]ReclassifyRule, 0),
 	}
 
 	// Copy from root-level scan config (new flattened structure)
@@ -180,8 +184,13 @@ func (c *ScanConfigFile) GetMergedConfig(projectConfig *ScanConfig) *ScanConfig 
 	if len(c.Techs) > 0 {
 		merged.Techs = append(merged.Techs, c.Techs...)
 	}
+	if len(c.Reclassify) > 0 {
+		merged.Reclassify = append(merged.Reclassify, c.Reclassify...)
+	}
 
-	// Then merge with project config (project config takes precedence)
+	// Then merge with project config (project config takes precedence).
+	// For reclassify rules, precedence = first-match-wins, so project rules
+	// are prepended to ensure they are checked before scan-config rules.
 	if projectConfig != nil {
 		if projectConfig.Properties != nil {
 			for k, v := range projectConfig.Properties {
@@ -193,6 +202,10 @@ func (c *ScanConfigFile) GetMergedConfig(projectConfig *ScanConfig) *ScanConfig 
 		}
 		if len(projectConfig.Techs) > 0 {
 			merged.Techs = append(merged.Techs, projectConfig.Techs...)
+		}
+		if len(projectConfig.Reclassify) > 0 {
+			// Prepend so project rules take priority (first-match-wins)
+			merged.Reclassify = append(projectConfig.Reclassify, merged.Reclassify...)
 		}
 	}
 

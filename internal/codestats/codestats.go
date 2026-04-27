@@ -109,9 +109,11 @@ type CodeStats struct {
 type Analyzer interface {
 	// ProcessFile analyzes a file and adds its stats to the applicable buckets.
 	// language is the go-enry detected language name (used for grouping).
+	// typeOverride: if non-empty, overrides enry.GetLanguageType() for by-type aggregation
+	//   (one of "programming", "data", "markup", "prose"). Empty string = use go-enry default.
 	// componentKey: stable component identifier (e.g. manifest path); empty = skip component bucket.
 	// subsystemKey: subsystem identifier (depth-N prefix or group name); empty = skip subsystem bucket.
-	ProcessFile(filename, language string, content []byte, componentKey, subsystemKey string)
+	ProcessFile(filename, language, typeOverride string, content []byte, componentKey, subsystemKey string)
 
 	// GetStats returns the aggregated global statistics. Returns nil when disabled.
 	GetStats() *CodeStats
@@ -153,6 +155,7 @@ func NewAnalyzer(cfg AnalyzerConfig) Analyzer {
 		codeByLanguage:   make(map[string]*Stats),
 		otherByLanguage:  make(map[string]*OtherStats),
 		byType:           make(map[string]*Stats),
+		languageType:     make(map[string]string),
 		primaryThreshold: cfg.PrimaryThreshold,
 		maxPrimaryLangs:  cfg.MaxPrimaryLangs,
 	}
@@ -175,10 +178,10 @@ func NewNoopAnalyzer() Analyzer {
 // noopAnalyzer is a no-op implementation when code stats are disabled
 type noopAnalyzer struct{}
 
-func (n *noopAnalyzer) ProcessFile(_, _ string, _ []byte, _, _ string) {}
-func (n *noopAnalyzer) GetStats() *CodeStats                           { return nil }
-func (n *noopAnalyzer) GetComponentStats(_ string) *CodeStats          { return nil }
-func (n *noopAnalyzer) IsEnabled() bool                                { return false }
+func (n *noopAnalyzer) ProcessFile(_, _, _ string, _ []byte, _, _ string) {}
+func (n *noopAnalyzer) GetStats() *CodeStats                              { return nil }
+func (n *noopAnalyzer) GetComponentStats(_ string) *CodeStats             { return nil }
+func (n *noopAnalyzer) IsEnabled() bool                                   { return false }
 
 // sccAnalyzer uses boyter/scc for code statistics
 type sccAnalyzer struct {
@@ -195,6 +198,8 @@ type sccAnalyzer struct {
 	// Per-subsystem tracking (rollup per depth-N path prefix, e.g. "/med")
 	subsystemEnabled bool                    // Whether subsystem tracking is enabled
 	subsystemStats   map[string]*statsBucket // Stats by subsystem key (reuses statsBucket struct)
+	// language label → resolved type (honours reclassify overrides; used by buildByType)
+	languageType map[string]string
 	// Primary language configuration
 	primaryThreshold float64 // Minimum percentage for primary languages
 	maxPrimaryLangs  int     // Maximum number of primary languages to show
@@ -207,6 +212,7 @@ type statsBucket struct {
 	otherTotal      OtherStats             // Total for non-SCC files
 	otherByLanguage map[string]*OtherStats // Non-SCC languages
 	byType          map[string]*Stats      // By type aggregation (programming, data, markup, prose)
+	languageType    map[string]string      // language label → resolved type (honours reclassify overrides)
 }
 
 func (a *sccAnalyzer) IsEnabled() bool { return true }
@@ -239,41 +245,48 @@ func (a *sccAnalyzer) buildUnanalyzedSlice() []OtherLanguageStats {
 func (a *sccAnalyzer) buildByType(analyzed []LanguageStats, unanalyzed []OtherLanguageStats, metrics Metrics) ByType {
 	typeLanguages := make(map[string][]string)
 
-	// Collect languages by type (analyzed)
+	// Collect languages by type — use the stored resolved type (honours reclassify overrides)
+	// rather than re-querying go-enry which would ignore any reclassification.
 	for _, ls := range analyzed {
-		typeName := types.LanguageTypeToString(enry.GetLanguageType(ls.Language))
+		typeName := a.languageType[ls.Language]
+		if typeName == "" {
+			typeName = types.LanguageTypeToString(enry.GetLanguageType(ls.Language))
+		}
 		if typeName != "unknown" {
 			typeLanguages[typeName] = append(typeLanguages[typeName], ls.Language)
 		}
 	}
-	// Collect languages by type (unanalyzed)
 	for _, ls := range unanalyzed {
-		typeName := types.LanguageTypeToString(enry.GetLanguageType(ls.Language))
+		typeName := a.languageType[ls.Language]
+		if typeName == "" {
+			typeName = types.LanguageTypeToString(enry.GetLanguageType(ls.Language))
+		}
 		if typeName != "unknown" {
 			typeLanguages[typeName] = append(typeLanguages[typeName], ls.Language)
 		}
 	}
 
+	// Iterate a.byType directly so type-only reclassified files (which have no language
+	// label) still produce a type bucket even when typeLanguages has no entry for them.
 	byType := ByType{}
-	for typeName, langs := range typeLanguages {
-		if stats, ok := a.byType[typeName]; ok {
-			bucket := &TypeBucket{Total: *stats, Languages: langs}
+	for typeName, stats := range a.byType {
+		langs := typeLanguages[typeName] // may be nil for type-only reclassified files
+		bucket := &TypeBucket{Total: *stats, Languages: langs}
 
-			// Only add metrics for programming type (since they're calculated from programming languages only)
-			if typeName == "programming" && stats.Code > 0 {
-				bucket.Metrics = &metrics
-			}
+		// Only add metrics for programming type
+		if typeName == "programming" && stats.Code > 0 {
+			bucket.Metrics = &metrics
+		}
 
-			switch typeName {
-			case "programming":
-				byType.Programming = bucket
-			case "data":
-				byType.Data = bucket
-			case "markup":
-				byType.Markup = bucket
-			case "prose":
-				byType.Prose = bucket
-			}
+		switch typeName {
+		case "programming":
+			byType.Programming = bucket
+		case "data":
+			byType.Data = bucket
+		case "markup":
+			byType.Markup = bucket
+		case "prose":
+			byType.Prose = bucket
 		}
 	}
 	return byType
@@ -348,36 +361,66 @@ func (a *sccAnalyzer) GetStats() *CodeStats {
 }
 
 // ProcessFile analyzes a file once and distributes results to global, component, and subsystem buckets.
+// typeOverride: if non-empty, overrides enry.GetLanguageType() for by-type aggregation.
 // componentKey and subsystemKey are optional — empty string means skip that bucket.
-func (a *sccAnalyzer) ProcessFile(filename, language string, content []byte, componentKey, subsystemKey string) {
-	filejob, sccLang, ok := a.processFileCommon(filename, language, content)
-	if !ok {
+func (a *sccAnalyzer) ProcessFile(filename, language, typeOverride string, content []byte, componentKey, subsystemKey string) {
+	// Skip entirely when there is neither a language label nor a type override.
+	if language == "" && typeOverride == "" {
 		return
+	}
+	// For type-only reclassify rules (language == "", typeOverride != ""), processFileCommon
+	// would exit early on the empty-language guard. We call it only when language is known;
+	// otherwise we create a minimal filejob directly so the file still gets line-counted.
+	var filejob *processor.FileJob
+	var sccLang string
+	if language != "" {
+		var ok bool
+		filejob, sccLang, ok = a.processFileCommon(filename, language, content)
+		if !ok {
+			return
+		}
+	} else {
+		// Type-only: count lines via SCC but do not record per-language stats.
+		if len(content) == 0 {
+			var err error
+			content, err = os.ReadFile(filename)
+			if err != nil {
+				return
+			}
+		}
+		initOnce.Do(func() { processor.ProcessConstants() })
+		sccLangs, _ := processor.DetectLanguage(filename)
+		if len(sccLangs) > 0 {
+			sccLang = sccLangs[0]
+		}
+		filejob = &processor.FileJob{
+			Filename: filename,
+			Language: sccLang,
+			Content:  content,
+			Bytes:    int64(len(content)),
+		}
+		processor.CountStats(filejob)
 	}
 
 	a.mu.Lock()
 	defer a.mu.Unlock()
 
 	// Always add to global stats
-	a.addToGlobalStatsUnsafe(filejob, language, sccLang)
+	a.addToGlobalStatsUnsafe(filejob, language, sccLang, typeOverride)
 
 	// Optionally add to component bucket
 	if a.perComponentEnabled && componentKey != "" {
-		a.addToBucketUnsafe(filejob, language, sccLang, componentKey, a.componentBuckets)
+		a.addToBucketUnsafe(filejob, language, sccLang, typeOverride, componentKey, a.componentBuckets)
 	}
 
 	// Optionally add to subsystem bucket
 	if a.subsystemEnabled && subsystemKey != "" {
-		a.addToBucketUnsafe(filejob, language, sccLang, subsystemKey, a.subsystemStats)
+		a.addToBucketUnsafe(filejob, language, sccLang, typeOverride, subsystemKey, a.subsystemStats)
 	}
 }
 
 // processFileCommon contains the shared logic for file processing
 func (a *sccAnalyzer) processFileCommon(filename string, language string, content []byte) (*processor.FileJob, string, bool) {
-	// Skip if no language detected by go-enry
-	if language == "" {
-		return nil, "", false
-	}
 
 	// Read file if content not provided
 	if len(content) == 0 {
@@ -414,8 +457,18 @@ func (a *sccAnalyzer) processFileCommon(filename string, language string, conten
 	return filejob, sccLang, true
 }
 
+// resolveTypeName returns the language type name for by-type aggregation.
+// If typeOverride is set (from a reclassify rule), it takes precedence over go-enry's detection.
+func resolveTypeName(language, typeOverride string) string {
+	if typeOverride != "" {
+		return typeOverride
+	}
+	langType := enry.GetLanguageType(language)
+	return types.LanguageTypeToString(langType)
+}
+
 // addToGlobalStatsUnsafe adds file job results to global statistics (caller must hold mutex)
-func (a *sccAnalyzer) addToGlobalStatsUnsafe(filejob *processor.FileJob, language string, sccLang string) {
+func (a *sccAnalyzer) addToGlobalStatsUnsafe(filejob *processor.FileJob, language string, sccLang string, typeOverride string) {
 	// This is the existing global aggregation logic from ProcessFile
 	// Determine if SCC recognized this file
 	sccRecognized := sccLang != ""
@@ -429,19 +482,22 @@ func (a *sccAnalyzer) addToGlobalStatsUnsafe(filejob *processor.FileJob, languag
 		a.total.Complexity += filejob.Complexity
 		a.total.Files++
 
-		if _, ok := a.codeByLanguage[language]; !ok {
-			a.codeByLanguage[language] = &Stats{}
+		// Only record per-language stats when we have a language label
+		// (type-only reclassify rules leave language empty intentionally)
+		typeName := resolveTypeName(language, typeOverride)
+		if language != "" {
+			if _, ok := a.codeByLanguage[language]; !ok {
+				a.codeByLanguage[language] = &Stats{}
+			}
+			a.codeByLanguage[language].Lines += filejob.Lines
+			a.codeByLanguage[language].Code += filejob.Code
+			a.codeByLanguage[language].Comments += filejob.Comment
+			a.codeByLanguage[language].Blanks += filejob.Blank
+			a.codeByLanguage[language].Complexity += filejob.Complexity
+			a.codeByLanguage[language].Files++
+			// Record resolved type for buildByType (honours reclassify overrides)
+			a.languageType[language] = typeName
 		}
-		a.codeByLanguage[language].Lines += filejob.Lines
-		a.codeByLanguage[language].Code += filejob.Code
-		a.codeByLanguage[language].Comments += filejob.Comment
-		a.codeByLanguage[language].Blanks += filejob.Blank
-		a.codeByLanguage[language].Complexity += filejob.Complexity
-		a.codeByLanguage[language].Files++
-
-		// Get language type from go-enry (programming, data, markup, prose)
-		langType := enry.GetLanguageType(language)
-		typeName := types.LanguageTypeToString(langType)
 
 		// Aggregate by language type
 		if typeName != "unknown" {
@@ -460,15 +516,15 @@ func (a *sccAnalyzer) addToGlobalStatsUnsafe(filejob *processor.FileJob, languag
 		a.otherTotal.Lines += filejob.Lines
 		a.otherTotal.Files++
 
-		if _, ok := a.otherByLanguage[language]; !ok {
-			a.otherByLanguage[language] = &OtherStats{}
+		typeName := resolveTypeName(language, typeOverride)
+		if language != "" {
+			if _, ok := a.otherByLanguage[language]; !ok {
+				a.otherByLanguage[language] = &OtherStats{}
+			}
+			a.otherByLanguage[language].Lines += filejob.Lines
+			a.otherByLanguage[language].Files++
+			a.languageType[language] = typeName
 		}
-		a.otherByLanguage[language].Lines += filejob.Lines
-		a.otherByLanguage[language].Files++
-
-		// Also aggregate by type for unanalyzed files
-		langType := enry.GetLanguageType(language)
-		typeName := types.LanguageTypeToString(langType)
 		if typeName != "unknown" {
 			if _, ok := a.byType[typeName]; !ok {
 				a.byType[typeName] = &Stats{}
@@ -481,12 +537,13 @@ func (a *sccAnalyzer) addToGlobalStatsUnsafe(filejob *processor.FileJob, languag
 
 // addToBucketUnsafe adds file job results to a keyed stats bucket (caller must hold mutex).
 // statsMap is either statsBucket or subsystemStats — same logic, different map.
-func (a *sccAnalyzer) addToBucketUnsafe(filejob *processor.FileJob, language string, sccLang string, key string, statsMap map[string]*statsBucket) {
+func (a *sccAnalyzer) addToBucketUnsafe(filejob *processor.FileJob, language string, sccLang string, typeOverride string, key string, statsMap map[string]*statsBucket) {
 	if _, ok := statsMap[key]; !ok {
 		statsMap[key] = &statsBucket{
 			codeByLanguage:  make(map[string]*Stats),
 			otherByLanguage: make(map[string]*OtherStats),
 			byType:          make(map[string]*Stats),
+			languageType:    make(map[string]string),
 		}
 	}
 
@@ -504,19 +561,21 @@ func (a *sccAnalyzer) addToBucketUnsafe(filejob *processor.FileJob, language str
 		compStats.total.Complexity += filejob.Complexity
 		compStats.total.Files++
 
-		if _, ok := compStats.codeByLanguage[language]; !ok {
-			compStats.codeByLanguage[language] = &Stats{}
+		typeName := resolveTypeName(language, typeOverride)
+		if language != "" {
+			if _, ok := compStats.codeByLanguage[language]; !ok {
+				compStats.codeByLanguage[language] = &Stats{}
+			}
+			compStats.codeByLanguage[language].Lines += filejob.Lines
+			compStats.codeByLanguage[language].Code += filejob.Code
+			compStats.codeByLanguage[language].Comments += filejob.Comment
+			compStats.codeByLanguage[language].Blanks += filejob.Blank
+			compStats.codeByLanguage[language].Complexity += filejob.Complexity
+			compStats.codeByLanguage[language].Files++
+			compStats.languageType[language] = typeName
 		}
-		compStats.codeByLanguage[language].Lines += filejob.Lines
-		compStats.codeByLanguage[language].Code += filejob.Code
-		compStats.codeByLanguage[language].Comments += filejob.Comment
-		compStats.codeByLanguage[language].Blanks += filejob.Blank
-		compStats.codeByLanguage[language].Complexity += filejob.Complexity
-		compStats.codeByLanguage[language].Files++
 
-		// Aggregate by language type (programming, data, markup, prose)
-		langType := enry.GetLanguageType(language)
-		typeName := types.LanguageTypeToString(langType)
+		// Aggregate by language type — reclassify override takes precedence
 		if typeName != "unknown" {
 			if _, ok := compStats.byType[typeName]; !ok {
 				compStats.byType[typeName] = &Stats{}
@@ -533,15 +592,18 @@ func (a *sccAnalyzer) addToBucketUnsafe(filejob *processor.FileJob, language str
 		compStats.otherTotal.Lines += filejob.Lines
 		compStats.otherTotal.Files++
 
-		if _, ok := compStats.otherByLanguage[language]; !ok {
-			compStats.otherByLanguage[language] = &OtherStats{}
+		typeName := resolveTypeName(language, typeOverride)
+		if language != "" {
+			if _, ok := compStats.otherByLanguage[language]; !ok {
+				compStats.otherByLanguage[language] = &OtherStats{}
+			}
+			compStats.otherByLanguage[language].Lines += filejob.Lines
+			compStats.otherByLanguage[language].Files++
+			compStats.languageType[language] = typeName
 		}
-		compStats.otherByLanguage[language].Lines += filejob.Lines
-		compStats.otherByLanguage[language].Files++
 
 		// Also aggregate by type for unanalyzed files
-		langType := enry.GetLanguageType(language)
-		typeName := types.LanguageTypeToString(langType)
+		typeName = resolveTypeName(language, typeOverride)
 		if typeName != "unknown" {
 			if _, ok := compStats.byType[typeName]; !ok {
 				compStats.byType[typeName] = &Stats{}
@@ -619,31 +681,31 @@ func (a *sccAnalyzer) buildCodeStatsFromComponentStats(compStats *statsBucket) *
 
 // buildComponentByType builds by-type stats for components with metrics
 func (a *sccAnalyzer) buildComponentByType(compStats *statsBucket, analyzed []LanguageStats, unanalyzed []OtherLanguageStats) ByType {
-	// Collect languages by type
 	typeLanguages := make(map[string][]string)
 
-	// Collect languages by type (analyzed)
+	// Use the bucket's stored resolved type (honours reclassify overrides).
 	for _, ls := range analyzed {
-		typeName := types.LanguageTypeToString(enry.GetLanguageType(ls.Language))
+		typeName := compStats.languageType[ls.Language]
+		if typeName == "" {
+			typeName = types.LanguageTypeToString(enry.GetLanguageType(ls.Language))
+		}
 		if typeName != "unknown" {
 			typeLanguages[typeName] = append(typeLanguages[typeName], ls.Language)
 		}
 	}
-	// Collect languages by type (unanalyzed)
 	for _, ls := range unanalyzed {
-		typeName := types.LanguageTypeToString(enry.GetLanguageType(ls.Language))
+		typeName := compStats.languageType[ls.Language]
+		if typeName == "" {
+			typeName = types.LanguageTypeToString(enry.GetLanguageType(ls.Language))
+		}
 		if typeName != "unknown" {
 			typeLanguages[typeName] = append(typeLanguages[typeName], ls.Language)
 		}
 	}
 
 	byType := ByType{}
-	for typeName, langs := range typeLanguages {
-		stats, ok := compStats.byType[typeName]
-		if !ok {
-			continue
-		}
-
+	for typeName, stats := range compStats.byType {
+		langs := typeLanguages[typeName] // may be nil for type-only reclassified files
 		bucket := &TypeBucket{Total: *stats, Languages: langs}
 
 		// Calculate metrics for programming type

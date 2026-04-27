@@ -215,6 +215,45 @@
                 "required": ["paths"],
                 "additionalProperties": false
             }
+        },
+        "reclassify": {
+            "type": "array",
+            "description": "Override language detection for files matching glob patterns. Useful for correcting misclassified file extensions (e.g. .e files detected as Eiffel that are actually CSV data).",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "match": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 255,
+                        "description": "Glob pattern matched relative to scan root (supports **). E.g. '**/*.e', '**/EBM-GENERATE/**'"
+                    },
+                    "language": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 100,
+                        "description": "Override language label (should be a language known to GitHub Linguist, e.g. 'CSV', 'C++', 'JavaScript')"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": ["programming", "data", "markup", "prose"],
+                        "description": "Override language type category. If omitted, type is derived from the language label via go-enry."
+                    }
+                },
+                "required": ["match"],
+                "anyOf": [
+                    {"required": ["language"]},
+                    {"required": ["type"]}
+                ],
+                "additionalProperties": false
+            },
+            "maxItems": 100,
+            "examples": [
+                [
+                    {"match": "**/*.e", "language": "CSV", "type": "data"},
+                    {"match": "**/generated/**", "type": "data"}
+                ]
+            ]
         }
     },
     "additionalProperties": false

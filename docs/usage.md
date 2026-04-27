@@ -205,6 +205,7 @@ The scanner automatically collects code statistics using [SCC](https://github.co
   - `data` - JSON, YAML, CSV, XML, etc.
   - `markup` - HTML, SVG
   - `prose` - Markdown, Text
+  - Type classification can be overridden per glob pattern via `reclassify` in the project config — see [configuration.md](configuration.md#reclassify)
 - **`analyzed`** - Files SCC can fully parse (code/comments/blanks/complexity breakdown)
 - **`unanalyzed`** - Files SCC cannot parse (only line counts)
 

@@ -22,6 +22,7 @@ type ScanConfig struct {
 	Properties map[string]interface{} `yaml:"properties,omitempty"`
 	Exclude    []string               `yaml:"exclude,omitempty"`
 	Techs      []ConfigTech           `yaml:"techs,omitempty"`
+	Reclassify []ReclassifyRule       `yaml:"reclassify,omitempty"`
 	RootID     string                 `yaml:"root_id,omitempty"` // Override random root ID for deterministic scans
 }
 
@@ -29,6 +30,16 @@ type ScanConfig struct {
 type ConfigTech struct {
 	Tech   string `yaml:"tech"`
 	Reason string `yaml:"reason,omitempty"`
+}
+
+// ReclassifyRule overrides go-enry's language detection for files matching a glob pattern.
+// At least one of Language or Type must be set.
+//   - Language: override the detected language label (e.g. "CSV", "C++")
+//   - Type: override the language type category ("programming", "data", "markup", "prose")
+type ReclassifyRule struct {
+	Match    string `yaml:"match"`              // Glob pattern matched relative to scan root (supports **)
+	Language string `yaml:"language,omitempty"` // Override language label (must be known to go-enry for automatic type resolution)
+	Type     string `yaml:"type,omitempty"`     // Override language type: programming, data, markup, prose
 }
 
 // LoadConfig attempts to load .stack-analyzer.yml from the scan root

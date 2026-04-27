@@ -59,6 +59,8 @@ scan:
 
 - **`subsystem-groups`** *(optional)* - Named subsystem groups for `subsystem_stats[]` rollup. Only needed for large monorepos with 10+ top-level folders where depth-based splitting (via `--subsystem-depth`) produces too many entries. When defined, overrides `--subsystem-depth`. See [Subsystem Groups](#subsystem-groups) below.
 
+- **`reclassify`** - Override language detection for specific file patterns. See [Reclassify](#reclassify) below.
+
 - **`scan`** - Scan behavior configuration options
   - **`component_stats_depth`** - Include `code_stats` on components up to this tree depth in output (default: 0 = none). Matches `--component-stats-depth` flag.
   - **`subsystem_depth`** - Produce `subsystem_stats[]` rolled up per depth-N path prefix (default: 0 = none). Ignored when `subsystem-groups` is defined. Matches `--subsystem-depth` flag.
@@ -133,9 +135,52 @@ stack-analyzer scan --config portfolio.yml --output portfolio-analysis.json
 - **Unified options** - All scanner flags configurable in one place
 - **External technologies** - Document SaaS services and deployment targets
 - **Flexible exclusions** - Project-specific ignore patterns beyond .gitignore
+- **Language reclassification** - Override go-enry's language detection per glob pattern (see [Reclassify](#reclassify))
 - **Inline JSON support** - Perfect for CI/CD and automation pipelines
 
 See `stack-analyzer-config.example.yml` for a complete configuration template with all available options and precedence examples.
+
+### Reclassify
+
+The `reclassify` option overrides go-enry's (GitHub Linguist) language detection for files matching glob patterns. This is useful when file extensions are ambiguous or misclassified — for example, proprietary data files that share extensions with known programming languages.
+
+Each rule requires a `match` glob pattern and at least one of `language` or `type`:
+
+```yaml
+reclassify:
+  # Relabel AND recategorize — both language label and type bucket are overridden
+  - match: "**/*.e"
+    language: CSV      # Override the language label (must be a go-enry known language for automatic type resolution)
+    type: data         # Override the type category: programming, data, markup, prose
+
+  # Language-only — type is resolved automatically from go-enry's knowledge of the language
+  - match: "**/*.h"
+    language: "C++"    # .h files in this project are always C++, not C
+
+  # Type-only — language label is left empty; file still contributes to by-type stats
+  - match: "**/generated/**"
+    type: data         # Force all generated files into the data bucket regardless of extension
+```
+
+**Rule fields:**
+
+| Field | Required | Description |
+|---|---|---|
+| `match` | Yes | Glob pattern matched relative to the scan root. Supports `**` for recursive matching. |
+| `language` | One of `language`/`type` | Override the detected language label. Use a language name known to GitHub Linguist (e.g. `CSV`, `C++`, `JavaScript`) for automatic type resolution. Unknown names produce `unknown` type unless `type` is also set. |
+| `type` | One of `language`/`type` | Override the language type category. One of: `programming`, `data`, `markup`, `prose`. When omitted, type is derived from `language` via go-enry. |
+
+**Precedence:** Rules are evaluated in order — the first match wins. When both `.stack-analyzer.yml` and `--config` define rules, project config rules (`.stack-analyzer.yml`) take precedence and are checked first.
+
+**Behaviour summary:**
+
+| Config | Language in output | Type bucket |
+|---|---|---|
+| `language: CSV` | `CSV` | `data` (go-enry knows CSV is data) |
+| `language: CSV` + `type: data` | `CSV` | `data` (explicit, redundant but safe) |
+| `type: data` only | *(absent)* | `data` |
+| `language: "MyFormat"` only | `MyFormat` | `unknown` (go-enry doesn't know it) |
+| `language: "MyFormat"` + `type: data` | `MyFormat` | `data` |
 
 ### Subsystem Groups
 

@@ -154,13 +154,20 @@ func NewScannerWithOptionsAndLogger(path string, excludePatterns []string, quiet
 		prog.EnableRuleTracing()
 	}
 
+	// Create language detector — reclassify rules are nil/empty when not configured
+	var reclassifyRules []config.ReclassifyRule
+	if cfg != nil {
+		reclassifyRules = cfg.Reclassify
+	}
+	langDetector := NewLanguageDetector(reclassifyRules, path)
+
 	return &Scanner{
 		provider:        provider,
 		rules:           components.rules,
 		depDetector:     components.depDetector,
 		dotenvDetector:  components.dotenvDetector,
 		licenseDetector: components.licenseDetector,
-		langDetector:    NewLanguageDetector(),
+		langDetector:    langDetector,
 		contentMatcher:  components.contentMatcher,
 		excludePatterns: excludePatterns,
 		progress:        prog,
@@ -538,20 +545,20 @@ func (s *Scanner) ScanFile(fileName string) (*types.Payload, error) {
 	// Pass the base path (directory) as the current path for component detection
 	ctx := s.applyRules(payload, files, basePath)
 
-	// Detect language from the file name with content analysis
+	// Detect language from the file name with content analysis (with reclassify support)
 	filePath := filepath.Join(basePath, fileName)
 	content, err := s.provider.ReadFile(filePath)
 	if err != nil {
 		content = []byte{} // Empty content on error
 	}
-	if lang := s.langDetector.DetectLanguage(fileName, content); lang != "" {
-		ctx.AddLanguage(lang)
+	result := s.langDetector.DetectLanguageWithType(filePath, content)
+	if result.Language != "" {
+		ctx.AddLanguage(result.Language)
 	}
 
 	// Collect code statistics if enabled
 	if s.codeStats != nil {
-		lang := s.langDetector.DetectLanguage(fileName, content)
-		s.collectCodeStats(filePath, lang, content, payload)
+		s.collectCodeStats(filePath, result.Language, result.TypeOverride, content, payload)
 	}
 
 	// Add metadata for single file scan
@@ -598,25 +605,25 @@ func (s *Scanner) processFile(ctx *types.Payload, dirPath string, fileName strin
 		content = []byte{} // Empty content on error
 	}
 
-	// Detect language from file name
-	lang := s.langDetector.DetectLanguage(fileName, content)
-	if lang != "" {
-		ctx.AddLanguage(lang)
+	// Detect language (with potential reclassify override)
+	result := s.langDetector.DetectLanguageWithType(fileFullPath, content)
+	if result.Language != "" {
+		ctx.AddLanguage(result.Language)
 	}
 
 	// Collect code statistics if enabled
 	if s.codeStats != nil {
-		s.collectCodeStats(fileFullPath, lang, content, ctx)
+		s.collectCodeStats(fileFullPath, result.Language, result.TypeOverride, content, ctx)
 	}
 }
 
 // collectCodeStats dispatches a single ProcessFile call with the resolved component and subsystem keys.
 // Files at the root level (no component) or in virtual components have an empty ComponentPath,
 // which means they contribute to global stats only — not to any component or subsystem bucket.
-func (s *Scanner) collectCodeStats(filePath, language string, content []byte, ctx *types.Payload) {
+func (s *Scanner) collectCodeStats(filePath, language, typeOverride string, content []byte, ctx *types.Payload) {
 	compKey := ctx.ComponentPath()
 	subsysKey := s.resolveSubsystemKey(compKey)
-	s.codeStats.ProcessFile(filePath, language, content, compKey, subsysKey)
+	s.codeStats.ProcessFile(filePath, language, typeOverride, content, compKey, subsysKey)
 }
 
 // resolveSubsystemKey returns the subsystem key for a given component path.
