@@ -18,8 +18,9 @@ type Payload struct {
 	ID               string                 `json:"id"`
 	Name             string                 `json:"name"`
 	Path             []string               `json:"path,omitempty"`
-	ComponentType    string                 `json:"type,omitempty"` // Type of component (e.g., "maven", "nodejs", "python")
-	Tech             []string               `json:"tech"`           // Changed from *string to []string to support multiple primary technologies
+	SourceDir        string                 `json:"source_dir,omitempty"` // Directory this component owns, relative to scan root (e.g. "/backend/customer-journey")
+	ComponentType    string                 `json:"type,omitempty"`       // Type of component (e.g., "maven", "nodejs", "python")
+	Tech             []string               `json:"tech"`                 // Changed from *string to []string to support multiple primary technologies
 	Techs            []string               `json:"techs"`
 	Languages        map[string]int         `json:"languages"`
 	PrimaryLanguages []PrimaryLanguage      `json:"primary_languages,omitempty"` // Top programming languages (from code_stats)
@@ -131,6 +132,7 @@ func NewPayload(name string, paths []string) *Payload {
 		ID:            GenerateComponentID("temp", name, relativePath), // Temporary ID, will be replaced
 		Name:          name,
 		Path:          paths,
+		SourceDir:     sourceDir(relativePath),
 		Techs:         make([]string, 0),
 		Languages:     make(map[string]int),
 		Dependencies:  make([]Dependency, 0),
@@ -170,6 +172,24 @@ func CalculateRelativePath(fileName, currentPath, basePath string) string {
 		return "/"
 	}
 	return "/" + relativeFilePath
+}
+
+// sourceDir derives the component's owning directory from its manifest file path.
+// For "/backend/customer-journey/pom.xml" returns "/backend/customer-journey".
+// For "/" (root component) returns "/".
+// For "" (no path) returns "".
+func sourceDir(manifestPath string) string {
+	if manifestPath == "" {
+		return ""
+	}
+	if manifestPath == "/" {
+		return "/"
+	}
+	dir := filepath.Dir(manifestPath)
+	if dir == "." {
+		return "/"
+	}
+	return dir
 }
 
 // SetComponentProperty sets a property for a component technology.

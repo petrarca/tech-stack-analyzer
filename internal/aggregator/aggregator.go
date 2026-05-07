@@ -18,6 +18,7 @@ type ComponentEntry struct {
 	Tech      []string    `json:"tech,omitempty"`
 	Techs     []string    `json:"techs,omitempty"`
 	Path      string      `json:"path,omitempty"`       // First path entry (primary location)
+	SourceDir string      `json:"source_dir,omitempty"` // Directory this component owns, relative to scan root
 	CodeStats interface{} `json:"code_stats,omitempty"` // Per-component code statistics (included when within component-stats-depth)
 }
 
@@ -364,6 +365,7 @@ func collectComponentsRecursive(payload *types.Payload, components *[]ComponentE
 			Tech:      payload.Tech,
 			Techs:     payload.Techs,
 			Path:      path,
+			SourceDir: payload.SourceDir,
 			CodeStats: payload.CodeStats, // non-nil only when --component-stats-depth covers this component
 		})
 	}

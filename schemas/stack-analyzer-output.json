@@ -178,6 +178,10 @@
                         "type": "string"
                     }
                 },
+                "source_dir": {
+                    "type": "string",
+                    "description": "Directory this component owns, relative to the scan root (e.g. '/backend/customer-journey'). Derived from the first manifest file path. '/' for root components, omitted when empty."
+                },
                 "type": {
                     "type": "string",
                     "description": "Type of component (e.g., 'maven', 'nodejs', 'python', 'dotnet')"
@@ -531,6 +535,10 @@
                             "path": {
                                 "type": "string",
                                 "description": "Relative path to the component manifest file"
+                            },
+                            "source_dir": {
+                                "type": "string",
+                                "description": "Directory this component owns, relative to the scan root"
                             },
                             "code_stats": {
                                 "$ref": "#/definitions/code_stats",
