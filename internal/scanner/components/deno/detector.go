@@ -75,6 +75,8 @@ func (d *Detector) detectDenoLock(file types.File, currentPath, basePath string,
 		relativeFilePath = "/" + relativeFilePath
 	}
 	payload := types.NewPayloadWithPath("virtual", relativeFilePath)
+	payload.SetComponentType("deno")
+	payload.AddPrimaryTech("deno")
 
 	// Extract dependency names for tech matching
 	var depNames []string
@@ -124,6 +126,7 @@ func (d *Detector) detectDenoConfig(file types.File, currentPath, basePath strin
 		name = "virtual"
 	}
 	payload := types.NewPayloadWithPath(name, relativeFilePath)
+	payload.SetComponentType("deno")
 	payload.AddPrimaryTech("deno")
 
 	// Process license

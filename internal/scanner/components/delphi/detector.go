@@ -56,6 +56,7 @@ func (d *Detector) detectDelphiProject(file types.File, currentPath, basePath st
 	payload := types.NewPayloadWithPath(project.Name, relativeFilePath)
 
 	// Set tech to delphi
+	payload.SetComponentType("delphi")
 	payload.AddPrimaryTech("delphi")
 	payload.AddTech("delphi", "matched file: "+file.Name)
 

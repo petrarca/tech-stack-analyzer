@@ -218,10 +218,10 @@ func mergeStructFields(source, target interface{}) {
 	sourceValue := reflect.ValueOf(source)
 	targetValue := reflect.ValueOf(target)
 
-	if sourceValue.Kind() == reflect.Ptr {
+	if sourceValue.Kind() == reflect.Pointer {
 		sourceValue = sourceValue.Elem()
 	}
-	if targetValue.Kind() == reflect.Ptr {
+	if targetValue.Kind() == reflect.Pointer {
 		targetValue = targetValue.Elem()
 	}
 

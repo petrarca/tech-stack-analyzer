@@ -97,6 +97,7 @@ func (d *Detector) processPodfile(file types.File, currentPath, basePath string,
 	payload := types.NewPayloadWithPath("CocoaPods", relativeFilePath)
 
 	// Set tech field to cocoapods
+	payload.SetComponentType("cocoapods")
 	payload.AddPrimaryTech("cocoapods")
 
 	// Match dependencies against rules
@@ -133,6 +134,7 @@ func (d *Detector) processPodfileLock(file types.File, currentPath, basePath str
 	payload := types.NewPayloadWithPath("CocoaPods", relativeFilePath)
 
 	// Set tech field to cocoapods
+	payload.SetComponentType("cocoapods")
 	payload.AddPrimaryTech("cocoapods")
 
 	// Match dependencies against rules
