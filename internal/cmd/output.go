@@ -33,9 +33,10 @@ func OutputToFile(o Outputter, format string, outputFile string) {
 
 	switch util.NormalizeFormat(format) {
 	case "json":
-		data, err = json.MarshalIndent(o.ToJSON(), "", "  ")
-		if err != nil {
-			log.Fatalf("Failed to marshal JSON: %v", err)
+		var encErr error
+		data, encErr = marshalJSON(o.ToJSON(), true)
+		if encErr != nil {
+			log.Fatalf("Failed to marshal JSON: %v", encErr)
 		}
 	case "yaml":
 		data, err = yaml.Marshal(o.ToJSON())
@@ -81,4 +82,19 @@ func setupFormatFlag(cmd *cobra.Command, formatPtr *string) {
 func setupOutputFlags(cmd *cobra.Command, formatPtr *string, outputPtr *string) {
 	setupFormatFlag(cmd, formatPtr)
 	cmd.Flags().StringVarP(outputPtr, "output", "o", "", "Output file path (default: stdout)")
+}
+
+// marshalJSON encodes v to JSON without HTML-escaping >, <, & characters.
+// Set indent=true for pretty-printed output.
+func marshalJSON(v interface{}, indent bool) ([]byte, error) {
+	var buf bytes.Buffer
+	enc := json.NewEncoder(&buf)
+	enc.SetEscapeHTML(false)
+	if indent {
+		enc.SetIndent("", "  ")
+	}
+	if err := enc.Encode(v); err != nil {
+		return nil, err
+	}
+	return bytes.TrimRight(buf.Bytes(), "\n"), nil
 }

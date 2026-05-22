@@ -1,7 +1,9 @@
 package parsers
 
 import (
+	"bytes"
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
@@ -152,6 +154,75 @@ func TestEmptyVersionHandling(t *testing.T) {
 
 			if arr[3] != tt.wantIdx3 {
 				t.Errorf("Expected scope '%s' at index 3, got '%v'", tt.wantIdx3, arr[3])
+			}
+		})
+	}
+}
+
+func TestVersionConstraintNoHTMLEscape(t *testing.T) {
+	// Verify that version strings with >, <, & are not HTML-escaped in JSON output
+	tests := []struct {
+		name        string
+		dep         types.Dependency
+		wantVersion string // exact version string in JSON
+	}{
+		{
+			name:        "CocoaPods >= constraint",
+			dep:         types.Dependency{Type: "cocoapods", Name: "CGMAuditLog", Version: ">= 24.12.0-SNAPSHOT"},
+			wantVersion: ">= 24.12.0-SNAPSHOT",
+		},
+		{
+			name:        "version with greater-than",
+			dep:         types.Dependency{Type: "cocoapods", Name: "MyPod", Version: "> 1.0.0"},
+			wantVersion: "> 1.0.0",
+		},
+		{
+			name:        "version with less-than",
+			dep:         types.Dependency{Type: "npm", Name: "pkg", Version: "< 2.0.0"},
+			wantVersion: "< 2.0.0",
+		},
+		{
+			name:        "version range with angle brackets",
+			dep:         types.Dependency{Type: "python", Name: "pkg", Version: ">=1.0,<2.0"},
+			wantVersion: ">=1.0,<2.0",
+		},
+		{
+			name:        "CocoaPods ~> constraint",
+			dep:         types.Dependency{Type: "cocoapods", Name: "Alamofire", Version: "~> 5.6.0"},
+			wantVersion: "~> 5.6.0",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Use json.Encoder with SetEscapeHTML(false) to match production output behavior
+			// (json.Marshal always HTML-escapes >, <, & regardless of MarshalJSON)
+			var buf bytes.Buffer
+			enc := json.NewEncoder(&buf)
+			enc.SetEscapeHTML(false)
+			if err := enc.Encode(tt.dep); err != nil {
+				t.Fatalf("Encode failed: %v", err)
+			}
+			jsonStr := strings.TrimRight(buf.String(), "\n")
+
+			// Verify no unicode escaping of > or <
+			if strings.Contains(jsonStr, `\u003e`) {
+				t.Errorf("Version contains escaped \\u003e (>): %s", jsonStr)
+			}
+			if strings.Contains(jsonStr, `\u003c`) {
+				t.Errorf("Version contains escaped \\u003c (<): %s", jsonStr)
+			}
+			if strings.Contains(jsonStr, `\u0026`) {
+				t.Errorf("Version contains escaped \\u0026 (&): %s", jsonStr)
+			}
+
+			// Verify the version is preserved correctly
+			var arr []interface{}
+			if err := json.Unmarshal([]byte(jsonStr), &arr); err != nil {
+				t.Fatalf("Unmarshal failed: %v", err)
+			}
+			if arr[2] != tt.wantVersion {
+				t.Errorf("Expected version '%s', got '%v'", tt.wantVersion, arr[2])
 			}
 		})
 	}

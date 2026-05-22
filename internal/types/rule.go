@@ -1,6 +1,7 @@
 package types
 
 import (
+	"bytes"
 	"encoding/json"
 	"regexp"
 )
@@ -60,26 +61,39 @@ type Dependency struct {
 // - direct: true (declared in manifest) or false (transitive)
 // - metadata: optional object with source, type, classifier, exclusions, peer, optional, bundled, etc.
 func (d Dependency) MarshalJSON() ([]byte, error) {
-	// Build metadata object
-	metadata := d.Metadata
-	if metadata == nil {
-		metadata = make(map[string]interface{})
-	}
-
-	// Add source file to metadata if present (migrate from deprecated SourceFile field)
+	// Build a shallow copy of metadata to avoid mutating the original map
+	var metadata map[string]interface{}
 	if d.SourceFile != "" {
+		// Migrate deprecated SourceFile into metadata.source — copy to avoid side effects
+		metadata = make(map[string]interface{}, len(d.Metadata)+1)
+		for k, v := range d.Metadata {
+			metadata[k] = v
+		}
 		if _, exists := metadata["source"]; !exists {
 			metadata["source"] = d.SourceFile
 		}
+	} else {
+		metadata = d.Metadata
 	}
 
 	// Always return 6 elements for consistency
-	// If metadata is empty, return empty object
+	// Use encoder with SetEscapeHTML(false) to avoid escaping >, <, & in version strings
+	var buf bytes.Buffer
+	enc := json.NewEncoder(&buf)
+	enc.SetEscapeHTML(false)
+
+	var arr []interface{}
 	if len(metadata) == 0 {
-		return json.Marshal([]interface{}{d.Type, d.Name, d.Version, d.Scope, d.Direct, struct{}{}})
+		arr = []interface{}{d.Type, d.Name, d.Version, d.Scope, d.Direct, struct{}{}}
+	} else {
+		arr = []interface{}{d.Type, d.Name, d.Version, d.Scope, d.Direct, metadata}
 	}
 
-	return json.Marshal([]interface{}{d.Type, d.Name, d.Version, d.Scope, d.Direct, metadata})
+	if err := enc.Encode(arr); err != nil {
+		return nil, err
+	}
+	// Encode appends a newline; trim it for MarshalJSON compatibility
+	return bytes.TrimRight(buf.Bytes(), "\n"), nil
 }
 
 // CompiledDependency is a pre-compiled dependency for performance

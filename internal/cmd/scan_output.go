@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -143,10 +142,7 @@ func generateOutput(payload interface{}, aggregateFields string, prettyPrint boo
 		result = payload
 	}
 
-	if prettyPrint {
-		return json.MarshalIndent(result, "", "  ")
-	}
-	return json.Marshal(result)
+	return marshalJSON(result, prettyPrint)
 }
 
 // writeOutput writes JSON data to the configured output file or stdout.
