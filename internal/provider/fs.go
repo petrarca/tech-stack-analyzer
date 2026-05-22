@@ -60,7 +60,7 @@ func (p *FSProvider) ListDir(path string) ([]types.File, error) {
 	return files, nil
 }
 
-// Open returns the content of a file
+// Open returns the content of a file as UTF-8 string
 func (p *FSProvider) Open(path string) (string, error) {
 	fullPath := p.getFullPath(path)
 
@@ -69,13 +69,17 @@ func (p *FSProvider) Open(path string) (string, error) {
 		return "", err
 	}
 
-	return string(content), nil
+	return string(NormalizeToUTF8(content)), nil
 }
 
-// ReadFile reads file content as bytes
+// ReadFile reads file content as bytes, normalizing encoding to UTF-8
 func (p *FSProvider) ReadFile(path string) ([]byte, error) {
 	fullPath := p.getFullPath(path)
-	return os.ReadFile(fullPath)
+	content, err := os.ReadFile(fullPath)
+	if err != nil {
+		return nil, err
+	}
+	return NormalizeToUTF8(content), nil
 }
 
 // Exists checks if a file or directory exists
