@@ -7,7 +7,23 @@ import (
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
 
-// CocoaPodsParser handles CocoaPods-specific file parsing (Podfile, Podfile.lock)
+// Pre-compiled regexes for CocoaPods file parsing
+var (
+	// Podfile: pod 'Name', 'version' or pod "Name", "version"
+	podfileDepWithVersion = regexp.MustCompile(`pod ['"]([^'"]+)['"],\s*['"]([^'"]+)['"]`)
+	// Podfile: pod 'Name' or pod "Name" (no version)
+	podfileDepNoVersion = regexp.MustCompile(`pod ['"]([^'"]+)['"]`)
+
+	// Podfile.lock: - PodName (version)
+	podfileLockDep = regexp.MustCompile(`^\s*-\s*([^:\s(]+)\s*\(([^)]+)\)`)
+
+	// .podspec: s.dependency "Name", ">= version" or spec.dependency 'Name', '~> version'
+	podspecDepWithVersion = regexp.MustCompile(`\.dependency\s+['"]([^'"]+)['"],\s*['"]([^'"]+)['"]`)
+	// .podspec: s.dependency "Name" (no version)
+	podspecDepNoVersion = regexp.MustCompile(`\.dependency\s+['"]([^'"]+)['"]`)
+)
+
+// CocoaPodsParser handles CocoaPods-specific file parsing (Podfile, Podfile.lock, .podspec)
 type CocoaPodsParser struct{}
 
 // NewCocoaPodsParser creates a new CocoaPods parser
@@ -20,40 +36,25 @@ func NewCocoaPodsParser() *CocoaPodsParser {
 func (p *CocoaPodsParser) ParsePodfile(content string) []types.Dependency {
 	dependencies := make([]types.Dependency, 0)
 
-	// Pattern for: pod 'name' or pod "name" (no version)
-	depRegexNoVersion := regexp.MustCompile(`pod ['"]([^'"]+)['"]`)
-	// Pattern for: pod 'name', 'version' or pod "name", "version"
-	depRegexWithVersion := regexp.MustCompile(`pod ['"]([^'"]+)['"],\s*['"]([^'"]+)['"]`)
-
-	lines := strings.Split(content, "\n")
-
-	for _, line := range lines {
-		// Skip comments and empty lines
+	for _, line := range strings.Split(content, "\n") {
 		line = strings.TrimSpace(line)
 		if strings.HasPrefix(line, "#") || line == "" {
 			continue
 		}
 
-		// First try to match with version
-		if match := depRegexWithVersion.FindStringSubmatch(line); match != nil {
-			podName := match[1]
-			version := match[2]
-
+		if match := podfileDepWithVersion.FindStringSubmatch(line); match != nil {
 			dependencies = append(dependencies, types.Dependency{
 				Type:    DependencyTypeCocoapods,
-				Name:    podName,
-				Version: version,
+				Name:    match[1],
+				Version: match[2],
 			})
 			continue
 		}
 
-		// Then try to match without version
-		if match := depRegexNoVersion.FindStringSubmatch(line); match != nil {
-			podName := match[1]
-
+		if match := podfileDepNoVersion.FindStringSubmatch(line); match != nil {
 			dependencies = append(dependencies, types.Dependency{
 				Type:    DependencyTypeCocoapods,
-				Name:    podName,
+				Name:    match[1],
 				Version: "latest",
 			})
 		}
@@ -66,14 +67,9 @@ func (p *CocoaPodsParser) ParsePodfile(content string) []types.Dependency {
 // Matches patterns in the PODS section like: - PodName (version)
 func (p *CocoaPodsParser) ParsePodfileLock(content string) []types.Dependency {
 	dependencies := make([]types.Dependency, 0)
-
-	lines := strings.Split(content, "\n")
 	inPodsSection := false
 
-	// Pattern for: - PodName (version) - main pod entries only
-	depRegex := regexp.MustCompile(`^\s*-\s*([^:\s(]+)\s*\(([^)]+)\)`)
-
-	for _, line := range lines {
+	for _, line := range strings.Split(content, "\n") {
 		originalLine := line
 		line = strings.TrimSpace(line)
 
@@ -95,7 +91,7 @@ func (p *CocoaPodsParser) ParsePodfileLock(content string) []types.Dependency {
 		if strings.HasPrefix(originalLine, "    -") {
 			continue
 		}
-		if match := depRegex.FindStringSubmatch(line); match != nil {
+		if match := podfileLockDep.FindStringSubmatch(line); match != nil {
 			podName := match[1]
 			version := match[2]
 
@@ -110,13 +106,48 @@ func (p *CocoaPodsParser) ParsePodfileLock(content string) []types.Dependency {
 	return dependencies
 }
 
-// ExtractDependencies extracts dependencies from either Podfile or Podfile.lock content
+// ParsePodspec parses .podspec files and extracts dependency declarations.
+// Matches patterns like: s.dependency "Name", ">= version" or spec.dependency 'Name'
+func (p *CocoaPodsParser) ParsePodspec(content string) []types.Dependency {
+	dependencies := make([]types.Dependency, 0)
+
+	for _, line := range strings.Split(content, "\n") {
+		line = strings.TrimSpace(line)
+		if strings.HasPrefix(line, "#") || line == "" {
+			continue
+		}
+
+		if match := podspecDepWithVersion.FindStringSubmatch(line); match != nil {
+			dependencies = append(dependencies, types.Dependency{
+				Type:    DependencyTypeCocoapods,
+				Name:    match[1],
+				Version: match[2],
+			})
+			continue
+		}
+
+		if match := podspecDepNoVersion.FindStringSubmatch(line); match != nil {
+			dependencies = append(dependencies, types.Dependency{
+				Type:    DependencyTypeCocoapods,
+				Name:    match[1],
+				Version: "latest",
+			})
+		}
+	}
+
+	return dependencies
+}
+
+// ExtractDependencies extracts dependencies from Podfile, Podfile.lock, or .podspec content
 func (p *CocoaPodsParser) ExtractDependencies(content, filename string) []types.Dependency {
 	if strings.HasSuffix(filename, "Podfile") {
 		return p.ParsePodfile(content)
 	}
 	if strings.HasSuffix(filename, "Podfile.lock") {
 		return p.ParsePodfileLock(content)
+	}
+	if strings.HasSuffix(filename, ".podspec") {
+		return p.ParsePodspec(content)
 	}
 	return []types.Dependency{}
 }
