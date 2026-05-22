@@ -168,7 +168,7 @@ func TestVersionConstraintNoHTMLEscape(t *testing.T) {
 	}{
 		{
 			name:        "CocoaPods >= constraint",
-			dep:         types.Dependency{Type: "cocoapods", Name: "CGMAuditLog", Version: ">= 24.12.0-SNAPSHOT"},
+			dep:         types.Dependency{Type: "cocoapods", Name: "MyAuditLib", Version: ">= 24.12.0-SNAPSHOT"},
 			wantVersion: ">= 24.12.0-SNAPSHOT",
 		},
 		{
