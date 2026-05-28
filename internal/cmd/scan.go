@@ -149,7 +149,7 @@ func runSinglePathScan(args []string, cmd *cobra.Command, logger *slog.Logger) {
 	setupScanSettings(logger)
 
 	_, mergedConfig := loadAndMergeProjectConfig(absPath, logger)
-	payload := runScanner(absPath, isFile, mergedConfig, logger)
+	payload := runScanner(absPath, isFile, mergedConfig, logger, nil)
 
 	// Recompute primary_techs after enhancement so config-injected techs are included.
 	enhanceSinglePayload(payload, mergedConfig)
