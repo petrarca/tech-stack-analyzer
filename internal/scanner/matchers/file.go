@@ -137,23 +137,41 @@ func matchGlob(pattern, fileName string) bool {
 	return re.MatchString(fileName)
 }
 
-// globToRegex converts a glob pattern to a regex pattern
+// globToRegex converts a glob pattern to a regex pattern.
+// Standard glob semantics:
+//   - ** matches zero or more path segments (including path separators)
+//   - *  matches any sequence of characters within a single path segment (no /)
+//   - ?  matches any single character (no /)
 func globToRegex(glob string) string {
 	var result strings.Builder
 	result.WriteString("^")
 
-	for _, char := range glob {
-		switch char {
+	runes := []rune(glob)
+	for i := 0; i < len(runes); i++ {
+		ch := runes[i]
+		switch ch {
 		case '*':
-			result.WriteString(".*")
+			if i+1 < len(runes) && runes[i+1] == '*' {
+				i++ // consume second *
+				// **/ — match zero or more path segments including the trailing separator
+				if i+1 < len(runes) && runes[i+1] == '/' {
+					result.WriteString("(?:.*/)?")
+					i++ // consume the /
+				} else {
+					// ** at end of pattern — match anything
+					result.WriteString(".*")
+				}
+			} else {
+				// * — match anything except path separator
+				result.WriteString("[^/]*")
+			}
 		case '?':
-			result.WriteString(".")
+			result.WriteString("[^/]")
 		case '.', '+', '(', ')', '[', ']', '{', '}', '^', '$', '|', '\\':
-			// Escape regex special characters
 			result.WriteString("\\")
-			result.WriteRune(char)
+			result.WriteRune(ch)
 		default:
-			result.WriteRune(char)
+			result.WriteRune(ch)
 		}
 	}
 

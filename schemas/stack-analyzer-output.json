@@ -319,6 +319,16 @@
                                 "type": "integer",
                                 "description": "Number of components under this subsystem"
                             },
+                            "techs": {
+                                "type": "array",
+                                "items": { "type": "string" },
+                                "description": "Deduplicated union of component techs in this subsystem (sorted alphabetically)"
+                            },
+                            "languages": {
+                                "type": "object",
+                                "additionalProperties": { "type": "integer" },
+                                "description": "Merged language file counts from all components in this subsystem (language name to file count)"
+                            },
                             "code_stats": {
                                 "$ref": "#/definitions/code_stats"
                             }

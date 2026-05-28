@@ -54,8 +54,15 @@ func attachComponentCodeStatsRecursive(payload *types.Payload, analyzer codestat
 	}
 }
 
+// subsystemComponentData holds aggregated component data per subsystem key.
+type subsystemComponentData struct {
+	count     int
+	techSet   map[string]bool
+	languages map[string]int
+}
+
 // attachSubsystemStats populates payload.SubsystemStats from the analyzer's subsystem buckets.
-// Each entry is one subsystem key with its rolled-up code stats and component count.
+// Each entry is one subsystem key with its rolled-up code stats, component count, techs, and languages.
 // This is a no-op when subsystem tracking is disabled.
 func attachSubsystemStats(payload *types.Payload, analyzer codestats.Analyzer, resolve subsystemKeyResolver, groups map[string]config.SubsystemGroup) {
 	sa, ok := analyzer.(codestats.SubsystemAnalyzer)
@@ -66,7 +73,7 @@ func attachSubsystemStats(payload *types.Payload, analyzer codestats.Analyzer, r
 	if len(keys) == 0 {
 		return
 	}
-	counts := countComponentsBySubsystem(payload, resolve)
+	data := collectSubsystemComponentData(payload, resolve)
 
 	stats := make([]types.SubsystemStat, 0, len(keys))
 	for _, key := range keys {
@@ -75,9 +82,15 @@ func attachSubsystemStats(payload *types.Payload, analyzer codestats.Analyzer, r
 			continue
 		}
 		entry := types.SubsystemStat{
-			Path:           key,
-			ComponentCount: counts[key],
-			CodeStats:      cs,
+			Path:      key,
+			CodeStats: cs,
+		}
+		if d, ok := data[key]; ok {
+			entry.ComponentCount = d.count
+			entry.Techs = sortedKeys(d.techSet)
+			if len(d.languages) > 0 {
+				entry.Languages = d.languages
+			}
 		}
 		if g, ok := groups[key]; ok {
 			entry.Paths = g.Paths
@@ -89,23 +102,50 @@ func attachSubsystemStats(payload *types.Payload, analyzer codestats.Analyzer, r
 	payload.SubsystemStats = stats
 }
 
-// countComponentsBySubsystem counts components per subsystem using the resolver function.
-func countComponentsBySubsystem(payload *types.Payload, resolve subsystemKeyResolver) map[string]int {
-	counts := make(map[string]int)
-	countComponentsBySubsystemRecursive(payload, counts, resolve)
-	return counts
+// collectSubsystemComponentData walks the component tree and collects count, techs, and languages per subsystem.
+func collectSubsystemComponentData(payload *types.Payload, resolve subsystemKeyResolver) map[string]*subsystemComponentData {
+	data := make(map[string]*subsystemComponentData)
+	collectSubsystemComponentDataRecursive(payload, data, resolve)
+	return data
 }
 
-func countComponentsBySubsystemRecursive(payload *types.Payload, counts map[string]int, resolve subsystemKeyResolver) {
+func collectSubsystemComponentDataRecursive(payload *types.Payload, data map[string]*subsystemComponentData, resolve subsystemKeyResolver) {
 	cp := payload.ComponentPath()
 	if cp != "" {
 		if key := resolve(cp); key != "" {
-			counts[key]++
+			d, ok := data[key]
+			if !ok {
+				d = &subsystemComponentData{
+					techSet:   make(map[string]bool),
+					languages: make(map[string]int),
+				}
+				data[key] = d
+			}
+			d.count++
+			for _, t := range payload.Techs {
+				d.techSet[t] = true
+			}
+			for lang, count := range payload.Languages {
+				d.languages[lang] += count
+			}
 		}
 	}
 	for _, child := range payload.Children {
-		countComponentsBySubsystemRecursive(child, counts, resolve)
+		collectSubsystemComponentDataRecursive(child, data, resolve)
 	}
+}
+
+// sortedKeys returns the keys of a bool map in sorted order. Returns nil for empty maps.
+func sortedKeys(m map[string]bool) []string {
+	if len(m) == 0 {
+		return nil
+	}
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
 }
 
 // sortSubsystemStatsByCode sorts subsystem stats by total code lines descending.

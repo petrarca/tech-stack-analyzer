@@ -200,6 +200,24 @@ subsystem-groups:
     description: "External system integrations"
 ```
 
+#### The `base` field
+
+When many paths in a group share a common prefix, use the optional `base` field to avoid repetition. The `base` value is prepended to every entry in `paths`:
+
+```yaml
+subsystem-groups:
+  frontend-libs:
+    base: /packages/web/libs
+    paths: [feature-dashboard, feature-settings, shared-ui]
+    description: "Frontend feature libraries"
+  # Equivalent without base:
+  # frontend-libs:
+  #   paths: [/packages/web/libs/feature-dashboard,
+  #           /packages/web/libs/feature-settings,
+  #           /packages/web/libs/shared-ui]
+  #   description: "Frontend feature libraries"
+```
+
 Or equivalently as inline JSON for CI/CD:
 
 ```bash
@@ -208,11 +226,21 @@ stack-analyzer scan \
   /path/to/project
 ```
 
+#### Group fields
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `paths` | Yes | List of path prefixes (relative to scan root). Uses longest-prefix matching against component paths. |
+| `description` | No | Human-readable description of the group. Passed through to `subsystem_stats[].description` in output. |
+| `base` | No | Common prefix prepended to every entry in `paths`. Useful when many paths share a deep directory root. |
+
 Key behaviour:
 - When `subsystem-groups` is defined, `--subsystem-depth` is ignored
 - Folders not listed in any group are excluded from `subsystem_stats` (but still counted in global `code_stats`)
 - Each group's `code_stats` aggregates all files under all listed paths
 - Group names become the `path` field in each `subsystem_stats` entry
+- `techs` contains the deduplicated, sorted union of all component `techs` in that subsystem
+- `languages` contains the merged language file counts from all components in that subsystem
 
 ## Logging
 

@@ -144,8 +144,9 @@ func (c *ScanConfigFile) MergeWithSettings(settings *Settings) {
 	// Automatically merge scan section options using reflection
 	mergeStructFields(c.Scan, settings)
 
-	// Merge root-level excludes manually (different field names)
-	if len(c.Exclude) > 0 {
+	// Merge root-level excludes manually (different field names).
+	// Only fill when settings has no patterns yet — CLI --exclude flags take precedence.
+	if len(c.Exclude) > 0 && len(settings.ExcludePatterns) == 0 {
 		settings.ExcludePatterns = c.Exclude
 	}
 

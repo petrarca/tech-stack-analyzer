@@ -9,6 +9,7 @@ require (
 	github.com/go-enry/go-enry/v2 v2.9.6
 	github.com/go-enry/go-license-detector/v4 v4.3.1
 	github.com/go-git/go-git/v5 v5.19.1
+	github.com/google/go-cmp v0.7.0
 	github.com/hashicorp/hcl/v2 v2.24.0
 	github.com/mattn/go-isatty v0.0.22
 	github.com/santhosh-tekuri/jsonschema/v5 v5.3.1

@@ -82,6 +82,10 @@ scan:
 #   domain-a:
 #     paths: [/module-a, /module-b, /module-c]
 #     description: "Domain A modules"
+#   frontend-libs:
+#     base: /packages/web/libs           # common prefix prepended to each path
+#     paths: [feature-dashboard, feature-settings, shared-ui]
+#     description: "Frontend feature libraries"
 #   integrations:
 #     paths: [/integration, /adapters]
 #     description: "External system integrations and adapters"
