@@ -549,6 +549,69 @@ Contributors are recognized in:
 - **[Detector Reference](docs/design/detector-implementation.md)**: Component detector details
 - **[Content Detection](docs/design/content-based-detection.md)**: Content-based detection patterns
 
+## Releasing
+
+Releases are performed by maintainers only. The process is fully automated via GoReleaser once a version tag is pushed.
+
+### Version numbering
+
+Follow [Semantic Versioning](https://semver.org/):
+
+| Change | Version bump | Example |
+|--------|-------------|---------|
+| Bug fixes, minor improvements, new tests, docs | Patch | `v0.4.2` → `v0.4.3` |
+| New features, backward-compatible additions | Minor | `v0.4.3` → `v0.5.0` |
+| Breaking changes to output schema or CLI flags | Major | `v0.5.0` → `v1.0.0` |
+
+### Steps
+
+1. **Ensure `main` is clean and all checks pass**
+   ```bash
+   git checkout main && git pull
+   task fct build
+   ```
+
+2. **Determine the next version** based on the changes since the last tag:
+   ```bash
+   git log --oneline $(git describe --tags --abbrev=0)..HEAD
+   git tag --sort=-v:refname | head -3
+   ```
+
+3. **Create and push the tag** — this triggers the release workflow:
+   ```bash
+   git tag v0.x.y
+   git push origin v0.x.y
+   ```
+
+4. **Monitor the release workflow** on GitHub Actions. It will:
+   - Run the full test suite (format check, vet, lint, tests with `-race`)
+   - Build binaries for all platforms via GoReleaser
+   - Create a GitHub release with the compiled artifacts
+
+5. **Update the release notes** on GitHub after the workflow completes:
+   ```bash
+   gh release edit v0.x.y --notes "..."
+   ```
+   Focus on what changed and why, not implementation details. Reference relevant PRs or issues.
+
+### What GoReleaser produces
+
+- Binaries for Linux, macOS, and Windows (amd64 + arm64)
+- Checksums file
+- GitHub release with all artifacts attached
+
+### Deleting a bad tag
+
+If you need to retag (e.g. the workflow failed before publishing):
+
+```bash
+git tag -d v0.x.y
+git push origin :refs/tags/v0.x.y
+# fix the issue, then re-tag
+git tag v0.x.y
+git push origin v0.x.y
+```
+
 ---
 
 Thank you for contributing to the Tech Stack Analyzer! Your contributions help make technology stack analysis faster and more comprehensive for everyone.
