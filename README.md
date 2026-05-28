@@ -25,6 +25,7 @@ Detection is powered by **800+ technology rules** across 48 categories, using fi
 - **Hierarchical Output** - Component-based analysis with parent-child relationships
 - **Aggregated Views** - Rollup summaries for quick technology stack overviews
 - **Content-Based Detection** - Validates technologies through regex pattern matching in file contents
+- **Subsystem Statistics** - Per-subsystem code metrics via depth-based splitting or named groups for large monorepos
 - **Language Reclassification** - Override go-enry's language detection per glob pattern to fix misclassified extensions or relabel proprietary file formats
 
 ## Quick Start

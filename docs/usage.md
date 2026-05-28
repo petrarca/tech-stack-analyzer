@@ -280,9 +280,59 @@ When `subsystem-groups` is defined, `--subsystem-depth` is ignored — the named
 Key points:
 - **`subsystem_stats[]`** appears on the root node of both full and aggregated outputs
 - **`path`**: the depth-N prefix (e.g. `/server`) or group name (e.g. `core-platform`)
+- **`paths`**: source folder prefixes from config (only present in named-group mode; absent in depth mode)
+- **`description`**: group description from config (only present in named-group mode)
 - **`component_count`**: number of components in that subsystem
+- **`techs`**: deduplicated union of all component `techs` in this subsystem, sorted alphabetically
+- **`languages`**: merged language file counts from all components in this subsystem (language name to file count)
 - **`code_stats`**: full stats structure identical to root `code_stats`
 - **Independent of `--component-stats-depth`**: both flags can be used together or separately
+
+#### Example output (named groups)
+
+When using `subsystem-groups` in the config, each entry includes the group name, paths, description, techs, and languages:
+
+```json
+{
+  "subsystem_stats": [
+    {
+      "path": "core",
+      "paths": ["/core", "/platform", "/shared"],
+      "description": "Core framework and shared platform libraries",
+      "component_count": 8,
+      "techs": ["java", "kotlin", "maven", "spring-boot"],
+      "languages": { "Java": 280, "Kotlin": 32 },
+      "code_stats": {
+        "total": { "lines": 45200, "code": 38100, "comments": 3200, "blanks": 3900, "complexity": 2100, "files": 312 },
+        "by_type": { "programming": { "total": { "lines": 38000, "code": 32000 }, "languages": ["Java", "Kotlin"] } }
+      }
+    },
+    {
+      "path": "services",
+      "paths": ["/svc-auth", "/svc-billing", "/svc-notifications"],
+      "description": "Business services",
+      "component_count": 12,
+      "techs": ["java", "maven", "postgresql", "redis", "spring-boot"],
+      "languages": { "Java": 489 },
+      "code_stats": {
+        "total": { "lines": 67800, "code": 55400, "comments": 5600, "blanks": 6800, "complexity": 3400, "files": 489 },
+        "by_type": { "programming": { "total": { "lines": 58000, "code": 48000 }, "languages": ["Java"] } }
+      }
+    }
+  ]
+}
+```
+
+In depth mode (`--subsystem-depth 1`), entries also include `techs` and `languages` but have no `paths` or `description` fields:
+
+```json
+{
+  "subsystem_stats": [
+    { "path": "/server", "component_count": 5, "techs": ["java", "spring-boot"], "languages": { "Java": 120 }, "code_stats": { "..." : "..." } },
+    { "path": "/frontend", "component_count": 3, "techs": ["nodejs", "react"], "languages": { "TypeScript": 85 }, "code_stats": { "..." : "..." } }
+  ]
+}
+```
 
 ## Multi-Git Repository Support
 
