@@ -33,8 +33,9 @@ type Payload struct {
 	Edges            []Edge                 `json:"edges,omitempty"`
 	ComponentRefs    []ComponentRef         `json:"component_refs,omitempty"` // Inter-component references (outgoing - components this component depends on)
 	CodeStats        interface{}            `json:"code_stats,omitempty"`
-	SubsystemStats   []SubsystemStat        `json:"subsystem_stats,omitempty"` // Per-subsystem code stats rollup (root only)
-	Ecosystems       []EcosystemEntry       `json:"ecosystems,omitempty"`      // Detected technology ecosystems (root only)
+	SubsystemStats   []SubsystemStat        `json:"subsystem_stats,omitempty"`   // Per-subsystem code stats rollup (root only)
+	Ecosystems       []EcosystemEntry       `json:"ecosystems,omitempty"`        // Detected technology ecosystems (root only)
+	ScanObservations interface{}            `json:"scan_observations,omitempty"` // File-level observations (root only, optional)
 }
 
 // ComponentPath returns the stable, unique key used to identify this component in code stats.

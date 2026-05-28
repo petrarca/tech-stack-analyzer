@@ -94,7 +94,10 @@ func loadAndMergeProjectConfig(absPath string, logger *slog.Logger) (*config.Sca
 }
 
 // runScanner creates and runs the scanner, finalises code stats and primary_techs.
-func runScanner(absPath string, isFile bool, mergedConfig *config.ScanConfig, logger *slog.Logger) interface{} {
+// runScanner creates, configures, and runs the scanner for a single path.
+// If obsCollector is non-nil, it is attached to the scanner to collect
+// file-level observations during the scan.
+func runScanner(absPath string, isFile bool, mergedConfig *config.ScanConfig, logger *slog.Logger, obsCollector *scanner.ObservationCollector) interface{} {
 	scannerPath := absPath
 	if isFile {
 		scannerPath = filepath.Dir(absPath)
@@ -126,6 +129,9 @@ func runScanner(absPath string, isFile bool, mergedConfig *config.ScanConfig, lo
 	}
 	s.SetSubsystemDepth(settings.SubsystemDepth)
 	s.SetSubsystemGroups(settings.SubsystemGroups)
+	if obsCollector != nil {
+		s.SetObservationCollector(obsCollector)
+	}
 
 	var payload interface{}
 	if isFile {

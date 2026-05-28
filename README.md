@@ -75,6 +75,20 @@ go install github.com/petrarca/tech-stack-analyzer/cmd/scanner@latest
 ./bin/stack-analyzer info techs
 ```
 
+### Quick Codebase Summary
+
+```bash
+# Human-readable summary instead of JSON
+./bin/stack-analyzer summary /path/to/project
+
+# With scan config
+./bin/stack-analyzer summary --config scan-config.yml
+```
+
+Prints a concise text report with code statistics, languages, technologies,
+component tree, and observations (generated/vendored files, encoding issues).
+Useful for quick codebase introspection and onboarding.
+
 ### Example Output
 
 ```json

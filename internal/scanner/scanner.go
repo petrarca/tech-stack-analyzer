@@ -56,10 +56,11 @@ type Scanner struct {
 	includePaths      []string // When set, only these relative paths under the root are scanned
 	progress          *progress.Progress
 	codeStats         CodeStatsAnalyzer
-	subsystemDepth    int               // Depth for subsystem stats rollup (0=disabled)
-	subsystemPathMap  map[string]string // path prefix → group name (built from SubsystemGroups config)
-	subsystemMaxDepth int               // Maximum path depth across all subsystem group paths (loop cap)
-	cachedBasePath    string            // Cached scan root path for fast relative path computation
+	observations      *ObservationCollector // optional; nil = disabled
+	subsystemDepth    int                   // Depth for subsystem stats rollup (0=disabled)
+	subsystemPathMap  map[string]string     // path prefix → group name (built from SubsystemGroups config)
+	subsystemMaxDepth int                   // Maximum path depth across all subsystem group paths (loop cap)
+	cachedBasePath    string                // Cached scan root path for fast relative path computation
 	gitignoreStack    *git.StackBasedLoader
 	gitCache          map[string]*git.GitInfo // Cache git info by repo root path
 	gitRootCache      map[string]string       // Cache path -> repo root mapping
@@ -219,6 +220,13 @@ func (s *Scanner) SetUseLockFiles(use bool) {
 // SetSubsystemDepth sets the depth for subsystem stats rollup.
 func (s *Scanner) SetSubsystemDepth(depth int) {
 	s.subsystemDepth = depth
+}
+
+// SetObservationCollector attaches an ObservationCollector to the scanner.
+// When set, every processed file is passed to the collector. Call Build()
+// on the collector after Scan() to retrieve the results.
+func (s *Scanner) SetObservationCollector(c *ObservationCollector) {
+	s.observations = c
 }
 
 // ResolveSubsystemKeyFromPath resolves a component path to its subsystem key.
@@ -432,6 +440,11 @@ func (s *Scanner) Scan() (*types.Payload, error) {
 	// Set output format
 	scanMeta.SetFormat("full")
 
+	// Attach file-level observations if a collector was set
+	if s.observations != nil {
+		payload.ScanObservations = s.observations.Build()
+	}
+
 	// Attach metadata to root payload
 	payload.Metadata = scanMeta
 
@@ -627,6 +640,11 @@ func (s *Scanner) processFile(ctx *types.Payload, dirPath string, fileName strin
 	// Collect code statistics if enabled
 	if s.codeStats != nil {
 		s.collectCodeStats(fileFullPath, result.Language, result.TypeOverride, content, ctx)
+	}
+
+	// Collect file-level observations if enabled
+	if s.observations != nil {
+		s.observations.Observe(fileFullPath, content, result.TypeOverride)
 	}
 }
 

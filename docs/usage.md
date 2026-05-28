@@ -62,6 +62,59 @@ stack-analyzer scan /path --log-level debug --log-format json
 stack-analyzer scan /path --log-level trace
 ```
 
+### `summary` - Human-readable codebase summary
+
+Runs the same scanner pipeline as `scan` but outputs a concise text report
+instead of JSON. Useful for quick codebase introspection, onboarding, and
+as input for LLM-based analysis.
+
+**Usage:**
+```bash
+stack-analyzer summary [path] [flags]
+```
+
+**Flags:**
+- `--config` - Scan configuration file path or inline JSON
+- `--exclude` - Patterns to exclude (same semantics as `scan`)
+- `--subsystem-depth N` - Produce subsystem stats per depth-N path prefix
+- `--component-stats-depth N` - Per-component code stats depth (default: 1 for summary)
+- `--no-code-stats` - Disable code statistics
+- `--quiet, -q` - Suppress scan progress output
+- `--verbose, -v` - Show scan progress with simple output
+- `--debug, -d` - Show scan progress with tree structure
+- `--log-level` / `--log-format` / `--log-file` - Logging options
+
+**Examples:**
+```bash
+# Quick overview of a project
+stack-analyzer summary /path/to/project
+
+# With a scan config (for excludes, subsystem groups, etc.)
+stack-analyzer summary --config scan-config.yml
+
+# Quiet mode (no scan progress, just the report)
+stack-analyzer summary --quiet /path/to/project
+
+# With subsystem breakdown
+stack-analyzer summary --subsystem-depth 1 /path/to/project
+```
+
+**Report sections:**
+
+| Section | Content |
+|---------|---------|
+| Metadata | Scan path, component/language/tech counts, scan time |
+| Code Statistics | Files and Code LoC by type (programming, markup, data, prose) |
+| Languages | Top 15 languages by Code LoC, primary language breakdown |
+| Technologies | Primary and secondary techs, ecosystems |
+| Component Tree | Top-level directories with component counts, files, Code LoC |
+| Subsystems | Per-subsystem stats (when `--subsystem-depth` or named groups configured) |
+| Observations | Generated/vendored files (go-enry), large programming files, encoding issues, niche languages, complexity, duplicated components |
+
+The Observations section includes actionable exclude pattern suggestions
+where applicable. These should be reviewed before applying -- false positives
+are possible (e.g. go-enry may flag IDE config directories as vendored).
+
 ### `info` - Display information about rules and categories
 
 **Subcommands:**
