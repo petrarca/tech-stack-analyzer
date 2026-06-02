@@ -96,6 +96,25 @@ func (d Dependency) MarshalJSON() ([]byte, error) {
 	return bytes.TrimRight(buf.Bytes(), "\n"), nil
 }
 
+// MetadataKeyDeclared is the metadata key recording the originally declared
+// version form (a range, property reference, or specifier) when it differs
+// from the resolved Version. This mirrors the deps.dev model of keeping the
+// declared requirement separate from the resolved version.
+const MetadataKeyDeclared = "declared"
+
+// SetDeclaredVersion records the originally declared version form in metadata
+// when it differs from the resolved Version. No-op when declared is empty or
+// equal to the resolved version, so concrete declarations add no noise.
+func (d *Dependency) SetDeclaredVersion(declared string) {
+	if declared == "" || declared == d.Version {
+		return
+	}
+	if d.Metadata == nil {
+		d.Metadata = make(map[string]interface{})
+	}
+	d.Metadata[MetadataKeyDeclared] = declared
+}
+
 // CompiledDependency is a pre-compiled dependency for performance
 type CompiledDependency struct {
 	Regex *regexp.Regexp

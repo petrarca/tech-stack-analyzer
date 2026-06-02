@@ -80,3 +80,31 @@ func TestPayload_containsDependency(t *testing.T) {
 		t.Error("Should not contain dependency with different type")
 	}
 }
+
+func TestDependency_SetDeclaredVersion(t *testing.T) {
+	tests := []struct {
+		name      string
+		version   string
+		declared  string
+		wantInMap bool
+		wantValue string
+	}{
+		{"differs - range vs resolved", "1.2.11", "^1.2.0", true, "^1.2.0"},
+		{"differs - property ref", "5.3.20", "${spring.version}", true, "${spring.version}"},
+		{"equal - no record", "1.2.3", "1.2.3", false, ""},
+		{"empty declared - no record", "1.2.3", "", false, ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			dep := Dependency{Type: "npm", Name: "lib", Version: tt.version}
+			dep.SetDeclaredVersion(tt.declared)
+			val, ok := dep.Metadata[MetadataKeyDeclared]
+			if ok != tt.wantInMap {
+				t.Fatalf("declared present = %v, want %v", ok, tt.wantInMap)
+			}
+			if tt.wantInMap && val.(string) != tt.wantValue {
+				t.Errorf("declared = %v, want %q", val, tt.wantValue)
+			}
+		})
+	}
+}

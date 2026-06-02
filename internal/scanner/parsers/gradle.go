@@ -79,7 +79,9 @@ func (p *GradleParser) ParseGradleWithProperties(content string, extProps map[st
 
 		gradleDep := p.parseGradleDependency(line)
 		if gradleDep != nil {
-			gradleDep.Version = resolveGradleVersion(gradleDep.Version, props)
+			declared := gradleDep.Version
+			gradleDep.Version = resolveGradleVersion(declared, props)
+			gradleDep.SetDeclaredVersion(declared)
 			dependencies = append(dependencies, *gradleDep)
 		}
 	}

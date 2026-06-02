@@ -1,10 +1,15 @@
 package parsers
 
 import (
+	"regexp"
 	"strings"
 
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
+
+// cargoTableVersionRegex extracts the version field from a Cargo.toml table-form
+// dependency, e.g. { version = "1.0", features = [...] }.
+var cargoTableVersionRegex = regexp.MustCompile(`version\s*=\s*["']([^"']+)["']`)
 
 // ParseCargoLock parses Cargo.lock content and returns direct dependencies with resolved versions
 // Direct dependencies are identified by cross-referencing with Cargo.toml
@@ -14,6 +19,7 @@ func ParseCargoLock(lockContent []byte, cargoTomlContent string) []types.Depende
 	if len(directDeps) == 0 {
 		return nil
 	}
+	declaredConstraints := extractDeclaredConstraintsFromCargoToml(cargoTomlContent)
 
 	// Parse Cargo.lock to get resolved versions
 	packages := parseCargoLockPackages(string(lockContent))
@@ -22,18 +28,54 @@ func ParseCargoLock(lockContent []byte, cargoTomlContent string) []types.Depende
 	var dependencies []types.Dependency
 	for name, version := range packages {
 		if scope, exists := directDeps[name]; exists {
-			dependencies = append(dependencies, types.Dependency{
+			dep := types.Dependency{
 				Type:       DependencyTypeRust,
 				Name:       name,
 				Version:    version,
 				SourceFile: "Cargo.lock",
 				Scope:      scope,
 				Direct:     true,
-			})
+			}
+			dep.SetDeclaredVersion(declaredConstraints[name])
+			dependencies = append(dependencies, dep)
 		}
 	}
 
 	return dependencies
+}
+
+// extractDeclaredConstraintsFromCargoToml captures the declared version
+// constraint for each direct dependency, handling both the string form
+// (serde = "1.0") and the table form (serde = { version = "1.0", ... }).
+func extractDeclaredConstraintsFromCargoToml(content string) map[string]string {
+	constraints := make(map[string]string)
+	state := &cargoTomlParseState{}
+	for _, line := range strings.Split(content, "\n") {
+		trimmed := strings.TrimSpace(line)
+		state = updateCargoTomlState(state, trimmed)
+		name := extractCargoDepName(trimmed, state)
+		if name == "" {
+			continue
+		}
+		parts := strings.SplitN(trimmed, "=", 2)
+		if len(parts) < 2 {
+			continue
+		}
+		value := strings.TrimSpace(parts[1])
+		var constraint string
+		if strings.HasPrefix(value, "{") {
+			// Table form: pull the version = "..." field.
+			if m := cargoTableVersionRegex.FindStringSubmatch(value); m != nil {
+				constraint = m[1]
+			}
+		} else {
+			constraint = strings.Trim(value, `"'`)
+		}
+		if constraint != "" {
+			constraints[name] = constraint
+		}
+	}
+	return constraints
 }
 
 // extractDirectDepsFromCargoToml extracts direct dependency names and scopes from Cargo.toml

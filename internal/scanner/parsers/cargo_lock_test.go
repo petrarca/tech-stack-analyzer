@@ -144,3 +144,33 @@ version = "1.0.193"
 		})
 	}
 }
+
+func TestParseCargoLock_DeclaredConstraints(t *testing.T) {
+	cargoToml := `[dependencies]
+serde = "1.0"
+tokio = { version = "1.35", features = ["full"] }
+`
+	lock := `[[package]]
+name = "serde"
+version = "1.0.195"
+
+[[package]]
+name = "tokio"
+version = "1.35.1"
+`
+	deps := ParseCargoLock([]byte(lock), cargoToml)
+	got := map[string]string{}
+	for _, d := range deps {
+		if d.Metadata != nil {
+			if decl, ok := d.Metadata["declared"].(string); ok {
+				got[d.Name] = decl
+			}
+		}
+	}
+	if got["serde"] != "1.0" {
+		t.Errorf("serde declared = %q, want 1.0", got["serde"])
+	}
+	if got["tokio"] != "1.35" {
+		t.Errorf("tokio declared = %q, want 1.35", got["tokio"])
+	}
+}

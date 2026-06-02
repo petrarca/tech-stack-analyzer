@@ -125,7 +125,12 @@ func appendImporterDeps(deps map[string]PnpmDependency, scope string, filter *De
 	for name, dep := range deps {
 		filter.AddDirectDependency(name, scope)
 		version := resolvePnpmImporterVersion(dep.Version)
+		before := len(*out)
 		filter.CreateAndAppendDependency("npm", name, version, "pnpm-lock.yaml", out)
+		// Record the declared specifier (range) when a dependency was added.
+		if len(*out) > before {
+			(*out)[before].SetDeclaredVersion(dep.Specifier)
+		}
 	}
 }
 
