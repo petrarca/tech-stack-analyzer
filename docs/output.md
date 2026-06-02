@@ -136,12 +136,19 @@ The scanner tracks two types of dependencies:
 - Format: `[type, name, version, scope, direct, metadata]` (6 elements)
 - Examples: npm packages, Python packages, Maven artifacts, NuGet packages
 - The `direct` field indicates if it's a direct dependency (true) or transitive (false)
+- `type` uses the **Package URL (PURL) type vocabulary** (e.g. `npm`, `pypi`,
+  `gem`, `composer`, `cargo`, `golang`, `maven`, `nuget`), so dependency types
+  map directly onto PURL types when generating an SBOM.
+- `version` is the **resolved** version where a lockfile or property resolution
+  applies. When the originally **declared** form differs (a range or property
+  reference), it is recorded under `metadata.declared`.
 
 ```json
 "dependencies": [
-  ["npm", "react", "18.2.0", "prod", true, {"source": "package-lock.json"}],
+  ["npm", "react", "18.2.0", "prod", true, {"source": "package-lock.json", "declared": "^18.0.0"}],
   ["npm", "express", "4.18.2", "prod", true, {"source": "package-lock.json"}],
-  ["python", "django", "4.2.0", "prod", true, {"source": "requirements.txt"}]
+  ["pypi", "django", "4.2.0", "prod", true, {"source": "poetry.lock", "declared": "^4.2"}],
+  ["maven", "org.springframework:spring-core", "5.3.20", "prod", true, {"declared": "${spring.version}"}]
 ]
 ```
 

@@ -26,7 +26,7 @@ dependencies:                    # Optional: Package dependencies to detect
   - type: npm
     name: newtech-driver         # Can be regex: /^@newtech\/.*/ 
     example: newtech-driver
-  - type: python
+  - type: pypi
     name: newtech-client
     example: newtech-client
 files:                           # Optional: Specific files to match
@@ -121,7 +121,7 @@ dependencies:
   - type: npm
     name: /^@types\/.*$/         # Regex pattern
     example: '@types/node'
-  - type: python
+  - type: pypi
     name: django>=3.0            # Version pattern
     example: django
 ```

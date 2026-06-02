@@ -19,7 +19,8 @@ Detection is powered by **800+ technology rules** across 48 categories, using fi
 
 - **Zero Dependencies** - Single binary deployment, no runtime requirements
 - **800+ Technology Rules** - Comprehensive detection across 48 categories
-- **Lock File Support** - Extracts exact resolved versions from package-lock.json, Cargo.lock, uv.lock, etc.
+- **Lock File Support** - Extracts exact resolved versions from package-lock.json, pnpm-lock.yaml, Cargo.lock, uv.lock, poetry.lock, etc., and records the originally declared range alongside the resolved version
+- **CycloneDX SBOM** - Emits a PURL-based SBOM consumable directly by vulnerability scanners such as Trivy
 - **Code Statistics** - Lines of code, complexity metrics, and language breakdown via SCC
 - **Automatic .gitignore** - Respects `.gitignore` files with full gitignore semantics (negation `!`, dir-only `/`, last-match-wins)
 - **Hierarchical Output** - Component-based analysis with parent-child relationships
