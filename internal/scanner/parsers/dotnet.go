@@ -51,6 +51,7 @@ type PropertyGroup struct {
 
 type ItemGroup struct {
 	PackageReferences []PackageReference `xml:"PackageReference"`
+	PackageVersions   []PackageVersion   `xml:"PackageVersion"` // Central Package Management (Directory.Packages.props)
 	ProjectReferences []ProjectReference `xml:"ProjectReference"`
 }
 
@@ -364,9 +365,16 @@ func (p *DotNetParser) ParseDirectoryPackagesProps(content string) map[string]st
 	}
 
 	for _, ig := range dirPackages.ItemGroups {
-		for _, pv := range ig.PackageReferences {
+		// Central Package Management uses <PackageVersion> elements.
+		for _, pv := range ig.PackageVersions {
 			if pv.Include != "" && pv.Version != "" {
 				packageVersions[pv.Include] = pv.Version
+			}
+		}
+		// Tolerate files that (incorrectly) use <PackageReference Version="...">.
+		for _, pr := range ig.PackageReferences {
+			if pr.Include != "" && pr.Version != "" {
+				packageVersions[pr.Include] = pr.Version
 			}
 		}
 	}

@@ -288,3 +288,57 @@ func TestParsePlugins(t *testing.T) {
 		})
 	}
 }
+
+func TestParseGradleProperties(t *testing.T) {
+	content := "# comment\nguavaVersion=31.1-jre\n  spring.version = 5.3.20  \n! bang comment\nempty=\n"
+	props := ParseGradleProperties(content)
+	assert.Equal(t, "31.1-jre", props["guavaVersion"])
+	assert.Equal(t, "5.3.20", props["spring.version"])
+	assert.Equal(t, "", props["empty"])
+	if _, ok := props["# comment"]; ok {
+		t.Errorf("comment line should not be parsed as property")
+	}
+}
+
+func TestExtractGradleInlineProperties(t *testing.T) {
+	content := `ext {
+    jacksonVersion = "2.15.0"
+}
+ext.kotlinVersion = "1.9.0"
+val ktorVersion = "2.3.0"
+def jjwtVersion = "0.11.5"
+`
+	props := ExtractGradleInlineProperties(content)
+	assert.Equal(t, "2.15.0", props["jacksonVersion"])
+	assert.Equal(t, "1.9.0", props["kotlinVersion"])
+	assert.Equal(t, "2.3.0", props["ktorVersion"])
+	assert.Equal(t, "0.11.5", props["jjwtVersion"])
+}
+
+func TestParseGradleWithProperties_Interpolation(t *testing.T) {
+	content := `ext {
+    jacksonVersion = "2.15.0"
+}
+val ktorVersion = "2.3.0"
+dependencies {
+    implementation 'org.springframework:spring-core:5.3.20'
+    implementation "com.google.guava:guava:$guavaVersion"
+    implementation "io.ktor:ktor-server:$ktorVersion"
+    implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+    implementation "com.example:unresolved:$missingVersion"
+}
+`
+	extProps := map[string]string{"guavaVersion": "31.1-jre"}
+	deps := NewGradleParser().ParseGradleWithProperties(content, extProps)
+
+	got := map[string]string{}
+	for _, d := range deps {
+		got[d.Name] = d.Version
+	}
+	assert.Equal(t, "5.3.20", got["org.springframework:spring-core"])
+	assert.Equal(t, "31.1-jre", got["com.google.guava:guava"])
+	assert.Equal(t, "2.3.0", got["io.ktor:ktor-server"])
+	assert.Equal(t, "2.15.0", got["com.fasterxml.jackson.core:jackson-databind"])
+	// Unresolved references are left intact (the SBOM emitter omits them).
+	assert.Equal(t, "$missingVersion", got["com.example:unresolved"])
+}

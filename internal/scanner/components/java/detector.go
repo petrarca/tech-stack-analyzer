@@ -229,6 +229,80 @@ func (d *Detector) detectPomXML(file types.File, currentPath, basePath string, p
 	return payload
 }
 
+// collectGradleProperties reads gradle.properties from the module directory and
+// ancestor directories, merging them so the nearest definition wins. This
+// resolves version properties declared in a root gradle.properties.
+//
+// The climb continues a bounded number of levels even above the scan root
+// (basePath): when a sub-module is scanned directly, its build's root
+// gradle.properties lives in an ancestor outside the scan root, and the
+// (non-sandboxed) provider can still read it from disk. The bound prevents
+// reading unrelated files far up the tree.
+func (d *Detector) collectGradleProperties(currentPath, basePath string, provider types.Provider) map[string]string {
+	const maxDepth = 12 // guard against unbounded climbs
+	const maxAboveRoot = 3
+
+	// Collect directories from current up the tree, stopping shortly after the
+	// scan root.
+	var dirs []string
+	dir := filepath.Clean(currentPath)
+	root := filepath.Clean(basePath)
+	aboveRoot := 0
+	for i := 0; i < maxDepth; i++ {
+		dirs = append(dirs, dir)
+		if dir == "." || dir == string(filepath.Separator) {
+			break
+		}
+		if isAtOrAboveRoot(dir, root) {
+			if aboveRoot >= maxAboveRoot {
+				break
+			}
+			aboveRoot++
+		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			break
+		}
+		dir = parent
+	}
+
+	// Merge from the highest ancestor down to the module so the nearest file
+	// overrides ancestors.
+	merged := make(map[string]string)
+	for i := len(dirs) - 1; i >= 0; i-- {
+		content, err := provider.ReadFile(filepath.Join(dirs[i], "gradle.properties"))
+		if err != nil || len(content) == 0 {
+			continue
+		}
+		for k, v := range parsers.ParseGradleProperties(string(content)) {
+			merged[k] = v
+		}
+	}
+	if len(merged) == 0 {
+		return nil
+	}
+	return merged
+}
+
+// isAtOrAboveRoot reports whether dir is the scan root or an ancestor of it.
+func isAtOrAboveRoot(dir, root string) bool {
+	if dir == root {
+		return true
+	}
+	rel, err := filepath.Rel(dir, root)
+	if err != nil {
+		return false
+	}
+	// root is under dir (dir is an ancestor) when the relative path does not
+	// need to climb out of dir.
+	return rel == "." || (rel != ".." && !startsWithDotDot(rel))
+}
+
+// startsWithDotDot reports whether a relative path begins with "..".
+func startsWithDotDot(rel string) bool {
+	return rel == ".." || (len(rel) >= 3 && rel[0] == '.' && rel[1] == '.' && rel[2] == filepath.Separator)
+}
+
 func (d *Detector) detectGradle(file types.File, currentPath, basePath string, provider types.Provider, depDetector components.DependencyDetector) *types.Payload {
 	content, err := provider.ReadFile(filepath.Join(currentPath, file.Name))
 	if err != nil {
@@ -274,7 +348,13 @@ func (d *Detector) detectGradle(file types.File, currentPath, basePath string, p
 		})
 	}
 
-	dependencies := gradleParser.ParseGradle(string(content))
+	// Collect gradle.properties for version resolution, climbing from the
+	// module directory up to the scan root. In multi-module builds the version
+	// properties live in the root gradle.properties, so the nearest file wins
+	// but ancestors fill in anything it does not define.
+	gradleProps := d.collectGradleProperties(currentPath, basePath, provider)
+
+	dependencies := gradleParser.ParseGradleWithProperties(string(content), gradleProps)
 
 	// Extract dependency names for tech matching
 	var depNames []string

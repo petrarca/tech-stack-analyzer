@@ -162,20 +162,52 @@ func buildPURL(dep types.Dependency) string {
 }
 
 // resolvedVersion returns the version when it is a concrete release, or an
-// empty string when it is unresolved (a range, tag, or placeholder).
+// empty string when it is unresolved (a range, tag, unresolved property
+// reference, or placeholder). Only concrete versions belong in a PURL.
 func resolvedVersion(v string) string {
 	v = strings.TrimSpace(v)
-	if v == "" || v == "latest" || v == "git" {
+	if v == "" {
 		return ""
 	}
-	// Reject npm/composer/python range and operator prefixes.
-	if strings.ContainsAny(v, "^~><=*|") {
+	// Unresolved placeholders and tags.
+	switch v {
+	case "latest", "git", "workspace", "local", "tarball", "RELEASE", "LATEST":
 		return ""
 	}
-	if strings.HasPrefix(v, "git:") || strings.HasPrefix(v, "path:") {
+	// Range and operator characters (npm/composer/pypi/cargo), wildcards,
+	// and Gradle/Maven property markers ("$", "{", "}").
+	if strings.ContainsAny(v, "^~><=*|$ {}") {
+		return ""
+	}
+	// Non-version source references.
+	for _, prefix := range []string{"git:", "path:", "file:", "link:", "http://", "https://"} {
+		if strings.HasPrefix(v, prefix) {
+			return ""
+		}
+	}
+	// A concrete version must start with a digit (covers "1.2.3", "v1.2.3" is
+	// handled below) -- reject anything that is clearly a name or token.
+	if !startsWithVersionChar(v) {
 		return ""
 	}
 	return v
+}
+
+// startsWithVersionChar reports whether v begins with a character valid at the
+// start of a concrete version: a digit, or a leading "v"/"V" followed by a
+// digit (common for Go module versions like "v1.2.3").
+func startsWithVersionChar(v string) bool {
+	if v == "" {
+		return false
+	}
+	c := v[0]
+	if c >= '0' && c <= '9' {
+		return true
+	}
+	if (c == 'v' || c == 'V') && len(v) > 1 && v[1] >= '0' && v[1] <= '9' {
+		return true
+	}
+	return false
 }
 
 // purlType maps a dependency type to its PURL type. Gradle collapses to maven

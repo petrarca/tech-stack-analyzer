@@ -197,6 +197,7 @@ func (p *MavenParser) ParsePomXMLWithProvider(content string, pomDir string, pro
 
 	// 3. Add project coordinates (override all)
 	p.addProjectCoordinates(properties, project.GroupId, project.ArtifactId, project.Version)
+	p.addParentCoordinates(properties, project.Parent)
 
 	// 4. Process profiles and merge active profiles (following deps.dev pattern)
 	activeProfiles := p.getActiveProfiles(project.Profiles)
@@ -367,6 +368,31 @@ func (p *MavenParser) addProjectCoordinates(properties map[string]string, groupI
 	if version != "" {
 		properties["project.version"] = version
 		properties["pom.version"] = version
+	}
+}
+
+// addParentCoordinates registers parent coordinate properties so that
+// references like ${project.parent.version} and ${parent.version} resolve
+// from the inline <parent> element. When the project declares no version of
+// its own, Maven inherits the parent version, so project.version/pom.version
+// fall back to the parent version too.
+func (p *MavenParser) addParentCoordinates(properties map[string]string, parent MavenParent) {
+	if parent.GroupId != "" {
+		properties["project.parent.groupId"] = parent.GroupId
+		properties["parent.groupId"] = parent.GroupId
+	}
+	if parent.ArtifactId != "" {
+		properties["project.parent.artifactId"] = parent.ArtifactId
+		properties["parent.artifactId"] = parent.ArtifactId
+	}
+	if parent.Version != "" {
+		properties["project.parent.version"] = parent.Version
+		properties["parent.version"] = parent.Version
+		// Inherited version fallback when the child omits its own version.
+		if _, ok := properties["project.version"]; !ok {
+			properties["project.version"] = parent.Version
+			properties["pom.version"] = parent.Version
+		}
 	}
 }
 

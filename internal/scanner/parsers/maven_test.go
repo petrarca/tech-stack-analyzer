@@ -549,3 +549,38 @@ func TestMavenParser_RecursivePropertyResolution(t *testing.T) {
 		})
 	}
 }
+
+func TestParsePomXML_ParentVersionResolution(t *testing.T) {
+	content := `<project>
+  <parent>
+    <groupId>com.example</groupId>
+    <artifactId>parent</artifactId>
+    <version>2.5.0</version>
+  </parent>
+  <artifactId>child</artifactId>
+  <dependencies>
+    <dependency>
+      <groupId>com.example</groupId>
+      <artifactId>shared</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.example</groupId>
+      <artifactId>other</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
+</project>`
+	deps := NewMavenParser().ParsePomXML(content)
+	got := map[string]string{}
+	for _, d := range deps {
+		got[d.Name] = d.Version
+	}
+	if got["com.example:shared"] != "2.5.0" {
+		t.Errorf("shared version = %q, want 2.5.0", got["com.example:shared"])
+	}
+	// Child omits its own version, so it inherits the parent version.
+	if got["com.example:other"] != "2.5.0" {
+		t.Errorf("other version = %q, want 2.5.0 (inherited)", got["com.example:other"])
+	}
+}

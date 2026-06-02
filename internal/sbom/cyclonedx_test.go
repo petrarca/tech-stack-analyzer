@@ -157,6 +157,18 @@ func TestResolvedVersion(t *testing.T) {
 		{"git:https://example.com/repo.git", ""},
 		{"path:../local", ""},
 		{"  2.0.0  ", "2.0.0"},
+		// Real-world unresolved tokens observed across product scans.
+		{"${project.parent.version}", ""},
+		{"${ktor_version}", ""},
+		{"$ktor_version", ""},
+		{"4.10.*", ""},
+		{"8.*", ""},
+		{"RELEASE", ""},
+		{"LATEST", ""},
+		{"workspace", ""},
+		{"31.1-jre", "31.1-jre"},
+		{"7.14.0", "7.14.0"},
+		{"2.2.8", "2.2.8"},
 	}
 	for _, tt := range tests {
 		if got := resolvedVersion(tt.in); got != tt.want {
