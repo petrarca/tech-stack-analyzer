@@ -6,18 +6,18 @@ dependencies:
   - type: terraform
     name: registry.terraform.io/go-gitea/gitea
     example: registry.terraform.io/go-gitea/gitea
-  - type: python
+  - type: pypi
     name: py-gitea-api
     example: py-gitea-api
-  - type: python
+  - type: pypi
     name: giteapy
     example: giteapy
   - type: npm
     name: gitea-js
     example: gitea-js
-  - type: go
+  - type: golang
     name: code.gitea.io/sdk/gitea
     example: code.gitea.io/sdk/gitea
-  - type: ruby
+  - type: gem
     name: gitea-client
     example: gitea-client

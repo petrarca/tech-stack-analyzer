@@ -29,9 +29,9 @@ requests>=2.25.0
 pydantic==1.8.0
 `,
 			expectedDeps: []types.Dependency{
-				{Type: "python", Name: "fastapi", Version: "latest"},
-				{Type: "python", Name: "requests", Version: ">=2.25.0"},
-				{Type: "python", Name: "pydantic", Version: "==1.8.0"},
+				{Type: "pypi", Name: "fastapi", Version: "latest"},
+				{Type: "pypi", Name: "requests", Version: ">=2.25.0"},
+				{Type: "pypi", Name: "pydantic", Version: "==1.8.0"},
 			},
 		},
 		{
@@ -46,9 +46,9 @@ pytest>=6.0.0
 requests
 `,
 			expectedDeps: []types.Dependency{
-				{Type: "python", Name: "fastapi", Version: ">=0.68.0"},
-				{Type: "python", Name: "pytest", Version: ">=6.0.0"},
-				{Type: "python", Name: "requests", Version: "latest"},
+				{Type: "pypi", Name: "fastapi", Version: ">=0.68.0"},
+				{Type: "pypi", Name: "pytest", Version: ">=6.0.0"},
+				{Type: "pypi", Name: "requests", Version: "latest"},
 			},
 		},
 		{
@@ -70,9 +70,9 @@ another_package>=1.0.0
 package.with.dots==2.0.0
 `,
 			expectedDeps: []types.Dependency{
-				{Type: "python", Name: "package-name", Version: "latest"},
-				{Type: "python", Name: "another-package", Version: ">=1.0.0"},   // Canonical: underscore → hyphen
-				{Type: "python", Name: "package-with-dots", Version: "==2.0.0"}, // Canonical: dots → hyphens
+				{Type: "pypi", Name: "package-name", Version: "latest"},
+				{Type: "pypi", Name: "another-package", Version: ">=1.0.0"},   // Canonical: underscore → hyphen
+				{Type: "pypi", Name: "package-with-dots", Version: "==2.0.0"}, // Canonical: dots → hyphens
 			},
 		},
 	}
@@ -114,9 +114,9 @@ black
 		depMap[dep.Name] = dep
 	}
 
-	assert.Equal(t, "python", depMap["fastapi"].Type, "FastAPI should be python type")
+	assert.Equal(t, "pypi", depMap["fastapi"].Type, "FastAPI should be python type")
 	assert.Equal(t, ">=0.68.0", depMap["fastapi"].Version, "FastAPI should have correct version")
-	assert.Equal(t, "python", depMap["black"].Type, "Black should be python type")
+	assert.Equal(t, "pypi", depMap["black"].Type, "Black should be python type")
 	assert.Equal(t, "latest", depMap["black"].Version, "Black should have latest version")
 }
 
@@ -134,23 +134,23 @@ func TestPythonParser_EnhancedFeatures(t *testing.T) {
 			name:  "PEP 508 complex requirements",
 			input: "package[extra1,extra2]>=1.0,<2.0; python_version >= '3.8'",
 			expected: []types.Dependency{
-				{Type: "python", Name: "package", Version: ">=1.0,<2.0", Scope: "prod", Direct: true, SourceFile: "requirements.txt"},
+				{Type: "pypi", Name: "package", Version: ">=1.0,<2.0", Scope: "prod", Direct: true, SourceFile: "requirements.txt"},
 			},
 		},
 		{
 			name:  "Canonical name normalization",
 			input: "Django-REST-Framework\nFlask-SQLAlchemy",
 			expected: []types.Dependency{
-				{Type: "python", Name: "django-rest-framework", Version: "latest", Scope: "prod", Direct: true, SourceFile: "requirements.txt"},
-				{Type: "python", Name: "flask-sqlalchemy", Version: "latest", Scope: "prod", Direct: true, SourceFile: "requirements.txt"},
+				{Type: "pypi", Name: "django-rest-framework", Version: "latest", Scope: "prod", Direct: true, SourceFile: "requirements.txt"},
+				{Type: "pypi", Name: "flask-sqlalchemy", Version: "latest", Scope: "prod", Direct: true, SourceFile: "requirements.txt"},
 			},
 		},
 		{
 			name:  "Comments and empty lines",
 			input: "# This is a comment\n\nrequests>=2.25.0\n# Another comment\nnumpy",
 			expected: []types.Dependency{
-				{Type: "python", Name: "requests", Version: ">=2.25.0", Scope: "prod", Direct: true, SourceFile: "requirements.txt"},
-				{Type: "python", Name: "numpy", Version: "latest", Scope: "prod", Direct: true, SourceFile: "requirements.txt"},
+				{Type: "pypi", Name: "requests", Version: ">=2.25.0", Scope: "prod", Direct: true, SourceFile: "requirements.txt"},
+				{Type: "pypi", Name: "numpy", Version: "latest", Scope: "prod", Direct: true, SourceFile: "requirements.txt"},
 			},
 		},
 	}

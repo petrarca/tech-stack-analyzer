@@ -13,6 +13,6 @@ dependencies:
   - type: npm
     name: "@sonarsource/marketing-gatsby-transformer-kontent-graphql"
     example: "@sonarsource/marketing-gatsby-transformer-kontent-graphql"
-  - type: ruby
+  - type: gem
     name: delivery-sdk-ruby
     example: delivery-sdk-ruby

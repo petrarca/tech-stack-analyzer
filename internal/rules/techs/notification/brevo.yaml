@@ -9,13 +9,13 @@ dependencies:
   - type: npm
     name: "@getbrevo/brevo"
     example: "@getbrevo/brevo"
-  - type: php
+  - type: composer
     name: getbrevo/brevo-php
     example: getbrevo/brevo-php
-  - type: php
+  - type: composer
     name: sendinblue/api-v3-sdk
     example: sendinblue/api-v3-sdk
-  - type: ruby
+  - type: gem
     name: sib-api-v3-sdk
     example: sib-api-v3-sdk
   - type: npm

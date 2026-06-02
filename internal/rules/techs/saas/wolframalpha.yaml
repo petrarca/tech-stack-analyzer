@@ -3,6 +3,6 @@ name: Wolfram Alpha
 dotenv:
   - WOLFRAM_
 dependencies:
-  - type: python
+  - type: pypi
     name: wolframalpha
     example: wolframalpha

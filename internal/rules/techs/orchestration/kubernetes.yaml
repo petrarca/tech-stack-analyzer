@@ -4,16 +4,16 @@ dependencies:
   - type: terraform
     name: registry.terraform.io/hashicorp/kubernetes
     example: registry.terraform.io/hashicorp/kubernetes
-  - type: rust
+  - type: cargo
     name: k8s-openapi
     example: k8s-openapi
-  - type: ruby
+  - type: gem
     name: kubeclient
     example: kubeclient
   - type: npm
     name: "@kubernetes/client-node"
     example: "@kubernetes/client-node"
-  - type: php
+  - type: composer
     name: kubernetes/php-client
     example: kubernetes/php-client
   - type: githubAction
@@ -31,7 +31,7 @@ dependencies:
   - type: npm
     name: "@pulumi/kubernetes"
     example: "@pulumi/kubernetes"
-  - type: python
+  - type: pypi
     name: kubernetes
     example: kubernetes
 files:

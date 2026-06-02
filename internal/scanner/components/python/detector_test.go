@@ -144,7 +144,7 @@ dev = [
 	depNames := make(map[string]bool)
 	for _, dep := range payload.Dependencies {
 		depNames[dep.Name] = true
-		assert.Equal(t, "python", dep.Type, "All dependencies should be python type")
+		assert.Equal(t, "pypi", dep.Type, "All dependencies should be pypi type")
 	}
 
 	assert.True(t, depNames["flask"], "Should have flask dependency")
@@ -288,7 +288,7 @@ redis==5.0.0
 	depNames := make(map[string]bool)
 	for _, dep := range payload.Dependencies {
 		depNames[dep.Name] = true
-		assert.Equal(t, "python", dep.Type, "All dependencies should be python type")
+		assert.Equal(t, "pypi", dep.Type, "All dependencies should be pypi type")
 	}
 	assert.True(t, depNames["flask"], "Should have flask dependency")
 	assert.True(t, depNames["requests"], "Should have requests dependency")
@@ -600,9 +600,9 @@ dependencies = [
     "numpy",
 ]`,
 			expected: []types.Dependency{
-				{Type: "python", Name: "flask", Version: "2.0.0"},
-				{Type: "python", Name: "requests", Version: "2.26.0"},
-				{Type: "python", Name: "numpy", Version: "latest"},
+				{Type: "pypi", Name: "flask", Version: "2.0.0"},
+				{Type: "pypi", Name: "requests", Version: "2.26.0"},
+				{Type: "pypi", Name: "numpy", Version: "latest"},
 			},
 		},
 		{
@@ -613,9 +613,9 @@ django = "^4.0.0"
 celery = ">=5.0.0"
 ]`,
 			expected: []types.Dependency{
-				{Type: "python", Name: "python", Version: "3.8"},
-				{Type: "python", Name: "django", Version: "4.0.0"},
-				{Type: "python", Name: "celery", Version: "5.0.0"},
+				{Type: "pypi", Name: "python", Version: "3.8"},
+				{Type: "pypi", Name: "django", Version: "4.0.0"},
+				{Type: "pypi", Name: "celery", Version: "5.0.0"},
 			},
 		},
 		{

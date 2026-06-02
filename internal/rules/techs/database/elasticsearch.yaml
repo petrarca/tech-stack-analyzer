@@ -9,16 +9,16 @@ dependencies:
   - type: terraform
     name: registry.terraform.io/phillbaker/elasticsearch
     example: registry.terraform.io/phillbaker/elasticsearch
-  - type: rust
+  - type: cargo
     name: elasticsearch
     example: elasticsearch
-  - type: ruby
+  - type: gem
     name: elasticsearch
     example: elasticsearch
-  - type: php
+  - type: composer
     name: elasticsearch/elasticsearch
     example: elasticsearch/elasticsearch
-  - type: php
+  - type: composer
     name: ruflin/Elastica
     example: ruflin/Elastica
   - type: golang
@@ -27,7 +27,7 @@ dependencies:
   - type: githubAction
     name: elastic/elastic-github-actions/elasticsearch
     example: elastic/elastic-github-actions/elasticsearch
-  - type: python
+  - type: pypi
     name: elasticsearch
     example: elasticsearch
   - type: terraform.resource

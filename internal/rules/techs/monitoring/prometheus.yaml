@@ -37,28 +37,28 @@ dependencies:
   - type: docker
     name: bitnami/nginx-exporter
     example: bitnami/nginx-exporter
-  - type: rust
+  - type: cargo
     name: prometheus
     example: prometheus
-  - type: php
+  - type: composer
     name: promphp/prometheus_client_php
     example: promphp/prometheus_client_php
-  - type: php
+  - type: composer
     name: artprima/prometheus-metrics-bundle
     example: artprima/prometheus-metrics-bundle
-  - type: ruby
+  - type: gem
     name: prometheus-client
     example: prometheus-client
-  - type: ruby
+  - type: gem
     name: prometheus
     example: prometheus
-  - type: ruby
+  - type: gem
     name: prometheus_exporter
     example: prometheus_exporter
-  - type: ruby
+  - type: gem
     name: prometheus-client-mmap
     example: prometheus-client-mmap
-  - type: ruby
+  - type: gem
     name: fluent-plugin-prometheus
     example: fluent-plugin-prometheus
   - type: golang

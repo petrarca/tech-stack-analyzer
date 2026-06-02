@@ -1,6 +1,6 @@
 tech: atlassian
 name: Atlassian
 dependencies:
-  - type: python
+  - type: pypi
     name: atlassian-python-api
     example: atlassian-python-api

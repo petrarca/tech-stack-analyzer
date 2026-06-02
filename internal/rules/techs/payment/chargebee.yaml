@@ -9,13 +9,13 @@ dependencies:
   - type: npm
     name: chargebee-typescript
     example: chargebee-typescript
-  - type: python
+  - type: pypi
     name: chargebee
     example: chargebee
-  - type: ruby
+  - type: gem
     name: chargebee-ruby
     example: chargebee-ruby
-  - type: php
+  - type: composer
     name: chargebee/chargebee-php
     example: chargebee/chargebee-php
   - type: golang

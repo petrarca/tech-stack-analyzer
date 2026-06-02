@@ -12,6 +12,6 @@ dependencies:
   - type: npm
     name: "@ovhcloud/pulumi-ovh"
     example: "@ovhcloud/pulumi-ovh"
-  - type: php
+  - type: composer
     name: ovh/ovh
     example: ovh/ovh

@@ -7,6 +7,6 @@ dependencies:
   - type: golang
     name: cloud.google.com/go/spanner
     example: cloud.google.com/go/spanner
-  - type: php
+  - type: composer
     name: google/cloud-spanner
     example: google/cloud-spanner

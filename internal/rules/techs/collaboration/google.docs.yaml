@@ -4,6 +4,6 @@ dependencies:
   - type: npm
     name: "@googleapis/docs"
     example: "@googleapis/docs"
-  - type: ruby
+  - type: gem
     name: google-apis-docs_v1
     example: google-apis-docs_v1

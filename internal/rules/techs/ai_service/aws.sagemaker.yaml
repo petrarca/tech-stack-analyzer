@@ -7,10 +7,10 @@ dependencies:
   - type: npm
     name: "@aws-cdk/aws-sagemaker"
     example: "@aws-cdk/aws-sagemaker"
-  - type: rust
+  - type: cargo
     name: aws-sdk-sagemaker
     example: aws-sdk-sagemaker
-  - type: ruby
+  - type: gem
     name: aws-sdk-sagemaker
     example: aws-sdk-sagemaker
   - type: golang

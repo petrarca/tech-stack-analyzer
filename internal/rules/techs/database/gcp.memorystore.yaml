@@ -7,6 +7,6 @@ dependencies:
   - type: golang
     name: cloud.google.com/go/redis
     example: cloud.google.com/go/redis
-  - type: php
+  - type: composer
     name: google/cloud-redis
     example: google/cloud-redis

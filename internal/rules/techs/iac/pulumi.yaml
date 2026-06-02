@@ -4,7 +4,7 @@ dependencies:
   - type: npm
     name: "@pulumi/pulumi"
     example: "@pulumi/pulumi"
-  - type: python
+  - type: pypi
     name: pulumi
     example: pulumi
   - type: golang

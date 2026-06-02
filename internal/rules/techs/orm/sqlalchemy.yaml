@@ -1,6 +1,6 @@
 tech: sqlalchemy
 name: SQLAlchemy
 dependencies:
-  - type: python
+  - type: pypi
     name: SQLAlchemy
     example: SQLAlchemy

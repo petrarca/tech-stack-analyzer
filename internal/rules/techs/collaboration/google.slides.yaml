@@ -4,6 +4,6 @@ dependencies:
   - type: npm
     name: "@googleapis/slides"
     example: "@googleapis/slides"
-  - type: ruby
+  - type: gem
     name: google-apis-slides_v1
     example: google-apis-slides_v1

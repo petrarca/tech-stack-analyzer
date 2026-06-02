@@ -139,7 +139,7 @@ func TestDetector_Detect_BasicComposer(t *testing.T) {
 	depNames := make(map[string]bool)
 	for _, dep := range payload.Dependencies {
 		depNames[dep.Name] = true
-		assert.Equal(t, "php", dep.Type, "All dependencies should be php type")
+		assert.Equal(t, "composer", dep.Type, "All dependencies should be composer type")
 	}
 
 	assert.True(t, depNames["php"], "Should have php dependency")

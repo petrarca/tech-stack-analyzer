@@ -7,10 +7,10 @@ dependencies:
   - type: npm
     name: "@aws-sdk/client-neptune"
     example: "@aws-sdk/client-neptune"
-  - type: rust
+  - type: cargo
     name: aws-sdk-neptune
     example: aws-sdk-neptune
-  - type: ruby
+  - type: gem
     name: aws-sdk-neptune
     example: aws-sdk-neptune
   - type: golang

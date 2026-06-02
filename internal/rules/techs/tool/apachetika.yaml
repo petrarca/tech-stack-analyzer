@@ -4,6 +4,6 @@ dependencies:
   - type: docker
     name: apache/tika
     example: apache/tika
-  - type: python
+  - type: pypi
     name: tika
     example: tika

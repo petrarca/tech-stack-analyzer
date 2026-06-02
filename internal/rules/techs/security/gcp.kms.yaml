@@ -7,6 +7,6 @@ dependencies:
   - type: golang
     name: cloud.google.com/go/kms
     example: cloud.google.com/go/kms
-  - type: php
+  - type: composer
     name: google/cloud-kms
     example: google/cloud-kms

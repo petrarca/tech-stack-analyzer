@@ -1,7 +1,7 @@
 tech: crowdin
 name: Crowdin
 dependencies:
-  - type: php
+  - type: composer
     name: crowdin/crowdin-api-client
     example: crowdin/crowdin-api-client
 files:

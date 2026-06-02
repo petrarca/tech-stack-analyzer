@@ -3,10 +3,10 @@ name: Fastly
 dotenv:
   - FASTLY_
 dependencies:
-  - type: rust
+  - type: cargo
     name: fastly-api
     example: fastly-api
-  - type: ruby
+  - type: gem
     name: fastly
     example: fastly
   - type: npm

@@ -12,13 +12,13 @@ dependencies:
   - type: npm
     name: plausible-tracker
     example: plausible-tracker
-  - type: php
+  - type: composer
     name: prestashop_plausible
     example: prestashop_plausible
-  - type: ruby
+  - type: gem
     name: plausible_api
     example: plausible_api
-  - type: php
+  - type: composer
     name: vincentbean/laravel-plausible
     example: vincentbean/laravel-plausible
   - type: golang

@@ -9,12 +9,12 @@ dependencies:
   - type: terraform
     name: registry.terraform.io/cloudflare/cloudflare
     example: registry.terraform.io/cloudflare/cloudflare
-  - type: rust
+  - type: cargo
     name: cloudflare
     example: cloudflare
-  - type: ruby
+  - type: gem
     name: cloudflare-rails
     example: cloudflare-rails
-  - type: php
+  - type: composer
     name: cloudflare/sdk
     example: cloudflare/sdk

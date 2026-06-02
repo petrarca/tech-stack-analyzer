@@ -4,9 +4,9 @@ dependencies:
   - type: npm
     name: "@modelcontextprotocol/sdk"
     example: "@modelcontextprotocol/sdk"
-  - type: python
+  - type: pypi
     name: mcp
     example: mcp
-  - type: ruby
+  - type: gem
     name: mcp
     example: mcp

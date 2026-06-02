@@ -4,6 +4,6 @@ dependencies:
   - type: npm
     name: "@googleapis/tasks"
     example: "@googleapis/tasks"
-  - type: ruby
+  - type: gem
     name: google-apis-tasks_v1
     example: google-apis-tasks_v1

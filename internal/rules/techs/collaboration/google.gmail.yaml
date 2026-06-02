@@ -4,6 +4,6 @@ dependencies:
   - type: npm
     name: "@googleapis/gmail"
     example: "@googleapis/gmail"
-  - type: ruby
+  - type: gem
     name: google-apis-gmail_v1
     example: google-apis-gmail_v1

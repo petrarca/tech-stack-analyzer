@@ -12,6 +12,6 @@ dependencies:
   - type: npm
     name: "@langchain/google-vertexai"
     example: "@langchain/google-vertexai"
-  - type: python
+  - type: pypi
     name: vertexai
     example: vertexai

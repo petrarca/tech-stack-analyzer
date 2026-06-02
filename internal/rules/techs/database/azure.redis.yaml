@@ -1,10 +1,10 @@
 tech: azure.redis
 name: Azure Redis
 dependencies:
-  - type: ruby
+  - type: gem
     name: azure_mgmt_redis
     example: azure_mgmt_redis
-  - type: rust
+  - type: cargo
     name: azure_mgmt_redis
     example: azure_mgmt_redis
   - type: npm

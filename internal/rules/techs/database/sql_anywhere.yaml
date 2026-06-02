@@ -7,7 +7,7 @@ dependencies:
   - type: npm
     name: sqlanywhere
     example: sqlanywhere
-  - type: python
+  - type: pypi
     name: sqlanywhere
     example: sqlanywhere
   - type: maven

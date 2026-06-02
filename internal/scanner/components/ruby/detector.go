@@ -110,7 +110,7 @@ func (d *Detector) detectGemfile(file types.File, currentPath, basePath string, 
 
 	// Match dependencies against rules
 	if len(dependencies) > 0 {
-		depDetector.ApplyMatchesToPayload(payload, depDetector.MatchDependencies(depNames, "ruby"))
+		depDetector.ApplyMatchesToPayload(payload, depDetector.MatchDependencies(depNames, parsers.DependencyTypeRuby))
 		payload.Dependencies = dependencies
 	}
 
@@ -181,7 +181,7 @@ func init() {
 
 	// Register rubygems package provider
 	providers.Register(&providers.PackageProvider{
-		DependencyType:      "rubygems",
+		DependencyType:      parsers.DependencyTypeRuby,
 		ExtractPackageNames: providers.SinglePropertyExtractor("ruby", "gem_name"),
 	})
 }

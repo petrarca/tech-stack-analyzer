@@ -13,21 +13,21 @@ dependencies:
   - type: npm
     name: ajv
     example: ajv
-  - type: php
+  - type: composer
     name: justinrainbow/json-schema
     example: justinrainbow/json-schema
-  - type: php
+  - type: composer
     name: opis/json-schema
     example: opis/json-schema
   - type: golang
     name: github.com/invopop/jsonschema
     example: github.com/invopop/jsonschema
-  - type: python
+  - type: pypi
     name: jsonschema
     example: jsonschema
-  - type: ruby
+  - type: gem
     name: json-schema
     example: json-schema
-  - type: rust
+  - type: cargo
     name: jsonschema
     example: jsonschema

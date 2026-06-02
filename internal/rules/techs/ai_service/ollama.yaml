@@ -15,9 +15,9 @@ dependencies:
   - type: npm
     name: ollama
     example: ollama
-  - type: python
+  - type: pypi
     name: langchain-ollama
     example: langchain-ollama
-  - type: python
+  - type: pypi
     name: ollama
     example: ollama

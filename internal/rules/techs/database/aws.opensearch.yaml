@@ -7,15 +7,15 @@ dependencies:
   - type: npm
     name: "@aws-sdk/client-opensearch"
     example: "@aws-sdk/client-opensearch"
-  - type: rust
+  - type: cargo
     name: aws-sdk-opensearch
     example: aws-sdk-opensearch
-  - type: ruby
+  - type: gem
     name: aws-sdk-opensearch
     example: aws-sdk-opensearch
   - type: golang
     name: github.com/aws/aws-sdk-go-v2/service/opensearch
     example: github.com/aws/aws-sdk-go-v2/service/opensearch
-  - type: python
+  - type: pypi
     name: opensearch-py
     example: opensearch-py

@@ -1,10 +1,10 @@
 tech: azure.mariadb
 name: Azure MariaDB
 dependencies:
-  - type: ruby
+  - type: gem
     name: azure_mgmt_mariadb
     example: azure_mgmt_mariadb
-  - type: rust
+  - type: cargo
     name: azure_mgmt_mariadb
     example: azure_mgmt_mariadb
   - type: npm

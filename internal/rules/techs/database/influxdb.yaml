@@ -4,15 +4,15 @@ dependencies:
   - type: npm
     name: "@influxdata/influxdb-client"
     example: "@influxdata/influxdb-client"
-  - type: rust
+  - type: cargo
     name: influxdb
     example: influxdb
-  - type: rust
+  - type: cargo
     name: influxdb2
     example: influxdb2
-  - type: ruby
+  - type: gem
     name: influxdb-client
     example: influxdb-client
-  - type: php
+  - type: composer
     name: influxdata/influxdb-client-php
     example: influxdata/influxdb-client-php

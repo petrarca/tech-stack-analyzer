@@ -4,6 +4,6 @@ dependencies:
   - type: npm
     name: "@google-cloud/dns"
     example: "@google-cloud/dns"
-  - type: ruby
+  - type: gem
     name: google-cloud-dns
     example: google-cloud-dns

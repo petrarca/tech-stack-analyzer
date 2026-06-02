@@ -1,6 +1,6 @@
 tech: servicenow
 name: ServiceNow
 dependencies:
-  - type: ruby
+  - type: gem
     name: servicenow-api
     example: servicenow-api

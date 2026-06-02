@@ -66,6 +66,13 @@
       ]
     },
     {
+      "name": "ALGOL",
+      "type": "programming",
+      "extensions": [
+        ".alg"
+      ]
+    },
+    {
       "name": "AMPL",
       "type": "programming",
       "extensions": [
@@ -337,6 +344,13 @@
         ".gawk",
         ".mawk",
         ".nawk"
+      ]
+    },
+    {
+      "name": "B (Formal Method)",
+      "type": "programming",
+      "extensions": [
+        ".mch"
       ]
     },
     {
@@ -648,6 +662,13 @@
       ]
     },
     {
+      "name": "CQL",
+      "type": "programming",
+      "extensions": [
+        ".cql"
+      ]
+    },
+    {
       "name": "CSON",
       "type": "data",
       "extensions": [
@@ -722,6 +743,13 @@
       "type": "programming",
       "extensions": [
         ".mligo"
+      ]
+    },
+    {
+      "name": "Cangjie",
+      "type": "programming",
+      "extensions": [
+        ".cj"
       ]
     },
     {
@@ -1481,6 +1509,13 @@
       ]
     },
     {
+      "name": "FlatBuffers",
+      "type": "data",
+      "extensions": [
+        ".fbs"
+      ]
+    },
+    {
       "name": "Flix",
       "type": "programming",
       "extensions": [
@@ -1840,6 +1875,17 @@
       ]
     },
     {
+      "name": "Go Template",
+      "type": "markup",
+      "extensions": [
+        ".gohtml",
+        ".gotmpl",
+        ".html.tmpl",
+        ".tmpl",
+        ".tpl"
+      ]
+    },
+    {
       "name": "Godot Resource",
       "type": "data",
       "extensions": [
@@ -1950,6 +1996,7 @@
         ".nomad",
         ".tf",
         ".tfvars",
+        ".tofu",
         ".workflow"
       ]
     },
@@ -2115,6 +2162,13 @@
       "type": "programming",
       "extensions": [
         ".hc"
+      ]
+    },
+    {
+      "name": "Hurl",
+      "type": "programming",
+      "extensions": [
+        ".hurl"
       ]
     },
     {
@@ -2319,7 +2373,8 @@
         ".sublime-theme",
         ".sublime-workspace",
         ".sublime_metrics",
-        ".sublime_session"
+        ".sublime_session",
+        ".tsconfig.json"
       ]
     },
     {
@@ -2341,6 +2396,13 @@
       "type": "programming",
       "extensions": [
         ".jq"
+      ]
+    },
+    {
+      "name": "Jac",
+      "type": "programming",
+      "extensions": [
+        ".jac"
       ]
     },
     {
@@ -2510,10 +2572,24 @@
       ]
     },
     {
+      "name": "KCL",
+      "type": "programming",
+      "extensions": [
+        ".k"
+      ]
+    },
+    {
       "name": "KDL",
       "type": "data",
       "extensions": [
         ".kdl"
+      ]
+    },
+    {
+      "name": "KFramework",
+      "type": "programming",
+      "extensions": [
+        ".k"
       ]
     },
     {
@@ -2584,7 +2660,7 @@
       ]
     },
     {
-      "name": "KoLMafia ASH",
+      "name": "KoLmafia ASH",
       "type": "programming",
       "extensions": [
         ".ash"
@@ -2657,6 +2733,20 @@
         ".lvclass",
         ".lvlib",
         ".lvproj"
+      ]
+    },
+    {
+      "name": "Lambdapi",
+      "type": "programming",
+      "extensions": [
+        ".lp"
+      ]
+    },
+    {
+      "name": "Langium",
+      "type": "programming",
+      "extensions": [
+        ".langium"
       ]
     },
     {
@@ -2771,6 +2861,13 @@
       "type": "markup",
       "extensions": [
         ".liquid"
+      ]
+    },
+    {
+      "name": "Liquidsoap",
+      "type": "programming",
+      "extensions": [
+        ".liq"
       ]
     },
     {
@@ -3014,18 +3111,10 @@
       ]
     },
     {
-      "name": "Mathematica",
+      "name": "Mathematical Programming System",
       "type": "programming",
       "extensions": [
-        ".cdf",
-        ".m",
-        ".ma",
-        ".mathematica",
-        ".mt",
-        ".nb",
-        ".nbp",
-        ".wl",
-        ".wlt"
+        ".mps"
       ]
     },
     {
@@ -3037,6 +3126,13 @@
         ".maxproj",
         ".mxt",
         ".pat"
+      ]
+    },
+    {
+      "name": "MeTTa",
+      "type": "programming",
+      "extensions": [
+        ".metta"
       ]
     },
     {
@@ -4027,7 +4123,8 @@
       "extensions": [
         ".pbt",
         ".pbtxt",
-        ".textproto"
+        ".textproto",
+        ".txtpb"
       ]
     },
     {
@@ -4153,7 +4250,8 @@
       "name": "QuickBASIC",
       "type": "programming",
       "extensions": [
-        ".bas"
+        ".bas",
+        ".bi"
       ]
     },
     {
@@ -4170,6 +4268,13 @@
       "type": "markup",
       "extensions": [
         ".raml"
+      ]
+    },
+    {
+      "name": "RAScript",
+      "type": "programming",
+      "extensions": [
+        ".rascript"
       ]
     },
     {
@@ -4594,7 +4699,6 @@
       "name": "SQL",
       "type": "data",
       "extensions": [
-        ".cql",
         ".ddl",
         ".inc",
         ".mysql",
@@ -4755,8 +4859,10 @@
         ".command",
         ".fcgi",
         ".ksh",
+        ".sbatch",
         ".sh",
         ".sh.in",
+        ".slurm",
         ".tmux",
         ".tool",
         ".trigger",
@@ -4975,6 +5081,13 @@
       ]
     },
     {
+      "name": "SurrealQL",
+      "type": "programming",
+      "extensions": [
+        ".surql"
+      ]
+    },
+    {
       "name": "Survex data",
       "type": "data",
       "extensions": [
@@ -5038,6 +5151,13 @@
       "type": "programming",
       "extensions": [
         ".tla"
+      ]
+    },
+    {
+      "name": "TMDL",
+      "type": "data",
+      "extensions": [
+        ".tmdl"
       ]
     },
     {
@@ -5143,6 +5263,13 @@
       "type": "markup",
       "extensions": [
         ".tea"
+      ]
+    },
+    {
+      "name": "Teal",
+      "type": "programming",
+      "extensions": [
+        ".tl"
       ]
     },
     {
@@ -5573,6 +5700,22 @@
       ]
     },
     {
+      "name": "Wolfram Language",
+      "type": "programming",
+      "extensions": [
+        ".cdf",
+        ".m",
+        ".ma",
+        ".mathematica",
+        ".mt",
+        ".nb",
+        ".nbp",
+        ".wl",
+        ".wls",
+        ".wlt"
+      ]
+    },
+    {
       "name": "Wollok",
       "type": "programming",
       "extensions": [
@@ -5657,6 +5800,7 @@
         ".grxml",
         ".gst",
         ".hzp",
+        ".icls",
         ".iml",
         ".ivy",
         ".jelly",
@@ -5683,6 +5827,7 @@
         ".ps1xml",
         ".psc1",
         ".pt",
+        ".pubxml",
         ".qhelp",
         ".rdf",
         ".res",
@@ -6105,11 +6250,11 @@
     }
   ],
   "summary": {
-    "total": 739,
+    "total": 758,
     "by_type": {
-      "data": 143,
-      "markup": 68,
-      "programming": 510,
+      "data": 145,
+      "markup": 69,
+      "programming": 526,
       "prose": 18
     }
   }

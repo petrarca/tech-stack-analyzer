@@ -1,10 +1,10 @@
 tech: apideck
 name: Apideck
 dependencies:
-  - type: php
+  - type: composer
     name: apideck-libraries/sdk-php
     example: apideck-libraries/sdk-php
-  - type: python
+  - type: pypi
     name: apideck-unify
     example: apideck-unify
   - type: golang

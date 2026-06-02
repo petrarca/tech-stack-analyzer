@@ -6,25 +6,25 @@ dependencies:
   - type: npm
     name: stripe
     example: stripe
-  - type: php
+  - type: composer
     name: stripe/stripe-php
     example: stripe/stripe-php
-  - type: php
+  - type: composer
     name: laravel/cashier
     example: laravel/cashier
-  - type: php
+  - type: composer
     name: omnipay/stripe
     example: omnipay/stripe
-  - type: php
+  - type: composer
     name: cartalyst/stripe
     example: cartalyst/stripe
-  - type: ruby
+  - type: gem
     name: stripe
     example: stripe
-  - type: ruby
+  - type: gem
     name: stripe-rails
     example: stripe-rails
-  - type: ruby
+  - type: gem
     name: stripe_event
     example: stripe_event
   - type: golang

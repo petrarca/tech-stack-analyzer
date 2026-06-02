@@ -3,7 +3,7 @@ name: WooCommerce
 dotenv:
   - WOOCOMMERCE_
 dependencies:
-  - type: php
+  - type: composer
     name: automattic/woocommerce
     example: automattic/woocommerce
   - type: terraform.resource

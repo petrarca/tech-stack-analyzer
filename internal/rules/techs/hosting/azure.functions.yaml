@@ -10,13 +10,13 @@ dependencies:
   - type: npm
     name: azure-functions-core-tools
     example: azure-functions-core-tools
-  - type: ruby
+  - type: gem
     name: fluent-plugin-azurefunctions
     example: fluent-plugin-azurefunctions
-  - type: rust
+  - type: cargo
     name: azure-functions
     example: azure-functions
-  - type: rust
+  - type: cargo
     name: azure-functions-shared
     example: azure-functions-shared
   - type: githubAction

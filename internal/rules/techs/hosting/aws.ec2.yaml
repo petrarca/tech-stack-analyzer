@@ -7,10 +7,10 @@ dependencies:
   - type: npm
     name: "@aws-sdk/client-ec2"
     example: "@aws-sdk/client-ec2"
-  - type: rust
+  - type: cargo
     name: aws-sdk-ec2
     example: aws-sdk-ec2
-  - type: ruby
+  - type: gem
     name: aws-sdk-ec2
     example: aws-sdk-ec2
   - type: golang

@@ -15,16 +15,16 @@ dependencies:
   - type: npm
     name: "@opentelemetry/instrumentation-oracledb"
     example: "@opentelemetry/instrumentation-oracledb"
-  - type: python
+  - type: pypi
     name: cx_Oracle
     example: cx_Oracle
-  - type: python
+  - type: pypi
     name: oracledb
     example: oracledb
-  - type: python
+  - type: pypi
     name: python-oracledb
     example: python-oracledb
-  - type: python
+  - type: pypi
     name: django-oracle
     example: django-oracle
   - type: maven
@@ -36,22 +36,22 @@ dependencies:
   - type: maven
     name: oracle.jdbc.driver
     example: oracle.jdbc.driver
-  - type: ruby
+  - type: gem
     name: ruby-oci8
     example: ruby-oci8
-  - type: ruby
+  - type: gem
     name: ruby-oci8
     example: ruby-oci8
-  - type: go
+  - type: golang
     name: godror
     example: godror
-  - type: go
+  - type: golang
     name: github.com/sijms/go-ora
     example: github.com/sijms/go-ora
-  - type: php
+  - type: composer
     name: oci8
     example: oci8
-  - type: php
+  - type: composer
     name: oracle-instantclient
     example: oracle-instantclient
   - type: docker

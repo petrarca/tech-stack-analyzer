@@ -6,6 +6,6 @@ dependencies:
   - type: npm
     name: sqreen
     example: sqreen
-  - type: ruby
+  - type: gem
     name: sqreen
     example: sqreen

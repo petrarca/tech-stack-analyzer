@@ -1,7 +1,7 @@
 tech: phpunit
 name: PHPUnit
 dependencies:
-  - type: php
+  - type: composer
     name: phpunit/phpunit
     example: phpunit/phpunit
 files:

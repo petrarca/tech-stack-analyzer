@@ -1,10 +1,10 @@
 tech: apache_cassandra
 name: Apache Cassandra
 dependencies:
-  - type: rust
+  - type: cargo
     name: discord-cassandra-cpp
     example: discord-cassandra-cpp
-  - type: rust
+  - type: cargo
     name: cassandra-cpp
     example: cassandra-cpp
   - type: npm

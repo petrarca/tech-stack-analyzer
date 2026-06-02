@@ -4,6 +4,6 @@ dependencies:
   - type: npm
     name: mariadb
     example: mariadb
-  - type: ruby
+  - type: gem
     name: tencentcloud-sdk-mariadb
     example: tencentcloud-sdk-mariadb

@@ -9,13 +9,13 @@ dependencies:
   - type: npm
     name: freshdesk
     example: freshdesk
-  - type: python
+  - type: pypi
     name: freshdesk
     example: freshdesk
-  - type: ruby
+  - type: gem
     name: freshdesk_api
     example: freshdesk_api
-  - type: php
+  - type: composer
     name: freshdesk/freshdesk-php
     example: freshdesk/freshdesk-php
   - type: golang

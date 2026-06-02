@@ -4,9 +4,9 @@ dependencies:
   - type: npm
     name: neo4j-driver
     example: neo4j-driver
-  - type: rust
+  - type: cargo
     name: neo4rs
     example: neo4rs
-  - type: ruby
+  - type: gem
     name: neo4j-ruby-driver
     example: neo4j-ruby-driver

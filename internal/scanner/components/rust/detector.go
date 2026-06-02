@@ -81,7 +81,7 @@ func (d *Detector) detectCargoToml(file types.File, currentPath, basePath string
 
 	// Match dependencies against rules
 	if len(dependencies) > 0 {
-		depDetector.ApplyMatchesToPayload(payload, depDetector.MatchDependencies(depNames, "rust"))
+		depDetector.ApplyMatchesToPayload(payload, depDetector.MatchDependencies(depNames, parsers.DependencyTypeRust))
 		payload.Dependencies = dependencies
 	}
 
@@ -137,7 +137,7 @@ func init() {
 
 	// Register cargo package provider
 	providers.Register(&providers.PackageProvider{
-		DependencyType:      "cargo",
+		DependencyType:      parsers.DependencyTypeRust,
 		ExtractPackageNames: providers.SinglePropertyExtractor("rust", "crate_name"),
 	})
 }

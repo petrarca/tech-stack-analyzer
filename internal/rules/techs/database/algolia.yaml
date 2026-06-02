@@ -30,19 +30,19 @@ dependencies:
   - type: npm
     name: "@vuepress/plugin-docsearch"
     example: "@vuepress/plugin-docsearch"
-  - type: rust
+  - type: cargo
     name: algoliasearch
     example: algoliasearch
-  - type: ruby
+  - type: gem
     name: algolia
     example: algolia
-  - type: ruby
+  - type: gem
     name: algoliasearch-rails
     example: algoliasearch-rails
-  - type: php
+  - type: composer
     name: algolia/algoliasearch-client-php
     example: algolia/algoliasearch-client-php
-  - type: php
+  - type: composer
     name: algolia/scout-extended
     example: algolia/scout-extended
   - type: githubAction
@@ -51,10 +51,10 @@ dependencies:
   - type: githubAction
     name: algolia/algoliasearch-crawler-github-actions
     example: algolia/algoliasearch-crawler-github-actions
-  - type: python
+  - type: pypi
     name: algoliasearch
     example: algoliasearch
-  - type: python
+  - type: pypi
     name: algoliasearch-django
     example: algoliasearch-django
   - type: terraform.resource

@@ -7,16 +7,16 @@ dependencies:
   - type: npm
     name: "@aws-sdk/client-sqs"
     example: "@aws-sdk/client-sqs"
-  - type: rust
+  - type: cargo
     name: aws-sdk-sqs
     example: aws-sdk-sqs
-  - type: ruby
+  - type: gem
     name: aws-sdk-sqs
     example: aws-sdk-sqs
   - type: golang
     name: github.com/aws/aws-sdk-go-v2/service/sqs
     example: github.com/aws/aws-sdk-go-v2/service/sqs
-  - type: php
+  - type: composer
     name: async-aws/sqs
     example: async-aws/sqs
   - type: terraform.resource

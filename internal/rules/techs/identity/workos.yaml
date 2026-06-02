@@ -9,21 +9,21 @@ dependencies:
   - type: golang
     name: github.com/workos/workos-go
     example: github.com/workos/workos-go
-  - type: ruby
+  - type: gem
     name: workos
     example: workos
-  - type: ruby
+  - type: gem
     name: omniauth-workos
     example: omniauth-workos
-  - type: ruby
+  - type: gem
     name: ueberauth_workos
     example: ueberauth_workos
-  - type: python
+  - type: pypi
     name: workos
     example: workos
-  - type: php
+  - type: composer
     name: workos/workos-php
     example: workos/workos-php
-  - type: python
+  - type: pypi
     name: django-workos
     example: django-workos

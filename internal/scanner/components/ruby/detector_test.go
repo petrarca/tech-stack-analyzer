@@ -135,7 +135,7 @@ end
 	depNames := make(map[string]bool)
 	for _, dep := range payload.Dependencies {
 		depNames[dep.Name] = true
-		assert.Equal(t, "ruby", dep.Type, "All dependencies should be ruby type")
+		assert.Equal(t, "gem", dep.Type, "All dependencies should be gem type")
 	}
 
 	assert.True(t, depNames["rails"], "Should have rails dependency")

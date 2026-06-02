@@ -83,6 +83,39 @@ importers:
 			wantDeps: map[string]string{},
 		},
 		{
+			name: "v9 with packages block and peer-suffix versions",
+			content: `lockfileVersion: '9.0'
+
+importers:
+  .:
+    dependencies:
+      mylib:
+        specifier: ^1.2.0
+        version: 1.2.11(peerdep@4.3.6)
+      '@myorg/widget':
+        specifier: ^5.0.0
+        version: 5.2.8
+    devDependencies:
+      mytestlib:
+        specifier: ^3.0.0
+        version: 3.1.0(typescript@5.4.0)
+
+packages:
+  'mylib@1.2.11':
+    resolution: {integrity: sha512-abc}
+  '@myorg/widget@5.2.8':
+    resolution: {integrity: sha512-def}
+  'mytestlib@3.1.0':
+    resolution: {integrity: sha512-ghi}
+`,
+			expected: 3,
+			wantDeps: map[string]string{
+				"mylib":         "1.2.11",
+				"@myorg/widget": "5.2.8",
+				"mytestlib":     "3.1.0",
+			},
+		},
+		{
 			name:     "empty content",
 			content:  ``,
 			expected: 0,

@@ -1,7 +1,7 @@
 tech: mkdocs
 name: MkDocs
 dependencies:
-  - type: python
+  - type: pypi
     name: mkdocs
     example: mkdocs
   - type: docker

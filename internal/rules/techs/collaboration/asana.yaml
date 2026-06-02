@@ -6,13 +6,13 @@ dependencies:
   - type: npm
     name: asana
     example: asana
-  - type: python
+  - type: pypi
     name: asana
     example: asana
-  - type: ruby
+  - type: gem
     name: asana
     example: asana
-  - type: php
+  - type: composer
     name: asana/asana
     example: asana/asana
   - type: golang

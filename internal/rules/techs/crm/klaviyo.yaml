@@ -1,7 +1,7 @@
 tech: klaviyo
 name: Klaviyo
 dependencies:
-  - type: php
+  - type: composer
     name: klaviyo/magento2-extension
     example: klaviyo/magento2-extension
   - type: terraform.resource

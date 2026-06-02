@@ -7,9 +7,9 @@ dependencies:
   - type: golang
     name: cloud.google.com/go/vision
     example: cloud.google.com/go/vision
-  - type: php
+  - type: composer
     name: google/cloud-vision
     example: google/cloud-vision
-  - type: python
+  - type: pypi
     name: google-cloud-vision
     example: google-cloud-vision

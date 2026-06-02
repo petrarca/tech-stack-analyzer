@@ -30,6 +30,16 @@ var (
 	// Single regex covering all Gradle dependency configurations. Used as a
 	// cheap gate by isPotentialDependencyLine before the full parser runs.
 	gradleDepConfigRegex = regexp.MustCompile(`\b(testImplementation|testRuntimeOnly|testCompileOnly|testApi|annotationProcessor|compileOnly|runtimeOnly|implementation|compile|api)\b`)
+
+	// Property reference forms in version strings: "${name}" and "$name".
+	gradlePropertyRefRegex = regexp.MustCompile(`\$\{([A-Za-z0-9_.]+)\}|\$([A-Za-z_][A-Za-z0-9_]*)`)
+
+	// Inline property definitions inside a build script:
+	//   ext.kotlinVersion = "1.9.0"        ext { kotlinVersion = "1.9.0" }
+	//   val ktorVersion = "2.3.0"          (Kotlin DSL)
+	//   def jacksonVersion = "2.15.0"      (Groovy DSL)
+	//   kotlinVersion = "1.9.0"            (bare assignment in ext block)
+	gradleInlinePropRegex = regexp.MustCompile(`(?m)^\s*(?:ext\.|val\s+|def\s+|var\s+)?([A-Za-z_][A-Za-z0-9_.]*)\s*=\s*["']([^"']+)["']`)
 )
 
 // GradleParser handles Gradle-specific file parsing (build.gradle, build.gradle.kts)
@@ -40,32 +50,112 @@ func NewGradleParser() *GradleParser {
 	return &GradleParser{}
 }
 
-// ParseGradle parses build.gradle or build.gradle.kts and extracts Gradle dependencies
+// ParseGradle parses build.gradle or build.gradle.kts and extracts Gradle dependencies.
+// Inline property definitions (ext/val/def) in the build script are used to resolve
+// version references like "$ktorVersion" or "${ktorVersion}".
 func (p *GradleParser) ParseGradle(content string) []types.Dependency {
-	var dependencies []types.Dependency
+	return p.ParseGradleWithProperties(content, nil)
+}
 
+// ParseGradleWithProperties parses a build script and resolves version property
+// references against extProps (e.g. from gradle.properties) merged with inline
+// definitions found in the build script itself. Build-script definitions take
+// precedence over external ones.
+func (p *GradleParser) ParseGradleWithProperties(content string, extProps map[string]string) []types.Dependency {
+	props := mergeGradleProperties(extProps, ExtractGradleInlineProperties(content))
+
+	var dependencies []types.Dependency
 	lines := strings.Split(content, "\n")
 
 	for _, line := range lines {
 		line = strings.TrimSpace(line)
 
-		// Skip comments and empty lines
 		if p.shouldSkipLine(line) {
 			continue
 		}
-
-		// Quick validation - is this even a dependency line?
 		if !p.isPotentialDependencyLine(line) {
 			continue
 		}
 
 		gradleDep := p.parseGradleDependency(line)
 		if gradleDep != nil {
+			declared := gradleDep.Version
+			gradleDep.Version = resolveGradleVersion(declared, props)
+			gradleDep.SetDeclaredVersion(declared)
 			dependencies = append(dependencies, *gradleDep)
 		}
 	}
 
 	return dependencies
+}
+
+// ParseGradleProperties parses gradle.properties content into a key/value map.
+func ParseGradleProperties(content string) map[string]string {
+	props := make(map[string]string)
+	for _, line := range strings.Split(content, "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "#") || strings.HasPrefix(line, "!") {
+			continue
+		}
+		eq := strings.IndexByte(line, '=')
+		if eq <= 0 {
+			continue
+		}
+		key := strings.TrimSpace(line[:eq])
+		val := strings.TrimSpace(line[eq+1:])
+		if key != "" {
+			props[key] = val
+		}
+	}
+	return props
+}
+
+// ExtractGradleInlineProperties collects property definitions declared inside a
+// build script (ext.x, val x, def x, or bare x = "..." within ext blocks).
+func ExtractGradleInlineProperties(content string) map[string]string {
+	props := make(map[string]string)
+	for _, m := range gradleInlinePropRegex.FindAllStringSubmatch(content, -1) {
+		key, val := m[1], m[2]
+		// Strip a leading "ext." so "${ext.x}" and "$x" both resolve.
+		key = strings.TrimPrefix(key, "ext.")
+		if key != "" {
+			props[key] = val
+		}
+	}
+	return props
+}
+
+// mergeGradleProperties merges two property maps; values from override win.
+func mergeGradleProperties(base, override map[string]string) map[string]string {
+	merged := make(map[string]string, len(base)+len(override))
+	for k, v := range base {
+		merged[k] = v
+	}
+	for k, v := range override {
+		merged[k] = v
+	}
+	return merged
+}
+
+// resolveGradleVersion replaces "${name}" / "$name" references in a version
+// string with values from props. Unresolved references are left intact so the
+// caller can still see the original (and the SBOM emitter will omit them).
+func resolveGradleVersion(version string, props map[string]string) string {
+	if !strings.Contains(version, "$") || len(props) == 0 {
+		return version
+	}
+	return gradlePropertyRefRegex.ReplaceAllStringFunc(version, func(ref string) string {
+		m := gradlePropertyRefRegex.FindStringSubmatch(ref)
+		name := m[1]
+		if name == "" {
+			name = m[2]
+		}
+		name = strings.TrimPrefix(name, "ext.")
+		if val, ok := props[name]; ok {
+			return val
+		}
+		return ref
+	})
 }
 
 // GradleDependency represents a parsed Gradle dependency

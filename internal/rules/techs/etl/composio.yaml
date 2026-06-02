@@ -6,6 +6,6 @@ dependencies:
   - type: npm
     name: composio-core
     example: composio-core
-  - type: python
+  - type: pypi
     name: composio-core
     example: composio-core

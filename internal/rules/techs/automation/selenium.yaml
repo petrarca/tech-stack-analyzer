@@ -13,40 +13,40 @@ dependencies:
   - type: npm
     name: "@wdio/selenium-standalone-service"
     example: "@wdio/selenium-standalone-service"
-  - type: php
+  - type: composer
     name: php-webdriver/webdriver
     example: php-webdriver/webdriver
-  - type: php
+  - type: composer
     name: behat/mink-selenium2-driver
     example: behat/mink-selenium2-driver
-  - type: php
+  - type: composer
     name: symfony/panther
     example: symfony/panther
-  - type: php
+  - type: composer
     name: instaclick/php-webdriver
     example: instaclick/php-webdriver
-  - type: php
+  - type: composer
     name: phpunit/phpunit-selenium
     example: phpunit/phpunit-selenium
-  - type: php
+  - type: composer
     name: se/selenium-server-standalone
     example: se/selenium-server-standalone
-  - type: ruby
+  - type: gem
     name: selenium-webdriver
     example: selenium-webdriver
-  - type: ruby
+  - type: gem
     name: selenium
     example: selenium
-  - type: ruby
+  - type: gem
     name: selenium-client
     example: selenium-client
-  - type: ruby
+  - type: gem
     name: capybara-selenium
     example: capybara-selenium
-  - type: rust
+  - type: cargo
     name: thirtyfour
     example: thirtyfour
-  - type: rust
+  - type: cargo
     name: selenium-rs
     example: selenium-rs
   - type: githubAction
@@ -55,7 +55,7 @@ dependencies:
   - type: golang
     name: github.com/tebeka/selenium
     example: github.com/tebeka/selenium
-  - type: python
+  - type: pypi
     name: selenium
     example: selenium
   - type: docker

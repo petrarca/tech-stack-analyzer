@@ -1,10 +1,10 @@
 tech: azure.postgres
 name: Azure Postgres
 dependencies:
-  - type: ruby
+  - type: gem
     name: azure_mgmt_postgresql
     example: azure_mgmt_postgresql
-  - type: rust
+  - type: cargo
     name: azure_mgmt_postgresql
     example: azure_mgmt_postgresql
   - type: npm

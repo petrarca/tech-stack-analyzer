@@ -7,13 +7,13 @@ dependencies:
   - type: npm
     name: google-spreadsheet
     example: google-spreadsheet
-  - type: php
+  - type: composer
     name: revolution/laravel-google-sheets
     example: revolution/laravel-google-sheets
-  - type: ruby
+  - type: gem
     name: google-apis-sheets_v4
     example: google-apis-sheets_v4
-  - type: rust
+  - type: cargo
     name: sheets
     example: sheets
   - type: terraform.resource

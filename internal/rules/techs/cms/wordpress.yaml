@@ -3,13 +3,13 @@ name: Wordpress
 dotenv:
   - WP_
 dependencies:
-  - type: php
+  - type: composer
     name: wp-cli/wp-cli
     example: wp-cli/wp-cli
-  - type: php
+  - type: composer
     name: roots/wordpress
     example: roots/wordpress
-  - type: php
+  - type: composer
     name: johnpbloch/wordpress
     example: johnpbloch/wordpress
   - type: githubAction

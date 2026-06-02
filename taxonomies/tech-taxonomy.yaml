@@ -382,7 +382,7 @@ categories:
           isprimarytech: null
           properties: {}
     - name: appserver
-      description: Application servers (JBoss, Tomcat, WebLogic, etc.)
+      description: Application servers (JBoss, Tomcat, WebLogic, etc.) — runtime infra, not app framework
       iscomponent: true
       technologies:
         - name: JBoss / WildFly
@@ -404,7 +404,7 @@ categories:
           isprimarytech: null
           properties: {}
     - name: automation
-      description: Automation tools
+      description: Automation tools (Selenium, Playwright, etc.) — test/automation infra, not app stack
       iscomponent: true
       technologies:
         - name: Apify
@@ -610,7 +610,7 @@ categories:
           isprimarytech: null
           properties: {}
     - name: build
-      description: Build tools (Maven, Gradle, etc.)
+      description: Build tools (Maven, Gradle, Webpack, Vite, etc.)
       iscomponent: false
       technologies:
         - name: Babel
@@ -2304,7 +2304,7 @@ categories:
           isprimarytech: null
           properties: {}
     - name: desktop_framework
-      description: Desktop frameworks (Qt, MFC, Win32, Electron, etc.)
+      description: Desktop frameworks (Qt, MFC, Electron, WPF, etc.)
       iscomponent: false
       technologies:
         - name: Dioxus
@@ -3438,7 +3438,7 @@ categories:
           isprimarytech: null
           properties: {}
     - name: mobile_framework
-      description: Mobile frameworks (React Native, Flutter, Swift, Kotlin, etc.)
+      description: Mobile frameworks (React Native, Flutter, Ionic, etc.)
       iscomponent: false
       technologies:
         - name: Cordova
@@ -3638,7 +3638,7 @@ categories:
           isprimarytech: null
           properties: {}
     - name: network
-      description: Network services
+      description: Network services (nginx, traefik, haproxy)
       iscomponent: true
       technologies:
         - name: Caddy
@@ -3800,7 +3800,7 @@ categories:
           isprimarytech: null
           properties: {}
     - name: orm
-      description: Object-relational mappers (SQLAlchemy, Prisma, etc.)
+      description: Object-relational mappers (Hibernate, SQLAlchemy, Prisma, etc.)
       iscomponent: false
       technologies:
         - name: Diesel
@@ -4158,7 +4158,7 @@ categories:
           isprimarytech: null
           properties: {}
     - name: platform
-      description: Low-code platforms, operating systems (Uniface, Windows, Linux)
+      description: Low-code platforms (Uniface, Windows, Linux)
       iscomponent: false
       technologies: []
     - name: proprietary
@@ -4172,7 +4172,7 @@ categories:
           isprimarytech: null
           properties: {}
     - name: runtime
-      description: Runtime environments (Node.js runtime, Python runtime, etc.)
+      description: Runtime environments (Node.js, .NET, etc.)
       iscomponent: false
       technologies:
         - name: Bun
@@ -4944,7 +4944,7 @@ categories:
           isprimarytech: null
           properties: {}
     - name: ui
-      description: UI components and frameworks (MUI, shadcn, Qt, MFC)
+      description: UI component libraries (MUI, shadcn, Radix, Ant Design, etc.)
       iscomponent: false
       technologies:
         - name: Angular Material

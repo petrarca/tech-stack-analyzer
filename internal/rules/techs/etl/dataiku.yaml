@@ -1,6 +1,6 @@
 tech: dataiku
 name: Dataiku
 dependencies:
-  - type: python
+  - type: pypi
     name: dataiku
     example: dataiku

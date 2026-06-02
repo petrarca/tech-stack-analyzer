@@ -7,16 +7,16 @@ dependencies:
   - type: terraform
     name: registry.terraform.io/integrations/github
     example: registry.terraform.io/integrations/github
-  - type: ruby
+  - type: gem
     name: octokit
     example: octokit
-  - type: php
+  - type: composer
     name: knplabs/github-api
     example: knplabs/github-api
   - type: npm
     name: "@pulumi/github"
     example: "@pulumi/github"
-  - type: python
+  - type: pypi
     name: PyGithub
     example: PyGithub
   - type: terraform.resource

@@ -1,7 +1,7 @@
 tech: withorb
 name: Orb
 dependencies:
-  - type: python
+  - type: pypi
     name: orb-billing
     example: orb-billing
   - type: npm

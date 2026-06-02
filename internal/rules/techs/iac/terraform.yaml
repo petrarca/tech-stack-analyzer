@@ -13,7 +13,7 @@ dependencies:
   - type: golang
     name: github.com/hashicorp/terraform-plugin-sdk/v2
     example: github.com/hashicorp/terraform-plugin-sdk/v2
-  - type: python
+  - type: pypi
     name: cdktf
     example: cdktf
 files:

@@ -7,6 +7,6 @@ dependencies:
   - type: golang
     name: cloud.google.com/go/dataproc
     example: cloud.google.com/go/dataproc
-  - type: php
+  - type: composer
     name: google/cloud-dataproc
     example: google/cloud-dataproc

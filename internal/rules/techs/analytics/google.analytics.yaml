@@ -30,21 +30,21 @@ dependencies:
   - type: npm
     name: gatsby-plugin-google-analytics
     example: gatsby-plugin-google-analytics
-  - type: php
+  - type: composer
     name: google/analytics-data
     example: google/analytics-data
-  - type: php
+  - type: composer
     name: spatie/laravel-analytics
     example: spatie/laravel-analytics
-  - type: php
+  - type: composer
     name: theiconic/php-ga-measurement-protocol
     example: theiconic/php-ga-measurement-protocol
-  - type: php
+  - type: composer
     name: google/analytics-admin
     example: google/analytics-admin
   - type: terraform.resource
     name: airbyte_source_google_analytics_data_api
     example: airbyte_source_google_analytics_data_api
-  - type: python
+  - type: pypi
     name: google-analytics-data
     example: google-analytics-data

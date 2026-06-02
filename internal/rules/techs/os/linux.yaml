@@ -3,6 +3,6 @@ name: Linux
 dotenv:
   - LINUX
 dependencies:
-  - type: python
+  - type: pypi
     name: systemd
     example: systemd

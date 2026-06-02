@@ -15,22 +15,22 @@ dependencies:
   - type: npm
     name: rollbar-react-native
     example: rollbar-react-native
-  - type: php
+  - type: composer
     name: rollbar/rollbar
     example: rollbar/rollbar
-  - type: php
+  - type: composer
     name: rollbar/rollbar-laravel
     example: rollbar/rollbar-laravel
-  - type: php
+  - type: composer
     name: rollbar/rollbar-magento2
     example: rollbar/rollbar-magento2
-  - type: php
+  - type: composer
     name: rollbar/rollbar-php-symfony-bundle
     example: rollbar/rollbar-php-symfony-bundle
-  - type: php
+  - type: composer
     name: wpackagist-plugin/rollbar
     example: wpackagist-plugin/rollbar
-  - type: ruby
+  - type: gem
     name: rollbar
     example: rollbar
   - type: githubAction

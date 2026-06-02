@@ -4,13 +4,13 @@ dependencies:
   - type: npm
     name: "@google-cloud/compute"
     example: "@google-cloud/compute"
-  - type: ruby
+  - type: gem
     name: google-cloud-compute
     example: google-cloud-compute
   - type: golang
     name: cloud.google.com/go/compute
     example: cloud.google.com/go/compute
-  - type: php
+  - type: composer
     name: google/cloud-compute
     example: google/cloud-compute
   - type: githubAction

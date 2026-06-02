@@ -13,21 +13,21 @@ dependencies:
   - type: npm
     name: "@datadome/datadome-react-native-navigation"
     example: "@datadome/datadome-react-native-navigation"
-  - type: python
+  - type: pypi
     name: datadome-fraud-sdk-python
     example: datadome-fraud-sdk-python
-  - type: php
+  - type: composer
     name: datadome/fraud-sdk-symfony
     example: datadome/fraud-sdk-symfony
-  - type: php
+  - type: composer
     name: datadome/fraud-sdk-laravel
     example: datadome/fraud-sdk-laravel
-  - type: ruby
+  - type: gem
     name: datadome_fraud_sdk_ruby
     example: datadome_fraud_sdk_ruby
   - type: golang
     name: github.com/datadome/fraud-sdk-go-package
     example: github.com/datadome/fraud-sdk-go-package
-  - type: php
+  - type: composer
     name: DataDomeServiceProvider
     example: DataDomeServiceProvider

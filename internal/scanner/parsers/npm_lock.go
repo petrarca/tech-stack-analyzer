@@ -53,15 +53,43 @@ func ParsePackageLockWithOptions(content []byte, packageJSON *PackageJSON, packa
 	scopeMaps := buildDependencyScopeMaps(packageJSON, packageJSONContent)
 
 	// Handle both v2 (dependencies) and v3+ (packages) lockfile formats
-	if len(lockfile.Packages) > 0 {
-		return parsePackagesV3(lockfile.Packages, options, scopeMaps)
+	var deps []types.Dependency
+	switch {
+	case len(lockfile.Packages) > 0:
+		deps = parsePackagesV3(lockfile.Packages, options, scopeMaps)
+	case len(lockfile.Dependencies) > 0:
+		deps = parseDependenciesV2Format(lockfile.Dependencies, options, scopeMaps)
+	default:
+		return nil
 	}
 
-	if len(lockfile.Dependencies) > 0 {
-		return parseDependenciesV2Format(lockfile.Dependencies, options, scopeMaps)
-	}
+	// Record declared version ranges from package.json against the
+	// lock-resolved versions (deps.dev-style declared vs resolved).
+	applyDeclaredFromPackageJSON(deps, packageJSON)
+	return deps
+}
 
-	return nil
+// applyDeclaredFromPackageJSON sets metadata.declared on each dependency to the
+// version range declared in package.json, when it differs from the resolved
+// version. No-op for transitive dependencies not listed in package.json.
+func applyDeclaredFromPackageJSON(deps []types.Dependency, packageJSON *PackageJSON) {
+	if packageJSON == nil {
+		return
+	}
+	declared := make(map[string]string)
+	for name, rng := range packageJSON.Dependencies {
+		declared[name] = rng
+	}
+	for name, rng := range packageJSON.DevDependencies {
+		if _, ok := declared[name]; !ok {
+			declared[name] = rng
+		}
+	}
+	for i := range deps {
+		if rng, ok := declared[deps[i].Name]; ok {
+			deps[i].SetDeclaredVersion(rng)
+		}
+	}
 }
 
 // buildDependencyScopeMaps builds maps of direct dependency names with their scopes from package.json
@@ -123,7 +151,7 @@ func parsePackagesV3(packages map[string]PackageInfo, options ParsePackageLockOp
 		isDirect := isDirectDependency(name, maps.prodDeps, maps.devDeps, maps.peerDeps, maps.optionalDeps)
 
 		dependencies = append(dependencies, types.Dependency{
-			Type:       "npm",
+			Type:       DependencyTypeNpm,
 			Name:       name,
 			Version:    pkg.Version,
 			Scope:      scope,
@@ -176,7 +204,7 @@ func parseTopLevelDependenciesV2(dependencies map[string]PackageInfo, maps depen
 		isDirect := isDirectDependency(name, maps.prodDeps, maps.devDeps, maps.peerDeps, maps.optionalDeps)
 
 		result = append(result, types.Dependency{
-			Type:       "npm",
+			Type:       DependencyTypeNpm,
 			Name:       name,
 			Version:    dep.Version,
 			Scope:      scope,
@@ -261,7 +289,7 @@ func parseDependenciesV2(
 		isDirect := isDirectDependency(name, prodDeps, devDeps, peerDeps, optionalDeps)
 
 		dependencies = append(dependencies, types.Dependency{
-			Type:       "npm",
+			Type:       DependencyTypeNpm,
 			Name:       name,
 			Version:    dep.Version,
 			Scope:      scope,

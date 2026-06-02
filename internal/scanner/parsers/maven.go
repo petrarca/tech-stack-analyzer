@@ -197,6 +197,7 @@ func (p *MavenParser) ParsePomXMLWithProvider(content string, pomDir string, pro
 
 	// 3. Add project coordinates (override all)
 	p.addProjectCoordinates(properties, project.GroupId, project.ArtifactId, project.Version)
+	p.addParentCoordinates(properties, project.Parent)
 
 	// 4. Process profiles and merge active profiles (following deps.dev pattern)
 	activeProfiles := p.getActiveProfiles(project.Profiles)
@@ -204,14 +205,9 @@ func (p *MavenParser) ParsePomXMLWithProvider(content string, pomDir string, pro
 		// Merge profile dependencies
 		for _, dep := range profile.Dependencies.Dependencies {
 			if dep.GroupId != "" && dep.ArtifactId != "" {
-				dependencies = append(dependencies, types.Dependency{
-					Type:     DependencyTypeMaven,
-					Name:     dep.GroupId + ":" + dep.ArtifactId,
-					Version:  p.resolveVersion(dep.Version, properties),
-					Scope:    mapMavenScope(dep.Scope),
-					Direct:   true,
-					Metadata: p.buildMavenMetadata(dep),
-				})
+				dependencies = append(dependencies, p.newMavenDependency(
+					dep.GroupId+":"+dep.ArtifactId, dep.Version,
+					mapMavenScope(dep.Scope), properties, p.buildMavenMetadata(dep)))
 			}
 		}
 	}
@@ -219,14 +215,9 @@ func (p *MavenParser) ParsePomXMLWithProvider(content string, pomDir string, pro
 	// Process dependencies from main dependencies section
 	for _, dep := range project.Dependencies.Dependencies {
 		if dep.GroupId != "" && dep.ArtifactId != "" {
-			dependencies = append(dependencies, types.Dependency{
-				Type:     DependencyTypeMaven,
-				Name:     dep.GroupId + ":" + dep.ArtifactId,
-				Version:  p.resolveVersion(dep.Version, properties),
-				Scope:    mapMavenScope(dep.Scope),
-				Direct:   true,
-				Metadata: p.buildMavenMetadata(dep),
-			})
+			dependencies = append(dependencies, p.newMavenDependency(
+				dep.GroupId+":"+dep.ArtifactId, dep.Version,
+				mapMavenScope(dep.Scope), properties, p.buildMavenMetadata(dep)))
 		}
 	}
 
@@ -259,13 +250,9 @@ func (p *MavenParser) parseDependencyManagement(deps []MavenDependency, properti
 			// Per Maven spec, BOM imports require both scope=import AND type=pom
 			// If type is not specified, it defaults to "jar", not "pom"
 			if dep.Scope == types.ScopeImport && dep.Type == "pom" {
-				dependencies = append(dependencies, types.Dependency{
-					Type:    DependencyTypeMaven,
-					Name:    dep.GroupId + ":" + dep.ArtifactId,
-					Version: p.resolveVersion(dep.Version, properties),
-					Scope:   types.ScopeImport,
-					Direct:  true,
-				})
+				dependencies = append(dependencies, p.newMavenDependency(
+					dep.GroupId+":"+dep.ArtifactId, dep.Version,
+					types.ScopeImport, properties, nil))
 			}
 		}
 	}
@@ -321,14 +308,10 @@ func (p *MavenParser) parsePluginDependencies(plugins []MavenPlugin, properties 
 	for _, plugin := range plugins {
 		for _, dep := range plugin.Dependencies {
 			if dep.GroupId != "" && dep.ArtifactId != "" {
-				dependencies = append(dependencies, types.Dependency{
-					Type:     DependencyTypeMaven,
-					Name:     dep.GroupId + ":" + dep.ArtifactId,
-					Version:  p.resolveVersion(dep.Version, properties),
-					Scope:    types.ScopeBuild, // Plugin dependencies are build-time
-					Direct:   true,
-					Metadata: p.buildMavenMetadata(dep),
-				})
+				// Plugin dependencies are build-time.
+				dependencies = append(dependencies, p.newMavenDependency(
+					dep.GroupId+":"+dep.ArtifactId, dep.Version,
+					types.ScopeBuild, properties, p.buildMavenMetadata(dep)))
 			}
 		}
 	}
@@ -370,6 +353,31 @@ func (p *MavenParser) addProjectCoordinates(properties map[string]string, groupI
 	}
 }
 
+// addParentCoordinates registers parent coordinate properties so that
+// references like ${project.parent.version} and ${parent.version} resolve
+// from the inline <parent> element. When the project declares no version of
+// its own, Maven inherits the parent version, so project.version/pom.version
+// fall back to the parent version too.
+func (p *MavenParser) addParentCoordinates(properties map[string]string, parent MavenParent) {
+	if parent.GroupId != "" {
+		properties["project.parent.groupId"] = parent.GroupId
+		properties["parent.groupId"] = parent.GroupId
+	}
+	if parent.ArtifactId != "" {
+		properties["project.parent.artifactId"] = parent.ArtifactId
+		properties["parent.artifactId"] = parent.ArtifactId
+	}
+	if parent.Version != "" {
+		properties["project.parent.version"] = parent.Version
+		properties["parent.version"] = parent.Version
+		// Inherited version fallback when the child omits its own version.
+		if _, ok := properties["project.version"]; !ok {
+			properties["project.version"] = parent.Version
+			properties["pom.version"] = parent.Version
+		}
+	}
+}
+
 // mergeProperties copies all properties from src to dst
 func mergeProperties(dst, src map[string]string) {
 	for k, v := range src {
@@ -398,6 +406,21 @@ func (p *MavenParser) extractProperties(content string) map[string]string {
 	}
 
 	return properties
+}
+
+// newMavenDependency builds a Maven dependency, resolving property references
+// in the version and recording the originally declared form when it differs.
+func (p *MavenParser) newMavenDependency(name, declaredVersion, scope string, properties map[string]string, metadata map[string]interface{}) types.Dependency {
+	dep := types.Dependency{
+		Type:     DependencyTypeMaven,
+		Name:     name,
+		Version:  p.resolveVersion(declaredVersion, properties),
+		Scope:    scope,
+		Direct:   true,
+		Metadata: metadata,
+	}
+	dep.SetDeclaredVersion(declaredVersion)
+	return dep
 }
 
 // resolveVersion resolves Maven property references in version strings

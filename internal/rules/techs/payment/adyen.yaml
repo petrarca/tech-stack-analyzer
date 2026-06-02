@@ -12,21 +12,21 @@ dependencies:
   - type: npm
     name: "@adyen/react-native"
     example: "@adyen/react-native"
-  - type: php
+  - type: composer
     name: adyen/php-api-library
     example: adyen/php-api-library
-  - type: php
+  - type: composer
     name: adyen/module-payment
     example: adyen/module-payment
-  - type: php
+  - type: composer
     name: adyen/php-webhook-module
     example: adyen/php-webhook-module
-  - type: ruby
+  - type: gem
     name: adyen
     example: adyen
-  - type: ruby
+  - type: gem
     name: adyen-ruby-api-library
     example: adyen-ruby-api-library
-  - type: ruby
+  - type: gem
     name: adyen-cse-ruby
     example: adyen-cse-ruby

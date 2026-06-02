@@ -5,11 +5,11 @@ dependencies:
     name: openssl
   - type: golang
     name: github.com/spacemonkeygo/openssl
-  - type: python
+  - type: pypi
     name: pyopenssl
-  - type: ruby
+  - type: gem
     name: openssl
-  - type: php
+  - type: composer
     name: ext-openssl
   - type: cocoapods
     name: OpenSSL-Universal

@@ -10,13 +10,13 @@ dependencies:
   - type: terraform
     name: registry.terraform.io/hashicorp/vault
     example: registry.terraform.io/hashicorp/vault
-  - type: rust
+  - type: cargo
     name: hashicorp_vault
     example: hashicorp_vault
-  - type: ruby
+  - type: gem
     name: vault
     example: vault
-  - type: php
+  - type: composer
     name: csharpru/vault-php
     example: csharpru/vault-php
   - type: githubAction

@@ -9,12 +9,12 @@ dependencies:
   - type: npm
     name: notion-to-md
     example: notion-to-md
-  - type: php
+  - type: composer
     name: fiveam-code/laravel-notion-api
     example: fiveam-code/laravel-notion-api
-  - type: ruby
+  - type: gem
     name: notion-ruby-client
     example: notion-ruby-client
-  - type: rust
+  - type: cargo
     name: notion
     example: notion

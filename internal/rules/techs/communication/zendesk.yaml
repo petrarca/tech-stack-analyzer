@@ -6,9 +6,9 @@ dependencies:
   - type: npm
     name: node-zendesk
     example: node-zendesk
-  - type: ruby
+  - type: gem
     name: zendesk_api
     example: zendesk_api
-  - type: php
+  - type: composer
     name: zendesk/zendesk_api_client_php
     example: zendesk/zendesk_api_client_php

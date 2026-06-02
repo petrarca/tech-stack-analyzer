@@ -6,13 +6,13 @@ dependencies:
   - type: npm
     name: memcached
     example: memcached
-  - type: rust
+  - type: cargo
     name: memcache-async
     example: memcache-async
-  - type: rust
+  - type: cargo
     name: memcache
     example: memcache
-  - type: ruby
+  - type: gem
     name: dalli
     example: dalli
   - type: npm

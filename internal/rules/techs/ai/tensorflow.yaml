@@ -16,6 +16,6 @@ dependencies:
   - type: golang
     name: github.com/wamuir/graft/tensorflow
     example: github.com/wamuir/graft/tensorflow
-  - type: python
+  - type: pypi
     name: tensorflow
     example: tensorflow

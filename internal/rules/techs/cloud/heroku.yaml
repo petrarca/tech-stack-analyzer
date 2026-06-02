@@ -4,10 +4,10 @@ dependencies:
   - type: terraform
     name: registry.terraform.io/heroku/heroku
     example: registry.terraform.io/heroku/heroku
-  - type: ruby
+  - type: gem
     name: platform-api
     example: platform-api
-  - type: php
+  - type: composer
     name: heroku/heroku-buildpack-php
     example: heroku/heroku-buildpack-php
   - type: githubAction

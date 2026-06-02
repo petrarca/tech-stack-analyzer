@@ -1,10 +1,10 @@
 tech: azure.cosmosdb
 name: Azure Cosmos DB
 dependencies:
-  - type: ruby
+  - type: gem
     name: azure_mgmt_cosmosdb
     example: azure_mgmt_cosmosdb
-  - type: rust
+  - type: cargo
     name: azure_mgmt_cosmosdb
     example: azure_mgmt_cosmosdb
   - type: npm

@@ -4,10 +4,10 @@ dependencies:
   - type: npm
     name: pirsch-sdk
     example: pirsch-sdk
-  - type: ruby
+  - type: gem
     name: pirsch_api
     example: pirsch_api
-  - type: php
+  - type: composer
     name: pirsch-analytics/sdk
     example: pirsch-analytics/sdk
   - type: golang

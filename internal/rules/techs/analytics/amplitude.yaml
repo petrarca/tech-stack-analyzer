@@ -12,7 +12,7 @@ dependencies:
   - type: npm
     name: "@analytics/amplitude"
     example: "@analytics/amplitude"
-  - type: php
+  - type: composer
     name: zumba/amplitude-php
     example: zumba/amplitude-php
   - type: terraform.resource

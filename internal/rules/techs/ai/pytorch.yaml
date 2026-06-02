@@ -1,6 +1,6 @@
 tech: pytorch
 name: Pytorch
 dependencies:
-  - type: python
+  - type: pypi
     name: pytorch
     example: pytorch

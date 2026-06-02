@@ -13,10 +13,10 @@ dependencies:
   - type: terraform
     name: registry.terraform.io/confluentinc/confluent
     example: registry.terraform.io/confluentinc/confluent
-  - type: php
+  - type: composer
     name: nmred/kafka-php
     example: nmred/kafka-php
-  - type: php
+  - type: composer
     name: longlang/phpkafka
     example: longlang/phpkafka
   - type: npm
@@ -31,15 +31,15 @@ dependencies:
   - type: npm
     name: "@opentelemetry/instrumentation-kafkajs"
     example: "@opentelemetry/instrumentation-kafkajs"
-  - type: ruby
+  - type: gem
     name: ruby-kafka
     example: ruby-kafka
-  - type: ruby
+  - type: gem
     name: fluent-plugin-kafka
     example: fluent-plugin-kafka
-  - type: ruby
+  - type: gem
     name: logstash-output-kafka
     example: logstash-output-kafka
-  - type: ruby
+  - type: gem
     name: logstash-input-kafka
     example: logstash-input-kafka

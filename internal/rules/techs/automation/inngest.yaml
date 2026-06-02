@@ -9,6 +9,6 @@ dependencies:
   - type: golang
     name: github.com/inngest/inngestgo
     example: github.com/inngest/inngestgo
-  - type: python
+  - type: pypi
     name: inngest
     example: inngest

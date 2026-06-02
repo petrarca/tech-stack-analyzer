@@ -3,10 +3,10 @@ name: Qdrant
 dotenv:
   - QDRANT_
 dependencies:
-  - type: rust
+  - type: cargo
     name: qdrant-client
     example: qdrant-client
-  - type: python
+  - type: pypi
     name: qdrant-client
     example: qdrant-client
   - type: docker
@@ -24,10 +24,10 @@ dependencies:
   - type: npm
     name: "@qdrant/js-client-grpc"
     example: "@qdrant/js-client-grpc"
-  - type: php
+  - type: composer
     name: hkulekci/qdrant
     example: hkulekci/qdrant
-  - type: php
+  - type: composer
     name: qdrant-ruby
     example: qdrant-ruby
   - type: terraform.resource

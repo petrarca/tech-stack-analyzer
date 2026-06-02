@@ -1,6 +1,6 @@
 tech: bundler
 name: Bundler
 dependencies:
-  - type: ruby
+  - type: gem
     name: bundler
     example: bundler

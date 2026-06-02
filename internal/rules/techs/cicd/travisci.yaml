@@ -1,7 +1,7 @@
 tech: travisci
 name: TravisCI
 dependencies:
-  - type: ruby
+  - type: gem
     name: travis
     example: travis
 files:

@@ -540,3 +540,33 @@ func TestDetector_Detect_PomXMLWithMultipleLicenses(t *testing.T) {
 	assert.True(t, licenseNames["MIT"])
 	assert.True(t, licenseNames["Apache-2.0"])
 }
+
+func TestDetector_Detect_GradleRootPropertiesAboveScanRoot(t *testing.T) {
+	detector := &Detector{}
+
+	gradleContent := `dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+    implementation "com.google.guava:guava:${guavaVersion}"
+}`
+
+	// Root gradle.properties lives ABOVE the scan root (/project), while the
+	// scanned module is /project/sub.
+	provider := &MockProvider{
+		files: map[string]string{
+			"/project/sub/build.gradle":  gradleContent,
+			"/project/gradle.properties": "kotlinVersion=1.9.22\nguavaVersion=33.0.0-jre\n",
+		},
+	}
+	depDetector := &MockDependencyDetector{matchedTechs: map[string][]string{}}
+	files := []types.File{{Name: "build.gradle", Path: "/project/sub/build.gradle"}}
+
+	results := detector.Detect(files, "/project/sub", "/project/sub", provider, depDetector)
+	require.Len(t, results, 1)
+
+	versions := map[string]string{}
+	for _, dep := range results[0].Dependencies {
+		versions[dep.Name] = dep.Version
+	}
+	assert.Equal(t, "1.9.22", versions["org.jetbrains.kotlin:kotlin-stdlib"], "kotlinVersion should resolve from ancestor gradle.properties")
+	assert.Equal(t, "33.0.0-jre", versions["com.google.guava:guava"], "guavaVersion should resolve from ancestor gradle.properties")
+}

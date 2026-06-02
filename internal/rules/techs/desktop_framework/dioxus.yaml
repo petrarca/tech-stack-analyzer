@@ -1,9 +1,9 @@
 tech: dioxus
 name: Dioxus
 dependencies:
-  - type: rust
+  - type: cargo
     name: dioxus
     example: dioxus
-  - type: rust
+  - type: cargo
     name: dioxus-cli
     example: dioxus-cli

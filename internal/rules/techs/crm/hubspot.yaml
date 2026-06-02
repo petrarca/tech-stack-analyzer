@@ -1,10 +1,10 @@
 tech: hubspot
 name: HubSpot
 dependencies:
-  - type: php
+  - type: composer
     name: hubspot/hubspot-php
     example: hubspot/hubspot-php
-  - type: php
+  - type: composer
     name: hubspot/api-client
     example: hubspot/api-client
   - type: npm

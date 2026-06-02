@@ -1,6 +1,6 @@
 tech: iced
 name: Iced
 dependencies:
-  - type: rust
+  - type: cargo
     name: iced
     example: iced

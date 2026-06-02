@@ -7,6 +7,6 @@ dependencies:
   - type: golang
     name: cloud.google.com/go/dialogflow
     example: cloud.google.com/go/dialogflow
-  - type: php
+  - type: composer
     name: google/cloud-dialogflow
     example: google/cloud-dialogflow

@@ -1,6 +1,6 @@
 tech: yousign
 name: Yousign
 dependencies:
-  - type: php
+  - type: composer
     name: androk/yousign-api
     example: androk/yousign-api

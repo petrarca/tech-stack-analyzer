@@ -1,10 +1,10 @@
 tech: propelauth
 name: PropelAuth
 dependencies:
-  - type: python
+  - type: pypi
     name: propelauth_fastapi
     example: propelauth_fastapi
-  - type: rust
+  - type: cargo
     name: propelauth
     example: propelauth
   - type: golang

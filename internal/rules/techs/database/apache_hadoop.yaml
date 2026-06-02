@@ -4,6 +4,6 @@ dependencies:
   - type: docker
     name: apache/hadoop
     example: apache/hadoop
-  - type: ruby
+  - type: gem
     name: hadoop-metrics2
     example: hadoop-metrics2

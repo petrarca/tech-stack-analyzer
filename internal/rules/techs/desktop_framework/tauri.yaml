@@ -1,7 +1,7 @@
 tech: tauri
 name: Tauri
 dependencies:
-  - type: rust
+  - type: cargo
     name: tauri
     example: tauri
 files:

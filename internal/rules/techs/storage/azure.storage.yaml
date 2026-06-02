@@ -13,67 +13,67 @@ dependencies:
   - type: npm
     name: "@azure/storage-file-datalake"
     example: "@azure/storage-file-datalake"
-  - type: ruby
+  - type: gem
     name: azure-storage
     example: azure-storage
-  - type: ruby
+  - type: gem
     name: azure-storage-common
     example: azure-storage-common
-  - type: ruby
+  - type: gem
     name: azure-storage-blob
     example: azure-storage-blob
-  - type: ruby
+  - type: gem
     name: azure-storage-table
     example: azure-storage-table
-  - type: ruby
+  - type: gem
     name: azure-storage-file
     example: azure-storage-file
-  - type: ruby
+  - type: gem
     name: azure-storage-queue
     example: azure-storage-queue
-  - type: ruby
+  - type: gem
     name: azure_mgmt_storage
     example: azure_mgmt_storage
-  - type: ruby
+  - type: gem
     name: fluent-plugin-azurestorage
     example: fluent-plugin-azurestorage
-  - type: ruby
+  - type: gem
     name: fluent-plugin-azurestorage-gen2
     example: fluent-plugin-azurestorage-gen2
-  - type: ruby
+  - type: gem
     name: logstash-input-azureblob
     example: logstash-input-azureblob
-  - type: php
+  - type: composer
     name: microsoft/azure-storage-common
     example: microsoft/azure-storage-common
-  - type: php
+  - type: composer
     name: microsoft/azure-storage-blob
     example: microsoft/azure-storage-blob
-  - type: php
+  - type: composer
     name: microsoft/azure-storage-table
     example: microsoft/azure-storage-table
-  - type: php
+  - type: composer
     name: microsoft/azure-storage-file
     example: microsoft/azure-storage-file
-  - type: php
+  - type: composer
     name: microsoft/azure-storage-queue
     example: microsoft/azure-storage-queue
-  - type: php
+  - type: composer
     name: matthewbdaly/laravel-azure-storage
     example: matthewbdaly/laravel-azure-storage
-  - type: php
+  - type: composer
     name: league/flysystem-azure-blob-storage
     example: league/flysystem-azure-blob-storage
-  - type: rust
+  - type: cargo
     name: azure_storage
     example: azure_storage
-  - type: rust
+  - type: cargo
     name: azure_storage_queues
     example: azure_storage_queues
-  - type: rust
+  - type: cargo
     name: azure_storage_blobs
     example: azure_storage_blobs
-  - type: rust
+  - type: cargo
     name: azure_storage_datalake
     example: azure_storage_datalake
   - type: terraform.resource

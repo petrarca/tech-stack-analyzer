@@ -10,19 +10,19 @@ dependencies:
   - type: npm
     name: "@google/libphonenumber"
     example: "@google/libphonenumber"
-  - type: python
+  - type: pypi
     name: phonenumbers
     example: phonenumbers
-  - type: python
+  - type: pypi
     name: "phonenumberslite"
     example: phonenumberslite
-  - type: ruby
+  - type: gem
     name: phonelib
     example: phonelib
-  - type: php
+  - type: composer
     name: giggsey/libphonenumber-for-php
     example: giggsey/libphonenumber-for-php
-  - type: php
+  - type: composer
     name: libphonenumber-for-php
     example: libphonenumber-for-php
   - type: golang

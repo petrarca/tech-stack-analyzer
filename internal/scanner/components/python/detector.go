@@ -149,7 +149,7 @@ func (d *Detector) matchAndAddDependencies(payload *types.Payload, dependencies 
 		depNames = append(depNames, dep.Name)
 	}
 
-	depDetector.ApplyMatchesToPayload(payload, depDetector.MatchDependencies(depNames, "python"))
+	depDetector.ApplyMatchesToPayload(payload, depDetector.MatchDependencies(depNames, parsers.DependencyTypePython))
 
 	payload.Dependencies = dependencies
 }
@@ -347,7 +347,7 @@ func parseArrayDependency(line string, arrayDepReg *regexp.Regexp) *types.Depend
 	}
 
 	return &types.Dependency{
-		Type:    "python",
+		Type:    parsers.DependencyTypePython,
 		Name:    name,
 		Version: version,
 	}
@@ -368,7 +368,7 @@ func parseKeyValueDependency(line string, lineReg *regexp.Regexp) *types.Depende
 	}
 
 	return &types.Dependency{
-		Type:    "python",
+		Type:    parsers.DependencyTypePython,
 		Name:    name,
 		Version: version,
 	}
@@ -530,7 +530,7 @@ func init() {
 
 	// Register Python package provider (dependency type is "python" not "pypi")
 	providers.Register(&providers.PackageProvider{
-		DependencyType:      "python",
+		DependencyType:      parsers.DependencyTypePython,
 		ExtractPackageNames: providers.SinglePropertyExtractor("python", "package_name"),
 		MatchFunc: func(componentPkgName, dependencyName string) bool {
 			// Normalize names: lowercase and replace underscores/dots with dashes (PEP 503 style)

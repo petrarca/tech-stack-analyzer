@@ -16,16 +16,16 @@ dependencies:
   - type: golang
     name: github.com/typesense/typesense-go/typesense
     example: github.com/typesense/typesense-go/typesense
-  - type: rust
+  - type: cargo
     name: typesense
     example: typesense
-  - type: ruby
+  - type: gem
     name: typesense
     example: typesense
-  - type: php
+  - type: composer
     name: typesense/typesense-php
     example: typesense/typesense-php
-  - type: php
+  - type: composer
     name: typesense/laravel-scout-typesense-driver
     example: typesense/laravel-scout-typesense-driver
   - type: terraform.resource

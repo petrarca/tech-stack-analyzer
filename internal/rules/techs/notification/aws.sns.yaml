@@ -7,18 +7,18 @@ dependencies:
   - type: npm
     name: "@aws-sdk/client-sns"
     example: "@aws-sdk/client-sns"
-  - type: rust
+  - type: cargo
     name: aws-sdk-sns
     example: aws-sdk-sns
-  - type: ruby
+  - type: gem
     name: aws-sdk-sns
     example: aws-sdk-sns
   - type: golang
     name: github.com/aws/aws-sdk-go-v2/service/sns
     example: github.com/aws/aws-sdk-go-v2/service/sns
-  - type: php
+  - type: composer
     name: aws/aws-php-sns-message-validator
     example: aws/aws-php-sns-message-validator
-  - type: php
+  - type: composer
     name: async-aws/sns
     example: async-aws/sns

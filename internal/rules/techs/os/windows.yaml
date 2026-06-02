@@ -15,6 +15,6 @@ dependencies:
   - type: nuget
     name: System.Windows.Forms
     example: System.Windows.Forms
-  - type: python
+  - type: pypi
     name: pywin32
     example: pywin32

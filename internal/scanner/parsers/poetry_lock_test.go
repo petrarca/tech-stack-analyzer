@@ -130,8 +130,8 @@ version = "2.31.0"
 			}
 
 			for _, dep := range deps {
-				if dep.Type != "python" {
-					t.Errorf("ParsePoetryLock() dep.Type = %s, want python", dep.Type)
+				if dep.Type != "pypi" {
+					t.Errorf("ParsePoetryLock() dep.Type = %s, want pypi", dep.Type)
 				}
 				if dep.SourceFile != "poetry.lock" {
 					t.Errorf("ParsePoetryLock() dep.SourceFile = %s, want poetry.lock", dep.SourceFile)
@@ -165,5 +165,36 @@ func TestNormalizePackageName(t *testing.T) {
 				t.Errorf("normalizePackageName(%s) = %s, want %s", tt.input, result, tt.expected)
 			}
 		})
+	}
+}
+
+func TestParsePoetryLock_DeclaredConstraints(t *testing.T) {
+	pyproject := `[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.100"
+requests = ">=2.25.0"
+`
+	lock := `[[package]]
+name = "fastapi"
+version = "0.104.1"
+
+[[package]]
+name = "requests"
+version = "2.31.0"
+`
+	deps := ParsePoetryLock([]byte(lock), pyproject)
+	got := map[string]string{}
+	for _, d := range deps {
+		if d.Metadata != nil {
+			if decl, ok := d.Metadata["declared"].(string); ok {
+				got[d.Name] = decl
+			}
+		}
+	}
+	if got["fastapi"] != "^0.100" {
+		t.Errorf("fastapi declared = %q, want ^0.100", got["fastapi"])
+	}
+	if got["requests"] != ">=2.25.0" {
+		t.Errorf("requests declared = %q, want >=2.25.0", got["requests"])
 	}
 }

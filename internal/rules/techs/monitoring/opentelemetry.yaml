@@ -30,49 +30,49 @@ dependencies:
   - type: golang
     name: go.opentelemetry.io/otel
     example: go.opentelemetry.io/otel
-  - type: php
+  - type: composer
     name: open-telemetry/sdk
     example: open-telemetry/sdk
-  - type: python
+  - type: pypi
     name: opentelemetry-distro
     example: opentelemetry-distro
-  - type: python
+  - type: pypi
     name: opentelemetry-api
     example: opentelemetry-api
-  - type: python
+  - type: pypi
     name: opentelemetry-sdk
     example: opentelemetry-sdk
-  - type: python
+  - type: pypi
     name: opentelemetry-exporter-otlp
     example: opentelemetry-exporter-otlp
-  - type: python
+  - type: pypi
     name: opentelemetry-exporter-jaeger
     example: opentelemetry-exporter-jaeger
-  - type: python
+  - type: pypi
     name: opentelemetry-exporter-prometheus
     example: opentelemetry-exporter-prometheus
-  - type: python
+  - type: pypi
     name: opentelemetry-instrumentation
     example: opentelemetry-instrumentation
-  - type: python
+  - type: pypi
     name: opentelemetry-instrumentation-flask
     example: opentelemetry-instrumentation-flask
-  - type: python
+  - type: pypi
     name: opentelemetry-instrumentation-django
     example: opentelemetry-instrumentation-django
-  - type: python
+  - type: pypi
     name: opentelemetry-instrumentation-fastapi
     example: opentelemetry-instrumentation-fastapi
-  - type: python
+  - type: pypi
     name: opentelemetry-instrumentation-requests
     example: opentelemetry-instrumentation-requests
-  - type: python
+  - type: pypi
     name: opentelemetry-instrumentation-sqlalchemy
     example: opentelemetry-instrumentation-sqlalchemy
-  - type: python
+  - type: pypi
     name: opentelemetry-instrumentation-celery
     example: opentelemetry-instrumentation-celery
-  - type: python
+  - type: pypi
     name: opentelemetry-instrumentation-psycopg2
     example: opentelemetry-instrumentation-psycopg2
   - type: java
@@ -93,13 +93,13 @@ dependencies:
   - type: java
     name: io.opentelemetry/opentelemetry-javaagent
     example: io.opentelemetry:opentelemetry-javaagent
-  - type: ruby
+  - type: gem
     name: opentelemetry-sdk
     example: opentelemetry-sdk
-  - type: ruby
+  - type: gem
     name: sentry-opentelemetry
     example: sentry-opentelemetry
-  - type: rust
+  - type: cargo
     name: opentelemetry
     example: opentelemetry
   - type: githubAction

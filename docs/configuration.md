@@ -71,6 +71,8 @@ scan:
   - **`use_lock_files`** - Use lock files for dependency resolution (default: true)
     - When enabled, extracts exact versions from lock files (package-lock.json, Cargo.lock, etc.)
     - Set to `false` to use version ranges from manifest files instead
+  - **`sbom`** - Emit a CycloneDX SBOM (with PURLs) as the primary output instead of the scan tree (default: false). Matches `--sbom` flag.
+  - **`also_sbom`** - Also write a CycloneDX SBOM alongside the scan output, with a `.cdx` filename suffix (default: false). Matches `--also-sbom` flag.
 
 ### Benefits
 

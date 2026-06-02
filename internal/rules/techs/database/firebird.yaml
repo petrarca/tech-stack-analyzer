@@ -7,5 +7,5 @@ dependencies:
     name: /^org\.firebirdsql:/
   - type: nuget
     name: /^FirebirdSql/
-  - type: python
+  - type: pypi
     name: fdb

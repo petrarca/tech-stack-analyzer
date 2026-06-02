@@ -37,6 +37,10 @@ languages:
       type: programming
       extensions:
         - .al
+    - name: ALGOL
+      type: programming
+      extensions:
+        - .alg
     - name: AMPL
       type: programming
       extensions:
@@ -209,6 +213,10 @@ languages:
         - .gawk
         - .mawk
         - .nawk
+    - name: B (Formal Method)
+      type: programming
+      extensions:
+        - .mch
     - name: B4X
       type: programming
       extensions:
@@ -403,6 +411,10 @@ languages:
       type: data
       extensions:
         - .dae
+    - name: CQL
+      type: programming
+      extensions:
+        - .cql
     - name: CSON
       type: data
       extensions:
@@ -447,6 +459,10 @@ languages:
       type: programming
       extensions:
         - .mligo
+    - name: Cangjie
+      type: programming
+      extensions:
+        - .cj
     - name: Cap'n Proto
       type: programming
       extensions:
@@ -912,6 +928,10 @@ languages:
       type: programming
       extensions:
         - .fs
+    - name: FlatBuffers
+      type: data
+      extensions:
+        - .fbs
     - name: Flix
       type: programming
       extensions:
@@ -1148,6 +1168,14 @@ languages:
       type: programming
       extensions:
         - .go
+    - name: Go Template
+      type: markup
+      extensions:
+        - .gohtml
+        - .gotmpl
+        - .html.tmpl
+        - .tmpl
+        - .tpl
     - name: Godot Resource
       type: data
       extensions:
@@ -1219,6 +1247,7 @@ languages:
         - .nomad
         - .tf
         - .tfvars
+        - .tofu
         - .workflow
     - name: HIP
       type: programming
@@ -1324,6 +1353,10 @@ languages:
       type: programming
       extensions:
         - .hc
+    - name: Hurl
+      type: programming
+      extensions:
+        - .hurl
     - name: Hy
       type: programming
       extensions:
@@ -1463,6 +1496,7 @@ languages:
         - .sublime-workspace
         - .sublime_metrics
         - .sublime_session
+        - .tsconfig.json
     - name: JSON5
       type: data
       extensions:
@@ -1475,6 +1509,10 @@ languages:
       type: programming
       extensions:
         - .jq
+    - name: Jac
+      type: programming
+      extensions:
+        - .jac
     - name: Jai
       type: programming
       extensions:
@@ -1584,10 +1622,18 @@ languages:
       type: programming
       extensions:
         - .just
+    - name: KCL
+      type: programming
+      extensions:
+        - .k
     - name: KDL
       type: data
       extensions:
         - .kdl
+    - name: KFramework
+      type: programming
+      extensions:
+        - .k
     - name: KRL
       type: programming
       extensions:
@@ -1628,7 +1674,7 @@ languages:
       type: markup
       extensions:
         - .kit
-    - name: KoLMafia ASH
+    - name: KoLmafia ASH
       type: programming
       extensions:
         - .ash
@@ -1674,6 +1720,14 @@ languages:
         - .lvclass
         - .lvlib
         - .lvproj
+    - name: Lambdapi
+      type: programming
+      extensions:
+        - .lp
+    - name: Langium
+      type: programming
+      extensions:
+        - .langium
     - name: Lark
       type: data
       extensions:
@@ -1743,6 +1797,10 @@ languages:
       type: markup
       extensions:
         - .liquid
+    - name: Liquidsoap
+      type: programming
+      extensions:
+        - .liq
     - name: Literate Agda
       type: programming
       extensions:
@@ -1896,18 +1954,10 @@ languages:
       type: markup
       extensions:
         - .mask
-    - name: Mathematica
+    - name: Mathematical Programming System
       type: programming
       extensions:
-        - .cdf
-        - .m
-        - .ma
-        - .mathematica
-        - .mt
-        - .nb
-        - .nbp
-        - .wl
-        - .wlt
+        - .mps
     - name: Max
       type: programming
       extensions:
@@ -1916,6 +1966,10 @@ languages:
         - .maxproj
         - .mxt
         - .pat
+    - name: MeTTa
+      type: programming
+      extensions:
+        - .metta
     - name: Mercury
       type: programming
       extensions:
@@ -2529,6 +2583,7 @@ languages:
         - .pbt
         - .pbtxt
         - .textproto
+        - .txtpb
     - name: Public Key
       type: data
       extensions:
@@ -2610,6 +2665,7 @@ languages:
       type: programming
       extensions:
         - .bas
+        - .bi
     - name: R
       type: programming
       extensions:
@@ -2620,6 +2676,10 @@ languages:
       type: markup
       extensions:
         - .raml
+    - name: RAScript
+      type: programming
+      extensions:
+        - .rascript
     - name: RBS
       type: data
       extensions:
@@ -2909,7 +2969,6 @@ languages:
     - name: SQL
       type: data
       extensions:
-        - .cql
         - .ddl
         - .inc
         - .mysql
@@ -3013,8 +3072,10 @@ languages:
         - .command
         - .fcgi
         - .ksh
+        - .sbatch
         - .sh
         - .sh.in
+        - .slurm
         - .tmux
         - .tool
         - .trigger
@@ -3146,6 +3207,10 @@ languages:
       extensions:
         - .sc
         - .scd
+    - name: SurrealQL
+      type: programming
+      extensions:
+        - .surql
     - name: Survex data
       type: data
       extensions:
@@ -3185,6 +3250,10 @@ languages:
       type: programming
       extensions:
         - .tla
+    - name: TMDL
+      type: data
+      extensions:
+        - .tmdl
     - name: TOML
       type: data
       extensions:
@@ -3254,6 +3323,10 @@ languages:
       type: markup
       extensions:
         - .tea
+    - name: Teal
+      type: programming
+      extensions:
+        - .tl
     - name: Terra
       type: programming
       extensions:
@@ -3516,6 +3589,19 @@ languages:
       type: programming
       extensions:
         - .ws
+    - name: Wolfram Language
+      type: programming
+      extensions:
+        - .cdf
+        - .m
+        - .ma
+        - .mathematica
+        - .mt
+        - .nb
+        - .nbp
+        - .wl
+        - .wls
+        - .wlt
     - name: Wollok
       type: programming
       extensions:
@@ -3579,6 +3665,7 @@ languages:
         - .grxml
         - .gst
         - .hzp
+        - .icls
         - .iml
         - .ivy
         - .jelly
@@ -3605,6 +3692,7 @@ languages:
         - .ps1xml
         - .psc1
         - .pt
+        - .pubxml
         - .qhelp
         - .rdf
         - .res
@@ -3886,9 +3974,9 @@ languages:
         - .prg
         - .prw
 summary:
-    total: 739
+    total: 758
     bytype:
-        data: 143
-        markup: 68
-        programming: 510
+        data: 145
+        markup: 69
+        programming: 526
         prose: 18

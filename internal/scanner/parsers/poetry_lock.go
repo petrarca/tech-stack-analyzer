@@ -14,6 +14,7 @@ func ParsePoetryLock(lockContent []byte, pyprojectContent string) []types.Depend
 	if len(directDeps) == 0 {
 		return nil
 	}
+	declaredConstraints := extractDeclaredConstraintsFromPyproject(pyprojectContent)
 
 	// Parse poetry.lock to get resolved versions
 	packages := parsePoetryPackages(string(lockContent))
@@ -24,14 +25,16 @@ func ParsePoetryLock(lockContent []byte, pyprojectContent string) []types.Depend
 		// Normalize name for comparison (poetry uses lowercase with hyphens)
 		normalizedName := normalizePackageName(name)
 		if scope, exists := directDeps[normalizedName]; exists {
-			dependencies = append(dependencies, types.Dependency{
-				Type:       "python",
+			dep := types.Dependency{
+				Type:       DependencyTypePython,
 				Name:       name,
 				Version:    version,
 				SourceFile: "poetry.lock",
 				Scope:      scope,
 				Direct:     true,
-			})
+			}
+			dep.SetDeclaredVersion(declaredConstraints[normalizedName])
+			dependencies = append(dependencies, dep)
 		}
 	}
 
@@ -69,6 +72,53 @@ func extractDirectDepsFromPyproject(content string) map[string]string {
 	}
 
 	return deps
+}
+
+// extractDeclaredConstraintsFromPyproject captures the declared version
+// constraint for each direct dependency (e.g. fastapi = "^0.100" or
+// "fastapi>=0.100" in array form), keyed by normalized name.
+func extractDeclaredConstraintsFromPyproject(content string) map[string]string {
+	constraints := make(map[string]string)
+	state := &pyprojectParseState{}
+	for _, line := range strings.Split(content, "\n") {
+		trimmed := strings.TrimSpace(line)
+		state = updatePyprojectState(state, trimmed)
+		if !state.inDepsSection && !state.inDevDepsSection && !state.inArrayDeps {
+			continue
+		}
+		name, constraint := parsePyprojectConstraint(trimmed, state)
+		if name != "" && constraint != "" {
+			constraints[normalizePackageName(name)] = constraint
+		}
+	}
+	return constraints
+}
+
+// parsePyprojectConstraint returns the dependency name and its declared
+// constraint from a pyproject line. Handles table form (name = "^1.0") and
+// PEP 621 array form ("name>=1.0").
+func parsePyprojectConstraint(line string, state *pyprojectParseState) (name, constraint string) {
+	if state.inArrayDeps {
+		// PEP 621 array form: "fastapi>=0.100", possibly with a trailing comma.
+		if !strings.HasPrefix(line, `"`) {
+			return "", ""
+		}
+		spec := strings.Trim(strings.TrimRight(strings.TrimSpace(line), ","), `"'`)
+		if i := strings.IndexAny(spec, "<>=~!^ ("); i > 0 {
+			return spec[:i], strings.TrimSpace(spec[i:])
+		}
+		return spec, ""
+	}
+	if !strings.Contains(line, "=") || strings.HasPrefix(line, "#") {
+		return "", ""
+	}
+	parts := strings.SplitN(line, "=", 2)
+	name = strings.TrimSpace(parts[0])
+	if name == "" || name == "python" {
+		return "", ""
+	}
+	constraint = strings.Trim(strings.TrimSpace(parts[1]), `"'`)
+	return name, constraint
 }
 
 func updatePyprojectState(state *pyprojectParseState, line string) *pyprojectParseState {

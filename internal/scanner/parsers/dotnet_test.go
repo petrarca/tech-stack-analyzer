@@ -435,3 +435,22 @@ func TestDotNetParser_EdgeCases(t *testing.T) {
 		assert.Len(t, result.Packages, 2)
 	})
 }
+
+func TestParseDirectoryPackagesProps(t *testing.T) {
+	content := `<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageVersion Include="Serilog" Version="3.1.1" />
+    <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+</Project>`
+	versions := NewDotNetParser().ParseDirectoryPackagesProps(content)
+	if versions["Serilog"] != "3.1.1" {
+		t.Errorf("Serilog version = %q, want 3.1.1", versions["Serilog"])
+	}
+	if versions["Newtonsoft.Json"] != "13.0.3" {
+		t.Errorf("Newtonsoft.Json version = %q, want 13.0.3", versions["Newtonsoft.Json"])
+	}
+}

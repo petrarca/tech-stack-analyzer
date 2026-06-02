@@ -42,13 +42,13 @@ dependencies:
   - type: docker
     name: bitnamicharts/postgresql
     example: bitnamicharts/postgresql
-  - type: rust
+  - type: cargo
     name: postgres
     example: postgres
-  - type: ruby
+  - type: gem
     name: pg
     example: pg
-  - type: php
+  - type: composer
     name: martin-georgiev/postgresql-for-doctrine
     example: martin-georgiev/postgresql-for-doctrine
   - type: terraform.resource
@@ -60,7 +60,7 @@ dependencies:
   - type: maven
     name: org.postgresql:postgresql
     example: org.postgresql:postgresql
-  - type: python
+  - type: pypi
     name: pgvector
     example: pgvector
   - type: docker

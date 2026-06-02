@@ -13,12 +13,12 @@ dependencies:
   - type: terraform.resource
     name: airbyte_source_google_drive
     example: airbyte_source_google_drive
-  - type: ruby
+  - type: gem
     name: google-apis-drive_v2
     example: google-apis-drive_v2
-  - type: ruby
+  - type: gem
     name: google-apis-drive_v3
     example: google-apis-drive_v3
-  - type: rust
+  - type: cargo
     name: google-drive
     example: google-drive

@@ -19,7 +19,7 @@
             "items": [
                 {
                     "type": "string",
-                    "description": "Dependency type (e.g., 'golang', 'npm', 'python', 'cargo', 'maven', 'gradle')"
+                    "description": "Dependency type, following the Package URL (PURL) type vocabulary (e.g., 'golang', 'npm', 'pypi', 'gem', 'composer', 'cargo', 'maven', 'nuget')"
                 },
                 {
                     "type": "string",
@@ -40,7 +40,7 @@
                 },
                 {
                     "type": "object",
-                    "description": "Package-specific metadata (source file, type, classifier, exclusions, peer, optional, bundled, etc.)",
+                    "description": "Package-specific metadata (source file, type, classifier, exclusions, peer, optional, bundled, declared, etc.). The 'declared' key holds the originally declared version form (a range or property reference) when it differs from the resolved version.",
                     "additionalProperties": true
                 }
             ],
@@ -50,7 +50,9 @@
                 ["npm", "lodash", "4.17.21", "prod", true, {"source": "package-lock.json"}],
                 ["npm", "react", "18.2.0", "prod", true, {"source": "package-lock.json", "peer": true}],
                 ["npm", "accepts", "1.3.8", "prod", false, {"source": "package-lock.json"}],
-                ["maven", "spring-boot-starter-web", "2.7.0", "prod", true, {"type": "jar", "exclusions": ["spring-boot-starter-tomcat"]}]
+                ["maven", "spring-boot-starter-web", "2.7.0", "prod", true, {"type": "jar", "exclusions": ["spring-boot-starter-tomcat"]}],
+                ["pypi", "django", "4.2.0", "prod", true, {"source": "poetry.lock", "declared": "^4.2"}],
+                ["maven", "org.springframework:spring-core", "5.3.20", "prod", true, {"declared": "${spring.version}"}]
             ]
         },
         "license": {

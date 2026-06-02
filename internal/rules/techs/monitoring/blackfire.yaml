@@ -3,7 +3,7 @@ name: Blackfire
 dotenv:
   - BLACKFIRE_
 dependencies:
-  - type: php
+  - type: composer
     name: blackfire/php-sdk
     example: blackfire/php-sdk
   - type: docker

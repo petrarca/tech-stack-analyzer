@@ -13,16 +13,16 @@ dependencies:
   - type: npm
     name: "@aws-cdk/aws-firehose"
     example: "@aws-cdk/aws-firehose"
-  - type: rust
+  - type: cargo
     name: aws-sdk-kinesis
     example: aws-sdk-kinesis
-  - type: rust
+  - type: cargo
     name: aws-sdk-firehose
     example: aws-sdk-firehose
-  - type: ruby
+  - type: gem
     name: aws-sdk-kinesis
     example: aws-sdk-kinesis
-  - type: ruby
+  - type: gem
     name: aws-sdk-firehose
     example: aws-sdk-firehose
   - type: golang

@@ -1,6 +1,6 @@
 tech: dieselrs
 name: Diesel
 dependencies:
-  - type: rust
+  - type: cargo
     name: diesel
     example: diesel

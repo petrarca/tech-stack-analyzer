@@ -4,10 +4,10 @@ dependencies:
   - type: npm
     name: appsignal
     example: appsignal
-  - type: ruby
+  - type: gem
     name: appsignal
     example: appsignal
-  - type: python
+  - type: pypi
     name: appsignal
     example: appsignal
   - type: npm

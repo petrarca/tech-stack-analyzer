@@ -13,9 +13,9 @@ dependencies:
   - type: npm
     name: php-coveralls
     example: php-coveralls
-  - type: ruby
+  - type: gem
     name: coveralls
     example: coveralls
-  - type: ruby
+  - type: gem
     name: coveralls_reborn
     example: coveralls_reborn

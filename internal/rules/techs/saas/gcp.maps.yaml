@@ -6,12 +6,12 @@ dependencies:
   - type: npm
     name: "@google-cloud/maps"
     example: "@google-cloud/maps"
-  - type: ruby
+  - type: gem
     name: google_maps_service
     example: google_maps_service
   - type: golang
     name: cloud.google.com/go/maps
     example: cloud.google.com/go/maps
-  - type: python
+  - type: pypi
     name: google-maps-mapsplatformdatasets
     example: google-maps-mapsplatformdatasets

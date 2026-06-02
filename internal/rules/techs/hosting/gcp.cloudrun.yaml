@@ -7,7 +7,7 @@ dependencies:
   - type: golang
     name: cloud.google.com/go/run
     example: cloud.google.com/go/run
-  - type: php
+  - type: composer
     name: google/cloud-run
     example: google/cloud-run
   - type: githubAction

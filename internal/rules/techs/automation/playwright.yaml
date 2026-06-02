@@ -13,7 +13,7 @@ dependencies:
   - type: docker
     name: mcr.microsoft.com/playwright
     example: mcr.microsoft.com/playwright
-  - type: python
+  - type: pypi
     name: pytest-playwright
     example: pytest-playwright
   - type: nuget

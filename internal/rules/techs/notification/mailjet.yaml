@@ -6,15 +6,15 @@ dependencies:
   - type: npm
     name: node-mailjet
     example: node-mailjet
-  - type: rust
+  - type: cargo
     name: mailjet-rs
     example: mailjet-rs
-  - type: ruby
+  - type: gem
     name: mailjet
     example: mailjet
-  - type: php
+  - type: composer
     name: mailjet/mailjet-apiv3-php
     example: mailjet/mailjet-apiv3-php
-  - type: php
+  - type: composer
     name: mailjet/laravel-mailjet
     example: mailjet/laravel-mailjet

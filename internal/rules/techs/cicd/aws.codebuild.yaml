@@ -4,10 +4,10 @@ dependencies:
   - type: npm
     name: "@aws-sdk/client-codebuild"
     example: "@aws-sdk/client-codebuild"
-  - type: rust
+  - type: cargo
     name: aws-sdk-codebuild
     example: aws-sdk-codebuild
-  - type: ruby
+  - type: gem
     name: aws-sdk-codebuild
     example: aws-sdk-codebuild
   - type: golang

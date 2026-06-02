@@ -4,7 +4,7 @@ dependencies:
   - type: npm
     name: "@azure/static-web-apps-cli"
     example: "@azure/static-web-apps-cli"
-  - type: ruby
+  - type: gem
     name: azure_mgmt_web
     example: azure_mgmt_web
   - type: githubAction

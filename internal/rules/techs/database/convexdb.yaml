@@ -6,10 +6,10 @@ dependencies:
   - type: npm
     name: convex
     example: convex
-  - type: python
+  - type: pypi
     name: convex
     example: convex
-  - type: rust
+  - type: cargo
     name: convex
     example: convex
   - type: terraform.resource

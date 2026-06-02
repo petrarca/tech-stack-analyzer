@@ -19,7 +19,7 @@ dependencies:
   - type: maven
     name: com.intersystems:iris
   # Python drivers
-  - type: python
+  - type: pypi
     name: intersys-odbpy
-  - type: python
+  - type: pypi
     name: irispython

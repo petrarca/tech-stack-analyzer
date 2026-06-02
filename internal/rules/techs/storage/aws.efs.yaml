@@ -7,10 +7,10 @@ dependencies:
   - type: npm
     name: "@aws-sdk/client-efs"
     example: "@aws-sdk/client-efs"
-  - type: rust
+  - type: cargo
     name: aws-sdk-efs
     example: aws-sdk-efs
-  - type: ruby
+  - type: gem
     name: aws-sdk-efs
     example: aws-sdk-efs
   - type: golang

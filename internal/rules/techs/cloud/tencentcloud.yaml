@@ -4,9 +4,9 @@ dependencies:
   - type: terraform
     name: registry.terraform.io/tencentcloudstack/tencentcloud
     example: registry.terraform.io/tencentcloudstack/tencentcloud
-  - type: php
+  - type: composer
     name: encentcloud/tencentcloud-sdk-php
     example: encentcloud/tencentcloud-sdk-php
-  - type: python
+  - type: pypi
     name: tencentcloud-sdk-python
     example: tencentcloud-sdk-python

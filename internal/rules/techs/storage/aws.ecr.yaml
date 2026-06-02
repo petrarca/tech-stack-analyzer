@@ -7,10 +7,10 @@ dependencies:
   - type: npm
     name: "@aws-sdk/client-ecr"
     example: "@aws-sdk/client-ecr"
-  - type: rust
+  - type: cargo
     name: aws-sdk-ecr
     example: aws-sdk-ecr
-  - type: ruby
+  - type: gem
     name: aws-sdk-ecr
     example: aws-sdk-ecr
   - type: golang

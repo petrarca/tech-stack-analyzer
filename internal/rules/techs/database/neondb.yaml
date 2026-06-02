@@ -13,6 +13,6 @@ dependencies:
   - type: docker
     name: neondatabase/neon
     example: neondatabase/neon
-  - type: python
+  - type: pypi
     name: neon-api
     example: neon-api

@@ -3,10 +3,10 @@ name: Firebase
 dotenv:
   - FIREBASE_
 dependencies:
-  - type: ruby
+  - type: gem
     name: fastlane-plugin-firebase_app_distribution
     example: fastlane-plugin-firebase_app_distribution
-  - type: rust
+  - type: cargo
     name: firebase-rs
     example: firebase-rs
   - type: npm

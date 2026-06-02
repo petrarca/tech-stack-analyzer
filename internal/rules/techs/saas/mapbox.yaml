@@ -12,21 +12,21 @@ dependencies:
   - type: npm
     name: "@mapbox/mapbox-gl-geocoder"
     example: "@mapbox/mapbox-gl-geocoder"
-  - type: rust
+  - type: cargo
     name: mapboxgl
     example: mapboxgl
-  - type: ruby
+  - type: gem
     name: mapbox-sdk
     example: mapbox-sdk
-  - type: ruby
+  - type: gem
     name: mapbox-rails
     example: mapbox-rails
-  - type: ruby
+  - type: gem
     name: mapbox-gl-rails
     example: mapbox-gl-rails
-  - type: python
+  - type: pypi
     name: mapbox-tilesets
     example: mapbox-tilesets
-  - type: php
+  - type: composer
     name: geocoder-php/mapbox-provider
     example: geocoder-php/mapbox-provider

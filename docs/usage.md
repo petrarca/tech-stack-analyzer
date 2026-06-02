@@ -16,6 +16,8 @@ stack-analyzer scan [path] [flags]
 - `--output, -o` - Output file path (default: stack-analysis.json). Use `-o -` or `-o /dev/stdout` for piping
 - `--aggregate` - Aggregate fields: `tech,techs,languages,licenses,dependencies,git,components,all` (use `all` for all aggregated fields). The `components` field produces a flat list of all components with `id`, `name`, `type`, `tech`, `techs`, `path`.
 - `--also-aggregate` - Produce both full and aggregate output in one scan pass. The aggregate file gets a `-agg` suffix (e.g. `output.json` → `output-agg.json`). Cannot be combined with `--aggregate`. Useful for large codebases where scanning twice would be too slow.
+- `--sbom` - Emit a CycloneDX SBOM (with Package URLs) as the primary output instead of the scan tree. Consumable directly by vulnerability scanners such as Trivy (`trivy sbom ...`). Only dependencies with a PURL-mappable ecosystem are included; non-package types (terraform, docker images as build steps, etc.) are skipped.
+- `--also-sbom` - Produce both the scan output and a CycloneDX SBOM in one scan pass. The SBOM file gets a `.cdx` suffix (e.g. `output.json` → `output.cdx.json`).
 - `--omit-fields` - Strip fields from the full output tree before writing (e.g. `reason,edges`). Applied recursively to all components. Useful to reduce file size when downstream consumers don't need certain fields.
 - `--exclude` - Additional patterns to exclude (combined with `.gitignore`; full gitignore semantics including `**` globs, `!` negation, trailing `/` for dir-only; can be specified multiple times)
 - `--no-code-stats` - Disable code statistics collection (enabled by default)
@@ -52,6 +54,13 @@ stack-analyzer scan /path --output results.json --also-aggregate tech,techs,lang
 # Strip unused fields to reduce output size (applied recursively to all components)
 stack-analyzer scan /path --omit-fields reason,edges
 stack-analyzer scan /path --omit-fields reason,edges --also-aggregate tech,techs,languages,dependencies,git
+
+# Emit a CycloneDX SBOM for vulnerability scanning, then scan it with Trivy
+stack-analyzer scan /path --sbom -o sbom.cdx.json
+trivy sbom sbom.cdx.json
+
+# Produce the scan output AND an SBOM in one pass (results.json + results.cdx.json)
+stack-analyzer scan /path --output results.json --also-sbom
 
 # Verbose mode
 stack-analyzer scan -v /path/to/project

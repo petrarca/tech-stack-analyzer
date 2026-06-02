@@ -4,15 +4,15 @@ dependencies:
   - type: npm
     name: "@googleapis/calendar"
     example: "@googleapis/calendar"
-  - type: php
+  - type: composer
     name: spatie/laravel-google-calendar
     example: spatie/laravel-google-calendar
-  - type: ruby
+  - type: gem
     name: google-apis-calendar_v3
     example: google-apis-calendar_v3
-  - type: ruby
+  - type: gem
     name: google_calendar
     example: google_calendar
-  - type: python
+  - type: pypi
     name: langchain-google-calendar-tools
     example: langchain-google-calendar-tools

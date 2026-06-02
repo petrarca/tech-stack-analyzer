@@ -7,9 +7,9 @@ dependencies:
   - type: golang
     name: cloud.google.com/go/aiplatform
     example: cloud.google.com/go/aiplatform
-  - type: php
+  - type: composer
     name: google/cloud-ai-platform
     example: google/cloud-ai-platform
-  - type: python
+  - type: pypi
     name: google-cloud-aiplatform
     example: google-cloud-aiplatform

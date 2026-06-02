@@ -48,7 +48,7 @@ BUNDLED WITH
    2.4.10
 `,
 			expectedDeps: []types.Dependency{
-				{Type: "ruby", Name: "rails", Version: "7.1.0", Direct: true},
+				{Type: "gem", Name: "rails", Version: "7.1.0", Direct: true},
 			},
 		},
 		{
@@ -74,9 +74,9 @@ BUNDLED WITH
    2.4.10
 `,
 			expectedDeps: []types.Dependency{
-				{Type: "ruby", Name: "pg", Version: "1.5.4", Direct: true},
-				{Type: "ruby", Name: "puma", Version: "6.4.0", Direct: true},
-				{Type: "ruby", Name: "rails", Version: "7.1.0", Direct: true},
+				{Type: "gem", Name: "pg", Version: "1.5.4", Direct: true},
+				{Type: "gem", Name: "puma", Version: "6.4.0", Direct: true},
+				{Type: "gem", Name: "rails", Version: "7.1.0", Direct: true},
 			},
 		},
 		{
@@ -101,8 +101,8 @@ BUNDLED WITH
    2.4.10
 `,
 			expectedDeps: []types.Dependency{
-				{Type: "ruby", Name: "nokogiri", Version: "1.15.5", Direct: true},
-				{Type: "ruby", Name: "nokogiri", Version: "1.15.5-x86_64-linux", Direct: true},
+				{Type: "gem", Name: "nokogiri", Version: "1.15.5", Direct: true},
+				{Type: "gem", Name: "nokogiri", Version: "1.15.5-x86_64-linux", Direct: true},
 			},
 		},
 		{

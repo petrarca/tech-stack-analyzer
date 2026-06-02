@@ -7,10 +7,10 @@ dependencies:
   - type: npm
     name: "@aws-sdk/client-timestream"
     example: "@aws-sdk/client-timestream"
-  - type: rust
+  - type: cargo
     name: aws-sdk-timestream
     example: aws-sdk-timestream
-  - type: ruby
+  - type: gem
     name: aws-sdk-timestream
     example: aws-sdk-timestream
   - type: golang

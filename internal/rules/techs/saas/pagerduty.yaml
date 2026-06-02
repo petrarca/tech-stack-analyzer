@@ -9,13 +9,13 @@ dependencies:
   - type: terraform
     name: registry.terraform.io/PagerDuty/pagerduty
     example: registry.terraform.io/PagerDuty/pagerduty
-  - type: rust
+  - type: cargo
     name: pagerduty-rs
     example: pagerduty-rs
-  - type: ruby
+  - type: gem
     name: pagerduty
     example: pagerduty
-  - type: php
+  - type: composer
     name: adilbaig/pagerduty
     example: adilbaig/pagerduty
   - type: npm

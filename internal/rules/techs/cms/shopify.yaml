@@ -10,18 +10,18 @@ dependencies:
   - type: npm
     name: shopify-api-node
     example: shopify-api-node
-  - type: php
+  - type: composer
     name: shopify/shopify-api
     example: shopify/shopify-api
-  - type: php
+  - type: composer
     name: phpclassic/php-shopify
     example: phpclassic/php-shopify
-  - type: ruby
+  - type: gem
     name: shopify_api
     example: shopify_api
-  - type: ruby
+  - type: gem
     name: shopify_app
     example: shopify_app
-  - type: ruby
+  - type: gem
     name: shopify-cli
     example: shopify-cli

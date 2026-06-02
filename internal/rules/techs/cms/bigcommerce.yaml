@@ -1,7 +1,7 @@
 tech: bigcommerce
 name: BigCommerce
 dependencies:
-  - type: php
+  - type: composer
     name: bigcommerce/api
     example: bigcommerce/api
   - type: npm

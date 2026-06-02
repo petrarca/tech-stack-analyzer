@@ -7,10 +7,10 @@ dependencies:
   - type: npm
     name: "@aws-cdk/aws-polly"
     example: "@aws-cdk/aws-polly"
-  - type: rust
+  - type: cargo
     name: aws-sdk-polly
     example: aws-sdk-polly
-  - type: ruby
+  - type: gem
     name: aws-sdk-polly
     example: aws-sdk-polly
   - type: golang

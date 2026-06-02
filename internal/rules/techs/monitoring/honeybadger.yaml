@@ -6,19 +6,19 @@ dependencies:
   - type: npm
     name: honeybadger
     example: honeybadger
-  - type: ruby
+  - type: gem
     name: honeybadger
     example: honeybadger
-  - type: python
+  - type: pypi
     name: honeybadger
     example: honeybadger
   - type: golang
     name: github.com/honeybadger-io/honeybadger-go
     example: github.com/honeybadger-io/honeybadger-go
-  - type: php
+  - type: composer
     name: honeybadger-io/honeybadger-laravel
     example: honeybadger-io/honeybadger-laravel
-  - type: php
+  - type: composer
     name: honeybadger-io/honeybadger-php
     example: honeybadger-io/honeybadger-php
   - type: elixir

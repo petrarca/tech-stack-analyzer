@@ -7,12 +7,12 @@ dependencies:
   - type: npm
     name: postman-cli
     example: postman-cli
-  - type: ruby
+  - type: gem
     name: postmark-rails
     example: postmark-rails
-  - type: ruby
+  - type: gem
     name: postmark
     example: postmark
-  - type: php
+  - type: composer
     name: wildbit/postmark-php
     example: wildbit/postmark-php

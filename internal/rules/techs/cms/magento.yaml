@@ -1,13 +1,13 @@
 tech: magento
 name: Magento
 dependencies:
-  - type: php
+  - type: composer
     name: magento/composer
     example: magento/composer
-  - type: php
+  - type: composer
     name: fastly/magento2
     example: fastly/magento2
-  - type: php
+  - type: composer
     name: smile/elasticsuite
     example: smile/elasticsuite
   - type: npm

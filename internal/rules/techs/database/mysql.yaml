@@ -15,25 +15,25 @@ dependencies:
   - type: npm
     name: "@opentelemetry/instrumentation-mysql"
     example: "@opentelemetry/instrumentation-mysql"
-  - type: ruby
+  - type: gem
     name: ruby-mysql
     example: ruby-mysql
-  - type: ruby
+  - type: gem
     name: mysql2
     example: mysql2
   - type: npm
     name: "@pulumi/mysql"
     example: "@pulumi/mysql"
-  - type: python
+  - type: pypi
     name: mysql-connector-python
     example: mysql-connector-python
-  - type: python
+  - type: pypi
     name: PyMySQL
     example: PyMySQL
-  - type: python
+  - type: pypi
     name: pymysql
     example: pymysql
-  - type: python
+  - type: pypi
     name: mysqlclient
     example: mysqlclient
   - type: terraform.resource

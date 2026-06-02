@@ -19,19 +19,19 @@ dependencies:
   - type: npm
     name: "@opentelemetry/instrumentation-aws-lambda"
     example: "@opentelemetry/instrumentation-aws-lambda"
-  - type: rust
+  - type: cargo
     name: aws-sdk-lambda
     example: aws-sdk-lambda
-  - type: rust
+  - type: cargo
     name: lambda_runtime
     example: lambda_runtime
-  - type: ruby
+  - type: gem
     name: aws-sdk-lambda
     example: aws-sdk-lambda
   - type: golang
     name: github.com/aws/aws-sdk-go-v2/service/lambda
     example: github.com/aws/aws-sdk-go-v2/service/lambda
-  - type: php
+  - type: composer
     name: async-aws/lambda
     example: async-aws/lambda
   - type: githubAction

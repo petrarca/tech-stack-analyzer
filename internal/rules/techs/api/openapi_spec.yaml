@@ -29,7 +29,7 @@ dependencies:
   - type: npm
     name: "openapi-typescript"
     example: "openapi-typescript"
-  - type: python
+  - type: pypi
     name: "pydantic-openapi"
     example: "pydantic-openapi"
   - type: nuget

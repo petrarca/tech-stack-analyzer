@@ -9,10 +9,10 @@ dependencies:
   - type: npm
     name: pino-papertrail
     example: pino-papertrail
-  - type: php
+  - type: composer
     name: stephanecoinon/papertrail
     example: stephanecoinon/papertrail
-  - type: ruby
+  - type: gem
     name: papertrail
     example: papertrail
   - type: golang

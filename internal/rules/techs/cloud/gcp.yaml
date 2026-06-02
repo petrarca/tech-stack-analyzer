@@ -10,7 +10,7 @@ dependencies:
   - type: terraform
     name: registry.terraform.io/hashicorp/google
     example: registry.terraform.io/hashicorp/google
-  - type: php
+  - type: composer
     name: google/cloud
     example: google/cloud
   - type: githubAction
@@ -31,6 +31,6 @@ dependencies:
   - type: npm
     name: passport-google-oauth
     example: passport-google-oauth
-  - type: python
+  - type: pypi
     name: google-api-python-client
     example: google-api-python-client
