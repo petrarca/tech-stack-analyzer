@@ -82,3 +82,33 @@ For an inventory/SBOM tool this boundary is correct: downstream consumers
 direct-dependency SBOM. Higher transitive fidelity, if ever needed, is a
 deps.dev-style **online enrichment** (query the deps.dev API by PURL to obtain
 a precomputed resolved graph) -- an opt-in addition, never the offline default.
+
+## Scope boundary: direct SBOM, not a supply-chain SBOM
+
+The `--sbom` output is a **direct-dependency** SBOM by design -- it lists what a
+project *declares*, not the full resolved closure. This is a deliberate
+division of responsibility, not a missing feature.
+
+A concrete comparison illustrates the difference. For one product's frontend
+(a pnpm workspace), the lockfile contains 86 direct dependencies and 716 total
+packages (direct + transitive). stack-analyzer emits the 86; a dedicated SBOM
+tool (Syft) emits the full closure (~1000+ after expansion).
+
+Both are correct for their purpose:
+
+| Concern | Tool | Rationale |
+|---------|------|-----------|
+| Direct/declared inventory, components, architecture | **stack-analyzer** | Its unique value: tech-stack, component hierarchy, coupling, code stats. Direct deps are the architectural signal; transitive entries would drown it. |
+| Full transitive closure | Syft / Trivy / deps.dev | They maintain each ecosystem's resolution algorithms; reimplementing them here would duplicate effort with no differentiation. |
+| Transitive vulnerability matching | Trivy (OSV/advisory DB) | Bundles and auto-updates the vulnerability database. |
+| Resolved graph as a service | deps.dev | Precomputed online, opt-in enrichment. |
+
+**Decision:** stack-analyzer does not, and should not, compute the transitive
+closure or perform vulnerability matching. Those belong to Syft/Trivy/deps.dev.
+The scanner's job is the direct/declared inventory and the architectural view;
+the security pipeline delegates transitive + vuln work to the dedicated tools,
+optionally consuming stack-analyzer's SBOM or scanning the artifact directly.
+
+> Note: a security pipeline that needs full transitive vulnerability coverage
+> should scan the lockfile/artifact with Syft/Trivy directly, since the
+> direct-only SBOM under-reports transitive CVEs by construction.
