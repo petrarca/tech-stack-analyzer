@@ -123,7 +123,7 @@ func parsePackagesV3(packages map[string]PackageInfo, options ParsePackageLockOp
 		isDirect := isDirectDependency(name, maps.prodDeps, maps.devDeps, maps.peerDeps, maps.optionalDeps)
 
 		dependencies = append(dependencies, types.Dependency{
-			Type:       "npm",
+			Type:       DependencyTypeNpm,
 			Name:       name,
 			Version:    pkg.Version,
 			Scope:      scope,
@@ -176,7 +176,7 @@ func parseTopLevelDependenciesV2(dependencies map[string]PackageInfo, maps depen
 		isDirect := isDirectDependency(name, maps.prodDeps, maps.devDeps, maps.peerDeps, maps.optionalDeps)
 
 		result = append(result, types.Dependency{
-			Type:       "npm",
+			Type:       DependencyTypeNpm,
 			Name:       name,
 			Version:    dep.Version,
 			Scope:      scope,
@@ -261,7 +261,7 @@ func parseDependenciesV2(
 		isDirect := isDirectDependency(name, prodDeps, devDeps, peerDeps, optionalDeps)
 
 		dependencies = append(dependencies, types.Dependency{
-			Type:       "npm",
+			Type:       DependencyTypeNpm,
 			Name:       name,
 			Version:    dep.Version,
 			Scope:      scope,

@@ -10,7 +10,7 @@ dependencies:
   - type: golang
     name: github.com/supertokens/supertokens-golang
     example: github.com/supertokens/supertokens-golang
-  - type: python
+  - type: pypi
     name: supertokens_python
     example: supertokens_python
   - type: npm

@@ -20,10 +20,10 @@ dependencies:
   - type: maven
     name: "org.springframework.boot:spring-boot-starter-web-services"
     example: "org.springframework.boot:spring-boot-starter-web-services"
-  - type: python
+  - type: pypi
     name: "zeep"
     example: "zeep"
-  - type: python
+  - type: pypi
     name: "suds"
     example: "suds"
   - type: npm

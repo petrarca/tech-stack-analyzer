@@ -1,10 +1,10 @@
 tech: hostinger
 name: Hostinger
 dependencies:
-  - type: php
+  - type: composer
     name: hostinger/api-php-sdk
     example: hostinger/api-php-sdk
-  - type: python
+  - type: pypi
     name: hostinger_api
     example: hostinger_api
   - type: npm

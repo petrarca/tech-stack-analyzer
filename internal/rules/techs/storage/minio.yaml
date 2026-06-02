@@ -4,7 +4,7 @@ dependencies:
   - type: docker
     name: minio/minio
     example: minio/minio
-  - type: python
+  - type: pypi
     name: minio
     example: minio
   - type: npm

@@ -1,7 +1,7 @@
 tech: sap_ase
 name: SAP ASE
 dependencies:
-  - type: python
+  - type: pypi
     name: python-sybase
     example: python-sybase
   - type: nuget

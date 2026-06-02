@@ -9,13 +9,13 @@ dependencies:
   - type: terraform
     name: registry.terraform.io/newrelic/newrelic
     example: registry.terraform.io/newrelic/newrelic
-  - type: ruby
+  - type: gem
     name: newrelic_rpm
     example: newrelic_rpm
-  - type: php
+  - type: composer
     name: ekino/newrelic-bundle
     example: ekino/newrelic-bundle
-  - type: php
+  - type: composer
     name: intouch/newrelic
     example: intouch/newrelic
   - type: npm

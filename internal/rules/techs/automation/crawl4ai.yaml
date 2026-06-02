@@ -6,6 +6,6 @@ dependencies:
   - type: docker
     name: unclecode/crawl4ai
     example: unclecode/crawl4ai
-  - type: python
+  - type: pypi
     name: crawl4ai
     example: crawl4ai

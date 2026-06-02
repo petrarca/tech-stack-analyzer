@@ -9,19 +9,19 @@ dependencies:
   - type: npm
     name: "@aws-sdk/client-cloudfront"
     example: "@aws-sdk/client-cloudfront"
-  - type: rust
+  - type: cargo
     name: aws-sdk-cloudfront
     example: aws-sdk-cloudfront
-  - type: ruby
+  - type: gem
     name: aws-sdk-cloudfront
     example: aws-sdk-cloudfront
-  - type: ruby
+  - type: gem
     name: cloudfront-signer
     example: cloudfront-signer
   - type: golang
     name: github.com/aws/aws-sdk-go-v2/service/cloudfront
     example: github.com/aws/aws-sdk-go-v2/service/cloudfront
-  - type: php
+  - type: composer
     name: dreamonkey/laravel-cloudfront-url-signer
     example: dreamonkey/laravel-cloudfront-url-signer
   - type: githubAction

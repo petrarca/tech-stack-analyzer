@@ -31,9 +31,9 @@ dependencies:
   - type: npm
     name: "@opentelemetry/exporter-zipkin"
     example: "@opentelemetry/exporter-zipkin"
-  - type: ruby
+  - type: gem
     name: zipkin-tracer
     example: zipkin-tracer
-  - type: php
+  - type: composer
     name: openzipkin/zipkin
     example: openzipkin/zipkin

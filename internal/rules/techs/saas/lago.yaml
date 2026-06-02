@@ -9,10 +9,10 @@ dependencies:
   - type: golang
     name: github.com/getlago/lago-go-client
     example: github.com/getlago/lago-go-client
-  - type: ruby
+  - type: gem
     name: lago-ruby-client
     example: lago-ruby-client
-  - type: python
+  - type: pypi
     name: lago-python-client
     example: lago-python-client
   - type: docker

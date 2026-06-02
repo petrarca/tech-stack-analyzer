@@ -4,6 +4,6 @@ dependencies:
   - type: terraform
     name: registry.terraform.io/cockroachdb/cockroach
     example: registry.terraform.io/cockroachdb/cockroach
-  - type: php
+  - type: composer
     name: nbj/cockroachdb-laravel
     example: nbj/cockroachdb-laravel

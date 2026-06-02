@@ -9,18 +9,18 @@ dependencies:
   - type: npm
     name: "@opentelemetry/instrumentation-amqplib"
     example: "@opentelemetry/instrumentation-amqplib"
-  - type: rust
+  - type: cargo
     name: rabbitmq-stream-client
     example: rabbitmq-stream-client
-  - type: ruby
+  - type: gem
     name: bunny
     example: bunny
-  - type: php
+  - type: composer
     name: php-amqplib/php-amqplib
     example: php-amqplib/php-amqplib
   - type: npm
     name: "@pulumi/rabbitmq"
     example: "@pulumi/rabbitmq"
-  - type: python
+  - type: pypi
     name: amqp
     example: amqp

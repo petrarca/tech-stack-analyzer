@@ -4,16 +4,16 @@ dependencies:
   - type: terraform
     name: registry.terraform.io/Snowflake-Labs/snowflake
     example: registry.terraform.io/Snowflake-Labs/snowflake
-  - type: rust
+  - type: cargo
     name: snowflake
     example: snowflake
-  - type: rust
+  - type: cargo
     name: rs-snowflake
     example: rs-snowflake
   - type: npm
     name: "@pulumi/snowflake"
     example: "@pulumi/snowflake"
-  - type: ruby
+  - type: gem
     name: sequel-snowflake
     example: sequel-snowflake
   - type: terraform.resource

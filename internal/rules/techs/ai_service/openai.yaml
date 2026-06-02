@@ -9,10 +9,10 @@ dependencies:
   - type: npm
     name: "@ai-sdk/openai"
     example: "@ai-sdk/openai"
-  - type: php
+  - type: composer
     name: openai-php/client
     example: openai-php/client
-  - type: php
+  - type: composer
     name: openai-php/laravel
     example: openai-php/laravel
   - type: npm
@@ -24,9 +24,9 @@ dependencies:
   - type: npm
     name: genkitx-openai
     example: genkitx-openai
-  - type: python
+  - type: pypi
     name: langchain-openai
     example: langchain-openai
-  - type: python
+  - type: pypi
     name: openai
     example: openai

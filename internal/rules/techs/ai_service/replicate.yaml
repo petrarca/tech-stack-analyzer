@@ -6,6 +6,6 @@ dependencies:
   - type: npm
     name: replicate
     example: replicate
-  - type: python
+  - type: pypi
     name: replicate
     example: replicate

@@ -6,13 +6,13 @@ dependencies:
   - type: npm
     name: analytics-node
     example: analytics-node
-  - type: python
+  - type: pypi
     name: analytics-python
     example: analytics-python
-  - type: ruby
+  - type: gem
     name: segment-analytics
     example: segment-analytics
-  - type: php
+  - type: composer
     name: segmentio/analytics-php
     example: segmentio/analytics-php
   - type: golang

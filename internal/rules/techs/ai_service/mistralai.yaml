@@ -9,7 +9,7 @@ dependencies:
   - type: npm
     name: genkitx-mistral
     example: genkitx-mistral
-  - type: python
+  - type: pypi
     name: mistralai
     example: mistralai
   - type: npm
@@ -18,6 +18,6 @@ dependencies:
   - type: golang
     name: github.com/gage-technologies/mistral-go
     example: github.com/gage-technologies/mistral-go
-  - type: python
+  - type: pypi
     name: langchain-mistralai
     example: langchain-mistralai

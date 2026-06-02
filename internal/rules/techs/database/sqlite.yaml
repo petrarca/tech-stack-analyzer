@@ -10,19 +10,19 @@ dependencies:
   - type: npm
     name: sqlite3
     example: sqlite3
-  - type: rust
+  - type: cargo
     name: sqlite
     example: sqlite
-  - type: rust
+  - type: cargo
     name: rusqlite
     example: rusqlite
-  - type: rust
+  - type: cargo
     name: libsqlite3-sys
     example: libsqlite3-sys
-  - type: rust
+  - type: cargo
     name: rusqlite
     example: rusqlite
-  - type: ruby
+  - type: gem
     name: sqlite3
     example: sqlite3
 files:

@@ -1,7 +1,7 @@
 tech: apiplatform
 name: Api Platform
 dependencies:
-  - type: php
+  - type: composer
     name: api-platform/core
     example: api-platform/core
   - type: npm

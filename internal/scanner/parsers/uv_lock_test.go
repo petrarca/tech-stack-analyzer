@@ -92,8 +92,8 @@ dev = [
 			}
 
 			for _, dep := range deps {
-				if dep.Type != "python" {
-					t.Errorf("ParseUvLock() dep.Type = %s, want python", dep.Type)
+				if dep.Type != "pypi" {
+					t.Errorf("ParseUvLock() dep.Type = %s, want pypi", dep.Type)
 				}
 				if dep.SourceFile != "uv.lock" {
 					t.Errorf("ParseUvLock() dep.SourceFile = %s, want uv.lock", dep.SourceFile)

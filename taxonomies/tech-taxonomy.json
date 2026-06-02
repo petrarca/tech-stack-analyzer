@@ -335,7 +335,7 @@
     },
     {
       "name": "appserver",
-      "description": "Application servers (JBoss, Tomcat, WebLogic, etc.)",
+      "description": "Application servers (JBoss, Tomcat, WebLogic, etc.) — runtime infra, not app framework",
       "is_component": true,
       "technologies": [
         {
@@ -357,7 +357,7 @@
     },
     {
       "name": "automation",
-      "description": "Automation tools",
+      "description": "Automation tools (Selenium, Playwright, etc.) — test/automation infra, not app stack",
       "is_component": true,
       "technologies": [
         {
@@ -536,7 +536,7 @@
     },
     {
       "name": "build",
-      "description": "Build tools (Maven, Gradle, etc.)",
+      "description": "Build tools (Maven, Gradle, Webpack, Vite, etc.)",
       "is_component": false,
       "technologies": [
         {
@@ -1989,7 +1989,7 @@
     },
     {
       "name": "desktop_framework",
-      "description": "Desktop frameworks (Qt, MFC, Win32, Electron, etc.)",
+      "description": "Desktop frameworks (Qt, MFC, Electron, WPF, etc.)",
       "is_component": false,
       "technologies": [
         {
@@ -2497,7 +2497,7 @@
     },
     {
       "name": "identity",
-      "description": "Identity \u0026 access management (Auth0, Okta, Keycloak, etc.)",
+      "description": "Identity & access management (Auth0, Okta, Keycloak, etc.)",
       "is_component": true,
       "technologies": [
         {
@@ -2967,7 +2967,7 @@
           "category": "messaging"
         },
         {
-          "name": "Scaleway M\u0026Q",
+          "name": "Scaleway M&Q",
           "tech": "scaleway.mq",
           "category": "messaging"
         },
@@ -2990,7 +2990,7 @@
     },
     {
       "name": "mobile_framework",
-      "description": "Mobile frameworks (React Native, Flutter, Swift, Kotlin, etc.)",
+      "description": "Mobile frameworks (React Native, Flutter, Ionic, etc.)",
       "is_component": false,
       "technologies": [
         {
@@ -3164,7 +3164,7 @@
     },
     {
       "name": "network",
-      "description": "Network services",
+      "description": "Network services (nginx, traefik, haproxy)",
       "is_component": true,
       "technologies": [
         {
@@ -3310,7 +3310,7 @@
     },
     {
       "name": "orm",
-      "description": "Object-relational mappers (SQLAlchemy, Prisma, etc.)",
+      "description": "Object-relational mappers (Hibernate, SQLAlchemy, Prisma, etc.)",
       "is_component": false,
       "technologies": [
         {
@@ -3624,13 +3624,13 @@
     },
     {
       "name": "platform",
-      "description": "Low-code platforms, operating systems (Uniface, Windows, Linux)",
+      "description": "Low-code platforms (Uniface, Windows, Linux)",
       "is_component": false,
       "technologies": []
     },
     {
       "name": "proprietary",
-      "description": "In-house/internal technologies (naming: prop_\u003cname\u003e or prop_\u003corg\u003e_\u003cname\u003e)",
+      "description": "In-house/internal technologies (naming: prop_<name> or prop_<org>_<name>)",
       "is_component": false,
       "technologies": [
         {
@@ -3642,7 +3642,7 @@
     },
     {
       "name": "runtime",
-      "description": "Runtime environments (Node.js runtime, Python runtime, etc.)",
+      "description": "Runtime environments (Node.js, .NET, etc.)",
       "is_component": false,
       "technologies": [
         {
@@ -4313,7 +4313,7 @@
     },
     {
       "name": "ui",
-      "description": "UI components and frameworks (MUI, shadcn, Qt, MFC)",
+      "description": "UI component libraries (MUI, shadcn, Radix, Ant Design, etc.)",
       "is_component": false,
       "technologies": [
         {
@@ -4596,7 +4596,7 @@
     },
     {
       "name": "unmapped",
-      "description": "Technologies from external sources not in official taxonomy (naming: unmapped_\u003ctech\u003e)",
+      "description": "Technologies from external sources not in official taxonomy (naming: unmapped_<tech>)",
       "is_component": false,
       "technologies": [
         {

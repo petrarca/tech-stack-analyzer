@@ -6,10 +6,10 @@ dependencies:
   - type: terraform
     name: registry.terraform.io/integrations/github
     example: registry.terraform.io/integrations/github
-  - type: python
+  - type: pypi
     name: PyGithub
     example: PyGithub
-  - type: python
+  - type: pypi
     name: ghapi
     example: ghapi
   - type: npm
@@ -21,12 +21,12 @@ dependencies:
   - type: npm
     name: "@actions/github"
     example: "@actions/github"
-  - type: go
+  - type: golang
     name: github.com/google/go-github
     example: github.com/google/go-github
-  - type: ruby
+  - type: gem
     name: octokit
     example: octokit
-  - type: rust
+  - type: cargo
     name: octocrab
     example: octocrab

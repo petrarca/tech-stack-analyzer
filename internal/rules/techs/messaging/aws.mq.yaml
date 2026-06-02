@@ -7,10 +7,10 @@ dependencies:
   - type: npm
     name: "@aws-sdk/client-mq"
     example: "@aws-sdk/client-mq"
-  - type: rust
+  - type: cargo
     name: aws-sdk-mq
     example: aws-sdk-mq
-  - type: ruby
+  - type: gem
     name: aws-sdk-mq
     example: aws-sdk-mq
   - type: golang

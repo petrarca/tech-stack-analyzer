@@ -1,7 +1,7 @@
 tech: firebase.firestore
 name: Firebase Firestore
 dependencies:
-  - type: php
+  - type: composer
     name: google/cloud-firestore
     example: google/cloud-firestore
   - type: terraform.resource

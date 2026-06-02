@@ -4,15 +4,15 @@ dependencies:
   - type: npm
     name: storyblok
     example: storyblok
-  - type: php
+  - type: composer
     name: storyblok/php-content-api-client
     example: storyblok/php-content-api-client
-  - type: php
+  - type: composer
     name: storyblok/php-client
     example: storyblok/php-client
-  - type: python
+  - type: pypi
     name: storyblok
     example: storyblok
-  - type: ruby
+  - type: gem
     name: storyblok
     example: storyblok

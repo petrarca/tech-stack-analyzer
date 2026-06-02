@@ -1,6 +1,6 @@
 tech: chromadb
 name: ChromaDB
 dependencies:
-  - type: python
+  - type: pypi
     name: chromadb
     example: chromadb

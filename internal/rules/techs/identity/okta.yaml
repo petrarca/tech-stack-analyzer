@@ -6,13 +6,13 @@ dependencies:
   - type: terraform
     name: registry.terraform.io/okta/okta
     example: registry.terraform.io/okta/okta
-  - type: rust
+  - type: cargo
     name: okta
     example: okta
-  - type: ruby
+  - type: gem
     name: oktakit
     example: oktakit
-  - type: php
+  - type: composer
     name: socialiteproviders/okta
     example: socialiteproviders/okta
   - type: npm

@@ -10,10 +10,10 @@ dependencies:
   - type: npm
     name: node-trello
     example: node-trello
-  - type: ruby
+  - type: gem
     name: ruby-trello
     example: ruby-trello
-  - type: php
+  - type: composer
     name: cdaguerre/php-trello-api
     example: cdaguerre/php-trello-api
   - type: githubAction

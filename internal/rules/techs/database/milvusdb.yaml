@@ -21,10 +21,10 @@ dependencies:
   - type: golang
     name: github.com/milvus-io/milvus-sdk-go/v2
     example: github.com/milvus-io/milvus-sdk-go/v2
-  - type: python
+  - type: pypi
     name: pymilvus
     example: pymilvus
-  - type: python
+  - type: pypi
     name: langchain-milvus
     example: langchain-milvus
   - type: npm

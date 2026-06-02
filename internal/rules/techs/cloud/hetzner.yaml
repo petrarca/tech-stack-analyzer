@@ -7,12 +7,12 @@ dependencies:
   - type: golang
     name: github.com/hetznercloud/hcloud-go/v2/hcloud
     example: github.com/hetznercloud/hcloud-go/v2/hcloud
-  - type: python
+  - type: pypi
     name: hcloud
     example: hcloud
-  - type: php
+  - type: composer
     name: lkdevelopment/hetzner-cloud-php-sdk
     example: lkdevelopment/hetzner-cloud-php-sdk
-  - type: ruby
+  - type: gem
     name: hetznercloud
     example: hetznercloud

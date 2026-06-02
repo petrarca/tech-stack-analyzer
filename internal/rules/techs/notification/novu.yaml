@@ -13,16 +13,16 @@ dependencies:
   - type: npm
     name: "@novu/node"
     example: "@novu/node"
-  - type: php
+  - type: composer
     name: unicodeveloper/novu
     example: unicodeveloper/novu
-  - type: php
+  - type: composer
     name: novu/novu-laravel
     example: novu/novu-laravel
-  - type: python
+  - type: pypi
     name: novu
     example: novu
-  - type: ruby
+  - type: gem
     name: novu
     example: novu
   - type: golang

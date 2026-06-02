@@ -15,7 +15,7 @@ dependencies:
   - type: npm
     name: cohere-ai
     example: cohere-ai
-  - type: python
+  - type: pypi
     name: cohere
     example: cohere
   - type: golang

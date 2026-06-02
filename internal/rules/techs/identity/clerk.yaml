@@ -24,10 +24,10 @@ dependencies:
   - type: npm
     name: "@clerk/tanstack-start"
     example: "@clerk/tanstack-start"
-  - type: ruby
+  - type: gem
     name: clerk-sdk-ruby
     example: clerk-sdk-ruby
-  - type: python
+  - type: pypi
     name: clerk-backend-api
     example: clerk-backend-api
   - type: golang

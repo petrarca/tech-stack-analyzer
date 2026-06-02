@@ -25,7 +25,7 @@ func ParsePoetryLock(lockContent []byte, pyprojectContent string) []types.Depend
 		normalizedName := normalizePackageName(name)
 		if scope, exists := directDeps[normalizedName]; exists {
 			dependencies = append(dependencies, types.Dependency{
-				Type:       "python",
+				Type:       DependencyTypePython,
 				Name:       name,
 				Version:    version,
 				SourceFile: "poetry.lock",

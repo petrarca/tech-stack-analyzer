@@ -1,7 +1,7 @@
 tech: frontegg
 name: Frontegg
 dependencies:
-  - type: python
+  - type: pypi
     name: frontegg
     example: frontegg
   - type: terraform

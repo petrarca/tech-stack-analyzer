@@ -3,10 +3,10 @@ name: Polar
 dotenv:
   - POLARSH_
 dependencies:
-  - type: python
+  - type: pypi
     name: polar-sdk
     example: polar-sdk
-  - type: php
+  - type: composer
     name: polar-sh/sdk
     example: polar-sh/sdk
   - type: golang

@@ -6,6 +6,6 @@ dependencies:
   - type: npm
     name: "@linear/sdk"
     example: "@linear/sdk"
-  - type: python
+  - type: pypi
     name: linear-cli
     example: linear-cli

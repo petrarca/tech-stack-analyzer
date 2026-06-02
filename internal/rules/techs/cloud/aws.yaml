@@ -25,7 +25,7 @@ dependencies:
   - type: docker
     name: amazon/aws-cli
     example: amazon/aws-cli
-  - type: php
+  - type: composer
     name: aws/aws-sdk-php
     example: aws/aws-sdk-php
   - type: githubAction

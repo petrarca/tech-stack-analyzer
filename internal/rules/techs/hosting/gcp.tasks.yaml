@@ -7,6 +7,6 @@ dependencies:
   - type: golang
     name: cloud.google.com/go/tasks
     example: cloud.google.com/go/tasks
-  - type: php
+  - type: composer
     name: google/cloud-tasks
     example: google/cloud-tasks

@@ -342,7 +342,7 @@ func (p *DotNetParser) ParsePackagesConfig(content string) []types.Dependency {
 		}
 
 		dependencies = append(dependencies, types.Dependency{
-			Type:     DependencyTypeDotnet,
+			Type:     DependencyTypeNuget,
 			Name:     pkg.ID,
 			Version:  pkg.Version,
 			Scope:    scope,

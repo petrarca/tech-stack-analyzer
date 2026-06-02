@@ -10,6 +10,6 @@ dependencies:
   - type: golang
     name: cloud.google.com/go/artifactregistry
     example: cloud.google.com/go/artifactregistry
-  - type: ruby
+  - type: gem
     name: google-cloud-artifact_registry
     example: google-cloud-artifact_registry

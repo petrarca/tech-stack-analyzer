@@ -7,9 +7,9 @@ dependencies:
   - type: golang
     name: cloud.google.com/go/cloudbuild
     example: cloud.google.com/go/cloudbuild
-  - type: php
+  - type: composer
     name: google/cloud-build
     example: google/cloud-build
-  - type: python
+  - type: pypi
     name: google-cloud-build
     example: google-cloud-build

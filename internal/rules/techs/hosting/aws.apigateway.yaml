@@ -7,10 +7,10 @@ dependencies:
   - type: npm
     name: "@aws-sdk/client-apigateway"
     example: "@aws-sdk/client-apigateway"
-  - type: rust
+  - type: cargo
     name: aws-sdk-apigateway
     example: aws-sdk-apigateway
-  - type: ruby
+  - type: gem
     name: aws-sdk-apigateway
     example: aws-sdk-apigateway
   - type: golang

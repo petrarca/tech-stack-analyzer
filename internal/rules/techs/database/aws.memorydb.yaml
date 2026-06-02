@@ -7,10 +7,10 @@ dependencies:
   - type: npm
     name: "@aws-sdk/client-memorydb"
     example: "@aws-sdk/client-memorydb"
-  - type: rust
+  - type: cargo
     name: aws-sdk-memorydb
     example: aws-sdk-memorydb
-  - type: ruby
+  - type: gem
     name: aws-sdk-memorydb
     example: aws-sdk-memorydb
   - type: golang

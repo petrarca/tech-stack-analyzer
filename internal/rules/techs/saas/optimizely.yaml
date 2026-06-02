@@ -18,16 +18,16 @@ dependencies:
   - type: npm
     name: "@optimizely/js-sdk-event-processor"
     example: "@optimizely/js-sdk-event-processor"
-  - type: ruby
+  - type: gem
     name: optimizely-sdk
     example: optimizely-sdk
-  - type: ruby
+  - type: gem
     name: optimizely
     example: optimizely
-  - type: ruby
+  - type: gem
     name: optimizely_server_side
     example: optimizely_server_side
-  - type: php
+  - type: composer
     name: optimizely/optimizely-sdk
     example: optimizely/optimizely-sdk
   - type: githubAction

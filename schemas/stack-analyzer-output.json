@@ -19,7 +19,7 @@
             "items": [
                 {
                     "type": "string",
-                    "description": "Dependency type (e.g., 'golang', 'npm', 'python', 'cargo', 'maven', 'gradle')"
+                    "description": "Dependency type, following the Package URL (PURL) type vocabulary (e.g., 'golang', 'npm', 'pypi', 'gem', 'composer', 'cargo', 'maven', 'nuget')"
                 },
                 {
                     "type": "string",

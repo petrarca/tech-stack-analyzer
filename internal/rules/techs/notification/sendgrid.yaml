@@ -7,16 +7,16 @@ dependencies:
   - type: npm
     name: nodemailer-sendgrid-transport
     example: nodemailer-sendgrid-transport
-  - type: php
+  - type: composer
     name: sendgrid/sendgrid
     example: sendgrid/sendgrid
-  - type: ruby
+  - type: gem
     name: sendgrid-ruby
     example: sendgrid-ruby
-  - type: ruby
+  - type: gem
     name: sendgrid-rails
     example: sendgrid-rails
-  - type: ruby
+  - type: gem
     name: sendgrid
     example: sendgrid
   - type: golang

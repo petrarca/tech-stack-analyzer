@@ -6,6 +6,6 @@ dependencies:
   - type: npm
     name: zuora-sdk-js
     example: zuora-sdk-js
-  - type: python
+  - type: pypi
     name: zuora-sdk
     example: zuora-sdk

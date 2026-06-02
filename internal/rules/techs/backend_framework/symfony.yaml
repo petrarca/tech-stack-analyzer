@@ -1,6 +1,6 @@
 tech: symfony
 name: Symfony
 dependencies:
-  - type: php
+  - type: composer
     name: symfony/symfony
     example: symfony/symfony

@@ -1,10 +1,10 @@
 tech: azure.mysql
 name: Azure MySQL
 dependencies:
-  - type: ruby
+  - type: gem
     name: azure_mgmt_mysql
     example: azure_mgmt_mysql
-  - type: rust
+  - type: cargo
     name: azure_mgmt_mysql
     example: azure_mgmt_mysql
   - type: npm

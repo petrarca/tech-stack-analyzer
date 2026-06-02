@@ -7,15 +7,15 @@ dependencies:
   - type: maven
     name: com.chilkatsoft:chilkat
     example: com.chilkatsoft:chilkat
-  - type: python
+  - type: pypi
     name: chilkat
     example: chilkat
   - type: npm
     name: chilkat
     example: chilkat
-  - type: ruby
+  - type: gem
     name: chilkat
     example: chilkat
-  - type: go
+  - type: golang
     name: github.com/nicpottier/chilkat
     example: github.com/nicpottier/chilkat

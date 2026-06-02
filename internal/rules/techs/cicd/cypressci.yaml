@@ -7,7 +7,7 @@ dependencies:
   - type: npm
     name: gatsby-cypress
     example: gatsby-cypress
-  - type: ruby
+  - type: gem
     name: cypress-on-rails
     example: cypress-on-rails
   - type: githubAction

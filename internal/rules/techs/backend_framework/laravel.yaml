@@ -1,7 +1,7 @@
 tech: laravel
 name: Laravel
 dependencies:
-  - type: php
+  - type: composer
     name: laravel/framework
     example: laravel/framework
 files:

@@ -6,7 +6,7 @@ dependencies:
   - type: terraform
     name: registry.terraform.io/pinecone-io/pinecone
     example: registry.terraform.io/pinecone-io/pinecone
-  - type: python
+  - type: pypi
     name: pinecone
     example: pinecone
   - type: npm
@@ -15,7 +15,7 @@ dependencies:
   - type: golang
     name: github.com/pinecone-io/go-pinecone/v3/pinecone
     example: github.com/pinecone-io/go-pinecone/v3/pinecone
-  - type: rust
+  - type: cargo
     name: pinecone-sdk
     example: pinecone-sdk
   - type: terraform.resource

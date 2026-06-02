@@ -3,6 +3,6 @@ name: Square
 dotenv:
   - SQUARE_
 dependencies:
-  - type: php
+  - type: composer
     name: square/square
     example: square/square

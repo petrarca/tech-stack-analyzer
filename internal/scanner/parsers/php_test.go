@@ -42,11 +42,11 @@ func TestParseComposerJSON(t *testing.T) {
 			expectedProjectName: "myorg/myapp",
 			expectedLicense:     "MIT",
 			expectedDeps: []types.Dependency{
-				{Type: "php", Name: "php", Version: "^8.0"},
-				{Type: "php", Name: "symfony/console", Version: "^6.0"},
-				{Type: "php", Name: "doctrine/orm", Version: "^2.14"},
-				{Type: "php", Name: "phpunit/phpunit", Version: "^9.0"},
-				{Type: "php", Name: "symfony/phpunit-bridge", Version: "^6.0"},
+				{Type: "composer", Name: "php", Version: "^8.0"},
+				{Type: "composer", Name: "symfony/console", Version: "^6.0"},
+				{Type: "composer", Name: "doctrine/orm", Version: "^2.14"},
+				{Type: "composer", Name: "phpunit/phpunit", Version: "^9.0"},
+				{Type: "composer", Name: "symfony/phpunit-bridge", Version: "^6.0"},
 			},
 		},
 		{
@@ -83,8 +83,8 @@ func TestParseComposerJSON(t *testing.T) {
 			expectedProjectName: "myorg/myapp",
 			expectedLicense:     "",
 			expectedDeps: []types.Dependency{
-				{Type: "php", Name: "php", Version: "^8.0"},
-				{Type: "php", Name: "symfony/console", Version: "^6.0"},
+				{Type: "composer", Name: "php", Version: "^8.0"},
+				{Type: "composer", Name: "symfony/console", Version: "^6.0"},
 			},
 		},
 		{
@@ -98,7 +98,7 @@ func TestParseComposerJSON(t *testing.T) {
 			expectedProjectName: "myorg/myapp",
 			expectedLicense:     "",
 			expectedDeps: []types.Dependency{
-				{Type: "php", Name: "phpunit/phpunit", Version: "^9.0"},
+				{Type: "composer", Name: "phpunit/phpunit", Version: "^9.0"},
 			},
 		},
 		{
@@ -263,10 +263,10 @@ func TestPHPParser_Integration(t *testing.T) {
 		depMap[dep.Name] = dep
 	}
 
-	assert.Equal(t, "php", depMap["php"].Type)
+	assert.Equal(t, "composer", depMap["php"].Type)
 	assert.Equal(t, "^8.0.2", depMap["php"].Version)
-	assert.Equal(t, "php", depMap["laravel/framework"].Type)
+	assert.Equal(t, "composer", depMap["laravel/framework"].Type)
 	assert.Equal(t, "^9.19", depMap["laravel/framework"].Version)
-	assert.Equal(t, "php", depMap["phpunit/phpunit"].Type)
+	assert.Equal(t, "composer", depMap["phpunit/phpunit"].Type)
 	assert.Equal(t, "^9.5.10", depMap["phpunit/phpunit"].Version)
 }

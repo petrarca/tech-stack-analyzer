@@ -7,10 +7,10 @@ dependencies:
   - type: npm
     name: "@aws-cdk/aws-cloudformation"
     example: "@aws-cdk/aws-cloudformation"
-  - type: rust
+  - type: cargo
     name: aws-sdk-cloudformation
     example: aws-sdk-cloudformation
-  - type: ruby
+  - type: gem
     name: aws-sdk-cloudformation
     example: aws-sdk-cloudformation
   - type: golang

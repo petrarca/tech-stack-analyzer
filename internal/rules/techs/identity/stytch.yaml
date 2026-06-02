@@ -4,12 +4,12 @@ dependencies:
   - type: npm
     name: stytch
     example: stytch
-  - type: python
+  - type: pypi
     name: stytch
     example: stytch
   - type: golang
     name: github.com/stytchauth/stytch-go/v16
     example: github.com/stytchauth/stytch-go/v16
-  - type: ruby
+  - type: gem
     name: stytch
     example: stytch

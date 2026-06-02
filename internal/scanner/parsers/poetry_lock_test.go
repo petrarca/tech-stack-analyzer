@@ -130,8 +130,8 @@ version = "2.31.0"
 			}
 
 			for _, dep := range deps {
-				if dep.Type != "python" {
-					t.Errorf("ParsePoetryLock() dep.Type = %s, want python", dep.Type)
+				if dep.Type != "pypi" {
+					t.Errorf("ParsePoetryLock() dep.Type = %s, want pypi", dep.Type)
 				}
 				if dep.SourceFile != "poetry.lock" {
 					t.Errorf("ParsePoetryLock() dep.SourceFile = %s, want poetry.lock", dep.SourceFile)

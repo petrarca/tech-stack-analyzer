@@ -7,28 +7,28 @@ dependencies:
   - type: docker
     name: adobe/s3mock
     example: adobe/s3mock
-  - type: rust
+  - type: cargo
     name: aws-sdk-s3
     example: aws-sdk-s3
-  - type: ruby
+  - type: gem
     name: aws-sdk-s3
     example: aws-sdk-s3
   - type: golang
     name: github.com/aws/aws-sdk-go-v2/service/s3
     example: github.com/aws/aws-sdk-go-v2/service/s3
-  - type: php
+  - type: composer
     name: async-aws/s3
     example: async-aws/s3
-  - type: php
+  - type: composer
     name: async-aws/simple-s3
     example: async-aws/simple-s3
   - type: githubAction
     name: jakejarvis/s3-sync-action
     example: jakejarvis/s3-sync-action
-  - type: php
+  - type: composer
     name: league/flysystem-aws-s3-v3
     example: league/flysystem-aws-s3-v3
-  - type: php
+  - type: composer
     name: league/flysystem-async-aws-s3
     example: league/flysystem-async-aws-s3
   - type: terraform.resource

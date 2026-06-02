@@ -39,21 +39,21 @@ dependencies:
   - type: docker
     name: circleci/mongo
     example: circleci/mongo
-  - type: rust
+  - type: cargo
     name: mongodb
     example: mongodb
-  - type: ruby
+  - type: gem
     name: mongo
     example: mongo
-  - type: php
+  - type: composer
     name: mongodb/mongodb
     example: mongodb/mongodb
-  - type: python
+  - type: pypi
     name: pymongo
     example: pymongo
   - type: terraform.resource
     name: airbyte_destination_mongodb
     example: airbyte_destination_mongodb
-  - type: python
+  - type: pypi
     name: langchain-mongodb
     example: langchain-mongodb

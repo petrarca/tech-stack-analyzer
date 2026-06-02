@@ -9,19 +9,19 @@ dependencies:
   - type: npm
     name: "@mailchimp/mailchimp_transactional"
     example: "@mailchimp/mailchimp_transactional"
-  - type: ruby
+  - type: gem
     name: MailchimpMarketing
     example: MailchimpMarketing
-  - type: ruby
+  - type: gem
     name: MailchimpTransactional
     example: MailchimpTransactional
-  - type: php
+  - type: composer
     name: drewm/mailchimp-api
     example: drewm/mailchimp-api
-  - type: php
+  - type: composer
     name: mailchimp/transactional
     example: mailchimp/transactional
-  - type: php
+  - type: composer
     name: mailchimp/makerting
     example: mailchimp/makerting
   - type: terraform.resource

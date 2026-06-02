@@ -1,7 +1,7 @@
 tech: mssql
 name: MS SQL
 dependencies:
-  - type: ruby
+  - type: gem
     name: jdbc-mssql
     example: jdbc-mssql
   - type: npm

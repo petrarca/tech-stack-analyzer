@@ -6,7 +6,7 @@ dependencies:
   - type: npm
     name: twilio
     example: twilio
-  - type: php
+  - type: composer
     name: twilio/sdk
     example: twilio/sdk
   - type: githubAction
@@ -15,7 +15,7 @@ dependencies:
   - type: golang
     name: github.com/twilio/twilio-go
     example: github.com/twilio/twilio-go
-  - type: ruby
+  - type: gem
     name: twilio-ruby
     example: twilio-ruby
   - type: terraform.resource

@@ -8,24 +8,24 @@ files:
   - devstack/local.conf
 dependencies:
   # OpenStack SDK and clients
-  - type: python
+  - type: pypi
     name: openstacksdk
-  - type: python
+  - type: pypi
     name: python-openstackclient
-  - type: python
+  - type: pypi
     name: /^python-[a-z]+client/
   # OpenStack service clients
-  - type: python
+  - type: pypi
     name: python-novaclient
-  - type: python
+  - type: pypi
     name: python-glanceclient
-  - type: python
+  - type: pypi
     name: python-keystoneclient
-  - type: python
+  - type: pypi
     name: python-neutronclient
-  - type: python
+  - type: pypi
     name: python-cinderclient
-  - type: python
+  - type: pypi
     name: python-heatclient
-  - type: python
+  - type: pypi
     name: python-swiftclient

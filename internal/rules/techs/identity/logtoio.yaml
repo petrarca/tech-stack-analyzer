@@ -6,12 +6,12 @@ dependencies:
   - type: golang
     name: github.com/logto-io/go
     example: github.com/logto-io/go
-  - type: php
+  - type: composer
     name: logto/sdk
     example: logto/sdk
-  - type: python
+  - type: pypi
     name: logto
     example: logto
-  - type: ruby
+  - type: gem
     name: logto
     example: logto

@@ -13,19 +13,19 @@ dependencies:
   - type: terraform
     name: registry.terraform.io/ClickHouse/clickhouse
     example: registry.terraform.io/ClickHouse/clickhouse
-  - type: php
+  - type: composer
     name: smi2/phpclickhouse
     example: smi2/phpclickhouse
-  - type: php
+  - type: composer
     name: glushkovds/phpclickhouse-laravel
     example: glushkovds/phpclickhouse-laravel
-  - type: python
+  - type: pypi
     name: clickhouse-connect
     example: clickhouse-connect
-  - type: rust
+  - type: cargo
     name: clickhouse
     example: clickhouse
-  - type: ruby
+  - type: gem
     name: clickhouse-activerecord
     example: clickhouse-activerecord
   - type: terraform.resource

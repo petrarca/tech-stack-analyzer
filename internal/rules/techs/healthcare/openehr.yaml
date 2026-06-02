@@ -23,7 +23,7 @@ dependencies:
   - type: maven
     name: org.openehr.adl:adl-serializer
   # Python OpenEHR libraries
-  - type: python
+  - type: pypi
     name: pyehr
-  - type: python
+  - type: pypi
     name: openehr

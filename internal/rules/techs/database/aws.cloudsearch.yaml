@@ -7,10 +7,10 @@ dependencies:
   - type: npm
     name: "@aws-sdk/client-cloudsearch"
     example: "@aws-sdk/client-cloudsearch"
-  - type: rust
+  - type: cargo
     name: aws-sdk-cloudsearch
     example: aws-sdk-cloudsearch
-  - type: ruby
+  - type: gem
     name: aws-sdk-cloudsearch
     example: aws-sdk-cloudsearch
   - type: golang

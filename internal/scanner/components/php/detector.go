@@ -74,7 +74,7 @@ func (d *Detector) detectComposerJSON(file types.File, currentPath, basePath str
 
 	// Match dependencies against rules
 	if len(dependencies) > 0 {
-		depDetector.ApplyMatchesToPayload(payload, depDetector.MatchDependencies(depNames, "php"))
+		depDetector.ApplyMatchesToPayload(payload, depDetector.MatchDependencies(depNames, parsers.DependencyTypePHP))
 		payload.Dependencies = dependencies
 	}
 
@@ -96,7 +96,7 @@ func init() {
 
 	// Register composer package provider
 	providers.Register(&providers.PackageProvider{
-		DependencyType:      "composer",
+		DependencyType:      parsers.DependencyTypePHP,
 		ExtractPackageNames: providers.SinglePropertyExtractor("php", "package_name"),
 	})
 }

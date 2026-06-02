@@ -17,11 +17,11 @@ dependencies:
   - type: maven
     name: ca.uhn.hapi.fhir:hapi-fhir-structures-dstu3
   # Python FHIR libraries
-  - type: python
+  - type: pypi
     name: fhir.resources
-  - type: python
+  - type: pypi
     name: fhirclient
-  - type: python
+  - type: pypi
     name: pyfhir
   # JavaScript/TypeScript FHIR libraries
   - type: npm

@@ -1,9 +1,9 @@
 tech: prefect
 name: Prefect
 dependencies:
-  - type: python
+  - type: pypi
     name: prefect
-  - type: python
+  - type: pypi
     name: /^prefect-/
 files:
   - prefect.yaml

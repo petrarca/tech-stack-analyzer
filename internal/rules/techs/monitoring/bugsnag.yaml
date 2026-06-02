@@ -12,16 +12,16 @@ dependencies:
   - type: npm
     name: "@bugsnag/react-native"
     example: "@bugsnag/react-native"
-  - type: python
+  - type: pypi
     name: bugsnag
     example: bugsnag
-  - type: php
+  - type: composer
     name: bugsnag/bugsnag
     example: bugsnag/bugsnag
-  - type: php
+  - type: composer
     name: bugsnag/bugsnag-laravel
     example: bugsnag/bugsnag-laravel
-  - type: ruby
+  - type: gem
     name: bugsnag
     example: bugsnag
   - type: golang

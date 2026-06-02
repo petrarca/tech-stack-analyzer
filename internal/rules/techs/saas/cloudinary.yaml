@@ -6,13 +6,13 @@ dependencies:
   - type: npm
     name: cloudinary
     example: cloudinary
-  - type: python
+  - type: pypi
     name: cloudinary
     example: cloudinary
-  - type: php
+  - type: composer
     name: cloudinary/cloudinary_php
     example: cloudinary/cloudinary_php
-  - type: ruby
+  - type: gem
     name: cloudinary
     example: cloudinary
   - type: golang

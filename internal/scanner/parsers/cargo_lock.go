@@ -23,7 +23,7 @@ func ParseCargoLock(lockContent []byte, cargoTomlContent string) []types.Depende
 	for name, version := range packages {
 		if scope, exists := directDeps[name]; exists {
 			dependencies = append(dependencies, types.Dependency{
-				Type:       "cargo",
+				Type:       DependencyTypeRust,
 				Name:       name,
 				Version:    version,
 				SourceFile: "Cargo.lock",

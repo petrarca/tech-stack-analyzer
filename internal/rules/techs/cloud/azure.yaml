@@ -7,10 +7,10 @@ dependencies:
   - type: golang
     name: github.com/Azure/azure-sdk-for-go
     example: github.com/Azure/azure-sdk-for-go
-  - type: rust
+  - type: cargo
     name: azure_core
     example: azure_core
-  - type: ruby
+  - type: gem
     name: azure-armrest
     example: azure-armrest
   - type: githubAction
@@ -37,7 +37,7 @@ dependencies:
   - type: npm
     name: "@pulumi/azure"
     example: "@pulumi/azure"
-  - type: python
+  - type: pypi
     name: azure-identity
     example: azure-identity
   - type: npm

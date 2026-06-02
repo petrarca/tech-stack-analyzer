@@ -9,13 +9,13 @@ dependencies:
   - type: terraform
     name: registry.terraform.io/pablovarela/slack
     example: registry.terraform.io/pablovarela/slack
-  - type: rust
+  - type: cargo
     name: slack-morphism
     example: slack-morphism
-  - type: ruby
+  - type: gem
     name: slack-ruby-client
     example: slack-ruby-client
-  - type: php
+  - type: composer
     name: laravel/slack-notification-channel
     example: laravel/slack-notification-channel
   - type: githubAction
@@ -24,13 +24,13 @@ dependencies:
   - type: githubAction
     name: 8398a7/action-slack
     example: 8398a7/action-slack
-  - type: php
+  - type: composer
     name: jolicode/slack-php-api
     example: jolicode/slack-php-api
-  - type: php
+  - type: composer
     name: maknz/slack
     example: maknz/slack
-  - type: php
+  - type: composer
     name: alek13/slack
     example: alek13/slack
   - type: golang

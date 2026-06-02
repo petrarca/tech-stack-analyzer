@@ -4,13 +4,13 @@ dependencies:
   - type: terraform
     name: registry.terraform.io/gitlabhq/gitlab
     example: registry.terraform.io/gitlabhq/gitlab
-  - type: rust
+  - type: cargo
     name: gitlab
     example: gitlab
-  - type: ruby
+  - type: gem
     name: gitlab
     example: gitlab
-  - type: php
+  - type: composer
     name: m4tthumphrey/php-gitlab-api
     example: m4tthumphrey/php-gitlab-api
   - type: npm
@@ -19,6 +19,6 @@ dependencies:
   - type: terraform.resource
     name: airbyte_source_gitlab
     example: airbyte_source_gitlab
-  - type: python
+  - type: pypi
     name: python-gitlab
     example: python-gitlab

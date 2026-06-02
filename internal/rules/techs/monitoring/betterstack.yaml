@@ -7,10 +7,10 @@ dependencies:
   - type: npm
     name: "@logtail/node"
     example: "@logtail/node"
-  - type: ruby
+  - type: gem
     name: logtail-rails
     example: logtail-rails
-  - type: php
+  - type: composer
     name: logtail/monolog-logtail
     example: logtail/monolog-logtail
   - type: terraform

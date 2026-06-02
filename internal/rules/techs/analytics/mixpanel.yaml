@@ -3,19 +3,19 @@ name: Mixpanel
 dotenv:
   - MIXPANEL_
 dependencies:
-  - type: php
+  - type: composer
     name: mixpanel/mixpanel-php
     example: mixpanel/mixpanel-php
   - type: npm
     name: mixpanel-browser
     example: mixpanel-browser
-  - type: python
+  - type: pypi
     name: mixpanel
     example: mixpanel
   - type: npm
     name: mixpanel
     example: mixpanel
-  - type: ruby
+  - type: gem
     name: mixpanel-ruby
     example: mixpanel-ruby
   - type: golang

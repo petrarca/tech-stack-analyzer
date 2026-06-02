@@ -3,7 +3,7 @@ name: VMware
 dotenv:
   - VMWARE
 dependencies:
-  - type: python
+  - type: pypi
     name: pyvmomi
     example: pyvmomi
   - type: maven

@@ -12,7 +12,7 @@ dependencies:
   - type: npm
     name: "@langchain/anthropic"
     example: "@langchain/anthropic"
-  - type: python
+  - type: pypi
     name: anthropic
     example: anthropic
   - type: golang
@@ -21,6 +21,6 @@ dependencies:
   - type: npm
     name: genkitx-anthropic
     example: genkitx-anthropic
-  - type: python
+  - type: pypi
     name: langchain-anthropic
     example: langchain-anthropic

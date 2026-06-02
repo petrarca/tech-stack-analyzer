@@ -6,7 +6,7 @@ extensions:
 dependencies:
   - type: nuget
     name: /^System\.Data\.OleDb/
-  - type: python
+  - type: pypi
     name: pyodbc
-  - type: python
+  - type: pypi
     name: access-parser

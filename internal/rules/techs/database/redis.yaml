@@ -18,25 +18,25 @@ dependencies:
   - type: npm
     name: ioredis
     example: ioredis
-  - type: rust
+  - type: cargo
     name: redis
     example: redis
-  - type: rust
+  - type: cargo
     name: redis-async
     example: redis-async
-  - type: ruby
+  - type: gem
     name: redis
     example: redis
-  - type: ruby
+  - type: gem
     name: redis-client
     example: redis-client
-  - type: php
+  - type: composer
     name: predis/predis
     example: predis/predis
-  - type: php
+  - type: composer
     name: snc/redis-bundle
     example: snc/redis-bundle
-  - type: php
+  - type: composer
     name: colinmollenhour/cache-backend-redis
     example: colinmollenhour/cache-backend-redis
   - type: terraform

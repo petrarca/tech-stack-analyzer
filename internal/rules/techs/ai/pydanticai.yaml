@@ -1,5 +1,5 @@
 tech: pydanticai
 name: PydanticAI
 dependencies:
-  - type: python
+  - type: pypi
     name: /^pydantic-ai/

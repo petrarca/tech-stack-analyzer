@@ -7,9 +7,9 @@ dependencies:
   - type: golang
     name: cloud.google.com/go/speech
     example: cloud.google.com/go/speech
-  - type: php
+  - type: composer
     name: google/cloud-speech
     example: google/cloud-speech
-  - type: python
+  - type: pypi
     name: google-cloud-speech
     example: google-cloud-speech

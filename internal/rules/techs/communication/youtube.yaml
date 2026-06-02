@@ -3,9 +3,9 @@ name: Youtube
 dotenv:
   - YOUTUBE_
 dependencies:
-  - type: python
+  - type: pypi
     name: youtube-transcript-api
     example: youtube-transcript-api
-  - type: python
+  - type: pypi
     name: pytube
     example: pytube

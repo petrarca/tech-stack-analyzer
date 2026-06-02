@@ -10,6 +10,6 @@ dependencies:
   - type: golang
     name: github.com/questdb/go-questdb-client
     example: github.com/questdb/go-questdb-client
-  - type: rust
+  - type: cargo
     name: questdb-rs
     example: questdb-rs

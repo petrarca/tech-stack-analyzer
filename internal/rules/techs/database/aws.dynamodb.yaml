@@ -4,16 +4,16 @@ dependencies:
   - type: npm
     name: "@aws-cdk/aws-dynamodb"
     example: "@aws-cdk/aws-dynamodb"
-  - type: rust
+  - type: cargo
     name: aws-sdk-dynamodb
     example: aws-sdk-dynamodb
   - type: golang
     name: github.com/aws/aws-sdk-go-v2/service/dynamodb
     example: github.com/aws/aws-sdk-go-v2/service/dynamodb
-  - type: php
+  - type: composer
     name: baopham/dynamodb
     example: baopham/dynamodb
-  - type: php
+  - type: composer
     name: async-aws/dynamo-db
     example: async-aws/dynamo-db
   - type: terraform.resource

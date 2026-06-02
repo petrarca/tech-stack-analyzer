@@ -4,16 +4,16 @@ dependencies:
   - type: npm
     name: couchbase
     example: couchbase
-  - type: rust
+  - type: cargo
     name: couchbase
     example: couchbase
-  - type: ruby
+  - type: gem
     name: couchbase
     example: couchbase
   - type: terraform
     name: registry.terraform.io/couchbasecloud/couchbasecapella
     example: registry.terraform.io/couchbasecloud/couchbasecapella
-  - type: php
+  - type: composer
     name: couchbase/couchbase
     example: couchbase/couchbase
   - type: terraform.resource

@@ -3,10 +3,10 @@ name: Contentful
 dotenv:
   - CONTENTFUL_
 dependencies:
-  - type: php
+  - type: composer
     name: contentful/contentful
     example: contentful/contentful
-  - type: php
+  - type: composer
     name: contentful/contentful-management
     example: contentful/contentful-management
   - type: npm

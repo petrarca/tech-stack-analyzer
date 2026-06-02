@@ -15,15 +15,15 @@ dependencies:
   - type: golang
     name: github.com/meilisearch/meilisearch-go
     example: github.com/meilisearch/meilisearch-go
-  - type: rust
+  - type: cargo
     name: meilisearch-sdk
     example: meilisearch-sdk
-  - type: ruby
+  - type: gem
     name: meilisearch
     example: meilisearch
-  - type: ruby
+  - type: gem
     name: meilisearch-rails
     example: meilisearch-rails
-  - type: php
+  - type: composer
     name: meilisearch/meilisearch-php
     example: meilisearch/meilisearch-php

@@ -1,10 +1,10 @@
 tech: microsoft.onedrive
 name: OneDrive
 dependencies:
-  - type: rust
+  - type: cargo
     name: onedrive-api
     example: onedrive-api
-  - type: php
+  - type: composer
     name: krizalys/onedrive-php-sdk
     example: krizalys/onedrive-php-sdk
   - type: npm

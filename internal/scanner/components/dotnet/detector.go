@@ -278,7 +278,7 @@ func (d *Detector) addProjectReferences(payload *types.Payload, projectReference
 func (d *Detector) addNuGetDependencies(payload *types.Payload, packages []parsers.DotNetPackage, depDetector components.DependencyDetector) {
 	for _, pkg := range packages {
 		payload.AddDependency(types.Dependency{
-			Type:     "nuget",
+			Type:     parsers.DependencyTypeNuget,
 			Name:     pkg.Name,
 			Version:  pkg.Version,
 			Scope:    pkg.Scope,

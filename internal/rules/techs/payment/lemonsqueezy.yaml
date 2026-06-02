@@ -7,12 +7,12 @@ dependencies:
   - type: npm
     name: lemonsqueezy.ts
     example: lemonsqueezy.ts
-  - type: ruby
+  - type: gem
     name: lemonsqueezy
     example: lemonsqueezy
   - type: golang
     name: github.com/NdoleStudio/lemonsqueezy-go
     example: github.com/NdoleStudio/lemonsqueezy-go
-  - type: php
+  - type: composer
     name: lemonsqueezy/laravel
     example: lemonsqueezy/laravel

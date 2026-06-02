@@ -1,6 +1,6 @@
 tech: sequelruby
 name: Sequel
 dependencies:
-  - type: ruby
+  - type: gem
     name: sequel
     example: sequel

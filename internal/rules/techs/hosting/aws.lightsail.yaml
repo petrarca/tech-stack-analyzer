@@ -7,10 +7,10 @@ dependencies:
   - type: npm
     name: "@aws-sdk/client-lightsail"
     example: "@aws-sdk/client-lightsail"
-  - type: rust
+  - type: cargo
     name: aws-sdk-lightsail
     example: aws-sdk-lightsail
-  - type: ruby
+  - type: gem
     name: aws-sdk-lightsail
     example: aws-sdk-lightsail
   - type: golang

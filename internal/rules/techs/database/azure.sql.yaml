@@ -4,10 +4,10 @@ dependencies:
   - type: githubAction
     name: azure/sql-action
     example: azure/sql-action
-  - type: ruby
+  - type: gem
     name: azure_mgmt_sql
     example: azure_mgmt_sql
-  - type: rust
+  - type: cargo
     name: azure_mgmt_sql
     example: azure_mgmt_sql
   - type: npm

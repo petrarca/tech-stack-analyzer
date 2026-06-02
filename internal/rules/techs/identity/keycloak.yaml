@@ -19,16 +19,16 @@ dependencies:
   - type: npm
     name: "@keycloak/keycloak-admin-client"
     example: "@keycloak/keycloak-admin-client"
-  - type: python
+  - type: pypi
     name: python-keycloak
     example: python-keycloak
-  - type: python
+  - type: pypi
     name: keycloak
     example: keycloak
-  - type: ruby
+  - type: gem
     name: keycloak-admin
     example: keycloak-admin
-  - type: go
+  - type: golang
     name: github.com/keycloak/keycloak-go
     example: github.com/keycloak/keycloak-go
   - type: terraform

@@ -1,6 +1,6 @@
 tech: loguru
 name: Loguru
 dependencies:
-  - type: python
+  - type: pypi
     name: loguru
     example: loguru

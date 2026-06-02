@@ -4,6 +4,6 @@ dependencies:
   - type: docker
     name: apache/couchdb
     example: apache/couchdb
-  - type: php
+  - type: composer
     name: doctrine/couchdb
     example: doctrine/couchdb

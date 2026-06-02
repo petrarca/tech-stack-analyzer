@@ -4,7 +4,7 @@ dependencies:
   - type: githubAction
     name: jeffreytse/jekyll-deploy-action
     example: jeffreytse/jekyll-deploy-action
-  - type: ruby
+  - type: gem
     name: jekyll
     example: jekyll
 files:

@@ -4,7 +4,7 @@ dependencies:
   - type: terraform
     name: registry.terraform.io/hashicorp/helm
     example: registry.terraform.io/hashicorp/helm
-  - type: ruby
+  - type: gem
     name: helm-rb
     example: helm-rb
   - type: githubAction

@@ -9,7 +9,7 @@ dependencies:
   - type: npm
     name: apify-client
     example: apify-client
-  - type: python
+  - type: pypi
     name: apify
     example: apify
   - type: terraform.resource

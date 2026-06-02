@@ -4,6 +4,6 @@ dependencies:
   - type: golang
     name: github.com/ory/client-go
     example: github.com/ory/client-go
-  - type: php
+  - type: composer
     name: ory/client
     example: ory/client

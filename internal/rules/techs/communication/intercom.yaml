@@ -15,16 +15,16 @@ dependencies:
   - type: npm
     name: ng-intercom
     example: ng-intercom
-  - type: php
+  - type: composer
     name: intercom/intercom-php
     example: intercom/intercom-php
-  - type: php
+  - type: composer
     name: intercom/oauth2-intercom
     example: intercom/oauth2-intercom
-  - type: ruby
+  - type: gem
     name: intercom
     example: intercom
-  - type: ruby
+  - type: gem
     name: intercom-rails
     example: intercom-rails
   - type: npm

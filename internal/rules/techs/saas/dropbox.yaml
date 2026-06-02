@@ -3,6 +3,6 @@ name: Dropbox
 dotenv:
   - DROPBOX_
 dependencies:
-  - type: php
+  - type: composer
     name: spatie/dropbox-api
     example: spatie/dropbox-api

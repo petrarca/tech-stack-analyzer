@@ -1,13 +1,13 @@
 tech: scoutapm
 name: Scout APM
 dependencies:
-  - type: ruby
+  - type: gem
     name: scout_apm
     example: scout_apm
-  - type: php
+  - type: composer
     name: scoutapp/scout-apm-php
     example: scoutapp/scout-apm-php
-  - type: php
+  - type: composer
     name: scoutapp/scout-apm-laravel
     example: scoutapp/scout-apm-laravel
   - type: npm

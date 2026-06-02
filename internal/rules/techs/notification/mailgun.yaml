@@ -7,10 +7,10 @@ dependencies:
   - type: npm
     name: nodemailer-mailgun-transport
     example: nodemailer-mailgun-transport
-  - type: php
+  - type: composer
     name: mailgun/mailgun-php
     example: mailgun/mailgun-php
-  - type: ruby
+  - type: gem
     name: mailgun-ruby
     example: mailgun-ruby
   - type: golang

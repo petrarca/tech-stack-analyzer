@@ -7,19 +7,19 @@ dependencies:
   - type: npm
     name: bunyan-logstash-tcp
     example: bunyan-logstash-tcp
-  - type: ruby
+  - type: gem
     name: logstash-event
     example: logstash-event
-  - type: ruby
+  - type: gem
     name: logstash-logger
     example: logstash-logger
-  - type: ruby
+  - type: gem
     name: logstash-output-sqs
     example: logstash-output-sqs
-  - type: ruby
+  - type: gem
     name: logstash-filter-translate
     example: logstash-filter-translate
-  - type: ruby
+  - type: gem
     name: logstash-output-stastd
     example: logstash-output-stastd
   - type: golang

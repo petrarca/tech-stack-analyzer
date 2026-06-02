@@ -3,7 +3,7 @@ name: Gemini AI
 dotenv:
   - GEMINI_
 dependencies:
-  - type: python
+  - type: pypi
     name: genai
     example: genai
   - type: npm
@@ -12,9 +12,9 @@ dependencies:
   - type: npm
     name: gemini-ai
     example: gemini-ai
-  - type: python
+  - type: pypi
     name: langchain-google-genai
     example: langchain-google-genai
-  - type: python
+  - type: pypi
     name: google-generativeai
     example: google-generativeai

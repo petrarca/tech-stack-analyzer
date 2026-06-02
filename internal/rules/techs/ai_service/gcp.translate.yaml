@@ -16,9 +16,9 @@ dependencies:
   - type: golang
     name: cloud.google.com/go/translate
     example: cloud.google.com/go/translate
-  - type: php
+  - type: composer
     name: google/cloud-translate
     example: google/cloud-translate
-  - type: python
+  - type: pypi
     name: google-cloud-translate
     example: google-cloud-translate

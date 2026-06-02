@@ -1,12 +1,12 @@
 tech: zookeeper
 name: Zookeeper
 dependencies:
-  - type: rust
+  - type: cargo
     name: zookeeper
     example: zookeeper
-  - type: ruby
+  - type: gem
     name: zookeeper
     example: zookeeper
-  - type: php
+  - type: composer
     name: sparkinfluence/zookeeper
     example: sparkinfluence/zookeeper

@@ -7,25 +7,25 @@ dependencies:
   - type: golang
     name: cloud.google.com/go/storage
     example: cloud.google.com/go/storage
-  - type: ruby
+  - type: gem
     name: google-cloud-storage
     example: google-cloud-storage
-  - type: ruby
+  - type: gem
     name: google-apis-storage_v1
     example: google-apis-storage_v1
-  - type: rust
+  - type: cargo
     name: google-cloud-storage
     example: google-cloud-storage
-  - type: php
+  - type: composer
     name: google/cloud-storage
     example: google/cloud-storage
   - type: githubAction
     name: google-github-actions/upload-cloud-storage
     example: google-github-actions/upload-cloud-storage
-  - type: php
+  - type: composer
     name: league/flysystem-google-cloud-storage
     example: league/flysystem-google-cloud-storage
-  - type: python
+  - type: pypi
     name: google-cloud-storage
     example: google-cloud-storage
   - type: terraform.resource

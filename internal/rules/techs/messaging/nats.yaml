@@ -13,13 +13,13 @@ dependencies:
   - type: npm
     name: nats
     example: nats
-  - type: php
+  - type: composer
     name: repejota/nats
     example: repejota/nats
-  - type: ruby
+  - type: gem
     name: nats-pure
     example: nats-pure
-  - type: ruby
+  - type: gem
     name: nats
     example: nats
   - type: golang
@@ -28,6 +28,6 @@ dependencies:
   - type: golang
     name: github.com/nats-io/stan.go
     example: github.com/nats-io/stan.go
-  - type: rust
+  - type: cargo
     name: nats
     example: nats

@@ -49,25 +49,25 @@ dependencies:
   - type: npm
     name: mercurius
     example: mercurius
-  - type: python
+  - type: pypi
     name: graphql-core
     example: graphql-core
-  - type: python
+  - type: pypi
     name: gql
     example: gql
-  - type: python
+  - type: pypi
     name: /^graphene.*$/
     example: graphene
-  - type: python
+  - type: pypi
     name: /^strawberry-graphql.*$/
     example: strawberry-graphql
-  - type: python
+  - type: pypi
     name: ariadne
     example: ariadne
-  - type: python
+  - type: pypi
     name: tartiflette
     example: tartiflette
-  - type: python
+  - type: pypi
     name: tartiflette-aiohttp
     example: tartiflette-aiohttp
   - type: nuget

@@ -3,9 +3,9 @@ name: Hugging Face
 dotenv:
   - HUGGINGFACE_
 dependencies:
-  - type: python
+  - type: pypi
     name: langchain-huggingface
     example: langchain-huggingface
-  - type: python
+  - type: pypi
     name: huggingface-hub
     example: huggingface-hub

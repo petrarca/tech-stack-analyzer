@@ -1,7 +1,7 @@
 tech: phpstan
 name: PHPStan
 dependencies:
-  - type: php
+  - type: composer
     name: phpstan/phpstan
     example: phpstan/phpstan
 files:

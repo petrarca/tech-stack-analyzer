@@ -11,13 +11,13 @@ dependencies:
   - type: npm
     name: "@rocketsoftware/u2"
     example: "@rocketsoftware/u2"
-  - type: python
+  - type: pypi
     name: jbase
     example: jbase
-  - type: python
+  - type: pypi
     name: qmclient
     example: qmclient
-  - type: python
+  - type: pypi
     name: u2py
     example: u2py
   - type: nuget

@@ -3,7 +3,7 @@ name: Wikipedia
 dotenv:
   - WIKIPEDIA_
 dependencies:
-  - type: python
+  - type: pypi
     name: wikipedia
     example: wikipedia
   - type: npm

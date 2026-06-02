@@ -9,6 +9,6 @@ dependencies:
   - type: docker
     name: supabase/studio
     example: supabase/studio
-  - type: python
+  - type: pypi
     name: supabase
     example: supabase

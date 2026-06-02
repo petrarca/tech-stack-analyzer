@@ -4,6 +4,6 @@ dependencies:
   - type: golang
     name: github.com/splitio/go-client/v6
     example: github.com/splitio/go-client/v6
-  - type: ruby
+  - type: gem
     name: splitclient-rb
     example: splitclient-rb

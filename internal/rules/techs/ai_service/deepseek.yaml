@@ -12,6 +12,6 @@ dependencies:
   - type: npm
     name: n8n-nodes-deepseek
     example: n8n-nodes-deepseek
-  - type: python
+  - type: pypi
     name: langchain-deepseek
     example: langchain-deepseek

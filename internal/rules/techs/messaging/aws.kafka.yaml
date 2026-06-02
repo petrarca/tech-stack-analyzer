@@ -4,7 +4,7 @@ dependencies:
   - type: npm
     name: "@pulumi/kafka"
     example: "@pulumi/kafka"
-  - type: ruby
+  - type: gem
     name: aws-sdk-kafka
     example: aws-sdk-kafka
   - type: terraform.resource

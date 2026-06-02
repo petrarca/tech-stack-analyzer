@@ -1,7 +1,7 @@
 tech: jenkins
 name: Jenkins
 dependencies:
-  - type: ruby
+  - type: gem
     name: jenkins_api_client
     example: jenkins_api_client
 files:

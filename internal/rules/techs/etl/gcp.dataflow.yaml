@@ -7,6 +7,6 @@ dependencies:
   - type: golang
     name: cloud.google.com/go/dataflow
     example: cloud.google.com/go/dataflow
-  - type: php
+  - type: composer
     name: google/cloud-dataflow
     example: google/cloud-dataflow

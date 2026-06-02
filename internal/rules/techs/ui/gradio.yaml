@@ -1,6 +1,6 @@
 tech: gradio
 name: Gradio
 dependencies:
-  - type: python
+  - type: pypi
     name: gradio
     example: gradio

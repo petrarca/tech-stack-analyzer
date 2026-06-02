@@ -10,9 +10,9 @@ dependencies:
   - type: golang
     name: github.com/apache/thrift
     example: github.com/apache/thrift
-  - type: rust
+  - type: cargo
     name: thrift
     example: thrift
-  - type: ruby
+  - type: gem
     name: thrift
     example: thrift

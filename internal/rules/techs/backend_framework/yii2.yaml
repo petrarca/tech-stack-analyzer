@@ -1,6 +1,6 @@
 tech: yii2
 name: Yii2
 dependencies:
-  - type: php
+  - type: composer
     name: yiisoft/yii2
     example: yiisoft/yii2

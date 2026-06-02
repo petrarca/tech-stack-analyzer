@@ -4,10 +4,10 @@ dependencies:
   - type: terraform
     name: registry.terraform.io/aliyun/alicloud
     example: registry.terraform.io/aliyun/alicloud
-  - type: php
+  - type: composer
     name: alibabacloud/sdk
     example: alibabacloud/sdk
-  - type: php
+  - type: composer
     name: alibabacloud/client
     example: alibabacloud/client
   - type: githubAction

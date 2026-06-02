@@ -10,18 +10,18 @@ dependencies:
   - type: golang
     name: github.com/tursodatabase/libsql-client-go/libsql
     example: github.com/tursodatabase/libsql-client-go/libsql
-  - type: python
+  - type: pypi
     name: libsql-experimental
     example: libsql-experimental
-  - type: rust
+  - type: cargo
     name: libsql
     example: libsql
-  - type: php
+  - type: composer
     name: turso/libsql
     example: turso/libsql
-  - type: ruby
+  - type: gem
     name: turso_libsql
     example: turso_libsql
-  - type: ruby
+  - type: gem
     name: libsql_activerecord
     example: libsql_activerecord

@@ -6,50 +6,61 @@ package parsers
 
 // Dependency type constants define the type field for dependencies.
 // These constants ensure consistency across all parsers and prevent typos.
+//
+// Values follow the Package URL (PURL) type vocabulary
+// (https://github.com/package-url/purl-spec) so that emitted dependency
+// types map directly onto PURL types when producing an SBOM. The constant
+// names stay language-oriented for readability; the string values are the
+// canonical PURL types (e.g. Ruby -> "gem", Python -> "pypi", PHP ->
+// "composer", Rust -> "cargo", Go -> "golang").
+//
+// Identifiers without a PURL type (deno, terraform, githubAction, delphi,
+// node) keep their descriptive value and are not emitted as SBOM package
+// components.
 const (
 	// JavaScript/TypeScript ecosystem
 	DependencyTypeNpm  = "npm"
 	DependencyTypeDeno = "deno"
 	DependencyTypeNode = "node"
 
-	// Python ecosystem
-	DependencyTypePython = "python"
+	// Python ecosystem (PURL: pypi)
+	DependencyTypePython = "pypi"
 
-	// Ruby ecosystem
-	DependencyTypeRuby = "ruby"
+	// Ruby ecosystem (PURL: gem)
+	DependencyTypeRuby = "gem"
 
-	// Go ecosystem
+	// Go ecosystem (PURL: golang)
 	DependencyTypeGolang = "golang"
 
-	// Rust ecosystem
+	// Rust ecosystem (PURL: cargo)
 	DependencyTypeRust = "cargo"
 
-	// JVM ecosystem
+	// JVM ecosystem (PURL: maven; Gradle artifacts use Maven coordinates)
 	DependencyTypeMaven  = "maven"
 	DependencyTypeGradle = "gradle"
 
-	// PHP ecosystem
-	DependencyTypePHP = "php"
+	// PHP ecosystem (PURL: composer)
+	DependencyTypePHP = "composer"
 
-	// .NET ecosystem
-	DependencyTypeDotnet = "dotnet"
+	// .NET ecosystem (PURL: nuget)
+	DependencyTypeNuget = "nuget"
 
-	// C/C++ ecosystem
+	// C/C++ ecosystem (PURL: conan)
 	DependencyTypeConan = "conan"
 
-	// iOS/macOS ecosystem
+	// iOS/macOS ecosystem (PURL: cocoapods)
 	DependencyTypeCocoapods = "cocoapods"
 
-	// Infrastructure as Code
+	// Infrastructure as Code (no PURL type)
 	DependencyTypeTerraform = "terraform"
 
-	// CI/CD
+	// CI/CD (no PURL type)
 	DependencyTypeGitHubAction = "githubAction"
 
-	// Containers
+	// Containers (PURL: docker)
 	DependencyTypeDocker = "docker"
 
-	// Other
+	// Other (no PURL type)
 	DependencyTypeDelphi = "delphi"
 )
 

@@ -17,10 +17,10 @@ dependencies:
   - type: npm
     name: "grpc"
     example: "grpc"
-  - type: python
+  - type: pypi
     name: "grpcio"
     example: "grpcio"
-  - type: python
+  - type: pypi
     name: "grpcio-tools"
     example: "grpcio-tools"
   - type: nuget
@@ -38,9 +38,9 @@ dependencies:
   - type: maven
     name: "io.grpc:grpc-stub"
     example: "io.grpc:grpc-stub"
-  - type: go
+  - type: golang
     name: "google.golang.org/grpc"
     example: "google.golang.org/grpc"
-  - type: go
+  - type: golang
     name: "google.golang.org/protobuf"
     example: "google.golang.org/protobuf"

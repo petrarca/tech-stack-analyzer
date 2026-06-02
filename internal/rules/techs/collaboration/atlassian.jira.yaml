@@ -28,10 +28,10 @@ dependencies:
   - type: npm
     name: jira.js
     example: jira.js
-  - type: php
+  - type: composer
     name: lesstif/php-jira-rest-client
     example: lesstif/php-jira-rest-client
-  - type: ruby
+  - type: gem
     name: jira-ruby
     example: jira-ruby
   - type: terraform.resource

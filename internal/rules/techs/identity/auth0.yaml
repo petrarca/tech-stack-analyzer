@@ -12,18 +12,18 @@ dependencies:
   - type: terraform
     name: registry.terraform.io/auth0/auth0
     example: registry.terraform.io/auth0/auth0
-  - type: rust
+  - type: cargo
     name: auth0
     example: auth0
-  - type: ruby
+  - type: gem
     name: auth0
     example: auth0
-  - type: ruby
+  - type: gem
     name: omniauth-auth0
     example: omniauth-auth0
-  - type: php
+  - type: composer
     name: auth0/auth0-php
     example: auth0/auth0-php
-  - type: php
+  - type: composer
     name: auth0/login
     example: auth0/login

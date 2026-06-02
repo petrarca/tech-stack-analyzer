@@ -1,7 +1,7 @@
 tech: cheshirecat
 name: Cheshire Cat AI
 dependencies:
-  - type: python
+  - type: pypi
     name: cheshire-cat-ai
     example: cheshire-cat-ai
   - type: docker

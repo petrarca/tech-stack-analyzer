@@ -1,6 +1,6 @@
 tech: django
 name: Django
 dependencies:
-  - type: python
+  - type: pypi
     name: django
     example: django

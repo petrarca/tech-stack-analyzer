@@ -7,10 +7,10 @@ dependencies:
   - type: npm
     name: rethinkdb
     example: rethinkdb
-  - type: php
+  - type: composer
     name: danielmewes/php-rql
     example: danielmewes/php-rql
-  - type: ruby
+  - type: gem
     name: rethinkdb
     example: rethinkdb
   - type: golang

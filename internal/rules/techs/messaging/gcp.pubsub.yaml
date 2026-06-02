@@ -7,19 +7,19 @@ dependencies:
   - type: golang
     name: cloud.google.com/go/pubsub
     example: cloud.google.com/go/pubsub
-  - type: rust
+  - type: cargo
     name: google-cloud-pubsub
     example: google-cloud-pubsub
-  - type: ruby
+  - type: gem
     name: google-cloud-pubsub
     example: google-cloud-pubsub
-  - type: php
+  - type: composer
     name: google/cloud-pubsub
     example: google/cloud-pubsub
-  - type: php
+  - type: composer
     name: gos/pubsub-router-bundle
     example: gos/pubsub-router-bundle
-  - type: php
+  - type: composer
     name: petitpress/gps-messenger-bundle
     example: petitpress/gps-messenger-bundle
   - type: terraform.resource

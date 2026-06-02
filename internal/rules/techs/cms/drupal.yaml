@@ -4,18 +4,18 @@ dependencies:
   - type: docker
     name: drupal
     example: drupal
-  - type: php
+  - type: composer
     name: drupal/core
     example: drupal/core
-  - type: php
+  - type: composer
     name: drupal/core-recommended
     example: drupal/core-recommended
-  - type: php
+  - type: composer
     name: drupal/drupal-extension
     example: drupal/drupal-extension
-  - type: php
+  - type: composer
     name: webflo/drupal-finder
     example: webflo/drupal-finder
-  - type: php
+  - type: composer
     name: mglaman/phpstan-drupal
     example: mglaman/phpstan-drupal

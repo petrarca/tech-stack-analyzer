@@ -7,6 +7,6 @@ dependencies:
   - type: npm
     name: "@aws-sdk/client-cognito-identity-provider"
     example: "@aws-sdk/client-cognito-identity-provider"
-  - type: ruby
+  - type: gem
     name: aws-sdk-cognitoidentityprovider
     example: aws-sdk-cognitoidentityprovider

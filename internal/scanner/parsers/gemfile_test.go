@@ -31,9 +31,9 @@ gem 'devise', '4.8.0'
 gem 'pg', '1.2.3'
 `,
 			expectedDeps: []types.Dependency{
-				{Type: "ruby", Name: "rails", Version: "6.1.4"},
-				{Type: "ruby", Name: "devise", Version: "4.8.0"},
-				{Type: "ruby", Name: "pg", Version: "1.2.3"},
+				{Type: "gem", Name: "rails", Version: "6.1.4"},
+				{Type: "gem", Name: "devise", Version: "4.8.0"},
+				{Type: "gem", Name: "pg", Version: "1.2.3"},
 			},
 		},
 		{
@@ -44,10 +44,10 @@ gem "pg", '1.2.3'
 gem 'redis', "4.0.0"
 `,
 			expectedDeps: []types.Dependency{
-				{Type: "ruby", Name: "rails", Version: "6.1.4"},
-				{Type: "ruby", Name: "devise", Version: "4.8.0"},
-				{Type: "ruby", Name: "pg", Version: "1.2.3"},
-				{Type: "ruby", Name: "redis", Version: "4.0.0"},
+				{Type: "gem", Name: "rails", Version: "6.1.4"},
+				{Type: "gem", Name: "devise", Version: "4.8.0"},
+				{Type: "gem", Name: "pg", Version: "1.2.3"},
+				{Type: "gem", Name: "redis", Version: "4.0.0"},
 			},
 		},
 		{
@@ -59,9 +59,9 @@ gem "devise"
 gem 'pg'
 `,
 			expectedDeps: []types.Dependency{
-				{Type: "ruby", Name: "rails", Version: "latest"},
-				{Type: "ruby", Name: "devise", Version: "latest"},
-				{Type: "ruby", Name: "pg", Version: "latest"},
+				{Type: "gem", Name: "rails", Version: "latest"},
+				{Type: "gem", Name: "devise", Version: "latest"},
+				{Type: "gem", Name: "pg", Version: "latest"},
 			},
 		},
 		{
@@ -79,14 +79,14 @@ gem 'webpacker', '~> 5.0'
 gem 'jbuilder', '~> 2.7'
 `,
 			expectedDeps: []types.Dependency{
-				{Type: "ruby", Name: "rails", Version: "~> 6.1.4"},
-				{Type: "ruby", Name: "devise", Version: "~> 4.8"},
-				{Type: "ruby", Name: "pg", Version: "~> 1.0"},
-				{Type: "ruby", Name: "redis", Version: "~> 4.0"},
-				{Type: "ruby", Name: "sidekiq", Version: "~> 6.0"},
-				{Type: "ruby", Name: "sass-rails", Version: "~> 6.0"},
-				{Type: "ruby", Name: "webpacker", Version: "~> 5.0"},
-				{Type: "ruby", Name: "jbuilder", Version: "~> 2.7"},
+				{Type: "gem", Name: "rails", Version: "~> 6.1.4"},
+				{Type: "gem", Name: "devise", Version: "~> 4.8"},
+				{Type: "gem", Name: "pg", Version: "~> 1.0"},
+				{Type: "gem", Name: "redis", Version: "~> 4.0"},
+				{Type: "gem", Name: "sidekiq", Version: "~> 6.0"},
+				{Type: "gem", Name: "sass-rails", Version: "~> 6.0"},
+				{Type: "gem", Name: "webpacker", Version: "~> 5.0"},
+				{Type: "gem", Name: "jbuilder", Version: "~> 2.7"},
 			},
 		},
 		{
@@ -97,10 +97,10 @@ gem 'local_gem', path: '../local_gem'
 gem 'another_gem', '1.0.0'
 `,
 			expectedDeps: []types.Dependency{
-				{Type: "ruby", Name: "rails", Version: "6.1.4"},
-				{Type: "ruby", Name: "my_gem", Version: "latest"},
-				{Type: "ruby", Name: "local_gem", Version: "latest"},
-				{Type: "ruby", Name: "another_gem", Version: "1.0.0"},
+				{Type: "gem", Name: "rails", Version: "6.1.4"},
+				{Type: "gem", Name: "my_gem", Version: "latest"},
+				{Type: "gem", Name: "local_gem", Version: "latest"},
+				{Type: "gem", Name: "another_gem", Version: "1.0.0"},
 			},
 		},
 		{
@@ -118,11 +118,11 @@ group :production do
 end
 `,
 			expectedDeps: []types.Dependency{
-				{Type: "ruby", Name: "rails", Version: "6.1.4"},
-				{Type: "ruby", Name: "rspec-rails", Version: "5.0.0"},
-				{Type: "ruby", Name: "factory_bot_rails", Version: "6.1.0"},
-				{Type: "ruby", Name: "pry-rails", Version: "latest"},
-				{Type: "ruby", Name: "puma", Version: "5.5.0"},
+				{Type: "gem", Name: "rails", Version: "6.1.4"},
+				{Type: "gem", Name: "rspec-rails", Version: "5.0.0"},
+				{Type: "gem", Name: "factory_bot_rails", Version: "6.1.0"},
+				{Type: "gem", Name: "pry-rails", Version: "latest"},
+				{Type: "gem", Name: "puma", Version: "5.5.0"},
 			},
 		},
 		{
@@ -146,10 +146,10 @@ end
 
 `,
 			expectedDeps: []types.Dependency{
-				{Type: "ruby", Name: "rails", Version: "6.1.4"},
-				{Type: "ruby", Name: "pg", Version: "~> 1.0"},
-				{Type: "ruby", Name: "pry-rails", Version: "latest"},
-				{Type: "ruby", Name: "rubocop", Version: "latest"},
+				{Type: "gem", Name: "rails", Version: "6.1.4"},
+				{Type: "gem", Name: "pg", Version: "~> 1.0"},
+				{Type: "gem", Name: "pry-rails", Version: "latest"},
+				{Type: "gem", Name: "rubocop", Version: "latest"},
 			},
 		},
 		{
@@ -174,12 +174,12 @@ gem ""  # Empty gem name
 gem 'valid_gem', '2.0.0'
 `,
 			expectedDeps: []types.Dependency{
-				{Type: "ruby", Name: "rails", Version: "6.1.4"},
-				{Type: "ruby", Name: "invalid_gem", Version: "latest"},
-				{Type: "ruby", Name: "another_gem", Version: "1.0.0"},
-				{Type: "ruby", Name: "incomplete", Version: "latest"},
+				{Type: "gem", Name: "rails", Version: "6.1.4"},
+				{Type: "gem", Name: "invalid_gem", Version: "latest"},
+				{Type: "gem", Name: "another_gem", Version: "1.0.0"},
+				{Type: "gem", Name: "incomplete", Version: "latest"},
 				// Empty gem name should be filtered out
-				{Type: "ruby", Name: "valid_gem", Version: "2.0.0"},
+				{Type: "gem", Name: "valid_gem", Version: "2.0.0"},
 			},
 		},
 	}
@@ -274,22 +274,22 @@ end
 	}
 
 	// Verify key production gems
-	assert.Equal(t, "ruby", depMap["rails"].Type)
+	assert.Equal(t, "gem", depMap["rails"].Type)
 	assert.Equal(t, "~> 6.1.4", depMap["rails"].Version)
-	assert.Equal(t, "ruby", depMap["pg"].Type)
+	assert.Equal(t, "gem", depMap["pg"].Type)
 	assert.Equal(t, "~> 1.1", depMap["pg"].Version)
-	assert.Equal(t, "ruby", depMap["puma"].Type)
+	assert.Equal(t, "gem", depMap["puma"].Type)
 	assert.Equal(t, "~> 5.0", depMap["puma"].Version)
 
 	// Verify development gems
-	assert.Equal(t, "ruby", depMap["byebug"].Type)
-	assert.Equal(t, "ruby", depMap["web-console"].Type)
+	assert.Equal(t, "gem", depMap["byebug"].Type)
+	assert.Equal(t, "gem", depMap["web-console"].Type)
 	assert.Equal(t, ">= 4.1.0", depMap["web-console"].Version)
 
 	// Verify test gems
-	assert.Equal(t, "ruby", depMap["capybara"].Type)
+	assert.Equal(t, "gem", depMap["capybara"].Type)
 	assert.Equal(t, ">= 3.26", depMap["capybara"].Version)
-	assert.Equal(t, "ruby", depMap["selenium-webdriver"].Type)
+	assert.Equal(t, "gem", depMap["selenium-webdriver"].Type)
 	assert.Equal(t, ">= 4.0.0.rc1", depMap["selenium-webdriver"].Version)
 }
 
