@@ -66,34 +66,19 @@ func ParsePnpmLockWithOptions(content []byte, options NPMLockFileOptions) []type
 
 	// Handle both v6+ (importers) and v9+ (packages) lockfile formats
 	if len(lockfile.Packages) > 0 {
-		// v9+ format - extract direct dependencies from root importer for filtering
+		// v9+ format. Direct dependencies live under importers with both a
+		// specifier (range) and a resolved version (e.g. "1.2.11(zod@4.3.6)").
+		// The resolved version is read directly from the importer; the
+		// version-suffixed keys in the top-level packages map are not used
+		// for direct dependency resolution.
 		rootImporter, exists := lockfile.Importers["."]
-		if exists {
-			// Add direct dependencies to filter
-			for name := range rootImporter.Dependencies {
-				filter.AddDirectDependency(name, "prod")
-			}
-			for name := range rootImporter.DevDependencies {
-				filter.AddDirectDependency(name, "dev")
-			}
-			for name := range rootImporter.OptionalDependencies {
-				filter.AddDirectDependency(name, "optional")
-			}
+		if !exists {
+			return nil
 		}
 
-		// Process all packages from v9+ format
-		for path, pkg := range lockfile.Packages {
-			name := extractPackageNameFromPnpmPath(path)
-			if name == "" {
-				continue
-			}
-
-			// Parse version with semantic version preservation
-			version := parsePnpmVersion(pkg.Version, pkg.Resolution)
-
-			// Use common filtering to create dependency
-			filter.CreateAndAppendDependency("npm", name, version, "pnpm-lock.yaml", &dependencies)
-		}
+		appendImporterDeps(rootImporter.Dependencies, "prod", filter, &dependencies)
+		appendImporterDeps(rootImporter.DevDependencies, "dev", filter, &dependencies)
+		appendImporterDeps(rootImporter.OptionalDependencies, "optional", filter, &dependencies)
 	} else {
 		// v6+ format with importers field - direct dependencies only
 		rootImporter, exists := lockfile.Importers["."]
@@ -134,32 +119,33 @@ func ParsePnpmLockWithOptions(content []byte, options NPMLockFileOptions) []type
 	return dependencies
 }
 
-// extractPackageNameFromPnpmPath extracts package name from pnpm-lock.yaml path
-// Enhanced with deps.dev patterns for workspace packages and scoped packages
-func extractPackageNameFromPnpmPath(path string) string {
-	// Handle workspace packages (local packages)
-	if strings.HasPrefix(path, ".") {
-		// Extract package name from workspace path
-		parts := strings.Split(path, "/")
-		for i, part := range parts {
-			if part == "packages" && i+1 < len(parts) {
-				return parts[i+1]
-			}
-		}
-		return ""
+// appendImporterDeps adds importer dependencies (with resolved versions) to the
+// dependency list via the shared filter. Used for the v9+ importer format.
+func appendImporterDeps(deps map[string]PnpmDependency, scope string, filter *DependencyFilter, out *[]types.Dependency) {
+	for name, dep := range deps {
+		filter.AddDirectDependency(name, scope)
+		version := resolvePnpmImporterVersion(dep.Version)
+		filter.CreateAndAppendDependency("npm", name, version, "pnpm-lock.yaml", out)
 	}
+}
 
-	// Handle regular packages
-	parts := strings.Split(path, "/")
-	if len(parts) > 0 {
-		// Handle scoped packages like @babel/core
-		if strings.HasPrefix(parts[0], "@") && len(parts) > 1 {
-			return parts[0] + "/" + parts[1]
-		}
-		return parts[0]
+// resolvePnpmImporterVersion extracts the resolved version from a pnpm v9
+// importer version string, stripping the peer-dependency suffix in parentheses
+// (e.g. "1.2.11(zod@4.3.6)" -> "1.2.11"). Workspace links ("link:...") and
+// empty values fall back to "latest".
+func resolvePnpmImporterVersion(version string) string {
+	version = strings.TrimSpace(version)
+	if i := strings.IndexByte(version, '('); i >= 0 {
+		version = version[:i]
 	}
-
-	return ""
+	version = strings.TrimSpace(version)
+	if version == "" || version == "*" {
+		return "latest"
+	}
+	if strings.HasPrefix(version, "link:") || strings.HasPrefix(version, "file:") {
+		return "workspace"
+	}
+	return version
 }
 
 // parsePnpmVersion parses pnpm version with semantic version preservation
