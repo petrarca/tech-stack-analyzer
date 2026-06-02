@@ -9,6 +9,7 @@ import (
 	"log/slog"
 
 	"github.com/petrarca/tech-stack-analyzer/internal/aggregator"
+	"github.com/petrarca/tech-stack-analyzer/internal/sbom"
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
 
@@ -17,7 +18,20 @@ func generateAndWriteOutput(payload interface{}, logger *slog.Logger) {
 	logger.Debug("Generating output",
 		"aggregate", settings.Aggregate,
 		"also_aggregate", settings.AlsoAggregate,
+		"sbom", settings.SBOM,
+		"also_sbom", settings.AlsoSBOM,
 		"pretty_print", settings.PrettyPrint)
+
+	// --sbom makes the CycloneDX SBOM the primary output instead of the scan tree.
+	if settings.SBOM {
+		sbomData, err := generateSBOM(payload, settings.PrettyPrint)
+		if err != nil {
+			logger.Error("Failed to marshal SBOM", "error", err)
+			os.Exit(1)
+		}
+		writeOutput(sbomData)
+		return
+	}
 
 	jsonData, err := generateOutput(payload, settings.Aggregate, settings.PrettyPrint, settings.OmitFields)
 	if err != nil {
@@ -26,6 +40,27 @@ func generateAndWriteOutput(payload interface{}, logger *slog.Logger) {
 	}
 
 	writeOutput(jsonData)
+
+	// Produce a CycloneDX SBOM companion file when --also-sbom is set.
+	if settings.AlsoSBOM {
+		sbomFile := sbomOutputFile(settings.OutputFile)
+		sbomData, err := generateSBOM(payload, settings.PrettyPrint)
+		if err != nil {
+			logger.Error("Failed to marshal SBOM", "error", err)
+			os.Exit(1)
+		}
+		if sbomFile != "" {
+			if err = os.WriteFile(sbomFile, sbomData, 0644); err != nil {
+				fmt.Fprintf(os.Stderr, "Failed to write SBOM output file: %v\n", err)
+				os.Exit(1)
+			}
+			if !settings.Quiet {
+				fmt.Fprintf(os.Stderr, "SBOM written to %s\n", sbomFile)
+			}
+		} else {
+			logger.Debug("Skipping SBOM output: primary output is stdout")
+		}
+	}
 
 	// Produce aggregate output alongside full output when --also-aggregate is set.
 	if settings.AlsoAggregate != "" && settings.Aggregate == "" {
@@ -60,6 +95,28 @@ func aggregateOutputFile(outputFile string) string {
 	ext := filepath.Ext(outputFile)
 	base := strings.TrimSuffix(outputFile, ext)
 	return base + "-agg" + ext
+}
+
+// sbomOutputFile derives the SBOM companion filename from the primary output filename.
+// Returns empty string when primary output is stdout.
+// Example: "output.json" → "output.cdx.json"
+func sbomOutputFile(outputFile string) string {
+	if outputFile == "" {
+		return ""
+	}
+	ext := filepath.Ext(outputFile)
+	base := strings.TrimSuffix(outputFile, ext)
+	return base + ".cdx" + ext
+}
+
+// generateSBOM builds a CycloneDX SBOM from the payload and marshals it.
+func generateSBOM(payload interface{}, prettyPrint bool) ([]byte, error) {
+	p, ok := payload.(*types.Payload)
+	if !ok {
+		return nil, fmt.Errorf("SBOM output requires a scan payload")
+	}
+	bom := sbom.FromPayload(p)
+	return marshalJSON(bom, prettyPrint)
 }
 
 // stripFields recursively removes the specified fields from a payload tree.

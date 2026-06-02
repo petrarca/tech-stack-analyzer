@@ -118,6 +118,14 @@
                     "pattern": "^$|^(tech|techs|languages|licenses|dependencies|git|components|all)(,(tech|techs|languages|licenses|dependencies|git|components|all))*$",
                     "description": "Also produce an aggregate output alongside the full output. Suffix -agg is added to the output filename. (matches --also-aggregate flag)"
                 },
+                "sbom": {
+                    "type": "boolean",
+                    "description": "Emit a CycloneDX SBOM (with PURLs, for vulnerability scanning) as the primary output instead of the scan tree. (matches --sbom flag)"
+                },
+                "also_sbom": {
+                    "type": "boolean",
+                    "description": "Also write a CycloneDX SBOM alongside the scan output. Suffix .cdx is added to the output filename. (matches --also-sbom flag)"
+                },
                 "verbose": {
                     "type": "boolean",
                     "description": "Show progress with simple output (matches --verbose flag)"

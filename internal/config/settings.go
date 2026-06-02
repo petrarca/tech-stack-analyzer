@@ -35,6 +35,8 @@ type Settings struct {
 	UseLockFiles             bool                      // Use lock files for dependency resolution (default true)
 	OmitFields               []string                  // Fields to omit from full output (e.g. "reason", "path", "edges")
 	AlsoAggregate            string                    // Also produce an aggregate output alongside the full output (e.g. "tech,techs,languages")
+	SBOM                     bool                      // Emit a CycloneDX SBOM as the primary output instead of the scan tree
+	AlsoSBOM                 bool                      // Also write a CycloneDX SBOM (.cdx.json) alongside the scan output
 
 	// Logging
 	LogLevel  slog.Level

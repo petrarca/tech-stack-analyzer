@@ -65,6 +65,14 @@ go install github.com/petrarca/tech-stack-analyzer/cmd/scanner@latest
 # Full output + aggregate in one scan pass (e.g. for large codebases)
 ./bin/stack-analyzer scan /path/to/project --also-aggregate tech,techs,languages,dependencies,git
 
+# Emit a CycloneDX SBOM (with PURLs) for vulnerability scanning
+./bin/stack-analyzer scan /path/to/project --sbom -o sbom.cdx.json
+# ...then scan it with Trivy:
+#   trivy sbom sbom.cdx.json
+
+# Full scan output + SBOM companion in one pass (out.json -> out.cdx.json)
+./bin/stack-analyzer scan /path/to/project -o out.json --also-sbom
+
 # Strip fields not needed by downstream consumers
 ./bin/stack-analyzer scan /path/to/project --omit-fields reason,edges
 

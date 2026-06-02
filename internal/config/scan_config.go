@@ -20,6 +20,8 @@ type ScanOptions struct {
 	Paths         []string `yaml:"paths,omitempty" json:"paths,omitempty"`
 	Aggregate     string   `yaml:"aggregate,omitempty" json:"aggregate,omitempty" default:""`
 	AlsoAggregate string   `yaml:"also_aggregate,omitempty" json:"also_aggregate,omitempty" default:""`
+	SBOM          bool     `yaml:"sbom,omitempty" json:"sbom,omitempty" default:"false"`
+	AlsoSBOM      bool     `yaml:"also_sbom,omitempty" json:"also_sbom,omitempty" default:"false"`
 
 	// Scan behavior
 	ExcludePatterns          []string `yaml:"exclude_patterns,omitempty" json:"exclude_patterns,omitempty"`
