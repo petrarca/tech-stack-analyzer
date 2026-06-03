@@ -236,6 +236,25 @@
                     },
                     "description": "List of dependencies detected in this component"
                 },
+                "dependency_edges": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "from": {
+                                "type": "string",
+                                "description": "Depending package, 'name@version'"
+                            },
+                            "to": {
+                                "type": "string",
+                                "description": "Depended-on package, 'name@version'"
+                            }
+                        },
+                        "required": ["from", "to"],
+                        "additionalProperties": false
+                    },
+                    "description": "Package-to-package dependency edges read from lockfiles (additive; present where the lockfile states the graph, e.g. pnpm v9)"
+                },
                 "component_refs": {
                     "type": "array",
                     "items": {

@@ -34,6 +34,7 @@ type AggregateOutput struct {
 	PrimaryLanguages   []types.PrimaryLanguage `json:"primary_languages,omitempty"`   // Top programming languages (from code_stats)
 	LicensesAggregated []string                `json:"licenses_aggregated,omitempty"` // Detected licenses (unique names only)
 	Dependencies       []types.Dependency      `json:"dependencies,omitempty"`        // All dependencies serialized as [type, name, version, scope, direct, {metadata}] via Dependency.MarshalJSON
+	DependencyEdges    []types.DependencyEdge  `json:"dependency_edges,omitempty"`    // Deduplicated package-to-package edges across all components
 	Components         []ComponentEntry        `json:"components,omitempty"`          // Flat list of all components (id, name, type, tech, techs, path)
 	CodeStats          interface{}             `json:"code_stats,omitempty"`          // Code statistics (if enabled)
 	SubsystemStats     []types.SubsystemStat   `json:"subsystem_stats,omitempty"`     // Per-subsystem code stats rollup (when --subsystem-depth > 0)
@@ -94,6 +95,7 @@ func (a *Aggregator) Aggregate(payload *types.Payload) *AggregateOutput {
 
 	if a.fields["dependencies"] {
 		output.Dependencies = a.collectDependencies(payload)
+		output.DependencyEdges = a.collectDependencyEdges(payload)
 	}
 
 	if a.fields["components"] {
@@ -283,6 +285,36 @@ func (a *Aggregator) collectDependencies(payload *types.Payload) []types.Depende
 	})
 
 	return dependencies
+}
+
+// collectDependencyEdges recursively collects all unique package-to-package
+// edges across the component tree, deduplicated on from|to.
+func (a *Aggregator) collectDependencyEdges(payload *types.Payload) []types.DependencyEdge {
+	seen := make(map[string]types.DependencyEdge)
+	var collect func(p *types.Payload)
+	collect = func(p *types.Payload) {
+		for _, e := range p.DependencyEdges {
+			seen[e.From+"|"+e.To] = e
+		}
+		for _, child := range p.Children {
+			collect(child)
+		}
+	}
+	collect(payload)
+	if len(seen) == 0 {
+		return nil
+	}
+	edges := make([]types.DependencyEdge, 0, len(seen))
+	for _, e := range seen {
+		edges = append(edges, e)
+	}
+	sort.Slice(edges, func(i, j int) bool {
+		if edges[i].From != edges[j].From {
+			return edges[i].From < edges[j].From
+		}
+		return edges[i].To < edges[j].To
+	})
+	return edges
 }
 
 // collectDependenciesRecursive helper function

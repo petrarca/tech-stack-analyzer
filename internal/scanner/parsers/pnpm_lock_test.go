@@ -153,3 +153,50 @@ packages:
 		})
 	}
 }
+
+func TestParsePnpmLockGraph_V9Edges(t *testing.T) {
+	content := `lockfileVersion: '9.0'
+
+importers:
+  .:
+    dependencies:
+      mylib:
+        specifier: ^1.0.0
+        version: 1.0.0
+
+packages:
+  'mylib@1.0.0':
+    resolution: {integrity: sha512-aaa}
+  'dep-a@2.0.0':
+    resolution: {integrity: sha512-bbb}
+  'dep-b@3.0.0':
+    resolution: {integrity: sha512-ccc}
+
+snapshots:
+  'mylib@1.0.0(react@18.0.0)':
+    dependencies:
+      dep-a: 2.0.0
+      dep-b: 3.0.0(peer@1.0.0)
+  'dep-a@2.0.0':
+    dependencies:
+      dep-b: 3.0.0
+`
+	deps, edges := ParsePnpmLockGraph([]byte(content))
+	if len(deps) == 0 {
+		t.Fatal("expected at least the direct dependency")
+	}
+	got := map[string]bool{}
+	for _, e := range edges {
+		got[e.From+"->"+e.To] = true
+	}
+	// Peer suffixes must be stripped from both endpoints.
+	for _, want := range []string{
+		"mylib@1.0.0->dep-a@2.0.0",
+		"mylib@1.0.0->dep-b@3.0.0",
+		"dep-a@2.0.0->dep-b@3.0.0",
+	} {
+		if !got[want] {
+			t.Errorf("missing edge %q; got %v", want, got)
+		}
+	}
+}

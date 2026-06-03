@@ -28,6 +28,7 @@ type Payload struct {
 	Licenses         []License              `json:"licenses"`                    // Changed to structured License objects
 	Reason           map[string][]string    `json:"reason,omitempty"`            // Maps technology to detection reasons, "_" for non-tech reasons
 	Dependencies     []Dependency           `json:"dependencies"`
+	DependencyEdges  []DependencyEdge       `json:"dependency_edges,omitempty"` // Package-to-package edges read from lockfiles (additive; empty when unavailable)
 	Properties       map[string]interface{} `json:"properties,omitempty"`
 	Children         []*Payload             `json:"children"`
 	Edges            []Edge                 `json:"edges,omitempty"`
@@ -91,6 +92,16 @@ type Edge struct {
 type ComponentRef struct {
 	TargetID    string `json:"target_id"`    // Component ID being depended on
 	PackageName string `json:"package_name"` // Package name that created the link
+}
+
+// DependencyEdge represents a package-to-package dependency relationship read
+// from a lockfile (e.g. pnpm snapshots, poetry [package.dependencies]). The
+// endpoints are package identities in "name@version" form so they join to the
+// dependency list. Edges are emitted only where the lockfile states them --
+// they are read, not resolved.
+type DependencyEdge struct {
+	From string `json:"from"` // depending package, "name@version"
+	To   string `json:"to"`   // depended-on package, "name@version"
 }
 
 // PrimaryLanguage represents a primary programming language (top languages by lines of code)
