@@ -112,6 +112,88 @@ absent it is a no-op, exactly like a missing lockfile.
    `dependencies` edge section. Since the analyzer already emits/consumes
    CycloneDX (`--sbom`), reading that edge section is a natural second Maven
    path.
-3. **Online resolution (deps.dev).** Query deps.dev by PURL for a precomputed
-   resolved graph. Crosses the offline boundary, so opt-in enrichment only.
-   Noted as an option, not a recommendation.
+3. **Online resolution (deps.dev).** Query deps.dev for a precomputed resolved
+   graph, as an opt-in fallback for manifest-only ecosystems. See the appendix
+   below.
+
+## Appendix: online resolution via deps.dev (opt-in)
+
+> Status: designed, validated by spike (not yet implemented in the analyzer).
+
+Google's deps.dev (Open Source Insights) continuously crawls public registries
+and pre-computes the **resolved transitive graph** for every published package
+version, using each ecosystem's real resolution algorithm. This is the
+"online resolution" path: for manifest-only ecosystems (Maven, Gradle) where no
+resolved lockfile/tree-file is committed, deps.dev can supply the edges instead
+of requiring the operator to run the build tool.
+
+It is **opt-in and a fallback only** -- it crosses the offline boundary that the
+rest of the pipeline deliberately maintains, and it reflects *published*
+versions, not *your* repo's resolved state.
+
+### API shape (validated)
+
+- Free, unauthenticated HTTPS -> JSON. Base: `https://api.deps.dev/v3`.
+- Resolved graph endpoint (note the gRPC-transcoding `:dependencies` verb, not a
+  `/dependencies` path segment; the package-name segment is URL-encoded, so
+  Maven's `groupId:artifactId` colon is encoded):
+
+  ```
+  GET /v3/systems/{system}/packages/{name}/versions/{version}:dependencies
+  ```
+
+  `system` in `maven|npm|go|cargo|pypi|nuget|rubygems`.
+- Response is a **deduplicated DAG**: `nodes[]` (each with
+  `versionKey {system,name,version}`, `relation` in `SELF|DIRECT|INDIRECT`, a
+  per-node `errors[]`, and `bundled`) and `edges[]`
+  (`{fromNode, toNode, requirement}` where `from/toNode` are integer indices
+  into `nodes` and `requirement` is the declared range).
+- Failure modes are clean HTTP: `404` for an unknown version, `429` for rate
+  limiting (no published quota -- design for backoff). Caching is expressly
+  permitted by the Google API ToS; the BigQuery public dataset is the bulk
+  alternative.
+
+### What the shape gives us (vs our lockfile parsers)
+
+- **Same edge model.** Nodes are `name@version` (Maven
+  `groupId:artifactId@version`) -- identical to our node identity. The DAG is
+  already deduplicated (a diamond dependency is one node with high in-degree),
+  matching what our aggregator's `from|to` dedup produces. A deps.dev resolver
+  and a lockfile resolver are interchangeable at the edge level. This is
+  *cleaner* than the `mvn dependency:tree` JSON, which repeats subtrees per path.
+- **Modes for free.** `relation == DIRECT` precomputes our `direct` mode; all
+  edges give `full`. No edge-walking needed.
+- **Declared range per edge.** `requirement` is the declared constraint
+  alongside the resolved version -- a superset of `metadata.declared`.
+- **Partial-resolution signal.** Per-node `errors[]` flags an unresolved node
+  without failing the whole graph; surface it into metadata rather than dropping.
+
+### Caveats (must be documented at the seam, not glossed over)
+
+- **Published-version, not your lockfile.** deps.dev does not know workspace
+  links, private packages, local exclusions, or corporate mirrors. Where a real
+  lockfile/tree-file exists it is authoritative; deps.dev is a fallback only.
+- **Runtime-scoped.** The graph excludes `test`/`provided` scope (validated:
+  no junit nodes in `spring-boot-starter-web`). deps.dev `full` approximates our
+  `prod`-scoped graph, not our dev-inclusive one. Correct for blast-radius /
+  vulnerability scope, but **not bit-identical** to our lockfile graphs.
+- **Crosses the offline boundary.** Off by default; never overrides local
+  resolution.
+
+### Integration sketch
+
+Introduce a `DependencyResolver` seam that produces the same
+`[]types.DependencyEdge` our `ParseGraphFunc` returns, with two implementations:
+
+- **lockfile resolver** -- the implemented offline path (reflects your repo).
+- **deps.dev resolver** -- online fallback (reflects published versions).
+
+Precedence: a present lockfile / `dependency-tree.json` always wins; deps.dev
+fills the gap for manifest-only ecosystems. Keep `--dependency-graph
+off|direct|full` for *what* to emit and add an orthogonal opt-in (e.g.
+`--resolve-online`, default off) for *where* edges may come from when local
+resolution is unavailable. Cache responses by `(system, name, version)`.
+Annotate edge/component provenance (`source: lockfile` vs `source: deps.dev`)
+so downstream consumers (and the security domain) can tell authoritative-local
+edges from online approximations, and carry the required CC-BY 4.0 attribution
+("data: Google Open Source Insights (deps.dev), CC-BY 4.0").
