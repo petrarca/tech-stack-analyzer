@@ -32,6 +32,97 @@ type UvDependencyRef struct {
 	Extra string `yaml:"extra"`
 }
 
+// ParseUvLockGraph parses uv.lock and returns the dependencies plus the
+// package-to-package edges, honoring the requested graph mode. It implements
+// the GraphProducer contract (ParseGraphFunc). uv.lock is self-contained: each
+// [[package]] lists its resolved dependencies by name, and every package has a
+// single locked version, so edges resolve to clean "name@version" nodes.
+func ParseUvLockGraph(content []byte, mode types.DependencyGraphMode) LockGraph {
+	// The flat parser needs the project name to isolate direct deps; the graph
+	// does not, so dependencies are best-effort here.
+	result := LockGraph{Dependencies: ParseUvLock(content, "")}
+
+	if mode == types.DependencyGraphOff {
+		return result
+	}
+
+	var lockfile UvLockfile
+	if err := parseUvLockTOML(content, &lockfile); err != nil {
+		return result
+	}
+
+	versionByName := make(map[string]string, len(lockfile.Packages))
+	for _, pkg := range lockfile.Packages {
+		versionByName[pkg.Name] = pkg.Version
+	}
+
+	switch mode {
+	case types.DependencyGraphDirect:
+		result.Edges = uvDirectEdges(lockfile, versionByName)
+	case types.DependencyGraphFull:
+		result.Edges = uvFullEdges(lockfile, versionByName)
+	}
+	return result
+}
+
+// uvNodeID resolves a dependency name to a "name@version" node via the locked
+// version map. Returns "" when the package is not present in the lockfile.
+func uvNodeID(name string, versionByName map[string]string) string {
+	v, ok := versionByName[name]
+	if !ok || v == "" {
+		return ""
+	}
+	return name + "@" + v
+}
+
+// uvFullEdges builds every package -> dependency edge stated by uv.lock,
+// including optional-dependency groups.
+func uvFullEdges(lockfile UvLockfile, versionByName map[string]string) []types.DependencyEdge {
+	var edges []types.DependencyEdge
+	for _, pkg := range lockfile.Packages {
+		from := uvNodeID(pkg.Name, versionByName)
+		if from == "" {
+			continue
+		}
+		add := func(refs []UvDependencyRef) {
+			for _, ref := range refs {
+				if to := uvNodeID(ref.Name, versionByName); to != "" {
+					edges = append(edges, types.DependencyEdge{From: from, To: to})
+				}
+			}
+		}
+		add(pkg.Dependencies)
+		for _, group := range pkg.OptionalDependencies {
+			add(group)
+		}
+	}
+	return edges
+}
+
+// uvDirectEdges builds root -> direct-dependency edges from the project's own
+// package entry (source.editable = "."). The synthetic "." marker is the from
+// node.
+func uvDirectEdges(lockfile UvLockfile, versionByName map[string]string) []types.DependencyEdge {
+	var edges []types.DependencyEdge
+	for _, pkg := range lockfile.Packages {
+		if pkg.Source.Editable != "." {
+			continue
+		}
+		add := func(refs []UvDependencyRef) {
+			for _, ref := range refs {
+				if to := uvNodeID(ref.Name, versionByName); to != "" {
+					edges = append(edges, types.DependencyEdge{From: ".", To: to})
+				}
+			}
+		}
+		add(pkg.Dependencies)
+		for _, group := range pkg.OptionalDependencies {
+			add(group)
+		}
+	}
+	return edges
+}
+
 // ParseUvLock parses uv.lock content and returns direct dependencies with resolved versions
 // Direct dependencies are identified by finding the project's own package entry (source.editable = ".")
 // and extracting its dependencies list

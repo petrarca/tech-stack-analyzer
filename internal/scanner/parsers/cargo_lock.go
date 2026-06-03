@@ -11,6 +11,107 @@ import (
 // dependency, e.g. { version = "1.0", features = [...] }.
 var cargoTableVersionRegex = regexp.MustCompile(`version\s*=\s*["']([^"']+)["']`)
 
+// ParseCargoLockGraph parses Cargo.lock and returns the dependencies plus the
+// package-to-package edges, honoring the requested graph mode. It implements
+// the GraphProducer contract (ParseGraphFunc). Cargo.lock is self-contained:
+// the [[package]] dependencies array states the locked edges, so no Cargo.toml
+// is needed to build the full graph.
+func ParseCargoLockGraph(content []byte, mode types.DependencyGraphMode) LockGraph {
+	// The flat parser needs Cargo.toml to identify direct deps; the graph does
+	// not, so dependencies are best-effort here (empty Cargo.toml).
+	result := LockGraph{Dependencies: ParseCargoLock(content, "")}
+
+	if mode == types.DependencyGraphOff {
+		return result
+	}
+
+	entries := parseCargoLockEntries(string(content))
+	// Map bare "name" references to a single locked version when unambiguous.
+	versionByName := make(map[string]string, len(entries))
+	for _, e := range entries {
+		versionByName[e.Name] = e.Version
+	}
+
+	switch mode {
+	case types.DependencyGraphDirect:
+		result.Edges = cargoDirectEdges(entries)
+	case types.DependencyGraphFull:
+		result.Edges = cargoFullEdges(entries, versionByName)
+	}
+	return result
+}
+
+// cargoNodeID normalizes a Cargo.lock dependency reference ("name" or
+// "name version") into a stable "name@version" node identity. Bare names are
+// resolved via versionByName when the package appears once in the lockfile.
+func cargoNodeID(ref string, versionByName map[string]string) string {
+	ref = strings.TrimSpace(ref)
+	if ref == "" {
+		return ""
+	}
+	if i := strings.IndexByte(ref, ' '); i >= 0 {
+		name := strings.TrimSpace(ref[:i])
+		// Drop any trailing source spec after the version (rare in lockfiles).
+		rest := strings.TrimSpace(ref[i+1:])
+		if j := strings.IndexByte(rest, ' '); j >= 0 {
+			rest = rest[:j]
+		}
+		return name + "@" + rest
+	}
+	if v, ok := versionByName[ref]; ok {
+		return ref + "@" + v
+	}
+	return ref
+}
+
+// cargoFullEdges builds every package -> dependency edge stated by Cargo.lock.
+func cargoFullEdges(entries []cargoLockEntry, versionByName map[string]string) []types.DependencyEdge {
+	var edges []types.DependencyEdge
+	for _, e := range entries {
+		from := e.Name + "@" + e.Version
+		for _, dep := range e.Dependencies {
+			to := cargoNodeID(dep, versionByName)
+			if to != "" {
+				edges = append(edges, types.DependencyEdge{From: from, To: to})
+			}
+		}
+	}
+	return edges
+}
+
+// cargoDirectEdges builds root -> direct-dependency edges. The root is the only
+// [[package]] entry not referenced as a dependency by any other entry (the
+// workspace/binary crate). The synthetic "." marker is the from node.
+func cargoDirectEdges(entries []cargoLockEntry) []types.DependencyEdge {
+	referenced := make(map[string]bool)
+	for _, e := range entries {
+		for _, dep := range e.Dependencies {
+			name := dep
+			if i := strings.IndexByte(dep, ' '); i >= 0 {
+				name = dep[:i]
+			}
+			referenced[strings.TrimSpace(name)] = true
+		}
+	}
+	versionByName := make(map[string]string, len(entries))
+	for _, e := range entries {
+		versionByName[e.Name] = e.Version
+	}
+	var edges []types.DependencyEdge
+	for _, e := range entries {
+		if referenced[e.Name] {
+			continue // not a root crate
+		}
+		for _, dep := range e.Dependencies {
+			to := cargoNodeID(dep, versionByName)
+			if to != "" {
+				edges = append(edges, types.DependencyEdge{From: ".", To: to})
+			}
+		}
+	}
+	return edges
+}
+
 // ParseCargoLock parses Cargo.lock content and returns direct dependencies with resolved versions
 // Direct dependencies are identified by cross-referencing with Cargo.toml
 func ParseCargoLock(lockContent []byte, cargoTomlContent string) []types.Dependency {
@@ -162,19 +263,42 @@ func extractCargoDepName(line string, state *cargoTomlParseState) string {
 // parseCargoLockPackages extracts package name -> version mapping from Cargo.lock
 func parseCargoLockPackages(content string) map[string]string {
 	packages := make(map[string]string)
+	for _, pkg := range parseCargoLockEntries(content) {
+		packages[pkg.Name] = pkg.Version
+	}
+	return packages
+}
+
+// cargoLockEntry is a resolved [[package]] entry with its locked dependencies.
+type cargoLockEntry struct {
+	Name         string
+	Version      string
+	Dependencies []string // raw entries: "name" or "name version"
+}
+
+// parseCargoLockEntries extracts every [[package]] entry from Cargo.lock,
+// including the dependencies array used to build the package-to-package graph.
+func parseCargoLockEntries(content string) []cargoLockEntry {
+	var entries []cargoLockEntry
 	lines := strings.Split(content, "\n")
 	state := &cargoLockParseState{}
+
+	flush := func() {
+		if state.currentName != "" && state.currentVersion != "" {
+			entries = append(entries, cargoLockEntry{
+				Name:         state.currentName,
+				Version:      state.currentVersion,
+				Dependencies: state.currentDeps,
+			})
+		}
+	}
 
 	for _, line := range lines {
 		trimmed := strings.TrimSpace(line)
 
 		if trimmed == "[[package]]" {
-			// Save previous package if valid
-			if state.currentName != "" && state.currentVersion != "" {
-				packages[state.currentName] = state.currentVersion
-			}
-			state = &cargoLockParseState{}
-			state.inPackage = true
+			flush()
+			state = &cargoLockParseState{inPackage: true}
 			continue
 		}
 
@@ -185,27 +309,40 @@ func parseCargoLockPackages(content string) map[string]string {
 		processCargoLockLine(trimmed, state)
 	}
 
-	// Don't forget the last package
-	if state.currentName != "" && state.currentVersion != "" {
-		packages[state.currentName] = state.currentVersion
-	}
-
-	return packages
+	flush()
+	return entries
 }
 
 // cargoLockParseState tracks the current parsing state for Cargo.lock
 type cargoLockParseState struct {
 	inPackage      bool
+	inDependencies bool
 	currentName    string
 	currentVersion string
+	currentDeps    []string
 }
 
 func processCargoLockLine(line string, state *cargoLockParseState) {
+	// Collect entries of the dependencies = [ ... ] array, which may span
+	// multiple lines. Each entry is a quoted "name" or "name version".
+	if state.inDependencies {
+		if line == "]" {
+			state.inDependencies = false
+			return
+		}
+		if dep := strings.Trim(strings.TrimRight(line, ","), `"`); dep != "" {
+			state.currentDeps = append(state.currentDeps, dep)
+		}
+		return
+	}
+
 	switch {
 	case strings.HasPrefix(line, "name = "):
 		state.currentName = extractCargoLockQuotedValue(line, "name = ")
 	case strings.HasPrefix(line, "version = "):
 		state.currentVersion = extractCargoLockQuotedValue(line, "version = ")
+	case line == "dependencies = [":
+		state.inDependencies = true
 	case strings.HasPrefix(line, "[") && line != "[[package]]":
 		// End of package section (hit another section)
 		state.inPackage = false

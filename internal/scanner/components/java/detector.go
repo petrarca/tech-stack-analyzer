@@ -59,7 +59,22 @@ func (d *Detector) detectMaven(files []types.File, currentPath, basePath string,
 		d.mergeDependencyList(payload, *dependencyListFile, currentPath, provider)
 	}
 
+	// Attach the dependency graph from a pre-generated dependency-tree.json
+	// (mvn dependency:tree -DoutputType=json). No-op unless the dependency-graph
+	// mode is on and the file is present; the analyzer never runs Maven.
+	if payload != nil {
+		components.AttachLockfileGraph(payload, currentPath, provider, mavenGraphProducers)
+	}
+
 	return payload
+}
+
+// mavenGraphProducers lists the pre-generated Maven graph file. A resolved
+// Maven graph cannot be derived statically from pom.xml, so we read the
+// machine-readable dependency:tree output the user/CI committed, exactly like
+// every other lockfile.
+var mavenGraphProducers = []components.LockfileGraphProducer{
+	{Lockfile: parsers.MavenTreeFileName, Parse: parsers.ParseMavenTreeGraph},
 }
 
 // detectGradleOnly looks for Gradle files when no Maven was found

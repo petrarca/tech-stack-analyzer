@@ -94,10 +94,22 @@ func (d *Detector) detectFromPyprojectToml(currentPath, basePath string, provide
 	dependencies := extractDependenciesWithPriority(currentPath, projectName, string(content), provider)
 	d.matchAndAddDependencies(payload, dependencies, depDetector)
 
+	// Attach the dependency graph (no-op unless the dependency-graph mode is on
+	// and a graph-producing lockfile is present).
+	components.AttachLockfileGraph(payload, currentPath, provider, lockfileGraphProducers)
+
 	// Detect license
 	detectLicense(string(content), payload)
 
 	return payload
+}
+
+// lockfileGraphProducers lists this ecosystem's lockfiles in priority order
+// (uv > poetry), matching extractDependenciesWithPriority. AttachLockfileGraph
+// uses the first lockfile that exists.
+var lockfileGraphProducers = []components.LockfileGraphProducer{
+	{Lockfile: "uv.lock", Parse: parsers.ParseUvLockGraph},
+	{Lockfile: "poetry.lock", Parse: parsers.ParsePoetryLockGraph},
 }
 
 // detectFromRequirementsTxt creates a component from requirements.txt.

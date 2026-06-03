@@ -116,10 +116,13 @@ func (d *Detector) processDependenciesWithPriority(currentPath string, provider 
 	d.matchAndAddTechs(dependencies, depDetector, payload)
 }
 
-// lockfileGraphProducers maps lockfile names to their graph parser for this
-// ecosystem. New ecosystems register their producers the same way.
-var lockfileGraphProducers = map[string]parsers.ParseGraphFunc{
-	"pnpm-lock.yaml": parsers.ParsePnpmLockGraph,
+// lockfileGraphProducers lists this ecosystem's lockfiles in priority order
+// (package-lock > pnpm > yarn), matching extractDependenciesFromLockFiles.
+// AttachLockfileGraph uses the first lockfile that exists.
+var lockfileGraphProducers = []components.LockfileGraphProducer{
+	{Lockfile: "package-lock.json", Parse: parsers.ParsePackageLockGraph},
+	{Lockfile: "pnpm-lock.yaml", Parse: parsers.ParsePnpmLockGraph},
+	{Lockfile: "yarn.lock", Parse: parsers.ParseYarnLockGraph},
 }
 
 // extractDependenciesFromLockFiles tries lock files in priority order and returns dependencies

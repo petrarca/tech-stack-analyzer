@@ -6,6 +6,186 @@ import (
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
 
+// ParsePoetryLockGraph parses poetry.lock and returns the dependencies plus the
+// package-to-package edges, honoring the requested graph mode. It implements
+// the GraphProducer contract (ParseGraphFunc). poetry.lock is self-contained:
+// each [[package]] has a [package.dependencies] sub-table naming its
+// dependencies, and every package has a single locked version, so edges resolve
+// to clean "name@version" nodes.
+func ParsePoetryLockGraph(content []byte, mode types.DependencyGraphMode) LockGraph {
+	// The flat parser needs pyproject.toml to identify direct deps; the graph
+	// does not, so dependencies are best-effort here.
+	result := LockGraph{Dependencies: ParsePoetryLock(content, "")}
+
+	if mode == types.DependencyGraphOff {
+		return result
+	}
+
+	entries := parsePoetryEntries(string(content))
+	versionByName := make(map[string]string, len(entries))
+	for _, e := range entries {
+		versionByName[normalizePackageName(e.Name)] = e.Version
+	}
+
+	switch mode {
+	case types.DependencyGraphDirect:
+		// poetry.lock does not mark the root project, so direct edges require
+		// pyproject.toml. Resolve the declared direct deps to locked versions.
+		result.Edges = poetryDirectEdges(content, versionByName)
+	case types.DependencyGraphFull:
+		result.Edges = poetryFullEdges(entries, versionByName)
+	}
+	return result
+}
+
+// poetryLockEntry is a resolved [[package]] with its declared dependency names.
+type poetryLockEntry struct {
+	Name         string
+	Version      string
+	Dependencies []string // dependency names from [package.dependencies]
+}
+
+// poetryNodeID resolves a (normalized) dependency name to a "name@version" node
+// via the locked version map. Returns "" when the package is absent.
+func poetryNodeID(name string, versionByName map[string]string) string {
+	v, ok := versionByName[normalizePackageName(name)]
+	if !ok || v == "" {
+		return ""
+	}
+	return name + "@" + v
+}
+
+// poetryFullEdges builds every package -> dependency edge stated by poetry.lock.
+func poetryFullEdges(entries []poetryLockEntry, versionByName map[string]string) []types.DependencyEdge {
+	var edges []types.DependencyEdge
+	for _, e := range entries {
+		from := poetryNodeID(e.Name, versionByName)
+		if from == "" {
+			continue
+		}
+		for _, dep := range e.Dependencies {
+			if to := poetryNodeID(dep, versionByName); to != "" {
+				edges = append(edges, types.DependencyEdge{From: from, To: to})
+			}
+		}
+	}
+	return edges
+}
+
+// poetryDirectEdges builds root -> direct-dependency edges by resolving the
+// direct deps declared in pyproject.toml to their locked versions. The
+// synthetic "." marker is the from node.
+func poetryDirectEdges(lockContent []byte, versionByName map[string]string) []types.DependencyEdge {
+	// poetry.lock has no embedded pyproject; the graph producer only sees the
+	// lockfile. Fall back to the metadata.files-less approach: every package
+	// not referenced as a dependency by another package is a root-level dep.
+	entries := parsePoetryEntries(string(lockContent))
+	referenced := make(map[string]bool)
+	for _, e := range entries {
+		for _, dep := range e.Dependencies {
+			referenced[normalizePackageName(dep)] = true
+		}
+	}
+	var edges []types.DependencyEdge
+	for _, e := range entries {
+		if referenced[normalizePackageName(e.Name)] {
+			continue
+		}
+		if to := poetryNodeID(e.Name, versionByName); to != "" {
+			edges = append(edges, types.DependencyEdge{From: ".", To: to})
+		}
+	}
+	return edges
+}
+
+// parsePoetryEntries extracts every [[package]] with its [package.dependencies]
+// sub-table names from poetry.lock content.
+func parsePoetryEntries(content string) []poetryLockEntry {
+	var entries []poetryLockEntry
+	lines := strings.Split(content, "\n")
+	state := &poetryEntryState{}
+
+	flush := func() {
+		if state.name != "" && state.version != "" {
+			entries = append(entries, poetryLockEntry{
+				Name:         state.name,
+				Version:      state.version,
+				Dependencies: state.deps,
+			})
+		}
+	}
+
+	for _, line := range lines {
+		trimmed := strings.TrimSpace(line)
+
+		if trimmed == "[[package]]" {
+			flush()
+			state = &poetryEntryState{inPackage: true}
+			continue
+		}
+		if !state.inPackage {
+			continue
+		}
+		processPoetryEntryLine(trimmed, state)
+	}
+	flush()
+	return entries
+}
+
+// poetryEntryState tracks parsing of a single [[package]] block including its
+// [package.dependencies] sub-table.
+type poetryEntryState struct {
+	inPackage bool
+	inDeps    bool
+	name      string
+	version   string
+	deps      []string
+}
+
+func processPoetryEntryLine(line string, state *poetryEntryState) {
+	switch {
+	case line == "[package.dependencies]":
+		state.inDeps = true
+		return
+	case strings.HasPrefix(line, "[package."):
+		// Another package sub-table (extras, source, etc.) ends deps.
+		state.inDeps = false
+		return
+	case line == "[[package]]":
+		return
+	}
+
+	if strings.HasPrefix(line, "name = ") {
+		state.name = extractQuotedValuePoetry(line, "name = ")
+		return
+	}
+	if strings.HasPrefix(line, "version = ") && state.name != "" {
+		state.version = extractQuotedValuePoetry(line, "version = ")
+		return
+	}
+	if state.inDeps {
+		if name := poetryDepName(line); name != "" {
+			state.deps = append(state.deps, name)
+		}
+	}
+}
+
+// poetryDepName extracts the dependency name from a [package.dependencies] line.
+// Lines look like: name = ">=1.0", name = {version = "*", ...}, or a TOML array
+// header for multi-constraint deps (name = [ ... ]).
+func poetryDepName(line string) string {
+	if line == "" || strings.HasPrefix(line, "#") || !strings.Contains(line, "=") {
+		return ""
+	}
+	name := strings.TrimSpace(strings.SplitN(line, "=", 2)[0])
+	// Quoted names (rare): "package-name" = "..."
+	name = strings.Trim(name, `"'`)
+	if name == "" || name == "python" {
+		return ""
+	}
+	return name
+}
+
 // ParsePoetryLock parses poetry.lock content and returns direct dependencies with resolved versions
 // Direct dependencies are identified by cross-referencing with pyproject.toml
 func ParsePoetryLock(lockContent []byte, pyprojectContent string) []types.Dependency {

@@ -1,6 +1,6 @@
 # Dependency Graph
 
-> Status: experimental (pnpm v9)
+> Status: implemented (pnpm, npm, yarn, Cargo, poetry, uv, Maven)
 
 Emit the package-to-package dependency graph -- the edges stating which
 package depends on which -- in addition to the flat dependency list. Enables
@@ -19,6 +19,14 @@ Output: an additive, non-breaking `dependency_edges` array on each component
 and on the aggregate output. Each edge is `{from, to}` with endpoints in
 `name@version` form so they join to the dependency list. Existing consumers
 ignore the field.
+
+In the **full component tree** each component carries the edges from its own
+lockfile under `dependency_edges`. In the **aggregate output**
+(`--also-aggregate dependencies`) all components' edges are flattened into a
+single top-level `dependency_edges` array, deduplicated on `from|to` and sorted
+by `(from, to)` -- this is the consumable form for a graph projection. The
+synthetic root node `.` is the `from` for `direct`-mode edges. Maven nodes use
+`groupId:artifactId@version`; all others use `name@version`.
 
 ### Modes (`--dependency-graph` / `dependency_graph`)
 
@@ -44,42 +52,66 @@ Lockfile parsers expose the graph via `parsers.ParseGraphFunc`:
 func(content []byte, mode types.DependencyGraphMode) parsers.LockGraph
 ```
 
-A detector registers a `lockfile-name -> ParseGraphFunc` map and calls the
-generic `components.AttachLockfileGraph`, which honors the mode and is a no-op
-when off. There is no per-ecosystem special-casing.
+A detector registers an **ordered** `[]components.LockfileGraphProducer`
+(`{Lockfile, Parse}`) and calls the generic `components.AttachLockfileGraph`,
+which honors the mode and is a no-op when off. The list is ordered so the
+highest-priority lockfile that exists wins, matching each ecosystem's existing
+flat-extraction priority (npm: `package-lock` > pnpm > yarn; python: uv >
+poetry). There is no per-ecosystem special-casing.
 
 ## Ecosystem coverage
 
 Edges are a **lockfile** feature. They can be produced wherever the lockfile
 states the resolved graph; they cannot be produced for manifest-only
-ecosystems without executing the build tool.
+ecosystems without an externally generated resolved tree.
 
-| Ecosystem | Source | Edges possible | Status |
-|-----------|--------|----------------|--------|
-| pnpm | `pnpm-lock.yaml` (snapshots, v9) | yes | implemented |
-| npm | `package-lock.json` v2/v3 | yes | not yet |
-| yarn | `yarn.lock` | yes | not yet |
-| Cargo | `Cargo.lock` | yes | not yet |
-| poetry | `poetry.lock` | yes | not yet |
-| uv | `uv.lock` | yes | not yet |
+| Ecosystem | Source | Where edges live | Status |
+|-----------|--------|------------------|--------|
+| pnpm | `pnpm-lock.yaml` (v9) | `snapshots` | implemented |
+| npm | `package-lock.json` v3 | `packages[path].dependencies` (+ peer/optional), node_modules nearest-wins resolution | implemented |
+| yarn | `yarn.lock` (classic) | each entry's `dependencies:` block, range -> locked entry | implemented |
+| Cargo | `Cargo.lock` | `[[package]] dependencies` array | implemented |
+| poetry | `poetry.lock` | `[package.dependencies]` sub-tables | implemented |
+| uv | `uv.lock` | `[[package]] dependencies` / optional-dependencies | implemented |
+| Maven | `dependency-tree.json` (pre-generated) | recursive `children` tree | implemented (read-only ingest) |
+| Gradle | `build.gradle` | no static graph | see below |
 | NuGet | `packages.lock.json` (when present) | conditional | not yet |
 | Go | `go.mod` | direct only (full graph needs `go mod graph`) | not yet |
-| Maven | `pom.xml` | no static graph | see below |
-| Gradle | `build.gradle` | no static graph | see below |
 
-## Manifest-only ecosystems (Maven, Gradle) -- future
+Validated on real repos: pnpm 0/86/2442 (cypher-graphdb/explorer), uv 0/29/265
+(cypher-graphdb/server, fan-in dominated by `typing-extensions`), npm 0/7/534
+(repomix). Aggregate dedup verified on the cypher-graphdb monorepo (2752 nested
+-> 2741 unique, sorted).
 
-Maven and Gradle manifests do not contain a resolved transitive graph. Two
-forward paths, both out of scope for the initial feature:
+## Maven -- read-only ingest of a pre-generated tree
 
-1. **Ingest an externally generated tree file.** This already exists in spirit:
-   the `maven_dependency_list` parser ingests `mvn dependency:list` output (a
-   flat resolved list of nodes). The graph equivalent would ingest
-   `mvn dependency:tree` (nodes + edges) and `gradle dependencies`. This keeps
-   the scanner offline and reuses the existing "ingest a generated artifact"
-   pattern -- the operator runs the build tool, the scanner reads its output.
+A resolved Maven graph **cannot be derived statically** from `pom.xml`: it
+requires Maven's conflict mediation, `dependencyManagement` / BOM overrides,
+version ranges and scope rules -- i.e. Maven's own resolver. Research (2024/25)
+confirms `mvn dependency:tree` remains the gold standard, and since plugin 3.6.0
+it emits machine-readable JSON (`-DoutputType=json`), alongside dot/graphml/tgf.
 
-2. **Online resolution (deps.dev).** Query the deps.dev API by PURL to obtain a
-   precomputed resolved graph. This crosses the offline boundary (a network
-   call, data leaving the perimeter) and so would be an opt-in enrichment, not
-   the default. Noted as an option, not a recommendation.
+The analyzer **never runs Maven**. Consistent with every other lockfile, it
+reads a file that the operator/CI already generated and committed:
+
+```
+mvn dependency:tree -DoutputType=json -DoutputFile=dependency-tree.json
+```
+
+`ParseMavenTreeGraph` reads `dependency-tree.json` (recursive `children` tree;
+nodes `groupId:artifactId@version`, edges parent -> child). This mirrors
+`maven_dependency_list` (which ingests `mvn dependency:list`). If the file is
+absent it is a no-op, exactly like a missing lockfile.
+
+### Remaining future paths
+
+1. **Gradle:** the same pattern -- ingest a generated `gradle dependencies`
+   tree. Not yet implemented (no standard machine-readable Gradle tree file).
+2. **CycloneDX dependency graph.** The `cyclonedx-maven-plugin`
+   (`makeAggregateBom` with `dependencyGraph`) emits CycloneDX with a
+   `dependencies` edge section. Since the analyzer already emits/consumes
+   CycloneDX (`--sbom`), reading that edge section is a natural second Maven
+   path.
+3. **Online resolution (deps.dev).** Query deps.dev by PURL for a precomputed
+   resolved graph. Crosses the offline boundary, so opt-in enrichment only.
+   Noted as an option, not a recommendation.
