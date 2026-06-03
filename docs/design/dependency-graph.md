@@ -180,20 +180,34 @@ versions, not *your* repo's resolved state.
 - **Crosses the offline boundary.** Off by default; never overrides local
   resolution.
 
-### Integration sketch
+### Integration (resolver seam -- implemented)
 
-Introduce a `DependencyResolver` seam that produces the same
-`[]types.DependencyEdge` our `ParseGraphFunc` returns, with two implementations:
+The `DependencyResolver` seam is in place (`internal/scanner/resolver`). It
+produces `[]types.DependencyEdge` behind a single interface, with a `Chain`
+that runs resolvers in precedence order and tags edges with their provenance:
 
-- **lockfile resolver** -- the implemented offline path (reflects your repo).
-- **deps.dev resolver** -- online fallback (reflects published versions).
+- **`LockfileResolver`** -- the implemented offline path (reflects the repo's
+  own resolved state). Wraps the ordered lockfile producers; a present lockfile
+  is authoritative even when it yields zero edges (it does not fall through).
+- **`DepsDevResolver`** -- online fallback (reflects published versions).
+  Gated by `Enabled` and an injectable `Fetch` func; with neither it falls
+  through, so it is safe to include unconditionally and stays offline by
+  default. The HTTP fetcher is not yet wired.
 
-Precedence: a present lockfile / `dependency-tree.json` always wins; deps.dev
-fills the gap for manifest-only ecosystems. Keep `--dependency-graph
-off|direct|full` for *what* to emit and add an orthogonal opt-in (e.g.
-`--resolve-online`, default off) for *where* edges may come from when local
-resolution is unavailable. Cache responses by `(system, name, version)`.
-Annotate edge/component provenance (`source: lockfile` vs `source: deps.dev`)
-so downstream consumers (and the security domain) can tell authoritative-local
-edges from online approximations, and carry the required CC-BY 4.0 attribution
-("data: Google Open Source Insights (deps.dev), CC-BY 4.0").
+`components.AttachLockfileGraph` builds the chain (lockfile first, deps.dev
+second) and is unchanged for detectors -- they still register an ordered
+`[]LockfileGraphProducer`. Edges now carry a `source` field (`lockfile`;
+`deps.dev` once online lands) for downstream trust decisions.
+
+Remaining to make online resolution live:
+
+1. Wire a real `DepsDevFetcher` (the validated `:dependencies` call, mapping the
+   node/edge DAG to `{from, to}` `name@version`), cached by `(system, name,
+   version)`.
+2. Have detectors populate `Request.Ecosystem` and `Request.Coordinates`
+   (root package name+version) so the online resolver can resolve by coordinate.
+3. Add the opt-in switch: `components.SetResolveOnline(true)` is in place; expose
+   it via a `--resolve-online` flag + config key (default off), orthogonal to
+   `--dependency-graph off|direct|full` (which still controls *what* to emit).
+4. Carry the required CC-BY 4.0 attribution
+   ("data: Google Open Source Insights (deps.dev), CC-BY 4.0").

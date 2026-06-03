@@ -102,6 +102,11 @@ type ComponentRef struct {
 type DependencyEdge struct {
 	From string `json:"from"` // depending package, "name@version"
 	To   string `json:"to"`   // depended-on package, "name@version"
+	// Source records where the edge came from for provenance, e.g. "lockfile"
+	// (resolved locally, authoritative) or "deps.dev" (online approximation).
+	// Empty for edges produced before provenance tracking; omitted from JSON
+	// when unset so existing output is unchanged.
+	Source string `json:"source,omitempty"`
 }
 
 // DependencyGraphMode controls how much of the package-to-package dependency

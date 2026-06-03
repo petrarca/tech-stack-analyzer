@@ -248,12 +248,16 @@
                             "to": {
                                 "type": "string",
                                 "description": "Depended-on package, 'name@version'"
+                            },
+                            "source": {
+                                "type": "string",
+                                "description": "Provenance of the edge: 'lockfile' (resolved locally, authoritative) or 'deps.dev' (online approximation). Omitted when unknown."
                             }
                         },
                         "required": ["from", "to"],
                         "additionalProperties": false
                     },
-                    "description": "Package-to-package dependency edges read from lockfiles (additive; present where the lockfile states the graph, e.g. pnpm v9)"
+                    "description": "Package-to-package dependency edges, resolved via the dependency-resolver chain (local lockfile first, optional deps.dev online fallback). Additive; present where the graph could be resolved (pnpm, npm, yarn, Cargo, poetry, uv, and Maven via a pre-generated dependency-tree.json)."
                 },
                 "component_refs": {
                     "type": "array",
