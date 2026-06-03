@@ -184,6 +184,12 @@
                     "type": "boolean",
                     "default": true,
                     "description": "Use lock files (package-lock.json, uv.lock, Cargo.lock, etc.) for dependency resolution with exact versions (default: true)"
+                },
+                "dependency_graph": {
+                    "type": "string",
+                    "enum": ["off", "direct", "full"],
+                    "default": "off",
+                    "description": "Emit package-to-package dependency edges: off (default), direct (root->direct only), or full (transitive graph; can be large). (matches --dependency-graph flag)"
                 }
             },
             "additionalProperties": false,

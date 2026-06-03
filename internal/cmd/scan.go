@@ -12,6 +12,7 @@ import (
 	"github.com/petrarca/tech-stack-analyzer/internal/config"
 	gitpkg "github.com/petrarca/tech-stack-analyzer/internal/git"
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner"
+	"github.com/petrarca/tech-stack-analyzer/internal/scanner/components"
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
 	"github.com/spf13/cobra"
 )
@@ -72,6 +73,7 @@ func init() {
 	scanCmd.Flags().StringSliceVar(&settings.ExcludePatterns, "exclude", settings.ExcludePatterns, "Patterns to exclude (supports glob patterns, can be specified multiple times)")
 	scanCmd.Flags().StringSliceVar(&settings.FilterRules, "rules", settings.FilterRules, "Only use these rules (comma-separated tech names, e.g., c,cplusplus,nodejs - for debugging)")
 	scanCmd.Flags().BoolVar(&settings.NoCodeStats, "no-code-stats", settings.NoCodeStats, "Disable code statistics (lines of code, comments, blanks, complexity)")
+	scanCmd.Flags().StringVar(&settings.DependencyGraph, "dependency-graph", settings.DependencyGraph, "Emit package-to-package dependency edges: off (default), direct (root->direct only), or full (transitive graph; can be large)")
 	scanCmd.Flags().IntVar(&settings.ComponentStatsDepth, "component-stats-depth", 0, "Include code_stats on components up to this tree depth in output (0=none, 1=top-level only, 2=two levels deep, ...)")
 	scanCmd.Flags().IntVar(&settings.SubsystemDepth, "subsystem-depth", 0, "Produce subsystem_stats[] rolled up per depth-N path prefix (0=none, 1=top-level folders). Useful for large monorepos.")
 	scanCmd.Flags().StringVar(&settings.RootID, "root-id", "", "Override random root ID for deterministic scans (e.g., 'my-project-2024')")
@@ -212,6 +214,7 @@ func runMultiPathScan(args []string, cmd *cobra.Command, logger *slog.Logger) {
 	s.SetSubsystemDepth(settings.SubsystemDepth)
 	s.SetSubsystemGroups(settings.SubsystemGroups)
 	s.SetIncludePaths(relPaths)
+	components.SetDependencyGraphMode(types.ParseDependencyGraphMode(settings.DependencyGraph))
 
 	payload, err := s.Scan()
 	if err != nil {

@@ -62,21 +62,53 @@ func ParsePnpmLock(content []byte) []types.Dependency {
 	return ParsePnpmLockWithOptions(content, NPMLockFileOptions{})
 }
 
-// ParsePnpmLockGraph parses pnpm-lock.yaml and returns the direct dependencies
-// plus the package-to-package edges stated in the v9 snapshots section. Edges
-// are empty for pre-v9 lockfiles (no snapshots). Endpoints are "name@version".
-func ParsePnpmLockGraph(content []byte) ([]types.Dependency, []types.DependencyEdge) {
+// ParsePnpmLockGraph parses pnpm-lock.yaml and returns the dependencies plus the
+// package-to-package edges, honoring the requested graph mode. It implements the
+// GraphProducer contract (ParseGraphFunc).
+func ParsePnpmLockGraph(content []byte, mode types.DependencyGraphMode) LockGraph {
 	deps := ParsePnpmLockWithOptions(content, NPMLockFileOptions{})
+	result := LockGraph{Dependencies: deps}
+
+	if mode == types.DependencyGraphOff {
+		return result
+	}
 
 	var lockfile PnpmLockfile
 	if err := yaml.Unmarshal(content, &lockfile); err != nil {
-		return deps, nil
+		return result
 	}
-	return deps, pnpmSnapshotEdges(lockfile.Snapshots)
+
+	switch mode {
+	case types.DependencyGraphDirect:
+		result.Edges = pnpmDirectEdges(lockfile)
+	case types.DependencyGraphFull:
+		result.Edges = pnpmSnapshotEdges(lockfile.Snapshots)
+	}
+	return result
 }
 
-// pnpmSnapshotEdges builds package-to-package edges from v9 snapshot entries.
-// Snapshot keys and dependency versions carry peer-dependency suffixes
+// pnpmDirectEdges builds root -> direct-dependency edges from the importers
+// section. The "from" node is the synthetic root marker ".".
+func pnpmDirectEdges(lockfile PnpmLockfile) []types.DependencyEdge {
+	root, ok := lockfile.Importers["."]
+	if !ok {
+		return nil
+	}
+	var edges []types.DependencyEdge
+	add := func(deps map[string]PnpmDependency) {
+		for name, dep := range deps {
+			ver := resolvePnpmImporterVersion(dep.Version)
+			edges = append(edges, types.DependencyEdge{From: ".", To: pnpmNodeID(name + "@" + ver)})
+		}
+	}
+	add(root.Dependencies)
+	add(root.DevDependencies)
+	add(root.OptionalDependencies)
+	return edges
+}
+
+// pnpmSnapshotEdges builds the full package-to-package graph from v9 snapshot
+// entries. Snapshot keys and dependency versions carry peer-dependency suffixes
 // ("name@1.2.3(peer@4.5.6)") which are trimmed to a clean "name@version" node.
 func pnpmSnapshotEdges(snapshots map[string]PnpmSnapshot) []types.DependencyEdge {
 	if len(snapshots) == 0 {

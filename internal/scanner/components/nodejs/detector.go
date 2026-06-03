@@ -107,25 +107,19 @@ func (d *Detector) processDependenciesWithPriority(currentPath string, provider 
 	// Add dependencies to payload
 	payload.Dependencies = append(payload.Dependencies, dependencies...)
 
-	// Attach package-to-package edges from a pnpm v9 lockfile when present.
-	if components.UseLockFiles() {
-		if edges := d.tryPnpmEdges(currentPath, provider); len(edges) > 0 {
-			payload.DependencyEdges = append(payload.DependencyEdges, edges...)
-		}
-	}
+	// Attach the dependency graph via the generic lockfile-graph helper. The
+	// helper is a no-op unless the dependency-graph mode is enabled and a
+	// matching graph-producing lockfile is present.
+	components.AttachLockfileGraph(payload, currentPath, provider, lockfileGraphProducers)
 
 	// Match dependencies against rules for tech detection
 	d.matchAndAddTechs(dependencies, depDetector, payload)
 }
 
-// tryPnpmEdges reads package-to-package edges from a pnpm v9 lockfile, if any.
-func (d *Detector) tryPnpmEdges(currentPath string, provider types.Provider) []types.DependencyEdge {
-	content, err := provider.ReadFile(filepath.Join(currentPath, "pnpm-lock.yaml"))
-	if err != nil || len(content) == 0 {
-		return nil
-	}
-	_, edges := parsers.ParsePnpmLockGraph(content)
-	return edges
+// lockfileGraphProducers maps lockfile names to their graph parser for this
+// ecosystem. New ecosystems register their producers the same way.
+var lockfileGraphProducers = map[string]parsers.ParseGraphFunc{
+	"pnpm-lock.yaml": parsers.ParsePnpmLockGraph,
 }
 
 // extractDependenciesFromLockFiles tries lock files in priority order and returns dependencies

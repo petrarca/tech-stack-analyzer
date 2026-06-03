@@ -33,6 +33,7 @@ type Settings struct {
 	RootID                   string                    // Override random root ID for deterministic scans
 	PrimaryLanguageThreshold float64                   // Minimum percentage for primary languages (default 0.05 = 5%)
 	UseLockFiles             bool                      // Use lock files for dependency resolution (default true)
+	DependencyGraph          string                    // Package-to-package edge emission: "off" (default), "direct", or "full"
 	OmitFields               []string                  // Fields to omit from full output (e.g. "reason", "path", "edges")
 	AlsoAggregate            string                    // Also produce an aggregate output alongside the full output (e.g. "tech,techs,languages")
 	SBOM                     bool                      // Emit a CycloneDX SBOM as the primary output instead of the scan tree
@@ -64,6 +65,9 @@ func DefaultSettings() *Settings {
 		LogFile:                  "",
 		PrimaryLanguageThreshold: 0.05, // 5% threshold for primary languages
 		UseLockFiles:             true, // Lock files enabled by default
+		// DependencyGraph left empty ("") = off. Empty (not "off") is the zero
+		// value so a scanner-config.yml value can merge in; ParseDependencyGraphMode
+		// maps empty -> off at the point of use.
 	}
 }
 
@@ -208,6 +212,15 @@ func (s *Settings) Validate() error {
 	// Check for mutually exclusive flags
 	if s.Verbose && s.Debug {
 		return fmt.Errorf("cannot use both --verbose and --debug flags")
+	}
+
+	// Validate dependency-graph mode if specified
+	if s.DependencyGraph != "" {
+		switch s.DependencyGraph {
+		case "off", "direct", "full":
+		default:
+			return fmt.Errorf("invalid dependency-graph mode '%s'. Valid values: off, direct, full", s.DependencyGraph)
+		}
 	}
 
 	// Validate aggregate fields if specified

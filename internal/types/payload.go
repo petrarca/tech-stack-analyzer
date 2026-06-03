@@ -104,6 +104,35 @@ type DependencyEdge struct {
 	To   string `json:"to"`   // depended-on package, "name@version"
 }
 
+// DependencyGraphMode controls how much of the package-to-package dependency
+// graph is emitted. The full transitive graph can be very large in big
+// projects, so it is off by default and enabled explicitly.
+type DependencyGraphMode string
+
+const (
+	// DependencyGraphOff emits no package-to-package edges (default).
+	DependencyGraphOff DependencyGraphMode = "off"
+	// DependencyGraphDirect emits only edges from the project root to its
+	// direct dependencies -- a small, top-level graph.
+	DependencyGraphDirect DependencyGraphMode = "direct"
+	// DependencyGraphFull emits the full transitive package-to-package graph
+	// as stated by the lockfile.
+	DependencyGraphFull DependencyGraphMode = "full"
+)
+
+// ParseDependencyGraphMode normalizes a string into a DependencyGraphMode,
+// defaulting to off for empty or unrecognized values.
+func ParseDependencyGraphMode(s string) DependencyGraphMode {
+	switch DependencyGraphMode(s) {
+	case DependencyGraphDirect:
+		return DependencyGraphDirect
+	case DependencyGraphFull:
+		return DependencyGraphFull
+	default:
+		return DependencyGraphOff
+	}
+}
+
 // PrimaryLanguage represents a primary programming language (top languages by lines of code)
 type PrimaryLanguage struct {
 	Language string  `json:"language"`
