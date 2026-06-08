@@ -86,6 +86,8 @@ externally generated resolved tree (the analyzer never runs the build tool).
 | Ruby | `Gemfile.lock` | GEM section (4/6-space indent), DEPENDENCIES = direct | implemented |
 | PHP | `composer.lock` | `packages[].require` (platform reqs skipped) | implemented |
 | NuGet | `packages.lock.json` | per-framework `dependencies`, type=Direct marks direct | implemented |
+| Conan (C/C++) | `conan.lock` (v1) | `graph_lock.nodes` (node-id requires), node "0" = root | implemented |
+| CocoaPods (Swift/iOS) | `Podfile.lock` | PODS nested deps, DEPENDENCIES = direct (subspecs collapsed) | implemented |
 | Maven | `dependency-tree.json` (pre-generated) | recursive `children` tree | implemented (read-only ingest) |
 | Gradle | `gradle-dependencies.txt` (pre-generated) | ASCII tree, conflict-resolved versions | implemented (read-only ingest) |
 | Go | `go.mod` (direct) + `go.mod.graph` (full, pre-generated) | require block / `go mod graph` | implemented |
