@@ -46,19 +46,19 @@ func (n mavenTreeNode) node() string {
 // The flat dependency list is left empty: the java detector already populates
 // payload.Dependencies from pom.xml / dependency:list. This producer only
 // contributes edges.
-func ParseMavenTreeGraph(content []byte, mode types.DependencyGraphMode) LockGraph {
+func ParseMavenTreeGraph(input GraphInput) LockGraph {
 	var result LockGraph
 
-	if mode == types.DependencyGraphOff {
+	if input.Mode == types.DependencyGraphOff {
 		return result
 	}
 
 	var root mavenTreeNode
-	if err := json.Unmarshal(content, &root); err != nil {
+	if err := json.Unmarshal(input.Lockfile, &root); err != nil {
 		return result
 	}
 
-	switch mode {
+	switch input.Mode {
 	case types.DependencyGraphDirect:
 		// Root -> its direct children only. The synthetic "." marker is the
 		// from node, consistent with the other ecosystems.

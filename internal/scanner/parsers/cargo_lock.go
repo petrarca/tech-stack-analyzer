@@ -16,12 +16,13 @@ var cargoTableVersionRegex = regexp.MustCompile(`version\s*=\s*["']([^"']+)["']`
 // the GraphProducer contract (ParseGraphFunc). Cargo.lock is self-contained:
 // the [[package]] dependencies array states the locked edges, so no Cargo.toml
 // is needed to build the full graph.
-func ParseCargoLockGraph(content []byte, mode types.DependencyGraphMode) LockGraph {
+func ParseCargoLockGraph(input GraphInput) LockGraph {
+	content := input.Lockfile
 	// The flat parser needs Cargo.toml to identify direct deps; the graph does
 	// not, so dependencies are best-effort here (empty Cargo.toml).
 	result := LockGraph{Dependencies: ParseCargoLock(content, "")}
 
-	if mode == types.DependencyGraphOff {
+	if input.Mode == types.DependencyGraphOff {
 		return result
 	}
 
@@ -32,7 +33,7 @@ func ParseCargoLockGraph(content []byte, mode types.DependencyGraphMode) LockGra
 		versionByName[e.Name] = e.Version
 	}
 
-	switch mode {
+	switch input.Mode {
 	case types.DependencyGraphDirect:
 		result.Edges = cargoDirectEdges(entries)
 	case types.DependencyGraphFull:

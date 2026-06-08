@@ -183,7 +183,7 @@ snapshots:
     dependencies:
       dep-b: 3.0.0
 `
-	graph := ParsePnpmLockGraph([]byte(content), types.DependencyGraphFull)
+	graph := ParsePnpmLockGraph(GraphInput{Lockfile: []byte(content), Mode: types.DependencyGraphFull})
 	if len(graph.Dependencies) == 0 {
 		t.Fatal("expected at least the direct dependency")
 	}
@@ -225,16 +225,16 @@ snapshots:
       dep-a: 2.0.0
 `
 	// off: no edges
-	if g := ParsePnpmLockGraph([]byte(content), types.DependencyGraphOff); len(g.Edges) != 0 {
+	if g := ParsePnpmLockGraph(GraphInput{Lockfile: []byte(content), Mode: types.DependencyGraphOff}); len(g.Edges) != 0 {
 		t.Errorf("off mode: expected 0 edges, got %d", len(g.Edges))
 	}
 	// direct: only root -> direct edge
-	gd := ParsePnpmLockGraph([]byte(content), types.DependencyGraphDirect)
+	gd := ParsePnpmLockGraph(GraphInput{Lockfile: []byte(content), Mode: types.DependencyGraphDirect})
 	if len(gd.Edges) != 1 || gd.Edges[0].From != "." || gd.Edges[0].To != "mylib@1.0.0" {
 		t.Errorf("direct mode: expected [. -> mylib@1.0.0], got %v", gd.Edges)
 	}
 	// full: transitive edge present
-	gf := ParsePnpmLockGraph([]byte(content), types.DependencyGraphFull)
+	gf := ParsePnpmLockGraph(GraphInput{Lockfile: []byte(content), Mode: types.DependencyGraphFull})
 	found := false
 	for _, e := range gf.Edges {
 		if e.From == "mylib@1.0.0" && e.To == "dep-a@2.0.0" {

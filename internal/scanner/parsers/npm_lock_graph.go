@@ -27,11 +27,12 @@ type packageLockGraphEntry struct {
 // implements the GraphProducer contract (ParseGraphFunc). Only the v3 packages
 // format carries per-package dependency maps; v1/v2-only lockfiles yield no
 // edges.
-func ParsePackageLockGraph(content []byte, mode types.DependencyGraphMode) LockGraph {
+func ParsePackageLockGraph(input GraphInput) LockGraph {
+	content := input.Lockfile
 	// Flat parser is best-effort without package.json (no scope/declared info).
 	result := LockGraph{Dependencies: ParsePackageLock(content, nil)}
 
-	if mode == types.DependencyGraphOff {
+	if input.Mode == types.DependencyGraphOff {
 		return result
 	}
 
@@ -40,7 +41,7 @@ func ParsePackageLockGraph(content []byte, mode types.DependencyGraphMode) LockG
 		return result
 	}
 
-	switch mode {
+	switch input.Mode {
 	case types.DependencyGraphDirect:
 		result.Edges = npmDirectEdges(lock)
 	case types.DependencyGraphFull:

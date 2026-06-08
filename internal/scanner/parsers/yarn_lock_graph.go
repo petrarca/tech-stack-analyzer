@@ -24,17 +24,17 @@ type yarnEntry struct {
 // The flat dependency list is left empty here: ParseYarnLock requires the
 // package.json (for direct-dep scoping) which the graph producer does not
 // receive. The detector already populates payload.Dependencies separately.
-func ParseYarnLockGraph(content []byte, mode types.DependencyGraphMode) LockGraph {
+func ParseYarnLockGraph(input GraphInput) LockGraph {
 	var result LockGraph
 
-	if mode == types.DependencyGraphOff {
+	if input.Mode == types.DependencyGraphOff {
 		return result
 	}
 
-	entries := parseYarnEntries(content)
+	entries := parseYarnEntries(input.Lockfile)
 	resolver := buildYarnResolver(entries)
 
-	switch mode {
+	switch input.Mode {
 	case types.DependencyGraphDirect:
 		result.Edges = yarnDirectEdges(entries, resolver)
 	case types.DependencyGraphFull:

@@ -52,7 +52,7 @@ const mavenTreeFixture = `{
 }`
 
 func TestParseMavenTreeGraph_FullEdges(t *testing.T) {
-	graph := ParseMavenTreeGraph([]byte(mavenTreeFixture), types.DependencyGraphFull)
+	graph := ParseMavenTreeGraph(GraphInput{Lockfile: []byte(mavenTreeFixture), Mode: types.DependencyGraphFull})
 
 	got := map[string]bool{}
 	for _, e := range graph.Edges {
@@ -71,12 +71,12 @@ func TestParseMavenTreeGraph_FullEdges(t *testing.T) {
 }
 
 func TestParseMavenTreeGraph_Modes(t *testing.T) {
-	if g := ParseMavenTreeGraph([]byte(mavenTreeFixture), types.DependencyGraphOff); len(g.Edges) != 0 {
+	if g := ParseMavenTreeGraph(GraphInput{Lockfile: []byte(mavenTreeFixture), Mode: types.DependencyGraphOff}); len(g.Edges) != 0 {
 		t.Errorf("off mode: expected 0 edges, got %d", len(g.Edges))
 	}
 
 	// direct: root -> its two direct children only, from the synthetic "." node.
-	gd := ParseMavenTreeGraph([]byte(mavenTreeFixture), types.DependencyGraphDirect)
+	gd := ParseMavenTreeGraph(GraphInput{Lockfile: []byte(mavenTreeFixture), Mode: types.DependencyGraphDirect})
 	got := map[string]bool{}
 	for _, e := range gd.Edges {
 		if e.From != "." {

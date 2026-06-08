@@ -34,7 +34,7 @@ version = "2.31.0"
 `
 
 func TestParseUvLockGraph_FullEdges(t *testing.T) {
-	graph := ParseUvLockGraph([]byte(uvLockGraphFixture), types.DependencyGraphFull)
+	graph := ParseUvLockGraph(GraphInput{Lockfile: []byte(uvLockGraphFixture), Mode: types.DependencyGraphFull})
 
 	got := map[string]bool{}
 	for _, e := range graph.Edges {
@@ -52,11 +52,11 @@ func TestParseUvLockGraph_FullEdges(t *testing.T) {
 }
 
 func TestParseUvLockGraph_Modes(t *testing.T) {
-	if g := ParseUvLockGraph([]byte(uvLockGraphFixture), types.DependencyGraphOff); len(g.Edges) != 0 {
+	if g := ParseUvLockGraph(GraphInput{Lockfile: []byte(uvLockGraphFixture), Mode: types.DependencyGraphOff}); len(g.Edges) != 0 {
 		t.Errorf("off mode: expected 0 edges, got %d", len(g.Edges))
 	}
 
-	gd := ParseUvLockGraph([]byte(uvLockGraphFixture), types.DependencyGraphDirect)
+	gd := ParseUvLockGraph(GraphInput{Lockfile: []byte(uvLockGraphFixture), Mode: types.DependencyGraphDirect})
 	got := map[string]bool{}
 	for _, e := range gd.Edges {
 		if e.From != "." {

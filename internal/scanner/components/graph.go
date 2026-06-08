@@ -13,6 +13,7 @@ import (
 // poetry).
 type LockfileGraphProducer struct {
 	Lockfile string
+	Manifest string // optional manifest for direct-dependency / scope derivation
 	Parse    parsers.ParseGraphFunc
 }
 
@@ -60,7 +61,7 @@ func AttachLockfileGraph(payload *types.Payload, currentPath string, provider ty
 func toLockfileProducers(producers []LockfileGraphProducer) []resolver.LockfileProducer {
 	out := make([]resolver.LockfileProducer, len(producers))
 	for i, p := range producers {
-		out[i] = resolver.LockfileProducer{Lockfile: p.Lockfile, Parse: p.Parse}
+		out[i] = resolver.LockfileProducer{Lockfile: p.Lockfile, Manifest: p.Manifest, Parse: p.Parse}
 	}
 	return out
 }

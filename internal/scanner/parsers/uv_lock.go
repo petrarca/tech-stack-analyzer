@@ -37,12 +37,13 @@ type UvDependencyRef struct {
 // the GraphProducer contract (ParseGraphFunc). uv.lock is self-contained: each
 // [[package]] lists its resolved dependencies by name, and every package has a
 // single locked version, so edges resolve to clean "name@version" nodes.
-func ParseUvLockGraph(content []byte, mode types.DependencyGraphMode) LockGraph {
+func ParseUvLockGraph(input GraphInput) LockGraph {
+	content := input.Lockfile
 	// The flat parser needs the project name to isolate direct deps; the graph
 	// does not, so dependencies are best-effort here.
 	result := LockGraph{Dependencies: ParseUvLock(content, "")}
 
-	if mode == types.DependencyGraphOff {
+	if input.Mode == types.DependencyGraphOff {
 		return result
 	}
 
@@ -56,7 +57,7 @@ func ParseUvLockGraph(content []byte, mode types.DependencyGraphMode) LockGraph 
 		versionByName[pkg.Name] = pkg.Version
 	}
 
-	switch mode {
+	switch input.Mode {
 	case types.DependencyGraphDirect:
 		result.Edges = uvDirectEdges(lockfile, versionByName)
 	case types.DependencyGraphFull:

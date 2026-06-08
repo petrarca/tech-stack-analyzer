@@ -38,7 +38,7 @@ const npmLockGraphFixture = `{
 }`
 
 func TestParsePackageLockGraph_FullEdges(t *testing.T) {
-	graph := ParsePackageLockGraph([]byte(npmLockGraphFixture), types.DependencyGraphFull)
+	graph := ParsePackageLockGraph(GraphInput{Lockfile: []byte(npmLockGraphFixture), Mode: types.DependencyGraphFull})
 
 	got := map[string]bool{}
 	for _, e := range graph.Edges {
@@ -56,11 +56,11 @@ func TestParsePackageLockGraph_FullEdges(t *testing.T) {
 }
 
 func TestParsePackageLockGraph_Modes(t *testing.T) {
-	if g := ParsePackageLockGraph([]byte(npmLockGraphFixture), types.DependencyGraphOff); len(g.Edges) != 0 {
+	if g := ParsePackageLockGraph(GraphInput{Lockfile: []byte(npmLockGraphFixture), Mode: types.DependencyGraphOff}); len(g.Edges) != 0 {
 		t.Errorf("off mode: expected 0 edges, got %d", len(g.Edges))
 	}
 
-	gd := ParsePackageLockGraph([]byte(npmLockGraphFixture), types.DependencyGraphDirect)
+	gd := ParsePackageLockGraph(GraphInput{Lockfile: []byte(npmLockGraphFixture), Mode: types.DependencyGraphDirect})
 	if len(gd.Edges) != 1 || gd.Edges[0].From != "." || gd.Edges[0].To != "express@4.18.2" {
 		t.Errorf("direct mode: expected [. -> express@4.18.2], got %v", gd.Edges)
 	}

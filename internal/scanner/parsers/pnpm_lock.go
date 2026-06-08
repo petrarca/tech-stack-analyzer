@@ -65,11 +65,12 @@ func ParsePnpmLock(content []byte) []types.Dependency {
 // ParsePnpmLockGraph parses pnpm-lock.yaml and returns the dependencies plus the
 // package-to-package edges, honoring the requested graph mode. It implements the
 // GraphProducer contract (ParseGraphFunc).
-func ParsePnpmLockGraph(content []byte, mode types.DependencyGraphMode) LockGraph {
+func ParsePnpmLockGraph(input GraphInput) LockGraph {
+	content := input.Lockfile
 	deps := ParsePnpmLockWithOptions(content, NPMLockFileOptions{})
 	result := LockGraph{Dependencies: deps}
 
-	if mode == types.DependencyGraphOff {
+	if input.Mode == types.DependencyGraphOff {
 		return result
 	}
 
@@ -78,7 +79,7 @@ func ParsePnpmLockGraph(content []byte, mode types.DependencyGraphMode) LockGrap
 		return result
 	}
 
-	switch mode {
+	switch input.Mode {
 	case types.DependencyGraphDirect:
 		result.Edges = pnpmDirectEdges(lockfile)
 	case types.DependencyGraphFull:

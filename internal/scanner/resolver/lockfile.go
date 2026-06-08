@@ -7,11 +7,14 @@ import (
 )
 
 // LockfileProducer pairs a lockfile (or pre-generated tree file) name with its
-// graph parser. The list is ordered: the first file that exists wins, matching
-// each ecosystem's flat-extraction priority (npm: package-lock > pnpm > yarn;
-// python: uv > poetry).
+// graph parser, plus an optional manifest filename for the same component
+// (e.g. Cargo.toml for Cargo.lock, package.json for package-lock.json). The
+// list is ordered: the first file that exists wins, matching each ecosystem's
+// flat-extraction priority (npm: package-lock > pnpm > yarn; python: uv >
+// poetry).
 type LockfileProducer struct {
 	Lockfile string
+	Manifest string // optional; read and passed to the producer for direct/scope
 	Parse    parsers.ParseGraphFunc
 }
 
@@ -38,7 +41,19 @@ func (r *LockfileResolver) Resolve(req Request) (Result, error) {
 		if err != nil || len(content) == 0 {
 			continue
 		}
-		graph := p.Parse(content, req.Mode)
+		// Read the optional manifest for direct-dependency and scope derivation.
+		// Absent or unreadable manifest is fine -- producers tolerate nil.
+		var manifest []byte
+		if p.Manifest != "" {
+			if m, mErr := req.Provider.ReadFile(filepath.Join(req.Dir, p.Manifest)); mErr == nil {
+				manifest = m
+			}
+		}
+		graph := p.Parse(parsers.GraphInput{
+			Lockfile: content,
+			Manifest: manifest,
+			Mode:     req.Mode,
+		})
 		// A present lockfile resolves the component even if it yields zero edges
 		// (e.g. a leaf with no dependencies); that is still authoritative and
 		// must not fall through to an online approximation.

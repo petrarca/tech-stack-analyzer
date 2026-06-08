@@ -27,7 +27,7 @@ body-parser@1.20.1:
 `
 
 func TestParseYarnLockGraph_FullEdges(t *testing.T) {
-	graph := ParseYarnLockGraph([]byte(yarnLockGraphFixture), types.DependencyGraphFull)
+	graph := ParseYarnLockGraph(GraphInput{Lockfile: []byte(yarnLockGraphFixture), Mode: types.DependencyGraphFull})
 
 	got := map[string]bool{}
 	for _, e := range graph.Edges {
@@ -45,12 +45,12 @@ func TestParseYarnLockGraph_FullEdges(t *testing.T) {
 }
 
 func TestParseYarnLockGraph_Modes(t *testing.T) {
-	if g := ParseYarnLockGraph([]byte(yarnLockGraphFixture), types.DependencyGraphOff); len(g.Edges) != 0 {
+	if g := ParseYarnLockGraph(GraphInput{Lockfile: []byte(yarnLockGraphFixture), Mode: types.DependencyGraphOff}); len(g.Edges) != 0 {
 		t.Errorf("off mode: expected 0 edges, got %d", len(g.Edges))
 	}
 
 	// direct: express is the only entry not referenced as a dependency target.
-	gd := ParseYarnLockGraph([]byte(yarnLockGraphFixture), types.DependencyGraphDirect)
+	gd := ParseYarnLockGraph(GraphInput{Lockfile: []byte(yarnLockGraphFixture), Mode: types.DependencyGraphDirect})
 	if len(gd.Edges) != 1 || gd.Edges[0].From != "." || gd.Edges[0].To != "express@4.18.2" {
 		t.Errorf("direct mode: expected [. -> express@4.18.2], got %v", gd.Edges)
 	}

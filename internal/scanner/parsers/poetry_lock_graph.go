@@ -33,12 +33,13 @@ type poetryGraphPackage struct {
 // version of that package and an edge is emitted to each satisfying version.
 // This mirrors Trivy's poetry resolution and correctly captures the reachable
 // graph surface for blast-radius analysis.
-func ParsePoetryLockGraph(content []byte, mode types.DependencyGraphMode) LockGraph {
+func ParsePoetryLockGraph(input GraphInput) LockGraph {
+	content := input.Lockfile
 	// The flat parser needs pyproject.toml to identify direct deps; the graph
 	// does not, so dependencies are best-effort here.
 	result := LockGraph{Dependencies: ParsePoetryLock(content, "")}
 
-	if mode == types.DependencyGraphOff {
+	if input.Mode == types.DependencyGraphOff {
 		return result
 	}
 
@@ -57,7 +58,7 @@ func ParsePoetryLockGraph(content []byte, mode types.DependencyGraphMode) LockGr
 		versionsByName[key] = append(versionsByName[key], pkg.Version)
 	}
 
-	switch mode {
+	switch input.Mode {
 	case types.DependencyGraphDirect:
 		result.Edges = poetryDirectEdges(lockfile, versionsByName)
 	case types.DependencyGraphFull:

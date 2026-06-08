@@ -40,7 +40,7 @@ description = ""
 `
 
 func TestParsePoetryLockGraph_FullEdges(t *testing.T) {
-	graph := ParsePoetryLockGraph([]byte(poetryLockGraphFixture), types.DependencyGraphFull)
+	graph := ParsePoetryLockGraph(GraphInput{Lockfile: []byte(poetryLockGraphFixture), Mode: types.DependencyGraphFull})
 
 	got := map[string]bool{}
 	for _, e := range graph.Edges {
@@ -58,13 +58,13 @@ func TestParsePoetryLockGraph_FullEdges(t *testing.T) {
 }
 
 func TestParsePoetryLockGraph_Modes(t *testing.T) {
-	if g := ParsePoetryLockGraph([]byte(poetryLockGraphFixture), types.DependencyGraphOff); len(g.Edges) != 0 {
+	if g := ParsePoetryLockGraph(GraphInput{Lockfile: []byte(poetryLockGraphFixture), Mode: types.DependencyGraphOff}); len(g.Edges) != 0 {
 		t.Errorf("off mode: expected 0 edges, got %d", len(g.Edges))
 	}
 
 	// direct: packages not referenced by any other package are roots
 	// (fastapi, requests). starlette/pydantic/anyio are transitive.
-	gd := ParsePoetryLockGraph([]byte(poetryLockGraphFixture), types.DependencyGraphDirect)
+	gd := ParsePoetryLockGraph(GraphInput{Lockfile: []byte(poetryLockGraphFixture), Mode: types.DependencyGraphDirect})
 	got := map[string]bool{}
 	for _, e := range gd.Edges {
 		if e.From != "." {
@@ -122,7 +122,7 @@ numpy = [
 `
 
 func TestParsePoetryLockGraph_MultiVersionRangeMatch(t *testing.T) {
-	graph := ParsePoetryLockGraph([]byte(poetryMultiVersionFixture), types.DependencyGraphFull)
+	graph := ParsePoetryLockGraph(GraphInput{Lockfile: []byte(poetryMultiVersionFixture), Mode: types.DependencyGraphFull})
 
 	got := map[string]bool{}
 	for _, e := range graph.Edges {
@@ -167,7 +167,7 @@ version = "1.0.0"
 [package.dependencies]
 numpy = ">=1.16,<1.25"
 `
-	graph := ParsePoetryLockGraph([]byte(fixture), types.DependencyGraphFull)
+	graph := ParsePoetryLockGraph(GraphInput{Lockfile: []byte(fixture), Mode: types.DependencyGraphFull})
 	got := map[string]bool{}
 	for _, e := range graph.Edges {
 		got[e.From+"->"+e.To] = true

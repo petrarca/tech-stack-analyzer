@@ -26,8 +26,8 @@ func (m mapProvider) ReadFile(p string) ([]byte, error) {
 
 // stubParse returns a fixed edge set regardless of content, honoring off.
 func stubParse(edges ...types.DependencyEdge) parsers.ParseGraphFunc {
-	return func(_ []byte, mode types.DependencyGraphMode) parsers.LockGraph {
-		if mode == types.DependencyGraphOff {
+	return func(input parsers.GraphInput) parsers.LockGraph {
+		if input.Mode == types.DependencyGraphOff {
 			return parsers.LockGraph{}
 		}
 		return parsers.LockGraph{Edges: edges}

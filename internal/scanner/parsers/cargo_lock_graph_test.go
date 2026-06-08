@@ -36,7 +36,7 @@ dependencies = [
 `
 
 func TestParseCargoLockGraph_FullEdges(t *testing.T) {
-	graph := ParseCargoLockGraph([]byte(cargoLockGraphFixture), types.DependencyGraphFull)
+	graph := ParseCargoLockGraph(GraphInput{Lockfile: []byte(cargoLockGraphFixture), Mode: types.DependencyGraphFull})
 
 	got := map[string]bool{}
 	for _, e := range graph.Edges {
@@ -56,12 +56,12 @@ func TestParseCargoLockGraph_FullEdges(t *testing.T) {
 
 func TestParseCargoLockGraph_Modes(t *testing.T) {
 	// off: no edges
-	if g := ParseCargoLockGraph([]byte(cargoLockGraphFixture), types.DependencyGraphOff); len(g.Edges) != 0 {
+	if g := ParseCargoLockGraph(GraphInput{Lockfile: []byte(cargoLockGraphFixture), Mode: types.DependencyGraphOff}); len(g.Edges) != 0 {
 		t.Errorf("off mode: expected 0 edges, got %d", len(g.Edges))
 	}
 
 	// direct: root (myapp, not referenced by anyone) -> its direct deps only
-	gd := ParseCargoLockGraph([]byte(cargoLockGraphFixture), types.DependencyGraphDirect)
+	gd := ParseCargoLockGraph(GraphInput{Lockfile: []byte(cargoLockGraphFixture), Mode: types.DependencyGraphDirect})
 	got := map[string]bool{}
 	for _, e := range gd.Edges {
 		if e.From != "." {
@@ -77,7 +77,7 @@ func TestParseCargoLockGraph_Modes(t *testing.T) {
 	}
 
 	// full: transitive edge present
-	gf := ParseCargoLockGraph([]byte(cargoLockGraphFixture), types.DependencyGraphFull)
+	gf := ParseCargoLockGraph(GraphInput{Lockfile: []byte(cargoLockGraphFixture), Mode: types.DependencyGraphFull})
 	found := false
 	for _, e := range gf.Edges {
 		if e.From == "serde@1.0.197" && e.To == "serde_derive@1.0.197" {
