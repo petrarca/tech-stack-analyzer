@@ -44,6 +44,36 @@ func TestParseYarnLockGraph_FullEdges(t *testing.T) {
 	}
 }
 
+func TestParseYarnLockGraph_DirectFromManifest(t *testing.T) {
+	// package.json declares express + accepts as direct. accepts is ALSO
+	// transitive (express -> accepts); the manifest path must classify it
+	// direct, which the not-referenced heuristic cannot.
+	manifest := `{
+  "dependencies": {
+    "express": "^4.18.0",
+    "accepts": "~1.3.8"
+  }
+}`
+	gd := ParseYarnLockGraph(GraphInput{
+		Lockfile: []byte(yarnLockGraphFixture),
+		Manifest: []byte(manifest),
+		Mode:     types.DependencyGraphDirect,
+	})
+	got := map[string]bool{}
+	for _, e := range gd.Edges {
+		if e.From != "." {
+			t.Errorf("expected from='.', got %q", e.From)
+		}
+		got[e.To] = true
+	}
+	if !got["express@4.18.2"] || !got["accepts@1.3.8"] {
+		t.Errorf("expected direct edges to express and accepts, got %v", got)
+	}
+	if got["body-parser@1.20.1"] {
+		t.Error("body-parser is transitive only; must not be direct")
+	}
+}
+
 func TestParseYarnLockGraph_Modes(t *testing.T) {
 	if g := ParseYarnLockGraph(GraphInput{Lockfile: []byte(yarnLockGraphFixture), Mode: types.DependencyGraphOff}); len(g.Edges) != 0 {
 		t.Errorf("off mode: expected 0 edges, got %d", len(g.Edges))

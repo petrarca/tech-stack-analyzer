@@ -1,6 +1,7 @@
 package parsers
 
 import (
+	"encoding/json"
 	"regexp"
 	"strings"
 
@@ -36,11 +37,47 @@ func ParseYarnLockGraph(input GraphInput) LockGraph {
 
 	switch input.Mode {
 	case types.DependencyGraphDirect:
-		result.Edges = yarnDirectEdges(entries, resolver)
+		// Prefer package.json-declared direct deps (resolved via the lock's
+		// specifier index); fall back to the not-referenced heuristic.
+		if edges := yarnDirectEdgesFromManifest(input.Manifest, resolver); edges != nil {
+			result.Edges = edges
+		} else {
+			result.Edges = yarnDirectEdges(entries, resolver)
+		}
 	case types.DependencyGraphFull:
 		result.Edges = yarnFullEdges(entries, resolver)
 	}
 	return result
+}
+
+// yarnDirectEdgesFromManifest builds root -> direct edges from package.json's
+// declared dependencies, resolving each (name, range) to its locked version via
+// the yarn specifier index. Returns nil when no manifest is supplied so the
+// caller can fall back to the heuristic.
+func yarnDirectEdgesFromManifest(manifest []byte, resolver yarnResolver) []types.DependencyEdge {
+	if len(manifest) == 0 {
+		return nil
+	}
+	var pkg struct {
+		Dependencies         map[string]string `json:"dependencies"`
+		DevDependencies      map[string]string `json:"devDependencies"`
+		OptionalDependencies map[string]string `json:"optionalDependencies"`
+	}
+	if err := json.Unmarshal(manifest, &pkg); err != nil {
+		return nil
+	}
+	edges := []types.DependencyEdge{}
+	add := func(deps map[string]string) {
+		for name, rng := range deps {
+			if to := resolver.yarnResolve(name, rng); to != "" {
+				edges = append(edges, types.DependencyEdge{From: ".", To: to})
+			}
+		}
+	}
+	add(pkg.Dependencies)
+	add(pkg.DevDependencies)
+	add(pkg.OptionalDependencies)
+	return edges
 }
 
 // yarnSpecKeyRe splits a yarn entry header key into name and range, e.g.

@@ -35,6 +35,38 @@ dependencies = [
 ]
 `
 
+func TestParseCargoLockGraph_DirectFromManifest(t *testing.T) {
+	// Cargo.toml declares serde + tokio as direct deps. serde is ALSO pulled
+	// transitively (tokio -> serde), which would confuse a root heuristic; the
+	// manifest path must still classify serde as direct.
+	cargoToml := `[package]
+name = "myapp"
+version = "0.1.0"
+
+[dependencies]
+serde = "1.0"
+tokio = "1.35"
+`
+	gd := ParseCargoLockGraph(GraphInput{
+		Lockfile: []byte(cargoLockGraphFixture),
+		Manifest: []byte(cargoToml),
+		Mode:     types.DependencyGraphDirect,
+	})
+	got := map[string]bool{}
+	for _, e := range gd.Edges {
+		if e.From != "." {
+			t.Errorf("expected from='.', got %q", e.From)
+		}
+		got[e.To] = true
+	}
+	if !got["serde@1.0.197"] || !got["tokio@1.35.1"] {
+		t.Errorf("expected direct edges to serde and tokio, got %v", got)
+	}
+	if got["serde_derive@1.0.197"] {
+		t.Error("must not include transitive serde_derive as direct")
+	}
+}
+
 func TestParseCargoLockGraph_FullEdges(t *testing.T) {
 	graph := ParseCargoLockGraph(GraphInput{Lockfile: []byte(cargoLockGraphFixture), Mode: types.DependencyGraphFull})
 

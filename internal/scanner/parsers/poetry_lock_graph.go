@@ -60,11 +60,33 @@ func ParsePoetryLockGraph(input GraphInput) LockGraph {
 
 	switch input.Mode {
 	case types.DependencyGraphDirect:
-		result.Edges = poetryDirectEdges(lockfile, versionsByName)
+		// Prefer pyproject.toml-declared direct deps; fall back to the
+		// not-referenced heuristic when no manifest is supplied.
+		if len(input.Manifest) > 0 {
+			result.Edges = poetryDirectEdgesFromManifest(string(input.Manifest), versionsByName)
+		} else {
+			result.Edges = poetryDirectEdges(lockfile, versionsByName)
+		}
 	case types.DependencyGraphFull:
 		result.Edges = poetryFullEdges(lockfile, versionsByName)
 	}
 	return result
+}
+
+// poetryDirectEdgesFromManifest builds root -> direct edges from the deps
+// declared in pyproject.toml, resolved to their locked versions. The synthetic
+// "." marker is the from node. When a package is locked at multiple versions,
+// an edge is emitted to each (markers not evaluated).
+func poetryDirectEdgesFromManifest(pyproject string, versionsByName map[string][]string) []types.DependencyEdge {
+	directDeps := extractDirectDepsFromPyproject(pyproject)
+	var edges []types.DependencyEdge
+	for name := range directDeps {
+		key := normalizePackageName(name)
+		for _, v := range versionsByName[key] {
+			edges = append(edges, types.DependencyEdge{From: ".", To: name + "@" + v})
+		}
+	}
+	return edges
 }
 
 // poetryFullEdges builds every package -> dependency edge. Each dependency

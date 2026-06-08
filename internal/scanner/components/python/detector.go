@@ -108,8 +108,8 @@ func (d *Detector) detectFromPyprojectToml(currentPath, basePath string, provide
 // (uv > poetry), matching extractDependenciesWithPriority. AttachLockfileGraph
 // uses the first lockfile that exists.
 var lockfileGraphProducers = []components.LockfileGraphProducer{
-	{Lockfile: "uv.lock", Parse: parsers.ParseUvLockGraph},
-	{Lockfile: "poetry.lock", Parse: parsers.ParsePoetryLockGraph},
+	{Lockfile: "uv.lock", Manifest: "pyproject.toml", Parse: parsers.ParseUvLockGraph},
+	{Lockfile: "poetry.lock", Manifest: "pyproject.toml", Parse: parsers.ParsePoetryLockGraph},
 }
 
 // detectFromRequirementsTxt creates a component from requirements.txt.

@@ -121,6 +121,37 @@ numpy = [
 ]
 `
 
+func TestParsePoetryLockGraph_DirectFromManifest(t *testing.T) {
+	// anyio is both a direct dep (declared in pyproject) and transitive
+	// (starlette -> anyio). The manifest path must classify it as direct.
+	pyproject := `[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = "^0.110"
+anyio = "^4.0"
+`
+	gd := ParsePoetryLockGraph(GraphInput{
+		Lockfile: []byte(poetryLockGraphFixture),
+		Manifest: []byte(pyproject),
+		Mode:     types.DependencyGraphDirect,
+	})
+	got := map[string]bool{}
+	for _, e := range gd.Edges {
+		if e.From != "." {
+			t.Errorf("expected from='.', got %q", e.From)
+		}
+		got[e.To] = true
+	}
+	if !got["fastapi@0.110.0"] {
+		t.Errorf("expected direct edge to fastapi, got %v", got)
+	}
+	if !got["anyio@4.2.0"] {
+		t.Errorf("anyio is declared direct in pyproject; expected direct edge, got %v", got)
+	}
+	if got["starlette@0.36.3"] {
+		t.Error("starlette is transitive only; must not be a direct edge")
+	}
+}
+
 func TestParsePoetryLockGraph_MultiVersionRangeMatch(t *testing.T) {
 	graph := ParsePoetryLockGraph(GraphInput{Lockfile: []byte(poetryMultiVersionFixture), Mode: types.DependencyGraphFull})
 

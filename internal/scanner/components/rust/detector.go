@@ -100,7 +100,7 @@ func (d *Detector) detectCargoToml(file types.File, currentPath, basePath string
 // lockfileGraphProducers lists this ecosystem's lockfiles in priority order.
 // Cargo has a single lockfile.
 var lockfileGraphProducers = []components.LockfileGraphProducer{
-	{Lockfile: "Cargo.lock", Parse: parsers.ParseCargoLockGraph},
+	{Lockfile: "Cargo.lock", Manifest: "Cargo.toml", Parse: parsers.ParseCargoLockGraph},
 }
 
 // extractDependenciesWithPriority extracts dependencies using lock file priority system

@@ -35,11 +35,32 @@ func ParseCargoLockGraph(input GraphInput) LockGraph {
 
 	switch input.Mode {
 	case types.DependencyGraphDirect:
-		result.Edges = cargoDirectEdges(entries)
+		// Prefer manifest-declared direct deps (accurate even when a direct dep
+		// is also pulled transitively); fall back to the not-referenced
+		// heuristic when no Cargo.toml is supplied.
+		if len(input.Manifest) > 0 {
+			result.Edges = cargoDirectEdgesFromManifest(string(input.Manifest), versionByName)
+		} else {
+			result.Edges = cargoDirectEdges(entries)
+		}
 	case types.DependencyGraphFull:
 		result.Edges = cargoFullEdges(entries, versionByName)
 	}
 	return result
+}
+
+// cargoDirectEdgesFromManifest builds root -> direct edges from the deps
+// declared in Cargo.toml, resolved to their locked versions. The synthetic "."
+// marker is the from node.
+func cargoDirectEdgesFromManifest(cargoToml string, versionByName map[string]string) []types.DependencyEdge {
+	directDeps := extractDirectDepsFromCargoToml(cargoToml)
+	var edges []types.DependencyEdge
+	for name := range directDeps {
+		if v, ok := versionByName[name]; ok {
+			edges = append(edges, types.DependencyEdge{From: ".", To: name + "@" + v})
+		}
+	}
+	return edges
 }
 
 // cargoNodeID normalizes a Cargo.lock dependency reference ("name" or
