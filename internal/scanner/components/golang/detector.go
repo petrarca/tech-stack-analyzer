@@ -106,7 +106,20 @@ func (d *Detector) detectGoMod(file types.File, currentPath, basePath string, pr
 		depDetector.ApplyMatchesToPayload(payload, depDetector.MatchDependencies(depNames, "golang"))
 	}
 
+	// Attach the dependency graph (no-op unless the mode is on). Prefer a
+	// pre-generated `go mod graph` output for the full transitive graph; fall
+	// back to go.mod for direct-only.
+	components.AttachLockfileGraph(payload, currentPath, provider, lockfileGraphProducers)
+
 	return payload
+}
+
+// lockfileGraphProducers lists Go's graph sources in priority order: the
+// pre-generated `go mod graph` output (full transitive + direct) wins when
+// present; otherwise go.mod provides direct-only edges.
+var lockfileGraphProducers = []components.LockfileGraphProducer{
+	{Lockfile: parsers.GoModGraphFileName, Parse: parsers.ParseGoModGraph},
+	{Lockfile: "go.mod", Parse: parsers.ParseGoModDirectGraph},
 }
 
 func init() {
