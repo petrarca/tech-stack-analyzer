@@ -55,9 +55,9 @@ func ParseCargoLockGraph(input GraphInput) LockGraph {
 func cargoDirectEdgesFromManifest(cargoToml string, versionByName map[string]string) []types.DependencyEdge {
 	directDeps := extractDirectDepsFromCargoToml(cargoToml)
 	var edges []types.DependencyEdge
-	for name := range directDeps {
+	for name, scope := range directDeps {
 		if v, ok := versionByName[name]; ok {
-			edges = append(edges, types.DependencyEdge{From: ".", To: name + "@" + v})
+			edges = append(edges, types.DependencyEdge{From: ".", To: name + "@" + v, Scope: scope})
 		}
 	}
 	return edges

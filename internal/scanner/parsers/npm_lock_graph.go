@@ -18,6 +18,7 @@ type packageLockGraphFile struct {
 type packageLockGraphEntry struct {
 	Version              string            `json:"version"`
 	Dependencies         map[string]string `json:"dependencies"`
+	DevDependencies      map[string]string `json:"devDependencies"`
 	OptionalDependencies map[string]string `json:"optionalDependencies"`
 	PeerDependencies     map[string]string `json:"peerDependencies"`
 }
@@ -108,16 +109,17 @@ func npmDirectEdges(lock packageLockGraphFile) []types.DependencyEdge {
 		return nil
 	}
 	var edges []types.DependencyEdge
-	emit := func(deps map[string]string) {
+	emit := func(deps map[string]string, scope string) {
 		for name := range deps {
 			if to := npmResolveDep(lock.Packages, "", name); to != "" {
-				edges = append(edges, types.DependencyEdge{From: ".", To: to})
+				edges = append(edges, types.DependencyEdge{From: ".", To: to, Scope: scope})
 			}
 		}
 	}
-	emit(root.Dependencies)
-	emit(root.OptionalDependencies)
-	emit(root.PeerDependencies)
+	emit(root.Dependencies, types.ScopeProd)
+	emit(root.DevDependencies, types.ScopeDev)
+	emit(root.OptionalDependencies, types.ScopeOptional)
+	emit(root.PeerDependencies, types.ScopePeer)
 	return edges
 }
 

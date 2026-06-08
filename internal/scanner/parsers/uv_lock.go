@@ -109,16 +109,16 @@ func uvDirectEdges(lockfile UvLockfile, versionByName map[string]string) []types
 		if pkg.Source.Editable != "." {
 			continue
 		}
-		add := func(refs []UvDependencyRef) {
+		add := func(refs []UvDependencyRef, scope string) {
 			for _, ref := range refs {
 				if to := uvNodeID(ref.Name, versionByName); to != "" {
-					edges = append(edges, types.DependencyEdge{From: ".", To: to})
+					edges = append(edges, types.DependencyEdge{From: ".", To: to, Scope: scope})
 				}
 			}
 		}
-		add(pkg.Dependencies)
+		add(pkg.Dependencies, types.ScopeProd)
 		for _, group := range pkg.OptionalDependencies {
-			add(group)
+			add(group, types.ScopeOptional)
 		}
 	}
 	return edges

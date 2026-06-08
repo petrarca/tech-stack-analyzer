@@ -67,16 +67,16 @@ func yarnDirectEdgesFromManifest(manifest []byte, resolver yarnResolver) []types
 		return nil
 	}
 	edges := []types.DependencyEdge{}
-	add := func(deps map[string]string) {
+	add := func(deps map[string]string, scope string) {
 		for name, rng := range deps {
 			if to := resolver.yarnResolve(name, rng); to != "" {
-				edges = append(edges, types.DependencyEdge{From: ".", To: to})
+				edges = append(edges, types.DependencyEdge{From: ".", To: to, Scope: scope})
 			}
 		}
 	}
-	add(pkg.Dependencies)
-	add(pkg.DevDependencies)
-	add(pkg.OptionalDependencies)
+	add(pkg.Dependencies, types.ScopeProd)
+	add(pkg.DevDependencies, types.ScopeDev)
+	add(pkg.OptionalDependencies, types.ScopeOptional)
 	return edges
 }
 

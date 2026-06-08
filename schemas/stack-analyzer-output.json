@@ -252,6 +252,10 @@
                             "source": {
                                 "type": "string",
                                 "description": "Provenance of the edge: 'lockfile' (resolved locally, authoritative) or 'deps.dev' (online approximation). Omitted when unknown."
+                            },
+                            "scope": {
+                                "type": "string",
+                                "description": "Dependency scope of the edge target: 'prod', 'dev', 'optional', or 'peer'. Omitted when the source does not state a scope."
                             }
                         },
                         "required": ["from", "to"],

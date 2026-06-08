@@ -233,6 +233,9 @@ snapshots:
 	if len(gd.Edges) != 1 || gd.Edges[0].From != "." || gd.Edges[0].To != "mylib@1.0.0" {
 		t.Errorf("direct mode: expected [. -> mylib@1.0.0], got %v", gd.Edges)
 	}
+	if gd.Edges[0].Scope != types.ScopeProd {
+		t.Errorf("direct mode: expected prod scope, got %q", gd.Edges[0].Scope)
+	}
 	// full: transitive edge present
 	gf := ParsePnpmLockGraph(GraphInput{Lockfile: []byte(content), Mode: types.DependencyGraphFull})
 	found := false

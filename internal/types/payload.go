@@ -107,6 +107,11 @@ type DependencyEdge struct {
 	// Empty for edges produced before provenance tracking; omitted from JSON
 	// when unset so existing output is unchanged.
 	Source string `json:"source,omitempty"`
+	// Scope is the dependency scope of the edge target relative to the edge
+	// source: "prod", "dev", "optional", "peer". Allows consumers to filter
+	// dev/test edges for blast-radius. Empty when the source does not state a
+	// scope; omitted from JSON when unset.
+	Scope string `json:"scope,omitempty"`
 }
 
 // DependencyGraphMode controls how much of the package-to-package dependency

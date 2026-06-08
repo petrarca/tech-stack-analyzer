@@ -80,10 +80,10 @@ func ParsePoetryLockGraph(input GraphInput) LockGraph {
 func poetryDirectEdgesFromManifest(pyproject string, versionsByName map[string][]string) []types.DependencyEdge {
 	directDeps := extractDirectDepsFromPyproject(pyproject)
 	var edges []types.DependencyEdge
-	for name := range directDeps {
+	for name, scope := range directDeps {
 		key := normalizePackageName(name)
 		for _, v := range versionsByName[key] {
-			edges = append(edges, types.DependencyEdge{From: ".", To: name + "@" + v})
+			edges = append(edges, types.DependencyEdge{From: ".", To: name + "@" + v, Scope: scope})
 		}
 	}
 	return edges

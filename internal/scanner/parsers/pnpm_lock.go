@@ -96,15 +96,15 @@ func pnpmDirectEdges(lockfile PnpmLockfile) []types.DependencyEdge {
 		return nil
 	}
 	var edges []types.DependencyEdge
-	add := func(deps map[string]PnpmDependency) {
+	add := func(deps map[string]PnpmDependency, scope string) {
 		for name, dep := range deps {
 			ver := resolvePnpmImporterVersion(dep.Version)
-			edges = append(edges, types.DependencyEdge{From: ".", To: pnpmNodeID(name + "@" + ver)})
+			edges = append(edges, types.DependencyEdge{From: ".", To: pnpmNodeID(name + "@" + ver), Scope: scope})
 		}
 	}
-	add(root.Dependencies)
-	add(root.DevDependencies)
-	add(root.OptionalDependencies)
+	add(root.Dependencies, types.ScopeProd)
+	add(root.DevDependencies, types.ScopeDev)
+	add(root.OptionalDependencies, types.ScopeOptional)
 	return edges
 }
 
