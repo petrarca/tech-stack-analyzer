@@ -42,6 +42,7 @@ import (
 	_ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/python"
 	_ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/ruby"
 	_ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/rust"
+	_ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/swift"
 	_ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/terraform"
 )
 
