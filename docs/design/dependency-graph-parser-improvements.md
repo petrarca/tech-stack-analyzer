@@ -47,35 +47,23 @@ keeping all versions (over-approximate rather than drop -- safer for
 blast-radius). Validated on nicegui: matplotlib now links to BOTH numpy
 versions; a strict `<1.25` range correctly excludes `1.26.4`.
 
+## Done since this plan was written
+
+- **TOML decoders for cargo and uv graph parsers** -- both now use
+  `BurntSushi/toml` instead of hand-parsing.
+- **Manifest-driven `direct` mode** -- the contract now passes the component
+  manifest (`GraphInput.Manifest`); cargo/poetry/yarn derive direct edges from
+  declared deps (accurate even when a direct dep is also transitive). npm/pnpm/
+  uv/maven already used real roots.
+- **Scope on edges** -- `DependencyEdge.Scope` (prod/dev/optional/peer) is set
+  on direct edges across ecosystems.
+- **Edge validation** -- producers report `Unresolved` references (surfaced as
+  the `dependency_graph.unresolved` property) instead of dropping silently.
+- **New ecosystems** -- Ruby, PHP, NuGet, Go, Gradle, and CycloneDX ingest.
+
 ## Remaining improvements (ranked)
 
-### 1. TOML decoders for cargo and uv graph parsers (medium)
-
-Cargo and uv graph builders still hand-parse line-by-line (a leftover from the
-flat parsers). They are correct today, but a real TOML decoder
-(`BurntSushi/toml`, now a dependency) would be more robust to formatting (
-multi-line arrays, inline tables, comments) and remove bespoke string slicing.
-Low risk, mechanical; do it when touching those files next. The flat parsers
-can migrate independently.
-
-### 2. Manifest-driven `direct` mode (medium)
-
-We infer the root as "any package not referenced by another package," which
-breaks for diamond graphs, cycles, and dev-only roots. Trivy resolves direct
-deps from the actual manifest (`pyproject.toml` / `Cargo.toml` / `package.json`)
-and marks `RelationshipRoot/Direct`. To match: pass the manifest content into
-the graph producer (the flat parsers already read it) and derive direct edges
-from declared deps instead of the heuristic. Improves `direct`-mode accuracy
-across all ecosystems.
-
-### 3. Scope on edges (medium)
-
-Trivy marks `Dev` per package (and parses poetry `groups`/`category`, npm
-dev/peer/optional). Our edges carry no scope. For blast-radius you often want to
-exclude dev/test edges. Thread a scope/relationship field onto `DependencyEdge`
-(additive) so consumers can filter. Pairs naturally with #2.
-
-### 4. pnpm/yarn workspace relationship (low)
+### 1. pnpm/yarn workspace relationship (low)
 
 Trivy has a `RelationshipWorkspace` and a TODO to use it for cargo/npm
 workspaces. Monorepo workspace links currently appear as ordinary edges. Tagging
