@@ -80,6 +80,7 @@ externally generated resolved tree (the analyzer never runs the build tool).
 | pnpm | `pnpm-lock.yaml` (v9) | `snapshots` | implemented |
 | npm | `package-lock.json` v3 | `packages[path].dependencies` (+ dev/peer/optional), node_modules nearest-wins | implemented |
 | yarn | `yarn.lock` (classic) | each entry's `dependencies:` block, range -> locked entry | implemented |
+| Bun | `bun.lock` (JSONC) | `packages[].info.dependencies` (real graph), workspace = direct | implemented |
 | Cargo | `Cargo.lock` | `[[package]] dependencies` array (TOML-decoded) | implemented |
 | poetry | `poetry.lock` | `[package.dependencies]`, PEP 440 multi-version range match | implemented |
 | uv | `uv.lock` | `[[package]] dependencies` / optional-dependencies (TOML-decoded) | implemented |
@@ -90,6 +91,7 @@ externally generated resolved tree (the analyzer never runs the build tool).
 | CocoaPods (Swift/iOS) | `Podfile.lock` | PODS nested deps, DEPENDENCIES = direct (subspecs collapsed) | implemented |
 | Elixir | `mix.lock` | per-entry dependency tuples (real graph); direct via heuristic | implemented |
 | Dart/Flutter | `pubspec.lock` | resolved packages (root-rooted closure; no package-to-package edges in lock) | implemented |
+| Swift (SPM) | `Package.resolved` | resolved pins (root-rooted closure; edges live in Package.swift) | implemented |
 | Maven | `dependency-tree.json` (pre-generated) | recursive `children` tree | implemented (read-only ingest) |
 | Gradle | `gradle-dependencies.txt` (pre-generated) | ASCII tree, conflict-resolved versions | implemented (read-only ingest) |
 | Go | `go.mod` (direct) + `go.mod.graph` (full, pre-generated) | require block / `go mod graph` | implemented |
