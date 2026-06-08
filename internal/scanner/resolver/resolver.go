@@ -64,6 +64,9 @@ type Result struct {
 	Edges    []types.DependencyEdge
 	Source   Provenance
 	Resolved bool
+	// Unresolved lists dependency references that could not be resolved to a
+	// known node (lockfile drift, unparseable refs). Reported, not dropped.
+	Unresolved []string
 }
 
 // DependencyResolver produces package-to-package edges for a component from a

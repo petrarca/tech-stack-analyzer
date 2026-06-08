@@ -11,6 +11,12 @@ import (
 type LockGraph struct {
 	Dependencies []types.Dependency
 	Edges        []types.DependencyEdge
+	// Unresolved lists dependency references the lockfile stated but whose
+	// target could not be resolved to a known "name@version" node (e.g.
+	// lockfile drift, an unparseable reference). These are reported rather than
+	// silently dropped so consumers can detect gaps. Each entry is the raw
+	// reference (e.g. "from -> depName").
+	Unresolved []string
 }
 
 // GraphInput is the input to a graph producer. It carries the lockfile (or

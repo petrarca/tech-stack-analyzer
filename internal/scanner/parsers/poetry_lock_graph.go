@@ -68,7 +68,7 @@ func ParsePoetryLockGraph(input GraphInput) LockGraph {
 			result.Edges = poetryDirectEdges(lockfile, versionsByName)
 		}
 	case types.DependencyGraphFull:
-		result.Edges = poetryFullEdges(lockfile, versionsByName)
+		result.Edges, result.Unresolved = poetryFullEdges(lockfile, versionsByName)
 	}
 	return result
 }
@@ -90,21 +90,27 @@ func poetryDirectEdgesFromManifest(pyproject string, versionsByName map[string][
 }
 
 // poetryFullEdges builds every package -> dependency edge. Each dependency
-// range is resolved to all locked versions it satisfies.
-func poetryFullEdges(lockfile poetryGraphLockfile, versionsByName map[string][]string) []types.DependencyEdge {
-	var edges []types.DependencyEdge
+// range is resolved to all locked versions it satisfies. Dependency names not
+// present in the lockfile are returned as unresolved references rather than
+// dropped silently.
+func poetryFullEdges(lockfile poetryGraphLockfile, versionsByName map[string][]string) (edges []types.DependencyEdge, unresolved []string) {
 	for _, pkg := range lockfile.Packages {
 		if pkg.Version == "" {
 			continue
 		}
 		from := pkg.Name + "@" + pkg.Version
 		for depName, depVal := range pkg.Dependencies {
-			for _, to := range poetryResolveTargets(depName, depVal, versionsByName) {
+			targets := poetryResolveTargets(depName, depVal, versionsByName)
+			if len(targets) == 0 {
+				unresolved = append(unresolved, from+" -> "+depName)
+				continue
+			}
+			for _, to := range targets {
 				edges = append(edges, types.DependencyEdge{From: from, To: to})
 			}
 		}
 	}
-	return edges
+	return edges, unresolved
 }
 
 // poetryDirectEdges builds root -> direct-dependency edges. poetry.lock does not

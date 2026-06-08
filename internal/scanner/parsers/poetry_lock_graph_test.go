@@ -152,6 +152,44 @@ anyio = "^4.0"
 	}
 }
 
+func TestParsePoetryLockGraph_ReportsUnresolved(t *testing.T) {
+	// "ghost" is declared as a dependency but not present in the lockfile
+	// (drift). It must be reported as unresolved, not silently dropped.
+	fixture := `[[package]]
+name = "app"
+version = "1.0.0"
+
+[package.dependencies]
+real = ">=1.0"
+ghost = ">=2.0"
+
+[[package]]
+name = "real"
+version = "1.2.3"
+`
+	g := ParsePoetryLockGraph(GraphInput{Lockfile: []byte(fixture), Mode: types.DependencyGraphFull})
+
+	found := false
+	for _, u := range g.Unresolved {
+		if u == "app@1.0.0 -> ghost" {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected unresolved 'app@1.0.0 -> ghost', got %v", g.Unresolved)
+	}
+	// The resolvable edge must still be present.
+	ok := false
+	for _, e := range g.Edges {
+		if e.From == "app@1.0.0" && e.To == "real@1.2.3" {
+			ok = true
+		}
+	}
+	if !ok {
+		t.Errorf("expected edge app -> real, got %v", g.Edges)
+	}
+}
+
 func TestParsePoetryLockGraph_MultiVersionRangeMatch(t *testing.T) {
 	graph := ParsePoetryLockGraph(GraphInput{Lockfile: []byte(poetryMultiVersionFixture), Mode: types.DependencyGraphFull})
 

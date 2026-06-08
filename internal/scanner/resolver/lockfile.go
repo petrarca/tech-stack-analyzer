@@ -58,9 +58,10 @@ func (r *LockfileResolver) Resolve(req Request) (Result, error) {
 		// (e.g. a leaf with no dependencies); that is still authoritative and
 		// must not fall through to an online approximation.
 		return Result{
-			Edges:    graph.Edges,
-			Source:   SourceLockfile,
-			Resolved: true,
+			Edges:      graph.Edges,
+			Source:     SourceLockfile,
+			Resolved:   true,
+			Unresolved: graph.Unresolved,
 		}, nil
 	}
 	return Result{Resolved: false}, nil

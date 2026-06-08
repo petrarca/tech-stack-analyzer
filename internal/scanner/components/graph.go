@@ -50,10 +50,16 @@ func AttachLockfileGraph(payload *types.Payload, currentPath string, provider ty
 		// Ecosystem/Coordinates are not yet supplied by detectors; the online
 		// resolver falls through without them, so behavior is unchanged.
 	})
-	if err != nil || len(res.Edges) == 0 {
+	if err != nil {
 		return
 	}
 	payload.DependencyEdges = append(payload.DependencyEdges, res.Edges...)
+
+	// Surface unresolved dependency references (lockfile drift, unparseable
+	// refs) rather than dropping them silently, so consumers can detect gaps.
+	if len(res.Unresolved) > 0 {
+		payload.SetComponentProperty("dependency_graph", "unresolved", res.Unresolved)
+	}
 }
 
 // toLockfileProducers adapts the detector-facing producer type to the resolver
