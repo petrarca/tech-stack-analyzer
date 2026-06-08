@@ -51,6 +51,12 @@ const (
 	// iOS/macOS ecosystem (PURL: cocoapods)
 	DependencyTypeCocoapods = "cocoapods"
 
+	// Dart/Flutter ecosystem (PURL: pub)
+	DependencyTypeDart = "pub"
+
+	// Elixir/Erlang ecosystem (PURL: hex)
+	DependencyTypeElixir = "hex"
+
 	// Infrastructure as Code (no PURL type)
 	DependencyTypeTerraform = "terraform"
 
