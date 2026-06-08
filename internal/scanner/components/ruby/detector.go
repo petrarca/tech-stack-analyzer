@@ -114,7 +114,17 @@ func (d *Detector) detectGemfile(file types.File, currentPath, basePath string, 
 		payload.Dependencies = dependencies
 	}
 
+	// Attach the dependency graph (no-op unless the mode is on and Gemfile.lock
+	// is present).
+	components.AttachLockfileGraph(payload, currentPath, provider, lockfileGraphProducers)
+
 	return payload
+}
+
+// lockfileGraphProducers lists this ecosystem's lockfiles. Ruby has a single
+// lockfile (Gemfile.lock); direct deps come from its DEPENDENCIES section.
+var lockfileGraphProducers = []components.LockfileGraphProducer{
+	{Lockfile: "Gemfile.lock", Parse: parsers.ParseGemfileLockGraph},
 }
 
 // extractProjectName attempts to extract a project name from Gemfile
