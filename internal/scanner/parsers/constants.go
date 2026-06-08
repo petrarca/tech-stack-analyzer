@@ -57,6 +57,9 @@ const (
 	// Elixir/Erlang ecosystem (PURL: hex)
 	DependencyTypeElixir = "hex"
 
+	// Swift Package Manager ecosystem (PURL: swift)
+	DependencyTypeSwift = "swift"
+
 	// Infrastructure as Code (no PURL type)
 	DependencyTypeTerraform = "terraform"
 

@@ -124,6 +124,7 @@ var lockfileGraphProducers = []components.LockfileGraphProducer{
 	{Lockfile: "pnpm-lock.yaml", Parse: parsers.ParsePnpmLockGraph},
 	// yarn.lock has no embedded root; package.json supplies the direct deps.
 	{Lockfile: "yarn.lock", Manifest: "package.json", Parse: parsers.ParseYarnLockGraph},
+	{Lockfile: "bun.lock", Parse: parsers.ParseBunLockGraph},
 }
 
 // extractDependenciesFromLockFiles tries lock files in priority order and returns dependencies
