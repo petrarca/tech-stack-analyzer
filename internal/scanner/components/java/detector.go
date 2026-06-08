@@ -69,12 +69,13 @@ func (d *Detector) detectMaven(files []types.File, currentPath, basePath string,
 	return payload
 }
 
-// mavenGraphProducers lists the pre-generated Maven graph file. A resolved
-// Maven graph cannot be derived statically from pom.xml, so we read the
-// machine-readable dependency:tree output the user/CI committed, exactly like
-// every other lockfile.
+// mavenGraphProducers lists pre-generated Maven graph sources in priority
+// order: the dependency:tree JSON, then a CycloneDX SBOM's dependency-graph
+// section (e.g. cyclonedx-maven-plugin). A resolved Maven graph cannot be
+// derived statically from pom.xml, so we read what the user/CI committed.
 var mavenGraphProducers = []components.LockfileGraphProducer{
 	{Lockfile: parsers.MavenTreeFileName, Parse: parsers.ParseMavenTreeGraph},
+	{Lockfile: parsers.CycloneDXFileName, Parse: parsers.ParseCycloneDXGraph},
 }
 
 // detectGradleOnly looks for Gradle files when no Maven was found
@@ -415,6 +416,7 @@ func (d *Detector) detectGradle(file types.File, currentPath, basePath string, p
 // machine-generated `gradle dependencies` output the operator/CI committed.
 var gradleGraphProducers = []components.LockfileGraphProducer{
 	{Lockfile: parsers.GradleTreeFileName, Parse: parsers.ParseGradleTreeGraph},
+	{Lockfile: parsers.CycloneDXFileName, Parse: parsers.ParseCycloneDXGraph},
 }
 
 // processLicenses handles license processing for pom.xml <licenses> section
