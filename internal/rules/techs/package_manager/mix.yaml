@@ -1,0 +1,5 @@
+tech: mix
+name: Mix
+files:
+  - mix.exs
+  - mix.lock

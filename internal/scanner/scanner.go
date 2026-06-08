@@ -32,6 +32,7 @@ import (
 	_ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/deno"
 	_ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/docker"
 	_ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/dotnet"
+	_ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/elixir"
 	_ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/githubactions"
 	_ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/golang"
 	_ "github.com/petrarca/tech-stack-analyzer/internal/scanner/components/java"
