@@ -4,6 +4,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/BurntSushi/toml"
+
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
 
@@ -298,87 +300,33 @@ type cargoLockEntry struct {
 	Dependencies []string // raw entries: "name" or "name version"
 }
 
+// cargoLockTOML is the TOML view of Cargo.lock for graph extraction.
+type cargoLockTOML struct {
+	Packages []struct {
+		Name         string   `toml:"name"`
+		Version      string   `toml:"version"`
+		Dependencies []string `toml:"dependencies"`
+	} `toml:"package"`
+}
+
 // parseCargoLockEntries extracts every [[package]] entry from Cargo.lock,
 // including the dependencies array used to build the package-to-package graph.
+// Uses a real TOML decoder for robustness (multi-line arrays, comments, etc.).
 func parseCargoLockEntries(content string) []cargoLockEntry {
-	var entries []cargoLockEntry
-	lines := strings.Split(content, "\n")
-	state := &cargoLockParseState{}
-
-	flush := func() {
-		if state.currentName != "" && state.currentVersion != "" {
-			entries = append(entries, cargoLockEntry{
-				Name:         state.currentName,
-				Version:      state.currentVersion,
-				Dependencies: state.currentDeps,
-			})
-		}
+	var lock cargoLockTOML
+	if err := toml.Unmarshal([]byte(content), &lock); err != nil {
+		return nil
 	}
-
-	for _, line := range lines {
-		trimmed := strings.TrimSpace(line)
-
-		if trimmed == "[[package]]" {
-			flush()
-			state = &cargoLockParseState{inPackage: true}
+	entries := make([]cargoLockEntry, 0, len(lock.Packages))
+	for _, p := range lock.Packages {
+		if p.Name == "" || p.Version == "" {
 			continue
 		}
-
-		if !state.inPackage {
-			continue
-		}
-
-		processCargoLockLine(trimmed, state)
+		entries = append(entries, cargoLockEntry{
+			Name:         p.Name,
+			Version:      p.Version,
+			Dependencies: p.Dependencies,
+		})
 	}
-
-	flush()
 	return entries
-}
-
-// cargoLockParseState tracks the current parsing state for Cargo.lock
-type cargoLockParseState struct {
-	inPackage      bool
-	inDependencies bool
-	currentName    string
-	currentVersion string
-	currentDeps    []string
-}
-
-func processCargoLockLine(line string, state *cargoLockParseState) {
-	// Collect entries of the dependencies = [ ... ] array, which may span
-	// multiple lines. Each entry is a quoted "name" or "name version".
-	if state.inDependencies {
-		if line == "]" {
-			state.inDependencies = false
-			return
-		}
-		if dep := strings.Trim(strings.TrimRight(line, ","), `"`); dep != "" {
-			state.currentDeps = append(state.currentDeps, dep)
-		}
-		return
-	}
-
-	switch {
-	case strings.HasPrefix(line, "name = "):
-		state.currentName = extractCargoLockQuotedValue(line, "name = ")
-	case strings.HasPrefix(line, "version = "):
-		state.currentVersion = extractCargoLockQuotedValue(line, "version = ")
-	case line == "dependencies = [":
-		state.inDependencies = true
-	case strings.HasPrefix(line, "[") && line != "[[package]]":
-		// End of package section (hit another section)
-		state.inPackage = false
-	}
-}
-
-func extractCargoLockQuotedValue(line, prefix string) string {
-	rest := line[len(prefix):]
-	if len(rest) >= 2 && rest[0] == '"' {
-		end := 1
-		for end < len(rest) && rest[end] != '"' {
-			end++
-		}
-		return rest[1:end]
-	}
-	return ""
 }

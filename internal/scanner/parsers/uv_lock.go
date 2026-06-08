@@ -1,6 +1,8 @@
 package parsers
 
 import (
+	"github.com/BurntSushi/toml"
+
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
 
@@ -47,8 +49,8 @@ func ParseUvLockGraph(input GraphInput) LockGraph {
 		return result
 	}
 
-	var lockfile UvLockfile
-	if err := parseUvLockTOML(content, &lockfile); err != nil {
+	lockfile, err := decodeUvLockGraph(content)
+	if err != nil {
 		return result
 	}
 
@@ -66,6 +68,54 @@ func ParseUvLockGraph(input GraphInput) LockGraph {
 	return result
 }
 
+// uvLockTOML is the TOML view of uv.lock for graph extraction. uv.lock is TOML;
+// using a real decoder (rather than the line-based flat parser) is robust to
+// formatting and captures the per-package dependency lists directly.
+type uvLockTOML struct {
+	Packages []struct {
+		Name                 string                 `toml:"name"`
+		Version              string                 `toml:"version"`
+		Source               map[string]any         `toml:"source"`
+		Dependencies         []uvDepTOML            `toml:"dependencies"`
+		OptionalDependencies map[string][]uvDepTOML `toml:"optional-dependencies"`
+		DevDependencies      map[string][]uvDepTOML `toml:"dev-dependencies"`
+	} `toml:"package"`
+}
+
+type uvDepTOML struct {
+	Name string `toml:"name"`
+}
+
+// decodeUvLockGraph decodes uv.lock into the UvLockfile shape used by the edge
+// builders, via a real TOML decoder.
+func decodeUvLockGraph(content []byte) (UvLockfile, error) {
+	var raw uvLockTOML
+	if err := toml.Unmarshal(content, &raw); err != nil {
+		return UvLockfile{}, err
+	}
+	var out UvLockfile
+	for _, p := range raw.Packages {
+		pkg := UvPackage{
+			Name:                 p.Name,
+			Version:              p.Version,
+			OptionalDependencies: make(map[string][]UvDependencyRef),
+		}
+		if ed, ok := p.Source["editable"].(string); ok {
+			pkg.Source.Editable = ed
+		}
+		for _, d := range p.Dependencies {
+			pkg.Dependencies = append(pkg.Dependencies, UvDependencyRef{Name: d.Name})
+		}
+		for group, deps := range p.OptionalDependencies {
+			for _, d := range deps {
+				pkg.OptionalDependencies[group] = append(pkg.OptionalDependencies[group], UvDependencyRef{Name: d.Name})
+			}
+		}
+		out.Packages = append(out.Packages, pkg)
+	}
+	return out, nil
+}
+
 // uvNodeID resolves a dependency name to a "name@version" node via the locked
 // version map. Returns "" when the package is not present in the lockfile.
 func uvNodeID(name string, versionByName map[string]string) string {
@@ -80,6 +130,7 @@ func uvNodeID(name string, versionByName map[string]string) string {
 // including optional-dependency groups.
 func uvFullEdges(lockfile UvLockfile, versionByName map[string]string) []types.DependencyEdge {
 	var edges []types.DependencyEdge
+	seen := make(map[string]bool)
 	for _, pkg := range lockfile.Packages {
 		from := uvNodeID(pkg.Name, versionByName)
 		if from == "" {
@@ -88,7 +139,12 @@ func uvFullEdges(lockfile UvLockfile, versionByName map[string]string) []types.D
 		add := func(refs []UvDependencyRef) {
 			for _, ref := range refs {
 				if to := uvNodeID(ref.Name, versionByName); to != "" {
-					edges = append(edges, types.DependencyEdge{From: from, To: to})
+					// A dep can appear in both dependencies and an
+					// optional-dependency group; emit each edge once.
+					if key := from + "|" + to; !seen[key] {
+						seen[key] = true
+						edges = append(edges, types.DependencyEdge{From: from, To: to})
+					}
 				}
 			}
 		}
