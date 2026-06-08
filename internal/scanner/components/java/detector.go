@@ -402,7 +402,19 @@ func (d *Detector) detectGradle(file types.File, currentPath, basePath string, p
 		depDetector.ApplyMatchesToPayload(payload, depDetector.MatchDependencies(pluginIDs, "gradle.plugin"))
 	}
 
+	// Attach the dependency graph from a pre-generated `gradle dependencies`
+	// tree. No-op unless the mode is on and the file is present; the analyzer
+	// never runs gradle.
+	components.AttachLockfileGraph(payload, currentPath, provider, gradleGraphProducers)
+
 	return payload
+}
+
+// gradleGraphProducers lists the pre-generated Gradle graph file. A resolved
+// Gradle graph cannot be derived from build.gradle, so we read the
+// machine-generated `gradle dependencies` output the operator/CI committed.
+var gradleGraphProducers = []components.LockfileGraphProducer{
+	{Lockfile: parsers.GradleTreeFileName, Parse: parsers.ParseGradleTreeGraph},
 }
 
 // processLicenses handles license processing for pom.xml <licenses> section
