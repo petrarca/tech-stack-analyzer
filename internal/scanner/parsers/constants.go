@@ -60,6 +60,12 @@ const (
 	// Swift Package Manager ecosystem (PURL: swift)
 	DependencyTypeSwift = "swift"
 
+	// Perl/CPAN ecosystem (PURL: cpan)
+	DependencyTypePerl = "cpan"
+
+	// R ecosystem (PURL: cran)
+	DependencyTypeR = "cran"
+
 	// Infrastructure as Code (no PURL type)
 	DependencyTypeTerraform = "terraform"
 

@@ -1,0 +1,5 @@
+tech: cpan
+name: CPAN
+files:
+  - cpanfile
+  - cpanfile.snapshot

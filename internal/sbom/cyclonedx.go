@@ -44,6 +44,8 @@ var purlTypes = map[string]bool{
 	"pub":       true,
 	"hex":       true,
 	"swift":     true,
+	"cpan":      true,
+	"cran":      true,
 	"docker":    true,
 }
 

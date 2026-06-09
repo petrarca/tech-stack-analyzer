@@ -1,5 +1,7 @@
 tech: perl
 name: Perl
+files:
+  - cpanfile
 extensions:
   - .pl
   - .al
