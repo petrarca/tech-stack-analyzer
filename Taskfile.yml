@@ -103,14 +103,16 @@ tasks:
       - ./{{.BINARY_NAME}} info tech-taxonomy {{.CLI_ARGS}}
 
   build:taxonomies:
-    desc: Build taxonomy files in both JSON and YAML formats
+    desc: Regenerate all consumable taxonomy files (JSON + YAML) in taxonomies/
     cmds:
       - mkdir -p taxonomies
-      - echo "Generating technology taxonomy files..."
+      - echo "Generating taxonomy files..."
       - ./{{.BINARY_NAME}} info tech-taxonomy --format json --output taxonomies/tech-taxonomy.json
       - ./{{.BINARY_NAME}} info tech-taxonomy --format yaml --output taxonomies/tech-taxonomy.yaml
       - ./{{.BINARY_NAME}} info languages --format json --output taxonomies/languages.json
       - ./{{.BINARY_NAME}} info languages --format yaml --output taxonomies/languages.yaml
+      - ./{{.BINARY_NAME}} info ecosystems --format json --output taxonomies/ecosystems.json
+      - ./{{.BINARY_NAME}} info ecosystems --format yaml --output taxonomies/ecosystems.yaml
       - echo "Taxonomy files generated in taxonomies/ directory"
     deps:
       - build
