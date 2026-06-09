@@ -21,7 +21,6 @@ const (
 	// JavaScript/TypeScript ecosystem
 	DependencyTypeNpm  = "npm"
 	DependencyTypeDeno = "deno"
-	DependencyTypeNode = "node"
 
 	// Python ecosystem (PURL: pypi)
 	DependencyTypePython = "pypi"

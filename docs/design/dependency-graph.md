@@ -1,6 +1,9 @@
 # Dependency Graph
 
-> Status: implemented (pnpm, npm, yarn, Cargo, poetry, uv, Maven)
+> Status: implemented. Lockfile graphs: pnpm, npm, yarn, Bun, Cargo, poetry, uv,
+> Ruby, PHP, NuGet, Conan, CocoaPods, Elixir, Dart, Swift, Perl, R, Go.
+> Pre-generated tree ingest: Maven, Gradle, CycloneDX. Online fallback (deps.dev,
+> opt-in): npm, Cargo, Maven, PyPI. See the coverage matrix below.
 
 Emit the package-to-package dependency graph -- the edges stating which
 package depends on which -- in addition to the flat dependency list. Enables

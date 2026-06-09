@@ -55,6 +55,30 @@
                 ["maven", "org.springframework:spring-core", "5.3.20", "prod", true, {"declared": "${spring.version}"}]
             ]
         },
+        "dependency_edge": {
+            "type": "object",
+            "description": "Package-to-package dependency edge. Endpoints are 'name@version' (Maven: 'groupId:artifactId@version'); the synthetic root '.' is the source of direct edges.",
+            "properties": {
+                "from": {
+                    "type": "string",
+                    "description": "Depending package, 'name@version' (or '.' for the synthetic root in direct edges)"
+                },
+                "to": {
+                    "type": "string",
+                    "description": "Depended-on package, 'name@version'"
+                },
+                "source": {
+                    "type": "string",
+                    "description": "Provenance of the edge: 'lockfile' (resolved locally, authoritative) or 'deps.dev' (online approximation). Omitted when unknown."
+                },
+                "scope": {
+                    "type": "string",
+                    "description": "Dependency scope of the edge target: 'prod', 'dev', 'build', 'optional', or 'peer'. Omitted when the source does not state a scope."
+                }
+            },
+            "required": ["from", "to"],
+            "additionalProperties": false
+        },
         "license": {
             "type": "object",
             "description": "Structured license entity for knowledge graph integration",
@@ -239,29 +263,9 @@
                 "dependency_edges": {
                     "type": "array",
                     "items": {
-                        "type": "object",
-                        "properties": {
-                            "from": {
-                                "type": "string",
-                                "description": "Depending package, 'name@version'"
-                            },
-                            "to": {
-                                "type": "string",
-                                "description": "Depended-on package, 'name@version'"
-                            },
-                            "source": {
-                                "type": "string",
-                                "description": "Provenance of the edge: 'lockfile' (resolved locally, authoritative) or 'deps.dev' (online approximation). Omitted when unknown."
-                            },
-                            "scope": {
-                                "type": "string",
-                                "description": "Dependency scope of the edge target: 'prod', 'dev', 'optional', or 'peer'. Omitted when the source does not state a scope."
-                            }
-                        },
-                        "required": ["from", "to"],
-                        "additionalProperties": false
+                        "$ref": "#/definitions/dependency_edge"
                     },
-                    "description": "Package-to-package dependency edges, resolved via the dependency-resolver chain (local lockfile first, optional deps.dev online fallback). Additive; present where the graph could be resolved (pnpm, npm, yarn, Cargo, poetry, uv, and Maven via a pre-generated dependency-tree.json)."
+                    "description": "Package-to-package dependency edges for this component, resolved via the dependency-resolver chain (local lockfile first, optional deps.dev online fallback). Additive; present where the graph could be resolved. Supported for pnpm, npm, yarn, Bun, Cargo, poetry, uv, Ruby, PHP, NuGet, Conan, CocoaPods, Elixir, Dart, Swift, Perl, R, Go, and (via a pre-generated tree) Maven and Gradle, plus a CycloneDX dependency-graph section. In aggregate output this becomes a single deduplicated, sorted top-level array."
                 },
                 "component_refs": {
                     "type": "array",
@@ -639,6 +643,13 @@
                         "$ref": "#/definitions/dependency"
                     },
                     "description": "List of all dependencies detected across the entire project"
+                },
+                "dependency_edges": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dependency_edge"
+                    },
+                    "description": "All package-to-package dependency edges across the project, flattened from every component into a single deduplicated (on from|to), sorted list. This is the aggregate counterpart of the per-component dependency_edges in the full output -- same edges, flat and deduplicated rather than nested per component. Only present when --dependency-graph is direct or full."
                 },
                 "code_stats": {
                     "$ref": "#/definitions/code_stats"
