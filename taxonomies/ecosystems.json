@@ -106,10 +106,11 @@
     },
     {
       "name": "C/C++",
-      "description": "Native C/C++ with CMake, Make, Conan, vcpkg build systems",
+      "description": "Native C/C++ with CMake, Make, Conan, vcpkg, MSBuild build systems",
       "component_types": [
         "cmake",
-        "conan"
+        "conan",
+        "msbuild-cpp"
       ],
       "techs": [
         "cplusplus",
