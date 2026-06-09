@@ -11,6 +11,7 @@ import (
 	"github.com/petrarca/tech-stack-analyzer/internal/aggregator"
 	"github.com/petrarca/tech-stack-analyzer/internal/config"
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner"
+	"github.com/petrarca/tech-stack-analyzer/internal/scanner/components"
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
 
@@ -129,6 +130,9 @@ func runScanner(absPath string, isFile bool, mergedConfig *config.ScanConfig, lo
 	}
 	s.SetSubsystemDepth(settings.SubsystemDepth)
 	s.SetSubsystemGroups(settings.SubsystemGroups)
+	components.SetDependencyGraphMode(types.ParseDependencyGraphMode(settings.DependencyGraph))
+	components.SetResolveOnline(settings.ResolveOnline)
+	components.SetResolveOnlineEndpoint(settings.ResolveOnlineEndpoint)
 	if obsCollector != nil {
 		s.SetObservationCollector(obsCollector)
 	}

@@ -2666,7 +2666,8 @@
         {
           "name": "Elixir",
           "tech": "elixir",
-          "category": "language"
+          "category": "language",
+          "is_primary_tech": true
         },
         {
           "name": "GLSL",
@@ -2777,7 +2778,8 @@
         {
           "name": "Swift",
           "tech": "swift",
-          "category": "language"
+          "category": "language",
+          "is_primary_tech": true
         },
         {
           "name": "Typescript",
@@ -3479,8 +3481,18 @@
           "category": "package_manager"
         },
         {
+          "name": "CPAN",
+          "tech": "cpan",
+          "category": "package_manager"
+        },
+        {
           "name": "goenv",
           "tech": "goenv",
+          "category": "package_manager"
+        },
+        {
+          "name": "Mix",
+          "tech": "mix",
           "category": "package_manager"
         },
         {
@@ -3524,8 +3536,23 @@
           "category": "package_manager"
         },
         {
+          "name": "Pub",
+          "tech": "pub",
+          "category": "package_manager"
+        },
+        {
+          "name": "renv",
+          "tech": "renv",
+          "category": "package_manager"
+        },
+        {
           "name": "rubyenv",
           "tech": "rubyenv",
+          "category": "package_manager"
+        },
+        {
+          "name": "Swift Package Manager",
+          "tech": "swiftpm",
           "category": "package_manager"
         },
         {

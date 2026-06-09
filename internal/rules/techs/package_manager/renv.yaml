@@ -1,0 +1,4 @@
+tech: renv
+name: renv
+files:
+  - renv.lock

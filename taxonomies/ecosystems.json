@@ -106,10 +106,11 @@
     },
     {
       "name": "C/C++",
-      "description": "Native C/C++ with CMake, Make, Conan, vcpkg build systems",
+      "description": "Native C/C++ with CMake, Make, Conan, vcpkg, MSBuild build systems",
       "component_types": [
         "cmake",
-        "conan"
+        "conan",
+        "msbuild-cpp"
       ],
       "techs": [
         "cplusplus",
@@ -213,7 +214,68 @@
       "languages": [
         "Visual Basic 6.0"
       ]
+    },
+    {
+      "name": "COBOL",
+      "description": "COBOL mainframe / business applications -- no package manager, language-only detection",
+      "component_types": [],
+      "techs": [
+        "cobol"
+      ],
+      "languages": [
+        "COBOL"
+      ]
+    },
+    {
+      "name": "APL",
+      "description": "APL (incl. Dyalog) array-programming -- no package manager, language-only detection",
+      "component_types": [],
+      "techs": [
+        "apl"
+      ],
+      "languages": [
+        "APL"
+      ]
+    },
+    {
+      "name": "Perl",
+      "description": "Perl with CPAN / Carton package management",
+      "component_types": [
+        "perl"
+      ],
+      "techs": [
+        "perl",
+        "cpan"
+      ],
+      "languages": [
+        "Perl"
+      ]
+    },
+    {
+      "name": "R",
+      "description": "R statistical computing with renv / CRAN package management",
+      "component_types": [
+        "r"
+      ],
+      "techs": [
+        "r",
+        "renv"
+      ],
+      "languages": [
+        "R"
+      ]
+    },
+    {
+      "name": "Cache ObjectScript",
+      "description": "InterSystems Cache / IRIS ObjectScript -- no package manager, language/tech detection",
+      "component_types": [],
+      "techs": [
+        "cache_objectscript"
+      ],
+      "languages": [
+        "ObjectScript"
+      ]
     }
   ],
-  "count": 14
+  "count": 19
 }

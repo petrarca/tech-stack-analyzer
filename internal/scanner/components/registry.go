@@ -1,12 +1,17 @@
 package components
 
-import "sync"
+import (
+	"sync"
+
+	"github.com/petrarca/tech-stack-analyzer/internal/types"
+)
 
 // Global registry for component detectors
 var (
-	detectors    []Detector
-	mu           sync.RWMutex
-	useLockFiles = true // Default to true
+	detectors           []Detector
+	mu                  sync.RWMutex
+	useLockFiles        = true                     // Default to true
+	dependencyGraphMode = types.DependencyGraphOff // Default off (graph can be large)
 )
 
 // Register adds a component detector to the registry
@@ -35,4 +40,19 @@ func UseLockFiles() bool {
 	mu.RLock()
 	defer mu.RUnlock()
 	return useLockFiles
+}
+
+// SetDependencyGraphMode sets how much of the package-to-package dependency
+// graph detectors should emit (off, direct, full).
+func SetDependencyGraphMode(mode types.DependencyGraphMode) {
+	mu.Lock()
+	defer mu.Unlock()
+	dependencyGraphMode = mode
+}
+
+// DependencyGraphMode returns the configured dependency-graph emission mode.
+func DependencyGraphMode() types.DependencyGraphMode {
+	mu.RLock()
+	defer mu.RUnlock()
+	return dependencyGraphMode
 }

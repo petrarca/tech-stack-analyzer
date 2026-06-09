@@ -1,0 +1,239 @@
+package resolver
+
+import (
+	"errors"
+	"io/fs"
+	"testing"
+
+	"github.com/petrarca/tech-stack-analyzer/internal/scanner/parsers"
+	"github.com/petrarca/tech-stack-analyzer/internal/types"
+)
+
+// mapProvider is a minimal in-memory Provider keyed by full path.
+type mapProvider struct{ files map[string][]byte }
+
+func (m mapProvider) ListDir(string) ([]types.File, error) { return nil, nil }
+func (m mapProvider) Open(string) (string, error)          { return "", nil }
+func (m mapProvider) Exists(p string) (bool, error)        { _, ok := m.files[p]; return ok, nil }
+func (m mapProvider) IsDir(string) (bool, error)           { return false, nil }
+func (m mapProvider) GetBasePath() string                  { return "/" }
+func (m mapProvider) ReadFile(p string) ([]byte, error) {
+	if b, ok := m.files[p]; ok {
+		return b, nil
+	}
+	return nil, fs.ErrNotExist
+}
+
+// stubParse returns a fixed edge set regardless of content, honoring off.
+func stubParse(edges ...types.DependencyEdge) parsers.ParseGraphFunc {
+	return func(input parsers.GraphInput) parsers.LockGraph {
+		if input.Mode == types.DependencyGraphOff {
+			return parsers.LockGraph{}
+		}
+		return parsers.LockGraph{Edges: edges}
+	}
+}
+
+func edgeSet(edges []types.DependencyEdge) map[string]string {
+	out := map[string]string{}
+	for _, e := range edges {
+		out[e.From+"->"+e.To] = e.Source
+	}
+	return out
+}
+
+func TestChain_LockfileWins(t *testing.T) {
+	prov := mapProvider{files: map[string][]byte{
+		"/app/pnpm-lock.yaml": []byte("x"),
+	}}
+	lock := NewLockfileResolver(
+		parsers.LockfileProducer{Lockfile: "pnpm-lock.yaml", Parse: stubParse(
+			types.DependencyEdge{From: "a@1", To: "b@2"},
+		)},
+	)
+	online := &DepsDevResolver{Enabled: true, Online: DepsDevFetcher(func(_, _, _ string, _ types.DependencyGraphMode) ([]types.DependencyEdge, error) {
+		t.Fatal("online resolver must not be consulted when a lockfile resolves")
+		return nil, nil
+	})}
+	chain := NewChain(lock, online)
+
+	res, err := chain.Resolve(Request{Dir: "/app", Provider: prov, Mode: types.DependencyGraphFull})
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := edgeSet(res.Edges)
+	if got["a@1->b@2"] != string(SourceLockfile) {
+		t.Errorf("expected lockfile-tagged edge, got %v", got)
+	}
+}
+
+func TestChain_OnlineFallbackFillsGap(t *testing.T) {
+	prov := mapProvider{files: map[string][]byte{}} // no lockfile present
+	lock := NewLockfileResolver(
+		parsers.LockfileProducer{Lockfile: "pom.xml", Parse: stubParse()},
+	)
+	online := &DepsDevResolver{
+		Enabled: true,
+		Online: DepsDevFetcher(func(system, name, version string, _ types.DependencyGraphMode) ([]types.DependencyEdge, error) {
+			if system != "maven" || name != "g:a" || version != "1.0" {
+				t.Fatalf("unexpected coordinates: %s %s %s", system, name, version)
+			}
+			return []types.DependencyEdge{{From: "g:a@1.0", To: "g:b@2.0"}}, nil
+		}),
+	}
+	chain := NewChain(lock, online)
+
+	res, err := chain.Resolve(Request{
+		Dir:          "/svc",
+		Provider:     prov,
+		Mode:         types.DependencyGraphFull,
+		Ecosystem:    "java",
+		Dependencies: []Coordinates{{Name: "g:a", Version: "1.0"}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := edgeSet(res.Edges)
+	if got["g:a@1.0->g:b@2.0"] != string(SourceDepsDev) {
+		t.Errorf("expected deps.dev-tagged fallback edge, got %v", got)
+	}
+}
+
+func TestChain_OffShortCircuits(t *testing.T) {
+	online := &DepsDevResolver{Enabled: true, Online: DepsDevFetcher(func(_, _, _ string, _ types.DependencyGraphMode) ([]types.DependencyEdge, error) {
+		t.Fatal("must not resolve in off mode")
+		return nil, nil
+	})}
+	chain := NewChain(online)
+	res, err := chain.Resolve(Request{Mode: types.DependencyGraphOff})
+	if err != nil || len(res.Edges) != 0 {
+		t.Errorf("off mode must yield no edges, got %v err=%v", res.Edges, err)
+	}
+}
+
+func TestLockfileResolver_PresentButEmptyDoesNotFallThrough(t *testing.T) {
+	prov := mapProvider{files: map[string][]byte{"/leaf/uv.lock": []byte("x")}}
+	lock := NewLockfileResolver(parsers.LockfileProducer{Lockfile: "uv.lock", Parse: stubParse()})
+	online := &DepsDevResolver{Enabled: true, Online: DepsDevFetcher(func(_, _, _ string, _ types.DependencyGraphMode) ([]types.DependencyEdge, error) {
+		t.Fatal("present lockfile (even with zero edges) is authoritative; must not fall through")
+		return nil, nil
+	})}
+	chain := NewChain(lock, online)
+
+	res, err := chain.Resolve(Request{Dir: "/leaf", Provider: prov, Mode: types.DependencyGraphDirect})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(res.Edges) != 0 {
+		t.Errorf("expected no edges from empty lockfile, got %v", res.Edges)
+	}
+}
+
+func TestDepsDevResolver_DisabledOrNoFetcherFallsThrough(t *testing.T) {
+	cases := []*DepsDevResolver{
+		{Enabled: false, Online: DepsDevFetcher(func(_, _, _ string, _ types.DependencyGraphMode) ([]types.DependencyEdge, error) { return nil, nil })},
+		{Enabled: true, Online: nil},
+	}
+	for i, r := range cases {
+		res, err := r.Resolve(Request{
+			Mode:         types.DependencyGraphFull,
+			Ecosystem:    "java",
+			Dependencies: []Coordinates{{Name: "g:a", Version: "1.0"}},
+		})
+		if err != nil || res.Resolved {
+			t.Errorf("case %d: expected fall-through (Resolved=false), got resolved=%v err=%v", i, res.Resolved, err)
+		}
+	}
+}
+
+func TestDepsDevResolver_PropagatesError(t *testing.T) {
+	boom := errors.New("network down")
+	r := &DepsDevResolver{Enabled: true, Online: DepsDevFetcher(func(_, _, _ string, _ types.DependencyGraphMode) ([]types.DependencyEdge, error) {
+		return nil, boom
+	})}
+	_, err := r.Resolve(Request{
+		Mode:         types.DependencyGraphFull,
+		Ecosystem:    "java",
+		Dependencies: []Coordinates{{Name: "g:a", Version: "1.0"}},
+	})
+	if !errors.Is(err, boom) {
+		t.Errorf("expected error propagation, got %v", err)
+	}
+}
+
+func TestDepsDevResolver_FanOut_Partial404(t *testing.T) {
+	// One dep returns 404 (private), the other resolves. Should get edges from
+	// the known dep; the unknown dep is silently skipped.
+	r := &DepsDevResolver{
+		Enabled: true,
+		Online: DepsDevFetcher(func(_, name, _ string, _ types.DependencyGraphMode) ([]types.DependencyEdge, error) {
+			if name == "g:private" {
+				return nil, ErrCoordinateNotFound
+			}
+			return []types.DependencyEdge{{From: ".", To: "g:dep@1.0"}}, nil
+		}),
+	}
+	res, err := r.Resolve(Request{
+		Mode:      types.DependencyGraphFull,
+		Ecosystem: "java",
+		Dependencies: []Coordinates{
+			{Name: "g:private", Version: "1.0"},
+			{Name: "g:known", Version: "2.0"},
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !res.Resolved {
+		t.Error("expected Resolved=true when at least one dep resolves")
+	}
+	if len(res.Edges) != 1 || res.Edges[0].To != "g:dep@1.0" {
+		t.Errorf("expected edge from known dep, got %v", res.Edges)
+	}
+}
+
+func TestDepsDevResolver_FanOut_AllNotFound(t *testing.T) {
+	// All deps are 404 -> Resolved=false so the chain can fall through.
+	r := &DepsDevResolver{
+		Enabled: true,
+		Online: DepsDevFetcher(func(_, _, _ string, _ types.DependencyGraphMode) ([]types.DependencyEdge, error) {
+			return nil, ErrCoordinateNotFound
+		}),
+	}
+	res, err := r.Resolve(Request{
+		Mode:      types.DependencyGraphFull,
+		Ecosystem: "java",
+		Dependencies: []Coordinates{
+			{Name: "g:a", Version: "1.0"},
+			{Name: "g:b", Version: "2.0"},
+		},
+	})
+	if err != nil || res.Resolved {
+		t.Errorf("all-404 must fall through: resolved=%v err=%v", res.Resolved, err)
+	}
+}
+
+func TestDepsDevResolver_FanOut_DeduplicatesEdges(t *testing.T) {
+	// Two deps both pull in the same transitive dep -> edge emitted once.
+	r := &DepsDevResolver{
+		Enabled: true,
+		Online: DepsDevFetcher(func(_, _, _ string, _ types.DependencyGraphMode) ([]types.DependencyEdge, error) {
+			// Both deps return an edge to the same shared transitive.
+			return []types.DependencyEdge{{From: "shared@1.0", To: "base@0.5"}}, nil
+		}),
+	}
+	res, err := r.Resolve(Request{
+		Mode:      types.DependencyGraphFull,
+		Ecosystem: "java",
+		Dependencies: []Coordinates{
+			{Name: "a", Version: "1.0"},
+			{Name: "b", Version: "2.0"},
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(res.Edges) != 1 {
+		t.Errorf("expected 1 deduped edge, got %d: %v", len(res.Edges), res.Edges)
+	}
+}

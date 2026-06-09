@@ -1,0 +1,5 @@
+tech: swiftpm
+name: Swift Package Manager
+files:
+  - Package.swift
+  - Package.resolved

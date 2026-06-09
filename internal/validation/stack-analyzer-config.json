@@ -184,6 +184,21 @@
                     "type": "boolean",
                     "default": true,
                     "description": "Use lock files (package-lock.json, uv.lock, Cargo.lock, etc.) for dependency resolution with exact versions (default: true)"
+                },
+                "dependency_graph": {
+                    "type": "string",
+                    "enum": ["off", "direct", "full"],
+                    "default": "off",
+                    "description": "Emit package-to-package dependency edges: off (default), direct (root->direct only), or full (transitive graph; can be large). (matches --dependency-graph flag)"
+                },
+                "resolve_online": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Allow online dependency resolution (deps.dev) as a fallback for manifest-only ecosystems without a committed resolved tree. Off by default; sends public package coordinates over the network. (matches --resolve-online flag)"
+                },
+                "resolve_online_endpoint": {
+                    "type": "string",
+                    "description": "Base URL for online resolution (default: public deps.dev). Override with a deps.dev-API-compatible facade or mirror. (matches --resolve-online-endpoint flag)"
                 }
             },
             "additionalProperties": false,

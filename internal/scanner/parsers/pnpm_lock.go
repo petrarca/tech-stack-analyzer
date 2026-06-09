@@ -13,7 +13,15 @@ import (
 type PnpmLockfile struct {
 	LockfileVersion string                  `yaml:"lockfileVersion"`
 	Importers       map[string]PnpmImporter `yaml:"importers"`
-	Packages        map[string]PnpmPackage  `yaml:"packages,omitempty"` // v9+ format
+	Packages        map[string]PnpmPackage  `yaml:"packages,omitempty"`  // v9+ format
+	Snapshots       map[string]PnpmSnapshot `yaml:"snapshots,omitempty"` // v9+ resolved dependency graph
+}
+
+// PnpmSnapshot is a v9 snapshot entry: a resolved package instance with the
+// exact versions of its dependencies. The keys are "name@version(peers)".
+type PnpmSnapshot struct {
+	Dependencies         map[string]string `yaml:"dependencies"`
+	OptionalDependencies map[string]string `yaml:"optionalDependencies"`
 }
 
 // PnpmImporter represents an importer in pnpm-lock.yaml
@@ -52,6 +60,85 @@ type PnpmDependency struct {
 // Enhanced with deps.dev patterns for workspace support and semantic version handling
 func ParsePnpmLock(content []byte) []types.Dependency {
 	return ParsePnpmLockWithOptions(content, NPMLockFileOptions{})
+}
+
+// ParsePnpmLockGraph parses pnpm-lock.yaml and returns the dependencies plus the
+// package-to-package edges, honoring the requested graph mode. It implements the
+// GraphProducer contract (ParseGraphFunc).
+func ParsePnpmLockGraph(input GraphInput) LockGraph {
+	content := input.Lockfile
+	deps := ParsePnpmLockWithOptions(content, NPMLockFileOptions{})
+	result := LockGraph{Dependencies: deps}
+
+	if input.Mode == types.DependencyGraphOff {
+		return result
+	}
+
+	var lockfile PnpmLockfile
+	if err := yaml.Unmarshal(content, &lockfile); err != nil {
+		return result
+	}
+
+	switch input.Mode {
+	case types.DependencyGraphDirect:
+		result.Edges = pnpmDirectEdges(lockfile)
+	case types.DependencyGraphFull:
+		result.Edges = pnpmSnapshotEdges(lockfile.Snapshots)
+	}
+	return result
+}
+
+// pnpmDirectEdges builds root -> direct-dependency edges from the importers
+// section. The "from" node is the synthetic root marker ".".
+func pnpmDirectEdges(lockfile PnpmLockfile) []types.DependencyEdge {
+	root, ok := lockfile.Importers["."]
+	if !ok {
+		return nil
+	}
+	var edges []types.DependencyEdge
+	add := func(deps map[string]PnpmDependency, scope string) {
+		for name, dep := range deps {
+			ver := resolvePnpmImporterVersion(dep.Version)
+			edges = append(edges, types.DependencyEdge{From: ".", To: pnpmNodeID(name + "@" + ver), Scope: scope})
+		}
+	}
+	add(root.Dependencies, types.ScopeProd)
+	add(root.DevDependencies, types.ScopeDev)
+	add(root.OptionalDependencies, types.ScopeOptional)
+	return edges
+}
+
+// pnpmSnapshotEdges builds the full package-to-package graph from v9 snapshot
+// entries. Snapshot keys and dependency versions carry peer-dependency suffixes
+// ("name@1.2.3(peer@4.5.6)") which are trimmed to a clean "name@version" node.
+func pnpmSnapshotEdges(snapshots map[string]PnpmSnapshot) []types.DependencyEdge {
+	if len(snapshots) == 0 {
+		return nil
+	}
+	var edges []types.DependencyEdge
+	for key, snap := range snapshots {
+		from := pnpmNodeID(key)
+		if from == "" {
+			continue
+		}
+		for depName, depVer := range snap.Dependencies {
+			edges = append(edges, types.DependencyEdge{From: from, To: pnpmNodeID(depName + "@" + depVer)})
+		}
+		for depName, depVer := range snap.OptionalDependencies {
+			// Scope is set on optional edges in full mode, matching direct mode (F-07).
+			edges = append(edges, types.DependencyEdge{From: from, To: pnpmNodeID(depName + "@" + depVer), Scope: types.ScopeOptional})
+		}
+	}
+	return edges
+}
+
+// pnpmNodeID normalizes a pnpm snapshot key / dependency reference into a
+// stable "name@version" node identity by stripping the peer-dependency suffix.
+func pnpmNodeID(ref string) string {
+	if i := strings.IndexByte(ref, '('); i >= 0 {
+		ref = ref[:i]
+	}
+	return strings.TrimSpace(ref)
 }
 
 // ParsePnpmLockWithOptions parses pnpm-lock.yaml content with configurable options

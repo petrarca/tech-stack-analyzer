@@ -1,5 +1,8 @@
 tech: elixir
 name: Elixir
+is_primary_tech: true
+files:
+  - mix.exs
 extensions:
   - .ex
   - .exs

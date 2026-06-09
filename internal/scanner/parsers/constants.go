@@ -21,7 +21,6 @@ const (
 	// JavaScript/TypeScript ecosystem
 	DependencyTypeNpm  = "npm"
 	DependencyTypeDeno = "deno"
-	DependencyTypeNode = "node"
 
 	// Python ecosystem (PURL: pypi)
 	DependencyTypePython = "pypi"
@@ -50,6 +49,21 @@ const (
 
 	// iOS/macOS ecosystem (PURL: cocoapods)
 	DependencyTypeCocoapods = "cocoapods"
+
+	// Dart/Flutter ecosystem (PURL: pub)
+	DependencyTypeDart = "pub"
+
+	// Elixir/Erlang ecosystem (PURL: hex)
+	DependencyTypeElixir = "hex"
+
+	// Swift Package Manager ecosystem (PURL: swift)
+	DependencyTypeSwift = "swift"
+
+	// Perl/CPAN ecosystem (PURL: cpan)
+	DependencyTypePerl = "cpan"
+
+	// R ecosystem (PURL: cran)
+	DependencyTypeR = "cran"
 
 	// Infrastructure as Code (no PURL type)
 	DependencyTypeTerraform = "terraform"

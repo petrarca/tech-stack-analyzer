@@ -1,0 +1,5 @@
+tech: pub
+name: Pub
+files:
+  - pubspec.yaml
+  - pubspec.lock

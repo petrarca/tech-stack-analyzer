@@ -85,12 +85,22 @@ func (d *Detector) detectCargoToml(file types.File, currentPath, basePath string
 		payload.Dependencies = dependencies
 	}
 
+	// Attach the dependency graph (no-op unless the dependency-graph mode is on
+	// and Cargo.lock is present).
+	components.AttachLockfileGraph(payload, currentPath, provider, lockfileGraphProducers)
+
 	// Add license if present with traceability reasons
 	if license != "" {
 		d.processLicense(license, payload)
 	}
 
 	return payload
+}
+
+// lockfileGraphProducers lists this ecosystem's lockfiles in priority order.
+// Cargo has a single lockfile.
+var lockfileGraphProducers = []components.LockfileGraphProducer{
+	{Lockfile: "Cargo.lock", Manifest: "Cargo.toml", Parse: parsers.ParseCargoLockGraph},
 }
 
 // extractDependenciesWithPriority extracts dependencies using lock file priority system

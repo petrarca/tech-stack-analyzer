@@ -65,6 +65,10 @@ func (d *Detector) detectConanProjects(files []types.File, currentPath, basePath
 			payload.Dependencies = dependencies
 		}
 
+		// Attach the dependency graph (no-op unless the mode is on and a v1
+		// conan.lock with a graph_lock section is present).
+		components.AttachLockfileGraph(payload, currentPath, provider, conanGraphProducers)
+
 		if license := d.extractConanLicense(string(content)); license != "" {
 			licensenormalizer.ProcessLicenseExpression(license, "conanfile.py", payload)
 		}
@@ -215,6 +219,12 @@ func (d *Detector) extractConanLicense(content string) string {
 		}
 	}
 	return ""
+}
+
+// conanGraphProducers lists the Conan lockfile. Only conan.lock v1 states a
+// graph (graph_lock.nodes); v2 yields no edges.
+var conanGraphProducers = []components.LockfileGraphProducer{
+	{Lockfile: "conan.lock", Parse: parsers.ParseConanLockGraph},
 }
 
 func init() {

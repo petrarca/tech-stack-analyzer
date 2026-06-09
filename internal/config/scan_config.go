@@ -34,7 +34,10 @@ type ScanOptions struct {
 	ComponentStatsDepth      int      `yaml:"component_stats_depth,omitempty" json:"component_stats_depth,omitempty" default:"0"`
 	SubsystemDepth           int      `yaml:"subsystem_depth,omitempty" json:"subsystem_depth,omitempty" default:"0"`
 	PrimaryLanguageThreshold float64  `yaml:"primary_language_threshold,omitempty" json:"primary_language_threshold,omitempty" default:"0.05"`
-	UseLockFiles             *bool    `yaml:"use_lock_files,omitempty" json:"use_lock_files,omitempty"` // nil = default (true), explicit false disables
+	UseLockFiles             *bool    `yaml:"use_lock_files,omitempty" json:"use_lock_files,omitempty"`                   // nil = default (true), explicit false disables
+	DependencyGraph          string   `yaml:"dependency_graph,omitempty" json:"dependency_graph,omitempty" default:"off"` // off | direct | full
+	ResolveOnline            bool     `yaml:"resolve_online,omitempty" json:"resolve_online,omitempty"`                   // online dependency-resolution fallback (default false)
+	ResolveOnlineEndpoint    string   `yaml:"resolve_online_endpoint,omitempty" json:"resolve_online_endpoint,omitempty"` // base URL override for online resolution (empty = public deps.dev)
 }
 
 // SubsystemGroup defines a named group of path prefixes for subsystem stats rollup.

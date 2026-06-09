@@ -3,6 +3,8 @@ module github.com/petrarca/tech-stack-analyzer
 go 1.25.7
 
 require (
+	github.com/BurntSushi/toml v1.6.0
+	github.com/aquasecurity/go-pep440-version v0.0.1
 	github.com/bmatcuk/doublestar/v4 v4.10.0
 	github.com/boyter/scc/v3 v3.7.0
 	github.com/charmbracelet/lipgloss v1.1.0
@@ -27,6 +29,7 @@ require (
 	github.com/agext/levenshtein v1.2.1 // indirect
 	github.com/agnivade/levenshtein v1.2.2-0.20250519083737-420867539855 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
+	github.com/aquasecurity/go-version v0.0.1 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/boyter/gocodewalker v1.5.2-0.20260227212453-19676720409f // indirect
 	github.com/charmbracelet/colorprofile v0.2.3-0.20250311203215-f60798e515dc // indirect
@@ -80,6 +83,7 @@ require (
 	golang.org/x/sys v0.43.0 // indirect
 	golang.org/x/text v0.36.0 // indirect
 	golang.org/x/tools v0.44.0 // indirect
+	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	gonum.org/v1/gonum v0.8.2 // indirect
 	gopkg.in/neurosnap/sentences.v1 v1.0.7 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect

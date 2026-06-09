@@ -3075,7 +3075,7 @@ categories:
           tech: elixir
           category: language
           description: ""
-          isprimarytech: null
+          isprimarytech: true
           properties: {}
         - name: GLSL
           tech: glsl
@@ -3201,7 +3201,7 @@ categories:
           tech: swift
           category: language
           description: ""
-          isprimarytech: null
+          isprimarytech: true
           properties: {}
         - name: Typescript
           tech: typescript
@@ -3991,8 +3991,20 @@ categories:
           description: ""
           isprimarytech: null
           properties: {}
+        - name: CPAN
+          tech: cpan
+          category: package_manager
+          description: ""
+          isprimarytech: null
+          properties: {}
         - name: goenv
           tech: goenv
+          category: package_manager
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Mix
+          tech: mix
           category: package_manager
           description: ""
           isprimarytech: null
@@ -4045,8 +4057,26 @@ categories:
           description: ""
           isprimarytech: null
           properties: {}
+        - name: Pub
+          tech: pub
+          category: package_manager
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: renv
+          tech: renv
+          category: package_manager
+          description: ""
+          isprimarytech: null
+          properties: {}
         - name: rubyenv
           tech: rubyenv
+          category: package_manager
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: Swift Package Manager
+          tech: swiftpm
           category: package_manager
           description: ""
           isprimarytech: null

@@ -59,7 +59,23 @@ func (d *Detector) detectMaven(files []types.File, currentPath, basePath string,
 		d.mergeDependencyList(payload, *dependencyListFile, currentPath, provider)
 	}
 
+	// Attach the dependency graph from a pre-generated dependency-tree.json
+	// (mvn dependency:tree -DoutputType=json). No-op unless the dependency-graph
+	// mode is on and the file is present; the analyzer never runs Maven.
+	if payload != nil {
+		components.AttachLockfileGraph(payload, currentPath, provider, mavenGraphProducers)
+	}
+
 	return payload
+}
+
+// mavenGraphProducers lists pre-generated Maven graph sources in priority
+// order: the dependency:tree JSON, then a CycloneDX SBOM's dependency-graph
+// section (e.g. cyclonedx-maven-plugin). A resolved Maven graph cannot be
+// derived statically from pom.xml, so we read what the user/CI committed.
+var mavenGraphProducers = []components.LockfileGraphProducer{
+	{Lockfile: parsers.MavenTreeFileName, Parse: parsers.ParseMavenTreeGraph},
+	{Lockfile: parsers.CycloneDXFileName, Parse: parsers.ParseCycloneDXGraph},
 }
 
 // detectGradleOnly looks for Gradle files when no Maven was found
@@ -204,6 +220,7 @@ func (d *Detector) detectPomXML(file types.File, currentPath, basePath string, p
 		}
 
 		payload.Properties["maven"] = mavenInfo
+
 	}
 
 	// Process licenses from pom.xml <licenses> section
@@ -346,6 +363,7 @@ func (d *Detector) detectGradle(file types.File, currentPath, basePath string, p
 			"artifact_id": artifactName,
 			"version":     projectInfo.Version,
 		})
+
 	}
 
 	// Collect gradle.properties for version resolution, climbing from the
@@ -387,7 +405,20 @@ func (d *Detector) detectGradle(file types.File, currentPath, basePath string, p
 		depDetector.ApplyMatchesToPayload(payload, depDetector.MatchDependencies(pluginIDs, "gradle.plugin"))
 	}
 
+	// Attach the dependency graph from a pre-generated `gradle dependencies`
+	// tree. No-op unless the mode is on and the file is present; the analyzer
+	// never runs gradle.
+	components.AttachLockfileGraph(payload, currentPath, provider, gradleGraphProducers)
+
 	return payload
+}
+
+// gradleGraphProducers lists the pre-generated Gradle graph file. A resolved
+// Gradle graph cannot be derived from build.gradle, so we read the
+// machine-generated `gradle dependencies` output the operator/CI committed.
+var gradleGraphProducers = []components.LockfileGraphProducer{
+	{Lockfile: parsers.GradleTreeFileName, Parse: parsers.ParseGradleTreeGraph},
+	{Lockfile: parsers.CycloneDXFileName, Parse: parsers.ParseCycloneDXGraph},
 }
 
 // processLicenses handles license processing for pom.xml <licenses> section

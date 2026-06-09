@@ -101,8 +101,19 @@ func (d *Detector) processPodfileLock(file types.File, currentPath, basePath str
 	if err != nil {
 		return nil
 	}
-	return d.buildPayload(file, string(content), currentPath, basePath, depDetector,
+	payload := d.buildPayload(file, string(content), currentPath, basePath, depDetector,
 		d.cocoapodsParser.ParsePodfileLock, "")
+	if payload != nil {
+		// Attach the dependency graph (no-op unless the mode is on).
+		components.AttachLockfileGraph(payload, currentPath, provider, cocoapodsGraphProducers)
+	}
+	return payload
+}
+
+// cocoapodsGraphProducers lists the CocoaPods lockfile. Podfile.lock PODS
+// section states each pod's dependencies; DEPENDENCIES gives the direct pods.
+var cocoapodsGraphProducers = []components.LockfileGraphProducer{
+	{Lockfile: "Podfile.lock", Parse: parsers.ParsePodfileLockGraph},
 }
 
 // processPodspec processes a single .podspec file for dependencies and license

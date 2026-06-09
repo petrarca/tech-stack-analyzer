@@ -78,12 +78,22 @@ func (d *Detector) detectComposerJSON(file types.File, currentPath, basePath str
 		payload.Dependencies = dependencies
 	}
 
+	// Attach the dependency graph (no-op unless the mode is on and
+	// composer.lock is present).
+	components.AttachLockfileGraph(payload, currentPath, provider, lockfileGraphProducers)
+
 	// Add license if present with traceability reasons
 	if license != "" {
 		d.processLicense(license, payload)
 	}
 
 	return payload
+}
+
+// lockfileGraphProducers lists this ecosystem's lockfile. PHP/Composer has a
+// single lockfile; direct deps come from composer.json (require/require-dev).
+var lockfileGraphProducers = []components.LockfileGraphProducer{
+	{Lockfile: "composer.lock", Manifest: "composer.json", Parse: parsers.ParseComposerLockGraph},
 }
 
 // processLicense handles license processing for composer.json, supporting SPDX expressions

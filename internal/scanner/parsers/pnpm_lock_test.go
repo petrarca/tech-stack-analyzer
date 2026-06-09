@@ -2,6 +2,8 @@ package parsers
 
 import (
 	"testing"
+
+	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
 
 func TestParsePnpmLock(t *testing.T) {
@@ -151,5 +153,98 @@ packages:
 				}
 			}
 		})
+	}
+}
+
+func TestParsePnpmLockGraph_V9Edges(t *testing.T) {
+	content := `lockfileVersion: '9.0'
+
+importers:
+  .:
+    dependencies:
+      mylib:
+        specifier: ^1.0.0
+        version: 1.0.0
+
+packages:
+  'mylib@1.0.0':
+    resolution: {integrity: sha512-aaa}
+  'dep-a@2.0.0':
+    resolution: {integrity: sha512-bbb}
+  'dep-b@3.0.0':
+    resolution: {integrity: sha512-ccc}
+
+snapshots:
+  'mylib@1.0.0(react@18.0.0)':
+    dependencies:
+      dep-a: 2.0.0
+      dep-b: 3.0.0(peer@1.0.0)
+  'dep-a@2.0.0':
+    dependencies:
+      dep-b: 3.0.0
+`
+	graph := ParsePnpmLockGraph(GraphInput{Lockfile: []byte(content), Mode: types.DependencyGraphFull})
+	if len(graph.Dependencies) == 0 {
+		t.Fatal("expected at least the direct dependency")
+	}
+	got := map[string]bool{}
+	for _, e := range graph.Edges {
+		got[e.From+"->"+e.To] = true
+	}
+	// Peer suffixes must be stripped from both endpoints.
+	for _, want := range []string{
+		"mylib@1.0.0->dep-a@2.0.0",
+		"mylib@1.0.0->dep-b@3.0.0",
+		"dep-a@2.0.0->dep-b@3.0.0",
+	} {
+		if !got[want] {
+			t.Errorf("missing edge %q; got %v", want, got)
+		}
+	}
+}
+
+func TestParsePnpmLockGraph_Modes(t *testing.T) {
+	content := `lockfileVersion: '9.0'
+
+importers:
+  .:
+    dependencies:
+      mylib:
+        specifier: ^1.0.0
+        version: 1.0.0
+
+packages:
+  'mylib@1.0.0':
+    resolution: {integrity: sha512-aaa}
+  'dep-a@2.0.0':
+    resolution: {integrity: sha512-bbb}
+
+snapshots:
+  'mylib@1.0.0':
+    dependencies:
+      dep-a: 2.0.0
+`
+	// off: no edges
+	if g := ParsePnpmLockGraph(GraphInput{Lockfile: []byte(content), Mode: types.DependencyGraphOff}); len(g.Edges) != 0 {
+		t.Errorf("off mode: expected 0 edges, got %d", len(g.Edges))
+	}
+	// direct: only root -> direct edge
+	gd := ParsePnpmLockGraph(GraphInput{Lockfile: []byte(content), Mode: types.DependencyGraphDirect})
+	if len(gd.Edges) != 1 || gd.Edges[0].From != "." || gd.Edges[0].To != "mylib@1.0.0" {
+		t.Errorf("direct mode: expected [. -> mylib@1.0.0], got %v", gd.Edges)
+	}
+	if gd.Edges[0].Scope != types.ScopeProd {
+		t.Errorf("direct mode: expected prod scope, got %q", gd.Edges[0].Scope)
+	}
+	// full: transitive edge present
+	gf := ParsePnpmLockGraph(GraphInput{Lockfile: []byte(content), Mode: types.DependencyGraphFull})
+	found := false
+	for _, e := range gf.Edges {
+		if e.From == "mylib@1.0.0" && e.To == "dep-a@2.0.0" {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("full mode: expected mylib@1.0.0 -> dep-a@2.0.0, got %v", gf.Edges)
 	}
 }

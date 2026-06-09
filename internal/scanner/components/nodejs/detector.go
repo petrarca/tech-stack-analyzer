@@ -107,8 +107,24 @@ func (d *Detector) processDependenciesWithPriority(currentPath string, provider 
 	// Add dependencies to payload
 	payload.Dependencies = append(payload.Dependencies, dependencies...)
 
+	// Attach the dependency graph via the generic lockfile-graph helper. The
+	// helper is a no-op unless the dependency-graph mode is enabled and a
+	// matching graph-producing lockfile is present.
+	components.AttachLockfileGraph(payload, currentPath, provider, lockfileGraphProducers)
+
 	// Match dependencies against rules for tech detection
 	d.matchAndAddTechs(dependencies, depDetector, payload)
+}
+
+// lockfileGraphProducers lists this ecosystem's lockfiles in priority order
+// (package-lock > pnpm > yarn), matching extractDependenciesFromLockFiles.
+// AttachLockfileGraph uses the first lockfile that exists.
+var lockfileGraphProducers = []components.LockfileGraphProducer{
+	{Lockfile: "package-lock.json", Parse: parsers.ParsePackageLockGraph},
+	{Lockfile: "pnpm-lock.yaml", Parse: parsers.ParsePnpmLockGraph},
+	// yarn.lock has no embedded root; package.json supplies the direct deps.
+	{Lockfile: "yarn.lock", Manifest: "package.json", Parse: parsers.ParseYarnLockGraph},
+	{Lockfile: "bun.lock", Parse: parsers.ParseBunLockGraph},
 }
 
 // extractDependenciesFromLockFiles tries lock files in priority order and returns dependencies

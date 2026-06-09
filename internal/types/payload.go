@@ -28,6 +28,7 @@ type Payload struct {
 	Licenses         []License              `json:"licenses"`                    // Changed to structured License objects
 	Reason           map[string][]string    `json:"reason,omitempty"`            // Maps technology to detection reasons, "_" for non-tech reasons
 	Dependencies     []Dependency           `json:"dependencies"`
+	DependencyEdges  []DependencyEdge       `json:"dependency_edges,omitempty"` // Package-to-package edges read from lockfiles (additive; empty when unavailable)
 	Properties       map[string]interface{} `json:"properties,omitempty"`
 	Children         []*Payload             `json:"children"`
 	Edges            []Edge                 `json:"edges,omitempty"`
@@ -91,6 +92,55 @@ type Edge struct {
 type ComponentRef struct {
 	TargetID    string `json:"target_id"`    // Component ID being depended on
 	PackageName string `json:"package_name"` // Package name that created the link
+}
+
+// DependencyEdge represents a package-to-package dependency relationship read
+// from a lockfile (e.g. pnpm snapshots, poetry [package.dependencies]). The
+// endpoints are package identities in "name@version" form so they join to the
+// dependency list. Edges are emitted only where the lockfile states them --
+// they are read, not resolved.
+type DependencyEdge struct {
+	From string `json:"from"` // depending package, "name@version"
+	To   string `json:"to"`   // depended-on package, "name@version"
+	// Source records where the edge came from for provenance, e.g. "lockfile"
+	// (resolved locally, authoritative) or "deps.dev" (online approximation).
+	// Empty for edges produced before provenance tracking; omitted from JSON
+	// when unset so existing output is unchanged.
+	Source string `json:"source,omitempty"`
+	// Scope is the dependency scope of the edge target relative to the edge
+	// source: "prod", "dev", "optional", "peer". Allows consumers to filter
+	// dev/test edges for blast-radius. Empty when the source does not state a
+	// scope; omitted from JSON when unset.
+	Scope string `json:"scope,omitempty"`
+}
+
+// DependencyGraphMode controls how much of the package-to-package dependency
+// graph is emitted. The full transitive graph can be very large in big
+// projects, so it is off by default and enabled explicitly.
+type DependencyGraphMode string
+
+const (
+	// DependencyGraphOff emits no package-to-package edges (default).
+	DependencyGraphOff DependencyGraphMode = "off"
+	// DependencyGraphDirect emits only edges from the project root to its
+	// direct dependencies -- a small, top-level graph.
+	DependencyGraphDirect DependencyGraphMode = "direct"
+	// DependencyGraphFull emits the full transitive package-to-package graph
+	// as stated by the lockfile.
+	DependencyGraphFull DependencyGraphMode = "full"
+)
+
+// ParseDependencyGraphMode normalizes a string into a DependencyGraphMode,
+// defaulting to off for empty or unrecognized values.
+func ParseDependencyGraphMode(s string) DependencyGraphMode {
+	switch DependencyGraphMode(s) {
+	case DependencyGraphDirect:
+		return DependencyGraphDirect
+	case DependencyGraphFull:
+		return DependencyGraphFull
+	default:
+		return DependencyGraphOff
+	}
 }
 
 // PrimaryLanguage represents a primary programming language (top languages by lines of code)

@@ -1,4 +1,7 @@
 tech: swift
 name: Swift
+is_primary_tech: true
+files:
+  - Package.swift
 extensions:
   - .swift

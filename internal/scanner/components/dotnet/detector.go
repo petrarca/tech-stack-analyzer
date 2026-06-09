@@ -108,7 +108,17 @@ func (d *Detector) detectDotNetProject(file types.File, files []types.File, curr
 	d.addProjectReferences(payload, project.ProjectReferences)
 	d.addNuGetDependencies(payload, project.Packages, depDetector)
 
+	// Attach the dependency graph (no-op unless the mode is on and
+	// packages.lock.json is present).
+	components.AttachLockfileGraph(payload, currentPath, provider, lockfileGraphProducers)
+
 	return payload
+}
+
+// lockfileGraphProducers lists this ecosystem's lockfile. packages.lock.json is
+// self-describing (type=Direct marks direct deps), so no manifest is needed.
+var lockfileGraphProducers = []components.LockfileGraphProducer{
+	{Lockfile: "packages.lock.json", Parse: parsers.ParsePackagesLockGraph},
 }
 
 func (d *Detector) parseDotNetProject(file types.File, files []types.File, currentPath string, provider types.Provider) *parsers.DotNetProject {

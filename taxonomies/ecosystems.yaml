@@ -76,10 +76,11 @@ ecosystems:
       languages:
         - Rust
     - name: C/C++
-      description: Native C/C++ with CMake, Make, Conan, vcpkg build systems
+      description: Native C/C++ with CMake, Make, Conan, vcpkg, MSBuild build systems
       componenttypes:
         - cmake
         - conan
+        - msbuild-cpp
       techs:
         - cplusplus
         - c
@@ -150,4 +151,43 @@ ecosystems:
       techs: []
       languages:
         - Visual Basic 6.0
-count: 14
+    - name: COBOL
+      description: COBOL mainframe / business applications -- no package manager, language-only detection
+      componenttypes: []
+      techs:
+        - cobol
+      languages:
+        - COBOL
+    - name: APL
+      description: APL (incl. Dyalog) array-programming -- no package manager, language-only detection
+      componenttypes: []
+      techs:
+        - apl
+      languages:
+        - APL
+    - name: Perl
+      description: Perl with CPAN / Carton package management
+      componenttypes:
+        - perl
+      techs:
+        - perl
+        - cpan
+      languages:
+        - Perl
+    - name: R
+      description: R statistical computing with renv / CRAN package management
+      componenttypes:
+        - r
+      techs:
+        - r
+        - renv
+      languages:
+        - R
+    - name: Cache ObjectScript
+      description: InterSystems Cache / IRIS ObjectScript -- no package manager, language/tech detection
+      componenttypes: []
+      techs:
+        - cache_objectscript
+      languages:
+        - ObjectScript
+count: 19

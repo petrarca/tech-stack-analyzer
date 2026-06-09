@@ -41,6 +41,11 @@ var purlTypes = map[string]bool{
 	"nuget":     true,
 	"conan":     true,
 	"cocoapods": true,
+	"pub":       true,
+	"hex":       true,
+	"swift":     true,
+	"cpan":      true,
+	"cran":      true,
 	"docker":    true,
 }
 
