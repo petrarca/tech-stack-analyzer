@@ -131,6 +131,8 @@ func runScanner(absPath string, isFile bool, mergedConfig *config.ScanConfig, lo
 	s.SetSubsystemDepth(settings.SubsystemDepth)
 	s.SetSubsystemGroups(settings.SubsystemGroups)
 	components.SetDependencyGraphMode(types.ParseDependencyGraphMode(settings.DependencyGraph))
+	components.SetResolveOnline(settings.ResolveOnline)
+	components.SetResolveOnlineEndpoint(settings.ResolveOnlineEndpoint)
 	if obsCollector != nil {
 		s.SetObservationCollector(obsCollector)
 	}

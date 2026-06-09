@@ -43,13 +43,20 @@ func AttachLockfileGraph(payload *types.Payload, currentPath string, provider ty
 		depsDevResolver(),
 	)
 
-	res, err := chain.Resolve(resolver.Request{
+	req := resolver.Request{
 		Dir:      currentPath,
 		Provider: provider,
 		Mode:     mode,
-		// Ecosystem/Coordinates are not yet supplied by detectors; the online
-		// resolver falls through without them, so behavior is unchanged.
-	})
+	}
+	// Optional root coordinates enable the online (deps.dev) fallback. Any
+	// detector can opt in by setting payload.GraphCoordinates; the online
+	// resolver falls through when they are absent.
+	if gc := payload.GraphCoordinates; gc != nil && gc.Name != "" && gc.Version != "" {
+		req.Ecosystem = gc.Ecosystem
+		req.Coordinates = &resolver.Coordinates{Name: gc.Name, Version: gc.Version}
+	}
+
+	res, err := chain.Resolve(req)
 	if err != nil {
 		return
 	}

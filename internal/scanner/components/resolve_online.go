@@ -6,39 +6,57 @@ import (
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/resolver"
 )
 
-// resolveOnline gates online (deps.dev) dependency resolution. It is off by
-// default to preserve the offline guarantee; the online resolver only fills
-// gaps where no local lockfile/tree-file is present, and only when explicitly
-// enabled. The actual network fetcher is wired separately when the online
-// integration lands; until then enabling this is a no-op (the resolver falls
-// through without a fetcher).
+// Online (deps.dev) dependency resolution is off by default to preserve the
+// offline guarantee; the online resolver only fills gaps where no local
+// lockfile/tree-file is present, and only when explicitly enabled. The endpoint
+// is configurable so an API-compatible facade or mirror can be used instead of
+// the public deps.dev API.
 var (
-	resolveOnlineMu sync.RWMutex
-	resolveOnline   bool
+	resolveOnlineMu       sync.RWMutex
+	resolveOnline         bool
+	resolveOnlineEndpoint string
 )
 
-// SetResolveOnline enables or disables the online deps.dev resolver fallback.
+// SetResolveOnline enables or disables the online dependency-resolution
+// fallback.
 func SetResolveOnline(enable bool) {
 	resolveOnlineMu.Lock()
 	defer resolveOnlineMu.Unlock()
 	resolveOnline = enable
 }
 
-// ResolveOnline reports whether the online deps.dev fallback is enabled.
+// ResolveOnline reports whether the online fallback is enabled.
 func ResolveOnline() bool {
 	resolveOnlineMu.RLock()
 	defer resolveOnlineMu.RUnlock()
 	return resolveOnline
 }
 
-// depsDevResolver builds the online fallback resolver. It is enabled only when
-// ResolveOnline() is true; the network fetcher is not yet wired, so an enabled
-// resolver currently still falls through (no edges) until the online
-// integration provides a DepsDevFetcher. This keeps the seam in place without
-// crossing the offline boundary.
+// SetResolveOnlineEndpoint overrides the online-resolver base URL. Empty uses
+// the public deps.dev API. A deps.dev-API-compatible facade or mirror (same
+// /v3/systems/.../versions/...:dependencies shape) can be supplied here.
+func SetResolveOnlineEndpoint(endpoint string) {
+	resolveOnlineMu.Lock()
+	defer resolveOnlineMu.Unlock()
+	resolveOnlineEndpoint = endpoint
+}
+
+// ResolveOnlineEndpoint returns the configured online-resolver base URL ("" =
+// public deps.dev).
+func ResolveOnlineEndpoint() string {
+	resolveOnlineMu.RLock()
+	defer resolveOnlineMu.RUnlock()
+	return resolveOnlineEndpoint
+}
+
+// depsDevResolver builds the online fallback resolver, wired to the configured
+// endpoint when online resolution is enabled. When disabled it carries no
+// Online resolver and falls through (no edges, no network), preserving the
+// offline default.
 func depsDevResolver() *resolver.DepsDevResolver {
-	return &resolver.DepsDevResolver{
-		Enabled: ResolveOnline(),
-		Fetch:   nil, // wired when online resolution is implemented
+	r := &resolver.DepsDevResolver{Enabled: ResolveOnline()}
+	if r.Enabled {
+		r.Online = resolver.NewDepsDevFetcher(ResolveOnlineEndpoint(), nil)
 	}
+	return r
 }

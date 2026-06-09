@@ -147,7 +147,7 @@ The same pre-generated-ingest pattern is now implemented for:
 
 ## Appendix: online resolution via deps.dev (opt-in)
 
-> Status: designed, validated by spike (not yet implemented in the analyzer).
+> Status: implemented (opt-in via `--resolve-online`).
 
 Google's deps.dev (Open Source Insights) continuously crawls public registries
 and pre-computes the **resolved transitive graph** for every published package
@@ -219,24 +219,38 @@ that runs resolvers in precedence order and tags edges with their provenance:
   own resolved state). Wraps the ordered lockfile producers; a present lockfile
   is authoritative even when it yields zero edges (it does not fall through).
 - **`DepsDevResolver`** -- online fallback (reflects published versions).
-  Gated by `Enabled` and an injectable `Fetch` func; with neither it falls
-  through, so it is safe to include unconditionally and stays offline by
-  default. The HTTP fetcher is not yet wired.
+  Gated by `Enabled` and a **pluggable** `OnlineGraphResolver`; with neither it
+  falls through, so it is safe to include unconditionally and stays offline by
+  default.
 
-`components.AttachLockfileGraph` builds the chain (lockfile first, deps.dev
+`components.AttachLockfileGraph` builds the chain (lockfile first, online
 second) and is unchanged for detectors -- they still register an ordered
-`[]LockfileGraphProducer`. Edges now carry a `source` field (`lockfile`;
-`deps.dev` once online lands) for downstream trust decisions.
+`[]LockfileGraphProducer`. Edges carry a `source` field (`lockfile` /
+`deps.dev`) for downstream trust decisions.
 
-Remaining to make online resolution live:
+### Online resolution -- implemented
 
-1. Wire a real `DepsDevFetcher` (the validated `:dependencies` call, mapping the
-   node/edge DAG to `{from, to}` `name@version`), cached by `(system, name,
-   version)`.
-2. Have detectors populate `Request.Ecosystem` and `Request.Coordinates`
-   (root package name+version) so the online resolver can resolve by coordinate.
-3. Add the opt-in switch: `components.SetResolveOnline(true)` is in place; expose
-   it via a `--resolve-online` flag + config key (default off), orthogonal to
-   `--dependency-graph off|direct|full` (which still controls *what* to emit).
-4. Carry the required CC-BY 4.0 attribution
-   ("data: Google Open Source Insights (deps.dev), CC-BY 4.0").
+- **Pluggable resolver.** `OnlineGraphResolver` is the interface
+  (`ResolveGraph(system, name, version, mode)`); deps.dev is the reference
+  implementation (`NewDepsDevFetcher`). A mirror or alternative service exposing
+  the same API shape can be supplied without touching the chain or detectors.
+- **HTTP fetcher.** Calls the validated `:dependencies` endpoint, maps the
+  node/edge DAG to `{from, to}` `name@version` edges (root SELF node -> `.`),
+  honors direct/full mode, and **caches per `(system, name, version, mode)`**
+  for the run (pinned versions are immutable, so in-run caching is safe).
+  `404` -> no edges (not an error); `429` -> error.
+- **Configurable endpoint.** `--resolve-online-endpoint` / `resolve_online_endpoint`
+  overrides the base URL (default `https://api.deps.dev`) for an
+  API-compatible facade or mirror.
+- **Coordinate wiring.** Detectors set `payload.GraphCoordinates`
+  (`{Ecosystem, Name, Version}`); `AttachLockfileGraph` threads it into the
+  resolver request. Wired for Maven and Gradle (the manifest-only cases that
+  benefit); any ecosystem can opt in by setting the field.
+- **Opt-in switch.** `--resolve-online` / `resolve_online` (default off),
+  orthogonal to `--dependency-graph off|direct|full` (which controls *what* to
+  emit). Validated end-to-end: a Maven `pom.xml` with no committed tree yields 0
+  edges offline and the full 62-edge graph (tagged `source: deps.dev`) with
+  `--resolve-online`; a present `dependency-tree.json` still wins (local-first).
+
+Attribution: deps.dev data is CC-BY 4.0 -- consumers should carry "data: Google
+Open Source Insights (deps.dev), CC-BY 4.0".

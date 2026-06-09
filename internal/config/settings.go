@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"io"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -34,6 +35,8 @@ type Settings struct {
 	PrimaryLanguageThreshold float64                   // Minimum percentage for primary languages (default 0.05 = 5%)
 	UseLockFiles             bool                      // Use lock files for dependency resolution (default true)
 	DependencyGraph          string                    // Package-to-package edge emission: "off" (default), "direct", or "full"
+	ResolveOnline            bool                      // Allow online (deps.dev) dependency resolution as a fallback for manifest-only ecosystems (default false)
+	ResolveOnlineEndpoint    string                    // Base URL for online resolution; empty = public deps.dev. Override for a compatible facade or mirror
 	OmitFields               []string                  // Fields to omit from full output (e.g. "reason", "path", "edges")
 	AlsoAggregate            string                    // Also produce an aggregate output alongside the full output (e.g. "tech,techs,languages")
 	SBOM                     bool                      // Emit a CycloneDX SBOM as the primary output instead of the scan tree
@@ -220,6 +223,13 @@ func (s *Settings) Validate() error {
 		case "off", "direct", "full":
 		default:
 			return fmt.Errorf("invalid dependency-graph mode '%s'. Valid values: off, direct, full", s.DependencyGraph)
+		}
+	}
+
+	// Validate online-resolution endpoint if specified (must be an http(s) URL).
+	if s.ResolveOnlineEndpoint != "" {
+		if u, err := url.Parse(s.ResolveOnlineEndpoint); err != nil || (u.Scheme != "http" && u.Scheme != "https") {
+			return fmt.Errorf("invalid resolve-online-endpoint '%s': must be an http(s) URL", s.ResolveOnlineEndpoint)
 		}
 	}
 

@@ -16,42 +16,57 @@ var depsDevSystems = map[string]string{
 	"ruby":   "rubygems",
 }
 
-// DepsDevFetcher fetches the resolved dependency graph for a published package
-// version from deps.dev. It is injected so the resolver stays offline and
-// testable by default; the real implementation performs the HTTPS call
+// OnlineGraphResolver is the pluggable contract for resolving a package's
+// dependency graph from an online, coordinate-keyed source. deps.dev is the
+// reference implementation; a mirror or alternative service exposing the same
+// data can provide another implementation without touching the chain or
+// detectors.
 //
-//	GET /v3/systems/{system}/packages/{name}/versions/{version}:dependencies
-//
-// and is wired only when online resolution is explicitly enabled.
+// system is the source's ecosystem identifier (already mapped from our
+// ecosystem vocabulary, e.g. "maven", "npm"). The returned edges use the
+// "name@version" node identity and the "." synthetic root, matching the local
+// resolvers. An unknown coordinate returns (nil, nil), not an error.
+type OnlineGraphResolver interface {
+	ResolveGraph(system, name, version string, mode types.DependencyGraphMode) ([]types.DependencyEdge, error)
+}
+
+// DepsDevFetcher is the function form of OnlineGraphResolver, for lightweight
+// implementations and tests.
 type DepsDevFetcher func(system, name, version string, mode types.DependencyGraphMode) ([]types.DependencyEdge, error)
 
-// DepsDevResolver resolves edges online via deps.dev as a fallback for
-// manifest-only ecosystems (Maven, Gradle) where no local lockfile/tree-file is
-// present. It crosses the offline boundary and is therefore opt-in: with no
-// fetcher wired it is a no-op that always falls through.
+// ResolveGraph lets a DepsDevFetcher satisfy OnlineGraphResolver.
+func (f DepsDevFetcher) ResolveGraph(system, name, version string, mode types.DependencyGraphMode) ([]types.DependencyEdge, error) {
+	return f(system, name, version, mode)
+}
+
+// DepsDevResolver resolves edges online as a fallback for manifest-only
+// ecosystems (Maven, Gradle) where no local lockfile/tree-file is present. It
+// crosses the offline boundary and is therefore opt-in: with no Online resolver
+// wired it is a no-op that always falls through.
 //
-// deps.dev edges are an approximation keyed by published version (not the
-// repo's own resolution) and are runtime-scoped (no test/provided). They are
-// tagged with SourceDepsDev so downstream can distinguish them from
-// authoritative lockfile edges. See docs/design/dependency-graph.md.
+// Online edges are an approximation keyed by published version (not the repo's
+// own resolution) and are runtime-scoped (no test/provided). They are tagged
+// with SourceDepsDev so downstream can distinguish them from authoritative
+// lockfile edges. See docs/design/dependency-graph.md.
 type DepsDevResolver struct {
 	// Enabled gates online resolution. False (default) makes Resolve a no-op,
 	// preserving the offline guarantee.
 	Enabled bool
-	// Fetch performs the network call. Nil makes Resolve a no-op even when
-	// Enabled, so the resolver is safe to construct unconditionally.
-	Fetch DepsDevFetcher
+	// Online performs the resolution. Nil makes Resolve a no-op even when
+	// Enabled, so the resolver is safe to construct unconditionally. Pluggable:
+	// deps.dev today, an alternative source or mirror in the future.
+	Online OnlineGraphResolver
 }
 
 // Name implements DependencyResolver.
 func (r *DepsDevResolver) Name() string { return "deps.dev" }
 
-// Resolve queries deps.dev when enabled, a fetcher is wired, the ecosystem is
-// supported, and the root coordinates are known. Otherwise it falls through
-// (Resolved=false) so the Chain leaves edge production to local resolvers or
-// emits nothing.
+// Resolve queries the online source when enabled, a resolver is wired, the
+// ecosystem is supported, and the root coordinates are known. Otherwise it
+// falls through (Resolved=false) so the Chain leaves edge production to local
+// resolvers or emits nothing.
 func (r *DepsDevResolver) Resolve(req Request) (Result, error) {
-	if !r.Enabled || r.Fetch == nil {
+	if !r.Enabled || r.Online == nil {
 		return Result{Resolved: false}, nil
 	}
 	system, ok := depsDevSystems[req.Ecosystem]
@@ -64,7 +79,7 @@ func (r *DepsDevResolver) Resolve(req Request) (Result, error) {
 		return Result{Resolved: false}, nil
 	}
 
-	edges, err := r.Fetch(system, req.Coordinates.Name, req.Coordinates.Version, req.Mode)
+	edges, err := r.Online.ResolveGraph(system, req.Coordinates.Name, req.Coordinates.Version, req.Mode)
 	if err != nil {
 		return Result{}, err
 	}

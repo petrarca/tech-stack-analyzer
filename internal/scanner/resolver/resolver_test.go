@@ -51,10 +51,10 @@ func TestChain_LockfileWins(t *testing.T) {
 			types.DependencyEdge{From: "a@1", To: "b@2"},
 		)},
 	)
-	online := &DepsDevResolver{Enabled: true, Fetch: func(_, _, _ string, _ types.DependencyGraphMode) ([]types.DependencyEdge, error) {
+	online := &DepsDevResolver{Enabled: true, Online: DepsDevFetcher(func(_, _, _ string, _ types.DependencyGraphMode) ([]types.DependencyEdge, error) {
 		t.Fatal("online resolver must not be consulted when a lockfile resolves")
 		return nil, nil
-	}}
+	})}
 	chain := NewChain(lock, online)
 
 	res, err := chain.Resolve(Request{Dir: "/app", Provider: prov, Mode: types.DependencyGraphFull})
@@ -74,12 +74,12 @@ func TestChain_OnlineFallbackFillsGap(t *testing.T) {
 	)
 	online := &DepsDevResolver{
 		Enabled: true,
-		Fetch: func(system, name, version string, _ types.DependencyGraphMode) ([]types.DependencyEdge, error) {
+		Online: DepsDevFetcher(func(system, name, version string, _ types.DependencyGraphMode) ([]types.DependencyEdge, error) {
 			if system != "maven" || name != "g:a" || version != "1.0" {
 				t.Fatalf("unexpected coordinates: %s %s %s", system, name, version)
 			}
 			return []types.DependencyEdge{{From: "g:a@1.0", To: "g:b@2.0"}}, nil
-		},
+		}),
 	}
 	chain := NewChain(lock, online)
 
@@ -100,10 +100,10 @@ func TestChain_OnlineFallbackFillsGap(t *testing.T) {
 }
 
 func TestChain_OffShortCircuits(t *testing.T) {
-	online := &DepsDevResolver{Enabled: true, Fetch: func(_, _, _ string, _ types.DependencyGraphMode) ([]types.DependencyEdge, error) {
+	online := &DepsDevResolver{Enabled: true, Online: DepsDevFetcher(func(_, _, _ string, _ types.DependencyGraphMode) ([]types.DependencyEdge, error) {
 		t.Fatal("must not resolve in off mode")
 		return nil, nil
-	}}
+	})}
 	chain := NewChain(online)
 	res, err := chain.Resolve(Request{Mode: types.DependencyGraphOff})
 	if err != nil || len(res.Edges) != 0 {
@@ -114,10 +114,10 @@ func TestChain_OffShortCircuits(t *testing.T) {
 func TestLockfileResolver_PresentButEmptyDoesNotFallThrough(t *testing.T) {
 	prov := mapProvider{files: map[string][]byte{"/leaf/uv.lock": []byte("x")}}
 	lock := NewLockfileResolver(LockfileProducer{Lockfile: "uv.lock", Parse: stubParse()})
-	online := &DepsDevResolver{Enabled: true, Fetch: func(_, _, _ string, _ types.DependencyGraphMode) ([]types.DependencyEdge, error) {
+	online := &DepsDevResolver{Enabled: true, Online: DepsDevFetcher(func(_, _, _ string, _ types.DependencyGraphMode) ([]types.DependencyEdge, error) {
 		t.Fatal("present lockfile (even with zero edges) is authoritative; must not fall through")
 		return nil, nil
-	}}
+	})}
 	chain := NewChain(lock, online)
 
 	res, err := chain.Resolve(Request{Dir: "/leaf", Provider: prov, Mode: types.DependencyGraphDirect})
@@ -131,8 +131,8 @@ func TestLockfileResolver_PresentButEmptyDoesNotFallThrough(t *testing.T) {
 
 func TestDepsDevResolver_DisabledOrNoFetcherFallsThrough(t *testing.T) {
 	cases := []*DepsDevResolver{
-		{Enabled: false, Fetch: func(_, _, _ string, _ types.DependencyGraphMode) ([]types.DependencyEdge, error) { return nil, nil }},
-		{Enabled: true, Fetch: nil},
+		{Enabled: false, Online: DepsDevFetcher(func(_, _, _ string, _ types.DependencyGraphMode) ([]types.DependencyEdge, error) { return nil, nil })},
+		{Enabled: true, Online: nil},
 	}
 	for i, r := range cases {
 		res, err := r.Resolve(Request{
@@ -148,9 +148,9 @@ func TestDepsDevResolver_DisabledOrNoFetcherFallsThrough(t *testing.T) {
 
 func TestDepsDevResolver_PropagatesError(t *testing.T) {
 	boom := errors.New("network down")
-	r := &DepsDevResolver{Enabled: true, Fetch: func(_, _, _ string, _ types.DependencyGraphMode) ([]types.DependencyEdge, error) {
+	r := &DepsDevResolver{Enabled: true, Online: DepsDevFetcher(func(_, _, _ string, _ types.DependencyGraphMode) ([]types.DependencyEdge, error) {
 		return nil, boom
-	}}
+	})}
 	_, err := r.Resolve(Request{
 		Mode:        types.DependencyGraphFull,
 		Ecosystem:   "java",
