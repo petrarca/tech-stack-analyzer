@@ -43,11 +43,14 @@ type Request struct {
 	// Mode is the requested emission depth (off/direct/full). A resolver must
 	// honor direct vs full and return nil edges for off.
 	Mode types.DependencyGraphMode
-	// Coordinates optionally identifies the root package as
-	// (system, name, version) for resolvers that resolve by coordinate rather
-	// than by reading files (e.g. deps.dev). May be empty for file-based
-	// resolvers.
-	Coordinates *Coordinates
+	// Dependencies is the ordered list of declared dependency coordinates for
+	// resolvers that work by coordinate rather than by reading files (e.g.
+	// deps.dev). Each entry is a (name, version) pair for a declared dep.
+	// Online resolvers fan-out over this list and union the results, so a
+	// typical application project with N declared deps produces N calls and the
+	// correct full transitive graph without requiring the project itself to be
+	// a published artifact. Empty for file-based resolvers.
+	Dependencies []Coordinates
 }
 
 // Coordinates identifies a published package version for coordinate-based

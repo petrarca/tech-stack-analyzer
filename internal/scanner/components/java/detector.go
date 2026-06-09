@@ -221,16 +221,6 @@ func (d *Detector) detectPomXML(file types.File, currentPath, basePath string, p
 
 		payload.Properties["maven"] = mavenInfo
 
-		// Set root coordinates for optional online dependency resolution
-		// (deps.dev/facade). Used only when --resolve-online is enabled and no
-		// local dependency-tree.json is present.
-		if projectInfo.GroupId != "" && projectInfo.ArtifactId != "" && projectInfo.Version != "" {
-			payload.GraphCoordinates = &types.GraphCoordinates{
-				Ecosystem: "java",
-				Name:      projectInfo.GroupId + ":" + projectInfo.ArtifactId,
-				Version:   projectInfo.Version,
-			}
-		}
 	}
 
 	// Process licenses from pom.xml <licenses> section
@@ -374,15 +364,6 @@ func (d *Detector) detectGradle(file types.File, currentPath, basePath string, p
 			"version":     projectInfo.Version,
 		})
 
-		// Root coordinates for optional online resolution (Gradle artifacts use
-		// Maven coordinates -> the "java"/maven system on deps.dev).
-		if projectInfo.Group != "" && artifactName != "" && projectInfo.Version != "" {
-			payload.GraphCoordinates = &types.GraphCoordinates{
-				Ecosystem: "java",
-				Name:      projectInfo.Group + ":" + artifactName,
-				Version:   projectInfo.Version,
-			}
-		}
 	}
 
 	// Collect gradle.properties for version resolution, climbing from the

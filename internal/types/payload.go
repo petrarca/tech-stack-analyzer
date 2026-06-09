@@ -29,7 +29,6 @@ type Payload struct {
 	Reason           map[string][]string    `json:"reason,omitempty"`            // Maps technology to detection reasons, "_" for non-tech reasons
 	Dependencies     []Dependency           `json:"dependencies"`
 	DependencyEdges  []DependencyEdge       `json:"dependency_edges,omitempty"` // Package-to-package edges read from lockfiles (additive; empty when unavailable)
-	GraphCoordinates *GraphCoordinates      `json:"-"`                          // Optional root coordinates for online dependency resolution; not serialized
 	Properties       map[string]interface{} `json:"properties,omitempty"`
 	Children         []*Payload             `json:"children"`
 	Edges            []Edge                 `json:"edges,omitempty"`
@@ -113,17 +112,6 @@ type DependencyEdge struct {
 	// dev/test edges for blast-radius. Empty when the source does not state a
 	// scope; omitted from JSON when unset.
 	Scope string `json:"scope,omitempty"`
-}
-
-// GraphCoordinates identifies a component's root package for online dependency
-// resolution (e.g. deps.dev), as (ecosystem, name, version). Ecosystem is the
-// detector ecosystem ("java", "nodejs", ...); the online resolver maps it to
-// its own system vocabulary. Set by detectors that support online resolution;
-// any ecosystem can opt in by populating it.
-type GraphCoordinates struct {
-	Ecosystem string
-	Name      string
-	Version   string
 }
 
 // DependencyGraphMode controls how much of the package-to-package dependency

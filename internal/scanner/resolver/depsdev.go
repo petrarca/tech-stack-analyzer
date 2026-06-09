@@ -9,13 +9,21 @@ import (
 // depsDevSystems maps our ecosystem names to deps.dev "system" identifiers.
 // Ecosystems not listed are unsupported by this resolver.
 var depsDevSystems = map[string]string{
-	"nodejs": "npm",
-	"python": "pypi",
-	"rust":   "cargo",
-	"java":   "maven",
-	"go":     "go",
-	"dotnet": "nuget",
-	"ruby":   "rubygems",
+	"nodejs":    "npm",
+	"python":    "pypi",
+	"rust":      "cargo",
+	"java":      "maven", // kept for explicit "java" ecosystem
+	"maven":     "maven", // payload.ComponentType for Maven projects
+	"gradle":    "maven", // Gradle artifacts use Maven coordinates on deps.dev
+	"go":        "go",
+	"dotnet":    "nuget",
+	"ruby":      "rubygems",
+	"perl":      "cpan",
+	"r":         "cran",
+	"dart":      "pub",
+	"elixir":    "hex",
+	"swift":     "swift",
+	"cplusplus": "conan",
 }
 
 // OnlineGraphResolver is the pluggable contract for resolving a package's
@@ -63,10 +71,14 @@ type DepsDevResolver struct {
 // Name implements DependencyResolver.
 func (r *DepsDevResolver) Name() string { return "deps.dev" }
 
-// Resolve queries the online source when enabled, a resolver is wired, the
-// ecosystem is supported, and the root coordinates are known. Otherwise it
-// falls through (Resolved=false) so the Chain leaves edge production to local
-// resolvers or emits nothing.
+// Resolve fans out over req.Dependencies, queries the online source for each
+// declared dependency, and unions the results. This is the correct strategy for
+// typical application projects: the project itself is usually not a published
+// artifact, but its declared dependencies are. Each dep gets one call; 404s are
+// skipped (the dep may be private/internal); the remaining results are merged.
+//
+// Falls through (Resolved=false) when disabled, no resolver is wired, the
+// ecosystem is not supported, or the dependency list is empty.
 func (r *DepsDevResolver) Resolve(req Request) (Result, error) {
 	if !r.Enabled || r.Online == nil {
 		return Result{Resolved: false}, nil
@@ -75,23 +87,42 @@ func (r *DepsDevResolver) Resolve(req Request) (Result, error) {
 	if !ok {
 		return Result{Resolved: false}, nil
 	}
-	if req.Coordinates == nil || req.Coordinates.Name == "" || req.Coordinates.Version == "" {
-		// Coordinate-based resolution needs the root package version, which the
-		// detector must supply. Without it, fall through.
+	if len(req.Dependencies) == 0 {
 		return Result{Resolved: false}, nil
 	}
 
-	edges, err := r.Online.ResolveGraph(system, req.Coordinates.Name, req.Coordinates.Version, req.Mode)
-	if err != nil {
-		// ErrCoordinateNotFound means the service does not know this coordinate;
-		// treat as "not applicable" so the chain can fall through (F-09).
-		if errors.Is(err, ErrCoordinateNotFound) {
-			return Result{Resolved: false}, nil
+	seen := make(map[string]bool)
+	var allEdges []types.DependencyEdge
+	anyResolved := false
+
+	for _, dep := range req.Dependencies {
+		if dep.Name == "" || dep.Version == "" {
+			continue
 		}
-		return Result{}, err
+		edges, err := r.Online.ResolveGraph(system, dep.Name, dep.Version, req.Mode)
+		if err != nil {
+			if errors.Is(err, ErrCoordinateNotFound) {
+				// Private/internal dep: skip, continue with the rest.
+				continue
+			}
+			return Result{}, err
+		}
+		anyResolved = true
+		for _, e := range edges {
+			if key := e.From + "|" + e.To; !seen[key] {
+				seen[key] = true
+				allEdges = append(allEdges, e)
+			}
+		}
+	}
+
+	if !anyResolved {
+		// All deps were either 404 or skipped; treat as not resolvable so the
+		// chain can fall through rather than returning an empty authoritative result.
+		return Result{Resolved: false}, nil
 	}
 	return Result{
-		Edges:    edges,
+		Edges:    allEdges,
 		Source:   SourceDepsDev,
 		Resolved: true,
 	}, nil

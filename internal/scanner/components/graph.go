@@ -38,16 +38,22 @@ func AttachLockfileGraph(payload *types.Payload, currentPath string, provider ty
 	)
 
 	req := resolver.Request{
-		Dir:      currentPath,
-		Provider: provider,
-		Mode:     mode,
+		Dir:       currentPath,
+		Provider:  provider,
+		Mode:      mode,
+		Ecosystem: payload.ComponentType,
 	}
-	// Optional root coordinates enable the online fallback. Any detector can
-	// opt in by setting payload.GraphCoordinates; the online resolver falls
-	// through when they are absent.
-	if gc := payload.GraphCoordinates; gc != nil && gc.Name != "" && gc.Version != "" {
-		req.Ecosystem = gc.Ecosystem
-		req.Coordinates = &resolver.Coordinates{Name: gc.Name, Version: gc.Version}
+	// Fan-out online resolution over the component's declared dependencies.
+	// Any dep with a name and version is a candidate coordinate; the online
+	// resolver skips 404s (private deps) and unions the rest. No detector
+	// changes are needed: payload.Dependencies is always set by the flat parser.
+	for _, dep := range payload.Dependencies {
+		if dep.Name != "" && dep.Version != "" {
+			req.Dependencies = append(req.Dependencies, resolver.Coordinates{
+				Name:    dep.Name,
+				Version: dep.Version,
+			})
+		}
 	}
 
 	res, err := chain.Resolve(req)

@@ -84,11 +84,11 @@ func TestChain_OnlineFallbackFillsGap(t *testing.T) {
 	chain := NewChain(lock, online)
 
 	res, err := chain.Resolve(Request{
-		Dir:         "/svc",
-		Provider:    prov,
-		Mode:        types.DependencyGraphFull,
-		Ecosystem:   "java",
-		Coordinates: &Coordinates{Name: "g:a", Version: "1.0"},
+		Dir:          "/svc",
+		Provider:     prov,
+		Mode:         types.DependencyGraphFull,
+		Ecosystem:    "java",
+		Dependencies: []Coordinates{{Name: "g:a", Version: "1.0"}},
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -136,9 +136,9 @@ func TestDepsDevResolver_DisabledOrNoFetcherFallsThrough(t *testing.T) {
 	}
 	for i, r := range cases {
 		res, err := r.Resolve(Request{
-			Mode:        types.DependencyGraphFull,
-			Ecosystem:   "java",
-			Coordinates: &Coordinates{Name: "g:a", Version: "1.0"},
+			Mode:         types.DependencyGraphFull,
+			Ecosystem:    "java",
+			Dependencies: []Coordinates{{Name: "g:a", Version: "1.0"}},
 		})
 		if err != nil || res.Resolved {
 			t.Errorf("case %d: expected fall-through (Resolved=false), got resolved=%v err=%v", i, res.Resolved, err)
@@ -152,11 +152,88 @@ func TestDepsDevResolver_PropagatesError(t *testing.T) {
 		return nil, boom
 	})}
 	_, err := r.Resolve(Request{
-		Mode:        types.DependencyGraphFull,
-		Ecosystem:   "java",
-		Coordinates: &Coordinates{Name: "g:a", Version: "1.0"},
+		Mode:         types.DependencyGraphFull,
+		Ecosystem:    "java",
+		Dependencies: []Coordinates{{Name: "g:a", Version: "1.0"}},
 	})
 	if !errors.Is(err, boom) {
 		t.Errorf("expected error propagation, got %v", err)
+	}
+}
+
+func TestDepsDevResolver_FanOut_Partial404(t *testing.T) {
+	// One dep returns 404 (private), the other resolves. Should get edges from
+	// the known dep; the unknown dep is silently skipped.
+	r := &DepsDevResolver{
+		Enabled: true,
+		Online: DepsDevFetcher(func(_, name, _ string, _ types.DependencyGraphMode) ([]types.DependencyEdge, error) {
+			if name == "g:private" {
+				return nil, ErrCoordinateNotFound
+			}
+			return []types.DependencyEdge{{From: ".", To: "g:dep@1.0"}}, nil
+		}),
+	}
+	res, err := r.Resolve(Request{
+		Mode:      types.DependencyGraphFull,
+		Ecosystem: "java",
+		Dependencies: []Coordinates{
+			{Name: "g:private", Version: "1.0"},
+			{Name: "g:known", Version: "2.0"},
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !res.Resolved {
+		t.Error("expected Resolved=true when at least one dep resolves")
+	}
+	if len(res.Edges) != 1 || res.Edges[0].To != "g:dep@1.0" {
+		t.Errorf("expected edge from known dep, got %v", res.Edges)
+	}
+}
+
+func TestDepsDevResolver_FanOut_AllNotFound(t *testing.T) {
+	// All deps are 404 -> Resolved=false so the chain can fall through.
+	r := &DepsDevResolver{
+		Enabled: true,
+		Online: DepsDevFetcher(func(_, _, _ string, _ types.DependencyGraphMode) ([]types.DependencyEdge, error) {
+			return nil, ErrCoordinateNotFound
+		}),
+	}
+	res, err := r.Resolve(Request{
+		Mode:      types.DependencyGraphFull,
+		Ecosystem: "java",
+		Dependencies: []Coordinates{
+			{Name: "g:a", Version: "1.0"},
+			{Name: "g:b", Version: "2.0"},
+		},
+	})
+	if err != nil || res.Resolved {
+		t.Errorf("all-404 must fall through: resolved=%v err=%v", res.Resolved, err)
+	}
+}
+
+func TestDepsDevResolver_FanOut_DeduplicatesEdges(t *testing.T) {
+	// Two deps both pull in the same transitive dep -> edge emitted once.
+	r := &DepsDevResolver{
+		Enabled: true,
+		Online: DepsDevFetcher(func(_, _, _ string, _ types.DependencyGraphMode) ([]types.DependencyEdge, error) {
+			// Both deps return an edge to the same shared transitive.
+			return []types.DependencyEdge{{From: "shared@1.0", To: "base@0.5"}}, nil
+		}),
+	}
+	res, err := r.Resolve(Request{
+		Mode:      types.DependencyGraphFull,
+		Ecosystem: "java",
+		Dependencies: []Coordinates{
+			{Name: "a", Version: "1.0"},
+			{Name: "b", Version: "2.0"},
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(res.Edges) != 1 {
+		t.Errorf("expected 1 deduped edge, got %d: %v", len(res.Edges), res.Edges)
 	}
 }
