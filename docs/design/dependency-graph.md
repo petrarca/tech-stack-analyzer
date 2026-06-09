@@ -252,11 +252,14 @@ second) and is unchanged for detectors -- they still register an ordered
   call, and both direct and full mode share the same cached response.
   `404` -> `ErrCoordinateNotFound` (skipped, not an error); `429` -> error.
 
-- **Automatic for all ecosystems.** `AttachLockfileGraph` derives the
-  fan-out list from `payload.Dependencies` -- no detector changes are needed.
-  The ecosystem is mapped from `payload.ComponentType` to the deps.dev system
-  identifier. All supported ecosystems (maven, nodejs, python, rust, go, dotnet,
-  ruby, perl, r, dart, elixir, swift, cplusplus) are mapped.
+- **Ecosystem coverage.** `AttachLockfileGraph` derives the fan-out list from
+  `payload.Dependencies` -- no detector changes are needed. The ecosystem is
+  mapped from `payload.ComponentType` to the deps.dev system identifier.
+  Per the deps.dev API docs, `GetDependencies` currently returns graph data for
+  **npm, Cargo, Maven, and PyPI only**. Go, RubyGems, and NuGet are recognized
+  as valid systems but have no graph data; all other ecosystems (CPAN, CRAN,
+  Pub, Hex, Swift, Conan) are not in deps.dev. Ecosystems not in the map fall
+  through silently.
 
 - **Configurable endpoint.** `--resolve-online-endpoint` / `resolve_online_endpoint`
   overrides the base URL (default `https://api.deps.dev`) for an

@@ -8,22 +8,24 @@ import (
 
 // depsDevSystems maps our ecosystem names to deps.dev "system" identifiers.
 // Ecosystems not listed are unsupported by this resolver.
+// depsDevSystems maps our component-type identifiers to deps.dev system names.
+//
+// Only ecosystems for which deps.dev's GetDependencies endpoint actually returns
+// a resolved graph are listed here. From the official docs (docs.deps.dev/api/v3):
+//
+//	"Dependencies are currently available for npm, Cargo, Maven and PyPI."
+//
+// Go, RubyGems, and NuGet are recognized by the deps.dev API (valid systems for
+// GetPackage/GetVersion), but GetDependencies returns no data for them. All
+// other ecosystems (cpan, cran, pub, hex, swift, conan) are not in deps.dev.
+// Ecosystems not in this map fall through the resolver chain silently.
 var depsDevSystems = map[string]string{
-	"nodejs":    "npm",
-	"python":    "pypi",
-	"rust":      "cargo",
-	"java":      "maven", // kept for explicit "java" ecosystem
-	"maven":     "maven", // payload.ComponentType for Maven projects
-	"gradle":    "maven", // Gradle artifacts use Maven coordinates on deps.dev
-	"go":        "go",
-	"dotnet":    "nuget",
-	"ruby":      "rubygems",
-	"perl":      "cpan",
-	"r":         "cran",
-	"dart":      "pub",
-	"elixir":    "hex",
-	"swift":     "swift",
-	"cplusplus": "conan",
+	"nodejs": "npm",   // package.json / package-lock / pnpm / yarn / bun
+	"python": "pypi",  // uv / poetry
+	"rust":   "cargo", // Cargo.lock
+	"java":   "maven", // kept for detectors that set ComponentType "java"
+	"maven":  "maven", // Maven detector sets ComponentType "maven"
+	"gradle": "maven", // Gradle artifacts use Maven coordinates on deps.dev
 }
 
 // OnlineGraphResolver is the pluggable contract for resolving a package's
