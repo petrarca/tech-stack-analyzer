@@ -1,5 +1,8 @@
 tech: r
 name: R
+files:
+  - renv.lock
+  - DESCRIPTION
 extensions:
   - .r
   - .rd
