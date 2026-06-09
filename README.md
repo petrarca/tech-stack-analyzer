@@ -156,7 +156,7 @@ For detailed documentation, see the [docs/](docs/) folder:
 
 ## Contributing
 
-We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on code style, pre-commit hooks, pull requests, and development workflow.
+We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on code style, testing, pre-commit hooks, pull requests, and development workflow.
 
 ## License
 

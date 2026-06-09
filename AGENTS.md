@@ -90,6 +90,12 @@ exclude:
 - Use `/tmp/test-project` or similar paths for temporary test files
 - Clean up test files after verification
 - Never create test files in the main project directory
+- **Lockfile fixtures must contain ONLY public open-source packages.** Generate
+  them fresh from public packages with the real package managers; never copy a
+  lockfile from an internal or proprietary repository. No internal package
+  names, registry URLs, or filesystem paths may appear in a committed fixture.
+- Network-dependent tests must be build-tag gated (`//go:build online`) and
+  excluded from the default `task test` suite (run via `task test:online`).
 
 ## Before Making Repository Public
 

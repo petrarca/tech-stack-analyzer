@@ -34,7 +34,8 @@ task run -- /path/to/project
 | `task build` | Compile the stack-analyzer binary |
 | `task format` | Format Go code using gofmt |
 | `task check` | Run go vet and golangci-lint |
-| `task test` | Run all tests |
+| `task test` | Run all tests (offline; the default suite) |
+| `task test:online` | Run the opt-in live network tests (deps.dev online resolution); requires internet |
 | `task fct` | Run format, check, and test in sequence |
 | `task clean` | Clean up build artifacts and caches |
 | `task run` | Run stack-analyzer on a directory |
@@ -49,11 +50,14 @@ task run -- /path/to/project
 # Build stack-analyzer
 go build -o bin/stack-analyzer ./cmd/scanner
 
-# Run tests
+# Run tests (offline; the default suite)
 go test -v ./...
 
 # Run with race detection
 go test -race ./...
+
+# Run the opt-in live network tests (deps.dev online resolution)
+go test -tags online ./internal/scanner/resolver/ -run Live
 
 # Build for different platforms
 GOOS=linux GOARCH=amd64 go build -o bin/stack-analyzer-linux ./cmd/scanner

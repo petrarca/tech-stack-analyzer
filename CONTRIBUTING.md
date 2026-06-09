@@ -29,6 +29,20 @@ task run -- summary /path # run from source
 
 Use conventional commit prefixes: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`.
 
+### Testing
+
+```bash
+task test          # full offline test suite
+task fct           # format + check + test -- run before committing
+task test:online   # opt-in live network tests (deps.dev); requires internet
+```
+
+The default suite is **fully offline**. The network-dependent live deps.dev test is build-tag gated (`//go:build online`) and excluded from `task test`; run it explicitly with `task test:online`.
+
+**Dependency-graph tests** run at three offline layers: per-parser unit tests, real-lockfile fixture tests (`internal/scanner/parsers/testdata/lockfiles/`), and end-to-end scanner tests. See the [testing strategy](docs/design/detector-implementation.md#testing-strategy) for details.
+
+> **Fixtures policy:** lockfile fixtures must contain **only public open-source packages** (serde, express, requests, sinatra, monolog, flask, plug, ...). Generate them fresh from public packages with the real package managers -- never copy a lockfile from an internal or proprietary repository. No internal package names, registry URLs, or filesystem paths may appear in a committed fixture.
+
 ---
 
 ## Pre-commit Hooks
