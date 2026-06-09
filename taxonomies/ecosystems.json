@@ -214,7 +214,29 @@
       "languages": [
         "Visual Basic 6.0"
       ]
+    },
+    {
+      "name": "COBOL",
+      "description": "COBOL mainframe / business applications -- no package manager, language-only detection",
+      "component_types": [],
+      "techs": [
+        "cobol"
+      ],
+      "languages": [
+        "COBOL"
+      ]
+    },
+    {
+      "name": "APL",
+      "description": "APL (incl. Dyalog) array-programming -- no package manager, language-only detection",
+      "component_types": [],
+      "techs": [
+        "apl"
+      ],
+      "languages": [
+        "APL"
+      ]
     }
   ],
-  "count": 14
+  "count": 16
 }

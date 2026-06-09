@@ -151,4 +151,18 @@ ecosystems:
       techs: []
       languages:
         - Visual Basic 6.0
-count: 14
+    - name: COBOL
+      description: COBOL mainframe / business applications -- no package manager, language-only detection
+      componenttypes: []
+      techs:
+        - cobol
+      languages:
+        - COBOL
+    - name: APL
+      description: APL (incl. Dyalog) array-programming -- no package manager, language-only detection
+      componenttypes: []
+      techs:
+        - apl
+      languages:
+        - APL
+count: 16
