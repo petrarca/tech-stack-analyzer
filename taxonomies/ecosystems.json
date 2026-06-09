@@ -236,7 +236,46 @@
       "languages": [
         "APL"
       ]
+    },
+    {
+      "name": "Perl",
+      "description": "Perl with CPAN / Carton package management",
+      "component_types": [
+        "perl"
+      ],
+      "techs": [
+        "perl",
+        "cpan"
+      ],
+      "languages": [
+        "Perl"
+      ]
+    },
+    {
+      "name": "R",
+      "description": "R statistical computing with renv / CRAN package management",
+      "component_types": [
+        "r"
+      ],
+      "techs": [
+        "r",
+        "renv"
+      ],
+      "languages": [
+        "R"
+      ]
+    },
+    {
+      "name": "Cache ObjectScript",
+      "description": "InterSystems Cache / IRIS ObjectScript -- no package manager, language/tech detection",
+      "component_types": [],
+      "techs": [
+        "cache_objectscript"
+      ],
+      "languages": [
+        "ObjectScript"
+      ]
     }
   ],
-  "count": 16
+  "count": 19
 }

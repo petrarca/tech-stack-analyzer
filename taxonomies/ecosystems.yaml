@@ -165,4 +165,29 @@ ecosystems:
         - apl
       languages:
         - APL
-count: 16
+    - name: Perl
+      description: Perl with CPAN / Carton package management
+      componenttypes:
+        - perl
+      techs:
+        - perl
+        - cpan
+      languages:
+        - Perl
+    - name: R
+      description: R statistical computing with renv / CRAN package management
+      componenttypes:
+        - r
+      techs:
+        - r
+        - renv
+      languages:
+        - R
+    - name: Cache ObjectScript
+      description: InterSystems Cache / IRIS ObjectScript -- no package manager, language/tech detection
+      componenttypes: []
+      techs:
+        - cache_objectscript
+      languages:
+        - ObjectScript
+count: 19

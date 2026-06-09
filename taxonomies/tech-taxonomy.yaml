@@ -3991,6 +3991,12 @@ categories:
           description: ""
           isprimarytech: null
           properties: {}
+        - name: CPAN
+          tech: cpan
+          category: package_manager
+          description: ""
+          isprimarytech: null
+          properties: {}
         - name: goenv
           tech: goenv
           category: package_manager
@@ -4053,6 +4059,12 @@ categories:
           properties: {}
         - name: Pub
           tech: pub
+          category: package_manager
+          description: ""
+          isprimarytech: null
+          properties: {}
+        - name: renv
+          tech: renv
           category: package_manager
           description: ""
           isprimarytech: null

@@ -3481,6 +3481,11 @@
           "category": "package_manager"
         },
         {
+          "name": "CPAN",
+          "tech": "cpan",
+          "category": "package_manager"
+        },
+        {
           "name": "goenv",
           "tech": "goenv",
           "category": "package_manager"
@@ -3533,6 +3538,11 @@
         {
           "name": "Pub",
           "tech": "pub",
+          "category": "package_manager"
+        },
+        {
+          "name": "renv",
+          "tech": "renv",
           "category": "package_manager"
         },
         {
