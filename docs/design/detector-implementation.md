@@ -2,7 +2,7 @@
 
 ## Overview
 
-The scanner uses 15 plugin-based component detectors, each responsible for identifying specific project types, parsing their configuration files, and extracting dependency information. All detectors implement a common interface and auto-register via Go's `init()` mechanism.
+The scanner uses a set of plugin-based component detectors, each responsible for identifying specific project types, parsing their configuration files, and extracting dependency information. All detectors implement a common interface and auto-register via Go's `init()` mechanism.
 
 ## Interface
 
@@ -259,6 +259,87 @@ Parses Conan package manager files for C++ dependencies. Extracts project name f
 | **Extra** | VCL/FMX framework detection |
 
 Parses `.dproj` XML for framework type (VCL or FMX), runtime packages from `DCC_UsePackage` elements, and project name from filename.
+
+---
+
+### Swift (`swift`)
+
+| Field | Value |
+|-------|-------|
+| **Detection files** | `Package.swift` (lockfile `Package.resolved`) |
+| **Component type** | Named |
+| **Dependency type** | `swift` |
+| **Parser** | `parsers.SwiftParser` |
+
+Parses `Package.resolved` (v1 object.pins and v2/v3 top-level pins). The graph producer (`ParsePackageResolvedGraph`) emits a root-rooted closure -- `Package.resolved` is a flat pin list with no package-to-package edges.
+
+---
+
+### Dart / Flutter (`dart`)
+
+| Field | Value |
+|-------|-------|
+| **Detection files** | `pubspec.yaml` (lockfile `pubspec.lock`) |
+| **Component type** | Named |
+| **Dependency type** | `pub` |
+| **Parser** | `parsers.DartParser` |
+
+Parses `pubspec.lock` for resolved versions and direct/transitive markers. The graph producer emits a root-rooted closure (the lockfile does not state per-package edges).
+
+---
+
+### Elixir (`elixir`)
+
+| Field | Value |
+|-------|-------|
+| **Detection files** | `mix.exs` (lockfile `mix.lock`) |
+| **Component type** | Named |
+| **Dependency type** | `hex` |
+| **Parser** | `parsers.ElixirParser` |
+
+Parses `mix.lock` (Elixir map literal). The graph producer (`ParseMixLockGraph`) builds a real package-to-package graph from each entry's dependency tuples.
+
+---
+
+### Perl (`perl`)
+
+| Field | Value |
+|-------|-------|
+| **Detection files** | `cpanfile` (lockfile `cpanfile.snapshot`) |
+| **Component type** | Named |
+| **Dependency type** | `cpan` |
+| **Parser** | `parsers.CpanfileSnapshotParser` |
+
+Parses Carton's `cpanfile.snapshot`. The graph producer resolves each distribution's required modules to their providing distribution, yielding a real distribution-to-distribution graph.
+
+---
+
+### R (`r`)
+
+| Field | Value |
+|-------|-------|
+| **Detection files** | `renv.lock` |
+| **Component type** | Named |
+| **Dependency type** | `cran` |
+| **Parser** | `parsers.RenvParser` |
+
+Parses `renv.lock` (JSON). The graph producer builds a real package-to-package graph from each package's `Requirements` array; base/recommended R packages are filtered.
+
+---
+
+### Nx (`nx`)
+
+| Field | Value |
+|-------|-------|
+| **Detection files** | `nx.json` |
+| **Component type** | Named |
+| **Extra** | Monorepo project graph |
+
+Detects Nx monorepos and their project structure. Dependency graphs for individual projects come from the underlying Node.js lockfiles.
+
+## Dependency Graph
+
+When `--dependency-graph` is enabled, detectors attach package-to-package edges via `components.AttachLockfileGraph`, which runs a resolver chain (local lockfile producers first, optional online deps.dev fallback). Each detector registers an ordered list of `LockfileGraphProducer` (lockfile -> graph parser). See [Dependency Graph](dependency-graph.md) for the producer contract, resolver chain, and ecosystem coverage.
 
 ## Adding a New Detector
 

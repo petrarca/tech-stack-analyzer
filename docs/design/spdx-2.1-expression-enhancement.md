@@ -33,7 +33,7 @@
 | Terraform | No | No standard license field | N/A |
 | GitHub Actions | No | No standard license field | N/A |
 
-All 15 detectors benefit from file-based license detection (LICENSE/COPYING files).
+All detectors benefit from file-based license detection (LICENSE/COPYING files).
 
 ### What is missing
 

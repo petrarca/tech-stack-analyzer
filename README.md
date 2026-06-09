@@ -20,6 +20,7 @@ Detection is powered by **800+ technology rules** across 48 categories, using fi
 - **Zero Dependencies** - Single binary deployment, no runtime requirements
 - **800+ Technology Rules** - Comprehensive detection across 48 categories
 - **Lock File Support** - Extracts exact resolved versions from package-lock.json, pnpm-lock.yaml, Cargo.lock, uv.lock, poetry.lock, etc., and records the originally declared range alongside the resolved version
+- **Dependency Graph** - Emits the package-to-package dependency graph (edges) across 19 ecosystems, off by default via `--dependency-graph`; optional online resolution (deps.dev) fills gaps for manifest-only ecosystems
 - **CycloneDX SBOM** - Emits a PURL-based SBOM consumable directly by vulnerability scanners such as Trivy
 - **Code Statistics** - Lines of code, complexity metrics, and language breakdown via SCC
 - **Automatic .gitignore** - Respects `.gitignore` files with full gitignore semantics (negation `!`, dir-only `/`, last-match-wins)
@@ -73,6 +74,9 @@ go install github.com/petrarca/tech-stack-analyzer/cmd/scanner@latest
 
 # Full scan output + SBOM companion in one pass (out.json -> out.cdx.json)
 ./bin/stack-analyzer scan /path/to/project -o out.json --also-sbom
+
+# Emit the package-to-package dependency graph (off by default)
+./bin/stack-analyzer scan /path/to/project --dependency-graph full -o out.json
 
 # Strip fields not needed by downstream consumers
 ./bin/stack-analyzer scan /path/to/project --omit-fields reason,edges

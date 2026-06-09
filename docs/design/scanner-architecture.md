@@ -4,10 +4,11 @@
 
 The scanner uses a **rules-based architecture** with multiple independent detection mechanisms:
 - **700+ YAML technology rules** for declarative detection
-- **15 plugin-based component detectors** for deep project analysis
+- **Plugin-based component detectors** for deep project analysis (one per ecosystem)
 - **O(1) hash map matcher registries** for file, extension, and content matching
 - **go-enry integration** for language detection (GitHub Linguist)
 - **Implicit component creation** for architectural technologies (databases, SaaS, monitoring)
+- **Dependency-resolver chain** for the optional package-to-package dependency graph (local lockfile producers + optional online deps.dev fallback)
 
 ## Directory Structure
 
@@ -21,21 +22,35 @@ internal/
 │   ├── components/
 │   │   ├── detector.go              # Detector interface definition
 │   │   ├── registry.go              # Plugin registry (init-based)
+│   │   ├── graph.go                 # AttachLockfileGraph: dependency-graph entry point
+│   │   ├── resolve_online.go        # Online (deps.dev) resolution gate + endpoint
 │   │   ├── cocoapods/detector.go    # CocoaPods Podfile analysis
-│   │   ├── cplusplus/detector.go    # C++ Conan analysis
+│   │   ├── cplusplus/detector.go    # C++ Conan / MSBuild analysis
+│   │   ├── dart/detector.go         # Dart/Flutter pubspec analysis
 │   │   ├── delphi/detector.go       # Delphi .dproj analysis
 │   │   ├── deno/detector.go         # Deno lock file analysis
 │   │   ├── docker/detector.go       # Docker Compose analysis
 │   │   ├── dotnet/detector.go       # .NET .csproj analysis
+│   │   ├── elixir/detector.go       # Elixir mix.exs / mix.lock analysis
 │   │   ├── githubactions/detector.go # GitHub Actions workflow analysis
 │   │   ├── golang/detector.go       # Go module analysis
 │   │   ├── java/detector.go         # Java Maven/Gradle analysis
 │   │   ├── nodejs/detector.go       # Node.js package.json analysis
+│   │   ├── nx/detector.go           # Nx monorepo analysis
+│   │   ├── perl/detector.go         # Perl cpanfile / cpanfile.snapshot analysis
 │   │   ├── php/detector.go          # PHP Composer analysis
 │   │   ├── python/detector.go       # Python pyproject.toml/requirements.txt/setup.py
+│   │   ├── r/detector.go            # R renv.lock analysis
 │   │   ├── ruby/detector.go         # Ruby Gemfile analysis
 │   │   ├── rust/detector.go         # Rust Cargo.toml analysis
+│   │   ├── swift/detector.go        # Swift Package Manager analysis
 │   │   └── terraform/detector.go    # Terraform HCL analysis
+│   ├── resolver/                    # Dependency-graph resolver chain
+│   │   ├── resolver.go              # DependencyResolver interface, Request/Result
+│   │   ├── chain.go                 # Local-first chain (lockfile -> online fallback)
+│   │   ├── lockfile.go              # LockfileResolver (ordered graph producers)
+│   │   ├── depsdev.go               # OnlineGraphResolver interface + DepsDevResolver
+│   │   └── depsdev_fetch.go         # deps.dev HTTP fetcher (configurable endpoint)
 │   ├── matchers/
 │   │   ├── file.go                  # File name matcher (O(1) hash map)
 │   │   ├── extension.go             # Extension matcher (O(1) hash map)
@@ -94,7 +109,7 @@ internal/
 NewScanner(path, options)
   -> Load 700+ YAML rules
   -> Build matcher registries (O(1) hash maps)
-  -> Register 15 plugin detectors via init()
+  -> Register plugin detectors via init()
 
 Scan()
   -> Create root payload
@@ -114,7 +129,7 @@ Each directory is processed through 4 detection steps:
 
 ```go
 func applyRules(payload, files, currentPath) {
-    // Step 1: Component detection (15 plugin detectors)
+    // Step 1: Component detection (plugin detectors)
     //   - Creates named components (e.g., Node.js project from package.json)
     //   - Creates virtual components (merged into parent)
     //   - Parses dependencies and matches against rules
@@ -147,7 +162,7 @@ Component detection (step 1) runs first because it may create new child payloads
 
 ### 1. Plugin-Based Component Detectors
 
-The primary detection system for project-level analysis. All 15 detectors implement a common interface and auto-register via Go's `init()` mechanism.
+The primary detection system for project-level analysis. All detectors implement a common interface and auto-register via Go's `init()` mechanism.
 
 **Interface:**
 ```go

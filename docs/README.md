@@ -17,7 +17,8 @@ Detailed documentation for the Tech Stack Analyzer. For a quick introduction and
 | Document | Description |
 |----------|-------------|
 | [Scanner Architecture](design/scanner-architecture.md) | Scanning flow, detection systems, component types, plugin architecture |
-| [Detector Reference](design/detector-implementation.md) | All 15 component detectors with detection files, parsers, and patterns |
+| [Detector Reference](design/detector-implementation.md) | Component detectors with detection files, parsers, and patterns |
+| [Dependency Graph](design/dependency-graph.md) | Package-to-package edges: lockfile producers, resolver chain, online (deps.dev) resolution, ecosystem coverage |
 
 ## Quick Reference
 
