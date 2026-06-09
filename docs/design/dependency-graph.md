@@ -234,22 +234,39 @@ second) and is unchanged for detectors -- they still register an ordered
   (`ResolveGraph(system, name, version, mode)`); deps.dev is the reference
   implementation (`NewDepsDevFetcher`). A mirror or alternative service exposing
   the same API shape can be supplied without touching the chain or detectors.
+
+- **Fan-out strategy.** The resolver fans out over the component's **declared
+  dependencies** (from `payload.Dependencies`, already populated by the flat
+  parser), not the project's own artifact coordinate. This is the correct
+  approach for typical application projects: the project itself is usually
+  private and unknown to deps.dev, but its declared dependencies are published
+  artifacts that deps.dev knows. One HTTP call is made per declared dep; the
+  results are unioned and deduplicated. 404s (private/internal deps) are skipped
+  silently; if all deps are unknown the resolver falls through so the chain
+  remains correct and no false data is emitted.
+
 - **HTTP fetcher.** Calls the validated `:dependencies` endpoint, maps the
   node/edge DAG to `{from, to}` `name@version` edges (root SELF node -> `.`),
-  honors direct/full mode, and **caches per `(system, name, version, mode)`**
-  for the run (pinned versions are immutable, so in-run caching is safe).
-  `404` -> no edges (not an error); `429` -> error.
+  honors direct/full mode, and **caches the raw response per `(system, name,
+  version)`** for the run so the same dep resolved in two components costs one
+  call, and both direct and full mode share the same cached response.
+  `404` -> `ErrCoordinateNotFound` (skipped, not an error); `429` -> error.
+
+- **Automatic for all ecosystems.** `AttachLockfileGraph` derives the
+  fan-out list from `payload.Dependencies` -- no detector changes are needed.
+  The ecosystem is mapped from `payload.ComponentType` to the deps.dev system
+  identifier. All supported ecosystems (maven, nodejs, python, rust, go, dotnet,
+  ruby, perl, r, dart, elixir, swift, cplusplus) are mapped.
+
 - **Configurable endpoint.** `--resolve-online-endpoint` / `resolve_online_endpoint`
   overrides the base URL (default `https://api.deps.dev`) for an
   API-compatible facade or mirror.
-- **Coordinate wiring.** Detectors set `payload.GraphCoordinates`
-  (`{Ecosystem, Name, Version}`); `AttachLockfileGraph` threads it into the
-  resolver request. Wired for Maven and Gradle (the manifest-only cases that
-  benefit); any ecosystem can opt in by setting the field.
+
 - **Opt-in switch.** `--resolve-online` / `resolve_online` (default off),
   orthogonal to `--dependency-graph off|direct|full` (which controls *what* to
-  emit). Validated end-to-end: a Maven `pom.xml` with no committed tree yields 0
-  edges offline and the full 62-edge graph (tagged `source: deps.dev`) with
+  emit). Validated end-to-end: a private Maven project (`com.example:my-app`)
+  with 3 declared deps (spring-boot-starter-web, guava, junit) yields 0 edges
+  offline and **69 edges** (tagged `source: deps.dev`, 3 HTTP calls) with
   `--resolve-online`; a present `dependency-tree.json` still wins (local-first).
 
 Attribution: deps.dev data is CC-BY 4.0 -- consumers should carry "data: Google
