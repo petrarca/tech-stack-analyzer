@@ -6,16 +6,10 @@ import (
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
 
-// LockfileGraphProducer pairs a lockfile name with its graph parser. Detectors
-// supply an ordered slice so the highest-priority lockfile that exists wins,
-// matching how each ecosystem already prioritizes its lockfiles for flat
-// dependency extraction (e.g. npm: package-lock > pnpm > yarn; python: uv >
-// poetry).
-type LockfileGraphProducer struct {
-	Lockfile string
-	Manifest string // optional manifest for direct-dependency / scope derivation
-	Parse    parsers.ParseGraphFunc
-}
+// LockfileGraphProducer is an alias for parsers.LockfileProducer. It is re-
+// exported here so detectors only need to import "components", not both
+// "components" and "parsers", keeping the detector API surface small.
+type LockfileGraphProducer = parsers.LockfileProducer
 
 // AttachLockfileGraph attaches package-to-package dependency edges to the
 // payload, resolving them through the dependency-resolver chain.
@@ -23,8 +17,8 @@ type LockfileGraphProducer struct {
 // It is the single, generic entry point every detector uses -- there is no
 // per-ecosystem special-casing. A detector supplies an ordered list of
 // lockfile -> graph parser for the ecosystem(s) it handles; this helper builds
-// a resolver chain (local lockfile first, online deps.dev fallback) and honors
-// the global dependency-graph mode, remaining a no-op when the mode is off.
+// a resolver chain (local lockfile first, online fallback) and honors the
+// global dependency-graph mode, remaining a no-op when the mode is off.
 //
 // Producers are tried in slice order and the first lockfile that exists wins,
 // so callers must list them in the same priority order they use for flat
@@ -36,7 +30,7 @@ func AttachLockfileGraph(payload *types.Payload, currentPath string, provider ty
 	}
 
 	chain := resolver.NewChain(
-		resolver.NewLockfileResolver(toLockfileProducers(producers)...),
+		resolver.NewLockfileResolver(producers...),
 		// Online fallback. Disabled by default; wired only when online
 		// resolution is explicitly enabled. Safe to include unconditionally --
 		// it falls through when not enabled.
@@ -48,9 +42,9 @@ func AttachLockfileGraph(payload *types.Payload, currentPath string, provider ty
 		Provider: provider,
 		Mode:     mode,
 	}
-	// Optional root coordinates enable the online (deps.dev) fallback. Any
-	// detector can opt in by setting payload.GraphCoordinates; the online
-	// resolver falls through when they are absent.
+	// Optional root coordinates enable the online fallback. Any detector can
+	// opt in by setting payload.GraphCoordinates; the online resolver falls
+	// through when they are absent.
 	if gc := payload.GraphCoordinates; gc != nil && gc.Name != "" && gc.Version != "" {
 		req.Ecosystem = gc.Ecosystem
 		req.Coordinates = &resolver.Coordinates{Name: gc.Name, Version: gc.Version}
@@ -58,8 +52,11 @@ func AttachLockfileGraph(payload *types.Payload, currentPath string, provider ty
 
 	res, err := chain.Resolve(req)
 	if err != nil {
+		// F-02: surface chain errors rather than silently swallowing them.
+		payload.SetComponentProperty("dependency_graph", "error", err.Error())
 		return
 	}
+
 	payload.DependencyEdges = append(payload.DependencyEdges, res.Edges...)
 
 	// Surface unresolved dependency references (lockfile drift, unparseable
@@ -67,14 +64,4 @@ func AttachLockfileGraph(payload *types.Payload, currentPath string, provider ty
 	if len(res.Unresolved) > 0 {
 		payload.SetComponentProperty("dependency_graph", "unresolved", res.Unresolved)
 	}
-}
-
-// toLockfileProducers adapts the detector-facing producer type to the resolver
-// package's type. The shapes are identical; this keeps the detector API stable.
-func toLockfileProducers(producers []LockfileGraphProducer) []resolver.LockfileProducer {
-	out := make([]resolver.LockfileProducer, len(producers))
-	for i, p := range producers {
-		out[i] = resolver.LockfileProducer{Lockfile: p.Lockfile, Manifest: p.Manifest, Parse: p.Parse}
-	}
-	return out
 }

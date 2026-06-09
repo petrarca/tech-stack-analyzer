@@ -39,7 +39,7 @@ func ParseYarnLockGraph(input GraphInput) LockGraph {
 	case types.DependencyGraphDirect:
 		// Prefer package.json-declared direct deps (resolved via the lock's
 		// specifier index); fall back to the not-referenced heuristic.
-		if edges := yarnDirectEdgesFromManifest(input.Manifest, resolver); edges != nil {
+		if edges, ok := yarnDirectEdgesFromManifest(input.Manifest, resolver); ok {
 			result.Edges = edges
 		} else {
 			result.Edges = yarnDirectEdges(entries, resolver)
@@ -52,11 +52,12 @@ func ParseYarnLockGraph(input GraphInput) LockGraph {
 
 // yarnDirectEdgesFromManifest builds root -> direct edges from package.json's
 // declared dependencies, resolving each (name, range) to its locked version via
-// the yarn specifier index. Returns nil when no manifest is supplied so the
-// caller can fall back to the heuristic.
-func yarnDirectEdgesFromManifest(manifest []byte, resolver yarnResolver) []types.DependencyEdge {
+// the yarn specifier index. The bool return is true when a manifest was
+// successfully parsed (even if it declares no dependencies); false means "no
+// manifest, fall back to the heuristic" (F-08: replaces fragile nil-sentinel).
+func yarnDirectEdgesFromManifest(manifest []byte, resolver yarnResolver) ([]types.DependencyEdge, bool) {
 	if len(manifest) == 0 {
-		return nil
+		return nil, false
 	}
 	var pkg struct {
 		Dependencies         map[string]string `json:"dependencies"`
@@ -64,9 +65,9 @@ func yarnDirectEdgesFromManifest(manifest []byte, resolver yarnResolver) []types
 		OptionalDependencies map[string]string `json:"optionalDependencies"`
 	}
 	if err := json.Unmarshal(manifest, &pkg); err != nil {
-		return nil
+		return nil, false
 	}
-	edges := []types.DependencyEdge{}
+	var edges []types.DependencyEdge
 	add := func(deps map[string]string, scope string) {
 		for name, rng := range deps {
 			if to := resolver.yarnResolve(name, rng); to != "" {
@@ -77,7 +78,7 @@ func yarnDirectEdgesFromManifest(manifest []byte, resolver yarnResolver) []types
 	add(pkg.Dependencies, types.ScopeProd)
 	add(pkg.DevDependencies, types.ScopeDev)
 	add(pkg.OptionalDependencies, types.ScopeOptional)
-	return edges
+	return edges, true
 }
 
 // yarnSpecKeyRe splits a yarn entry header key into name and range, e.g.

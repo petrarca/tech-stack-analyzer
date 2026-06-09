@@ -19,20 +19,21 @@ var cargoTableVersionRegex = regexp.MustCompile(`version\s*=\s*["']([^"']+)["']`
 // the [[package]] dependencies array states the locked edges, so no Cargo.toml
 // is needed to build the full graph.
 func ParseCargoLockGraph(input GraphInput) LockGraph {
-	content := input.Lockfile
-	// The flat parser needs Cargo.toml to identify direct deps; the graph does
-	// not, so dependencies are best-effort here (empty Cargo.toml).
-	result := LockGraph{Dependencies: ParseCargoLock(content, "")}
+	// Parse once; derive both the flat dependency list and the graph from the
+	// same entries slice -- no re-parsing (F-03).
+	entries := parseCargoLockEntries(string(input.Lockfile))
 
-	if input.Mode == types.DependencyGraphOff {
-		return result
-	}
-
-	entries := parseCargoLockEntries(string(content))
 	// Map bare "name" references to a single locked version when unambiguous.
+	// Built here and passed into helpers so it is not rebuilt per call (F-04).
 	versionByName := make(map[string]string, len(entries))
 	for _, e := range entries {
 		versionByName[e.Name] = e.Version
+	}
+
+	result := LockGraph{Dependencies: cargoEntriesAsDeps(entries)}
+
+	if input.Mode == types.DependencyGraphOff {
+		return result
 	}
 
 	switch input.Mode {
@@ -43,12 +44,29 @@ func ParseCargoLockGraph(input GraphInput) LockGraph {
 		if len(input.Manifest) > 0 {
 			result.Edges = cargoDirectEdgesFromManifest(string(input.Manifest), versionByName)
 		} else {
-			result.Edges = cargoDirectEdges(entries)
+			result.Edges = cargoDirectEdges(entries, versionByName)
 		}
 	case types.DependencyGraphFull:
 		result.Edges = cargoFullEdges(entries, versionByName)
 	}
 	return result
+}
+
+// cargoEntriesAsDeps converts parsed entries into a flat Dependency slice.
+// Used so ParseCargoLockGraph does not need to re-parse the lockfile.
+func cargoEntriesAsDeps(entries []cargoLockEntry) []types.Dependency {
+	deps := make([]types.Dependency, 0, len(entries))
+	for _, e := range entries {
+		if e.Name != "" && e.Version != "" {
+			deps = append(deps, types.Dependency{
+				Type:       DependencyTypeRust,
+				Name:       e.Name,
+				Version:    e.Version,
+				SourceFile: "Cargo.lock",
+			})
+		}
+	}
+	return deps
 }
 
 // cargoDirectEdgesFromManifest builds root -> direct edges from the deps
@@ -105,8 +123,9 @@ func cargoFullEdges(entries []cargoLockEntry, versionByName map[string]string) [
 
 // cargoDirectEdges builds root -> direct-dependency edges. The root is the only
 // [[package]] entry not referenced as a dependency by any other entry (the
-// workspace/binary crate). The synthetic "." marker is the from node.
-func cargoDirectEdges(entries []cargoLockEntry) []types.DependencyEdge {
+// workspace/binary crate). versionByName is passed in -- already built by
+// ParseCargoLockGraph -- so it is not rebuilt here (F-04).
+func cargoDirectEdges(entries []cargoLockEntry, versionByName map[string]string) []types.DependencyEdge {
 	referenced := make(map[string]bool)
 	for _, e := range entries {
 		for _, dep := range e.Dependencies {
@@ -116,10 +135,6 @@ func cargoDirectEdges(entries []cargoLockEntry) []types.DependencyEdge {
 			}
 			referenced[strings.TrimSpace(name)] = true
 		}
-	}
-	versionByName := make(map[string]string, len(entries))
-	for _, e := range entries {
-		versionByName[e.Name] = e.Version
 	}
 	var edges []types.DependencyEdge
 	for _, e := range entries {

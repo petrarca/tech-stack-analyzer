@@ -6,26 +6,14 @@ import (
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/parsers"
 )
 
-// LockfileProducer pairs a lockfile (or pre-generated tree file) name with its
-// graph parser, plus an optional manifest filename for the same component
-// (e.g. Cargo.toml for Cargo.lock, package.json for package-lock.json). The
-// list is ordered: the first file that exists wins, matching each ecosystem's
-// flat-extraction priority (npm: package-lock > pnpm > yarn; python: uv >
-// poetry).
-type LockfileProducer struct {
-	Lockfile string
-	Manifest string // optional; read and passed to the producer for direct/scope
-	Parse    parsers.ParseGraphFunc
-}
-
 // LockfileResolver resolves edges by reading the highest-priority lockfile that
 // exists in the component directory. This is the offline, authoritative source.
 type LockfileResolver struct {
-	producers []LockfileProducer
+	producers []parsers.LockfileProducer
 }
 
 // NewLockfileResolver builds a resolver over an ordered producer list.
-func NewLockfileResolver(producers ...LockfileProducer) *LockfileResolver {
+func NewLockfileResolver(producers ...parsers.LockfileProducer) *LockfileResolver {
 	return &LockfileResolver{producers: producers}
 }
 

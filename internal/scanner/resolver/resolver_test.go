@@ -14,7 +14,7 @@ type mapProvider struct{ files map[string][]byte }
 
 func (m mapProvider) ListDir(string) ([]types.File, error) { return nil, nil }
 func (m mapProvider) Open(string) (string, error)          { return "", nil }
-func (m mapProvider) Exists(string) (bool, error)          { return false, nil }
+func (m mapProvider) Exists(p string) (bool, error)        { _, ok := m.files[p]; return ok, nil }
 func (m mapProvider) IsDir(string) (bool, error)           { return false, nil }
 func (m mapProvider) GetBasePath() string                  { return "/" }
 func (m mapProvider) ReadFile(p string) ([]byte, error) {
@@ -47,7 +47,7 @@ func TestChain_LockfileWins(t *testing.T) {
 		"/app/pnpm-lock.yaml": []byte("x"),
 	}}
 	lock := NewLockfileResolver(
-		LockfileProducer{Lockfile: "pnpm-lock.yaml", Parse: stubParse(
+		parsers.LockfileProducer{Lockfile: "pnpm-lock.yaml", Parse: stubParse(
 			types.DependencyEdge{From: "a@1", To: "b@2"},
 		)},
 	)
@@ -70,7 +70,7 @@ func TestChain_LockfileWins(t *testing.T) {
 func TestChain_OnlineFallbackFillsGap(t *testing.T) {
 	prov := mapProvider{files: map[string][]byte{}} // no lockfile present
 	lock := NewLockfileResolver(
-		LockfileProducer{Lockfile: "pom.xml", Parse: stubParse()},
+		parsers.LockfileProducer{Lockfile: "pom.xml", Parse: stubParse()},
 	)
 	online := &DepsDevResolver{
 		Enabled: true,
@@ -113,7 +113,7 @@ func TestChain_OffShortCircuits(t *testing.T) {
 
 func TestLockfileResolver_PresentButEmptyDoesNotFallThrough(t *testing.T) {
 	prov := mapProvider{files: map[string][]byte{"/leaf/uv.lock": []byte("x")}}
-	lock := NewLockfileResolver(LockfileProducer{Lockfile: "uv.lock", Parse: stubParse()})
+	lock := NewLockfileResolver(parsers.LockfileProducer{Lockfile: "uv.lock", Parse: stubParse()})
 	online := &DepsDevResolver{Enabled: true, Online: DepsDevFetcher(func(_, _, _ string, _ types.DependencyGraphMode) ([]types.DependencyEdge, error) {
 		t.Fatal("present lockfile (even with zero edges) is authoritative; must not fall through")
 		return nil, nil

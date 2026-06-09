@@ -125,7 +125,8 @@ func pnpmSnapshotEdges(snapshots map[string]PnpmSnapshot) []types.DependencyEdge
 			edges = append(edges, types.DependencyEdge{From: from, To: pnpmNodeID(depName + "@" + depVer)})
 		}
 		for depName, depVer := range snap.OptionalDependencies {
-			edges = append(edges, types.DependencyEdge{From: from, To: pnpmNodeID(depName + "@" + depVer)})
+			// Scope is set on optional edges in full mode, matching direct mode (F-07).
+			edges = append(edges, types.DependencyEdge{From: from, To: pnpmNodeID(depName + "@" + depVer), Scope: types.ScopeOptional})
 		}
 	}
 	return edges

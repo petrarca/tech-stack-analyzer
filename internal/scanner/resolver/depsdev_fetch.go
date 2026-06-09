@@ -2,6 +2,7 @@ package resolver
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -12,6 +13,11 @@ import (
 
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
+
+// ErrCoordinateNotFound is returned by an OnlineGraphResolver when the
+// requested package coordinate is not known to the service. The resolver chain
+// treats this as "fall through" (Resolved=false), not as a hard error.
+var ErrCoordinateNotFound = errors.New("coordinate not found in online resolver")
 
 // DefaultDepsDevBaseURL is the public deps.dev v3 API base. It can be overridden
 // (SetResolveOnlineEndpoint / config) to point at any API-compatible facade or
@@ -26,21 +32,23 @@ type HTTPDoer interface {
 }
 
 // depsDevClient implements a DepsDevFetcher against a deps.dev-compatible API.
-// It caches responses per (system, name, version) for the lifetime of the
-// client (one scan run) so a coordinate is fetched at most once; pinned
-// versions are immutable, so in-run caching is always safe.
+// The raw graph response is cached per (system, name, version) for the run;
+// edge derivation is applied per mode after the cache lookup so the same HTTP
+// response serves both direct and full mode queries (F-12). Pinned versions are
+// immutable, so in-run caching is always safe.
 type depsDevClient struct {
 	baseURL string
 	http    HTTPDoer
 
-	mu    sync.Mutex
-	cache map[string][]types.DependencyEdge
+	mu       sync.Mutex
+	rawCache map[string]depsDevResponse // keyed by sys|name|ver
+	notFound map[string]bool            // 404 sentinel (F-09)
 }
 
 // NewDepsDevFetcher builds a DepsDevFetcher targeting baseURL. A nil client uses
 // a default http.Client with a sane timeout; an empty baseURL uses the public
 // deps.dev API.
-func NewDepsDevFetcher(baseURL string, client HTTPDoer) DepsDevFetcher {
+func NewDepsDevFetcher(baseURL string, client HTTPDoer) OnlineGraphResolver {
 	if baseURL == "" {
 		baseURL = DefaultDepsDevBaseURL
 	}
@@ -49,11 +57,12 @@ func NewDepsDevFetcher(baseURL string, client HTTPDoer) DepsDevFetcher {
 		client = &http.Client{Timeout: 30 * time.Second}
 	}
 	c := &depsDevClient{
-		baseURL: baseURL,
-		http:    client,
-		cache:   make(map[string][]types.DependencyEdge),
+		baseURL:  baseURL,
+		http:     client,
+		rawCache: make(map[string]depsDevResponse),
+		notFound: make(map[string]bool),
 	}
-	return c.fetch
+	return DepsDevFetcher(c.fetch)
 }
 
 // depsDevResponse is the resolved-graph response: a deduplicated DAG of nodes
@@ -74,68 +83,79 @@ type depsDevResponse struct {
 }
 
 // fetch performs the resolved-graph request and maps it to our edge model,
-// honoring the mode. It is the DepsDevFetcher.
+// honoring the mode. The raw response is cached by (system, name, version) so
+// a single HTTP call serves both direct and full mode queries (F-12).
+// ErrCoordinateNotFound is returned for 404 responses (F-09).
 func (c *depsDevClient) fetch(system, name, version string, mode types.DependencyGraphMode) ([]types.DependencyEdge, error) {
-	key := system + "|" + name + "|" + version + "|" + string(mode)
+	rawKey := system + "|" + name + "|" + version
+
 	c.mu.Lock()
-	if cached, ok := c.cache[key]; ok {
+	if c.notFound[rawKey] {
 		c.mu.Unlock()
-		return cached, nil
+		return nil, ErrCoordinateNotFound
+	}
+	if resp, ok := c.rawCache[rawKey]; ok {
+		c.mu.Unlock()
+		return mapDepsDevGraph(resp, mode), nil
 	}
 	c.mu.Unlock()
 
-	resp, err := c.request(system, name, version)
+	resp, notFound, err := c.request(system, name, version)
 	if err != nil {
 		return nil, err
 	}
-	edges := mapDepsDevGraph(resp, mode)
 
 	c.mu.Lock()
-	c.cache[key] = edges
+	if notFound {
+		c.notFound[rawKey] = true
+		c.mu.Unlock()
+		return nil, ErrCoordinateNotFound
+	}
+	c.rawCache[rawKey] = resp
 	c.mu.Unlock()
-	return edges, nil
+
+	return mapDepsDevGraph(resp, mode), nil
 }
 
-// request calls the resolved-graph endpoint. The endpoint uses the
-// gRPC-transcoding ":dependencies" verb; the package-name segment is
-// URL-encoded (Maven names contain a colon).
-func (c *depsDevClient) request(system, name, version string) (depsDevResponse, error) {
+// request calls the resolved-graph endpoint. Returns (response, notFound, err).
+// notFound=true means HTTP 404 (unknown coordinate); the caller caches the
+// sentinel and returns ErrCoordinateNotFound so the chain falls through (F-09).
+func (c *depsDevClient) request(system, name, version string) (depsDevResponse, bool, error) {
 	var out depsDevResponse
 	endpoint := fmt.Sprintf("%s/v3/systems/%s/packages/%s/versions/%s:dependencies",
 		c.baseURL, url.PathEscape(strings.ToLower(system)), url.PathEscape(name), url.PathEscape(version))
 
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
-		return out, err
+		return out, false, err
 	}
 	req.Header.Set("Accept", "application/json")
 
 	res, err := c.http.Do(req)
 	if err != nil {
-		return out, fmt.Errorf("deps.dev request failed: %w", err)
+		return out, false, fmt.Errorf("deps.dev request failed: %w", err)
 	}
 	defer func() { _ = res.Body.Close() }()
 
 	switch res.StatusCode {
 	case http.StatusOK:
-		// proceed
+		// proceed to decode
 	case http.StatusNotFound:
-		// Unknown coordinate: not an error, just no graph.
-		return out, nil
+		return out, true, nil // unknown coordinate: chain should fall through
 	case http.StatusTooManyRequests:
-		return out, fmt.Errorf("deps.dev rate limited (429) for %s/%s@%s", system, name, version)
+		return out, false, fmt.Errorf("deps.dev rate limited (429) for %s/%s@%s", system, name, version)
 	default:
-		return out, fmt.Errorf("deps.dev returned %d for %s/%s@%s", res.StatusCode, system, name, version)
+		return out, false, fmt.Errorf("deps.dev returned %d for %s/%s@%s", res.StatusCode, system, name, version)
 	}
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		return out, err
+		return out, false, err
 	}
 	if err := json.Unmarshal(body, &out); err != nil {
-		return out, fmt.Errorf("deps.dev decode error: %w", err)
+		return out, false, fmt.Errorf("deps.dev decode error: %w", err)
 	}
-	return out, nil
+	return out, false, nil
 }
 
 // mapDepsDevGraph projects the deps.dev DAG onto our {from,to} edges. The SELF

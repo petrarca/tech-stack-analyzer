@@ -1,6 +1,8 @@
 package resolver
 
 import (
+	"errors"
+
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
 
@@ -81,6 +83,11 @@ func (r *DepsDevResolver) Resolve(req Request) (Result, error) {
 
 	edges, err := r.Online.ResolveGraph(system, req.Coordinates.Name, req.Coordinates.Version, req.Mode)
 	if err != nil {
+		// ErrCoordinateNotFound means the service does not know this coordinate;
+		// treat as "not applicable" so the chain can fall through (F-09).
+		if errors.Is(err, ErrCoordinateNotFound) {
+			return Result{Resolved: false}, nil
+		}
 		return Result{}, err
 	}
 	return Result{

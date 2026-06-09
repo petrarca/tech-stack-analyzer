@@ -48,14 +48,18 @@ func ParsePoetryLockGraph(input GraphInput) LockGraph {
 		return result
 	}
 
-	// Keep ALL locked versions per (normalized) name.
+	// Keep ALL locked versions per (normalized) name, and a reverse map to the
+	// lockfile's canonical name. The canonical name is used for the To node id
+	// so direct and full edges have consistent, matching node identities (F-06).
 	versionsByName := make(map[string][]string)
+	canonicalName := make(map[string]string) // normalized -> lockfile name
 	for _, pkg := range lockfile.Packages {
 		if pkg.Name == "" || pkg.Version == "" {
 			continue
 		}
 		key := normalizePackageName(pkg.Name)
 		versionsByName[key] = append(versionsByName[key], pkg.Version)
+		canonicalName[key] = pkg.Name
 	}
 
 	switch input.Mode {
@@ -63,7 +67,7 @@ func ParsePoetryLockGraph(input GraphInput) LockGraph {
 		// Prefer pyproject.toml-declared direct deps; fall back to the
 		// not-referenced heuristic when no manifest is supplied.
 		if len(input.Manifest) > 0 {
-			result.Edges = poetryDirectEdgesFromManifest(string(input.Manifest), versionsByName)
+			result.Edges = poetryDirectEdgesFromManifest(string(input.Manifest), versionsByName, canonicalName)
 		} else {
 			result.Edges = poetryDirectEdges(lockfile, versionsByName)
 		}
@@ -77,13 +81,21 @@ func ParsePoetryLockGraph(input GraphInput) LockGraph {
 // declared in pyproject.toml, resolved to their locked versions. The synthetic
 // "." marker is the from node. When a package is locked at multiple versions,
 // an edge is emitted to each (markers not evaluated).
-func poetryDirectEdgesFromManifest(pyproject string, versionsByName map[string][]string) []types.DependencyEdge {
+// poetryDirectEdgesFromManifest builds root -> direct edges from the deps
+// declared in pyproject.toml, resolved to their locked versions. The To node
+// id uses the lockfile's canonical name (from canonicalName) so it matches the
+// From node ids emitted by poetryFullEdges (F-06).
+func poetryDirectEdgesFromManifest(pyproject string, versionsByName map[string][]string, canonicalName map[string]string) []types.DependencyEdge {
 	directDeps := extractDirectDepsFromPyproject(pyproject)
 	var edges []types.DependencyEdge
 	for name, scope := range directDeps {
 		key := normalizePackageName(name)
+		canonical, ok := canonicalName[key]
+		if !ok {
+			canonical = name // manifest name as fallback if not in lock
+		}
 		for _, v := range versionsByName[key] {
-			edges = append(edges, types.DependencyEdge{From: ".", To: name + "@" + v, Scope: scope})
+			edges = append(edges, types.DependencyEdge{From: ".", To: canonical + "@" + v, Scope: scope})
 		}
 	}
 	return edges

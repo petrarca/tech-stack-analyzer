@@ -1,10 +1,10 @@
 package resolver
 
 import (
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
-	"sync/atomic"
 	"testing"
 
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
@@ -25,10 +25,10 @@ const depsDevDAG = `{
   ]
 }`
 
-func newDepsDevServer(t *testing.T, calls *int32) *httptest.Server {
+func newDepsDevServer(t *testing.T, calls *int) *httptest.Server {
 	t.Helper()
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		atomic.AddInt32(calls, 1)
+		*calls++
 		// Verify the gRPC-transcoding ":dependencies" verb and encoded colon.
 		if !strings.HasSuffix(r.URL.Path, ":dependencies") {
 			t.Errorf("unexpected path: %s", r.URL.Path)
@@ -42,14 +42,14 @@ func newDepsDevServer(t *testing.T, calls *int32) *httptest.Server {
 }
 
 func TestDepsDevFetcher_FullAndDirect(t *testing.T) {
-	var calls int32
+	var calls int
 	srv := newDepsDevServer(t, &calls)
 	defer srv.Close()
 
-	fetch := NewDepsDevFetcher(srv.URL, srv.Client())
+	resolver := NewDepsDevFetcher(srv.URL, srv.Client())
 
 	// full: root edge (from ".") + transitive edge.
-	full, err := fetch("maven", "com.example:app", "1.0.0", types.DependencyGraphFull)
+	full, err := resolver.ResolveGraph("maven", "com.example:app", "1.0.0", types.DependencyGraphFull)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -65,7 +65,7 @@ func TestDepsDevFetcher_FullAndDirect(t *testing.T) {
 	}
 
 	// direct: only the root's edges.
-	direct, err := fetch("maven", "com.example:app", "1.0.0", types.DependencyGraphDirect)
+	direct, err := resolver.ResolveGraph("maven", "com.example:app", "1.0.0", types.DependencyGraphDirect)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -75,35 +75,33 @@ func TestDepsDevFetcher_FullAndDirect(t *testing.T) {
 }
 
 func TestDepsDevFetcher_CachesPerCoordinate(t *testing.T) {
-	var calls int32
+	var calls int
 	srv := newDepsDevServer(t, &calls)
 	defer srv.Close()
-	fetch := NewDepsDevFetcher(srv.URL, srv.Client())
+	resolver := NewDepsDevFetcher(srv.URL, srv.Client())
 
 	for i := 0; i < 3; i++ {
-		if _, err := fetch("maven", "com.example:app", "1.0.0", types.DependencyGraphFull); err != nil {
+		if _, err := resolver.ResolveGraph("maven", "com.example:app", "1.0.0", types.DependencyGraphFull); err != nil {
 			t.Fatal(err)
 		}
 	}
 	// Same coordinate+mode resolved three times -> exactly one HTTP call.
-	if n := atomic.LoadInt32(&calls); n != 1 {
+	if n := calls; n != 1 {
 		t.Errorf("expected 1 HTTP call (cached), got %d", n)
 	}
 }
 
-func TestDepsDevFetcher_NotFoundIsEmptyNotError(t *testing.T) {
+func TestDepsDevFetcher_NotFoundIsErrCoordinateNotFound(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	}))
 	defer srv.Close()
-	fetch := NewDepsDevFetcher(srv.URL, srv.Client())
+	resolver := NewDepsDevFetcher(srv.URL, srv.Client())
 
-	edges, err := fetch("maven", "no:such", "9.9.9", types.DependencyGraphFull)
-	if err != nil {
-		t.Errorf("404 must not be an error, got %v", err)
-	}
-	if len(edges) != 0 {
-		t.Errorf("404 must yield no edges, got %v", edges)
+	// 404 must return ErrCoordinateNotFound so the chain can fall through (F-09).
+	_, err := resolver.ResolveGraph("maven", "no:such", "9.9.9", types.DependencyGraphFull)
+	if !errors.Is(err, ErrCoordinateNotFound) {
+		t.Errorf("expected ErrCoordinateNotFound, got %v", err)
 	}
 }
 
@@ -112,27 +110,27 @@ func TestDepsDevFetcher_RateLimitedIsError(t *testing.T) {
 		w.WriteHeader(http.StatusTooManyRequests)
 	}))
 	defer srv.Close()
-	fetch := NewDepsDevFetcher(srv.URL, srv.Client())
+	resolver := NewDepsDevFetcher(srv.URL, srv.Client())
 
-	if _, err := fetch("maven", "x:y", "1.0", types.DependencyGraphFull); err == nil {
+	if _, err := resolver.ResolveGraph("maven", "x:y", "1.0", types.DependencyGraphFull); err == nil {
 		t.Error("429 must surface as an error")
 	}
 }
 
 func TestDepsDevFetcher_EndpointOverride(t *testing.T) {
 	// A facade/mirror at a custom base URL must be used verbatim.
-	var hit int32
+	var hit int
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		atomic.AddInt32(&hit, 1)
+		hit++
 		_, _ = w.Write([]byte(depsDevDAG))
 	}))
 	defer srv.Close()
 
-	fetch := NewDepsDevFetcher(srv.URL+"/", srv.Client()) // trailing slash trimmed
-	if _, err := fetch("maven", "com.example:app", "1.0.0", types.DependencyGraphFull); err != nil {
+	resolver := NewDepsDevFetcher(srv.URL+"/", srv.Client()) // trailing slash trimmed
+	if _, err := resolver.ResolveGraph("maven", "com.example:app", "1.0.0", types.DependencyGraphFull); err != nil {
 		t.Fatal(err)
 	}
-	if atomic.LoadInt32(&hit) != 1 {
+	if hit != 1 {
 		t.Error("custom endpoint was not used")
 	}
 }

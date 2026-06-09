@@ -34,21 +34,19 @@ type GraphInput struct {
 	Mode     types.DependencyGraphMode
 }
 
-// GraphProducer is the contract a lockfile parser implements to expose the
-// dependency graph in addition to the flat dependency list. The graph is read
-// from the lockfile, not resolved.
-//
-// Mode controls how much graph to emit:
-//   - DependencyGraphOff:    no edges (Edges is nil)
-//   - DependencyGraphDirect: only root -> direct dependency edges
-//   - DependencyGraphFull:   the full transitive package-to-package graph
-//
-// Parsers are package-level functions, so this contract is expressed as a
-// function shape rather than a Go interface; ParseGraphFunc documents it.
-type GraphProducer interface {
-	ParseGraph(input GraphInput) LockGraph
-}
-
-// ParseGraphFunc is the function form of GraphProducer used by package-level
-// lockfile parsers.
+// ParseGraphFunc is the function type for lockfile graph producers.
 type ParseGraphFunc func(input GraphInput) LockGraph
+
+// LockfileProducer pairs a lockfile (or pre-generated tree file) name with its
+// graph parser, plus an optional manifest filename for the same component
+// (e.g. Cargo.toml for Cargo.lock, package.json for package-lock.json). The
+// list supplied to a resolver is ordered: the first file that exists wins,
+// matching each ecosystem's flat-extraction priority.
+//
+// Defined here (in parsers) so both the resolver and components packages can
+// use the single canonical type without a duplicate or an adapter.
+type LockfileProducer struct {
+	Lockfile string
+	Manifest string // optional; read and passed to the producer for direct/scope
+	Parse    ParseGraphFunc
+}

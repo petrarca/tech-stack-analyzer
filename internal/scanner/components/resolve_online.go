@@ -11,10 +11,15 @@ import (
 // lockfile/tree-file is present, and only when explicitly enabled. The endpoint
 // is configurable so an API-compatible facade or mirror can be used instead of
 // the public deps.dev API.
+// resolveOnlineMu and resolveOnlineEndpointMu are intentionally separate: the
+// two settings are logically independent and set by different callers at
+// startup. Sharing one lock would couple unrelated state (F-14).
 var (
-	resolveOnlineMu       sync.RWMutex
-	resolveOnline         bool
-	resolveOnlineEndpoint string
+	resolveOnlineMu sync.RWMutex
+	resolveOnline   bool
+
+	resolveOnlineEndpointMu sync.RWMutex
+	resolveOnlineEndpoint   string
 )
 
 // SetResolveOnline enables or disables the online dependency-resolution
@@ -36,16 +41,16 @@ func ResolveOnline() bool {
 // the public deps.dev API. A deps.dev-API-compatible facade or mirror (same
 // /v3/systems/.../versions/...:dependencies shape) can be supplied here.
 func SetResolveOnlineEndpoint(endpoint string) {
-	resolveOnlineMu.Lock()
-	defer resolveOnlineMu.Unlock()
+	resolveOnlineEndpointMu.Lock()
+	defer resolveOnlineEndpointMu.Unlock()
 	resolveOnlineEndpoint = endpoint
 }
 
 // ResolveOnlineEndpoint returns the configured online-resolver base URL ("" =
 // public deps.dev).
 func ResolveOnlineEndpoint() string {
-	resolveOnlineMu.RLock()
-	defer resolveOnlineMu.RUnlock()
+	resolveOnlineEndpointMu.RLock()
+	defer resolveOnlineEndpointMu.RUnlock()
 	return resolveOnlineEndpoint
 }
 
