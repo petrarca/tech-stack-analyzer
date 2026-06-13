@@ -112,8 +112,8 @@ tasks:
     cmds:
       - mkdir -p taxonomies
       - echo "Generating taxonomy files..."
-      - ./{{.BINARY_NAME}} info tech-taxonomy --format json --output taxonomies/tech-taxonomy.json
-      - ./{{.BINARY_NAME}} info tech-taxonomy --format yaml --output taxonomies/tech-taxonomy.yaml
+      - ./{{.BINARY_NAME}} info tech-taxonomy --format json --output taxonomies/technologies.json
+      - ./{{.BINARY_NAME}} info tech-taxonomy --format yaml --output taxonomies/technologies.yaml
       - ./{{.BINARY_NAME}} info languages --format json --output taxonomies/languages.json
       - ./{{.BINARY_NAME}} info languages --format yaml --output taxonomies/languages.yaml
       - ./{{.BINARY_NAME}} info ecosystems --format json --output taxonomies/ecosystems.json
