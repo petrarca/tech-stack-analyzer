@@ -345,7 +345,11 @@ the resolver never sees the individual sources:
 - **Maven `settings.xml`** (default `~/.m2/settings.xml`, per-scan override via
   `--maven-settings` / `maven_settings` so different projects can use their own)
   supplies `<repositories>` URLs with their `<server>` credentials (HTTP Basic;
-  a JFrog reference token is the password) and `<localRepository>`.
+  a JFrog reference token is the password) and `<localRepository>`. `<mirrors>`
+  are honored per Maven semantics: a `mirrorOf` match (`*`, `external:*`,
+  explicit ids, `!exclusions`) routes the repository through the mirror URL with
+  the mirror id's credentials, so a catch-all `mirrorOf=*` collapses all repos
+  to the single mirror.
 - **Scanner config / flags** supply `--maven-repo-url`, `--maven-local-repo`,
   `--maven-local-repo-dir`.
 - **Environment** supplies secrets only: `STACK_ANALYZER_MAVEN_USER` and

@@ -15,7 +15,18 @@ import (
 type Settings struct {
 	LocalRepository string
 	Repositories    []SettingsRepository
+	Mirrors         []SettingsMirror
 	Servers         map[string]SettingsServer // by id
+}
+
+// SettingsMirror redirects matching repositories to a single URL, per Maven's
+// <mirror> semantics. MirrorOf is a comma-separated pattern list ("*", explicit
+// ids, "external:*", "!excluded"). Credentials come from the <server> whose id
+// equals the mirror id.
+type SettingsMirror struct {
+	ID       string
+	URL      string
+	MirrorOf string
 }
 
 // SettingsRepository is a repository URL and the server id supplying its creds.
@@ -40,6 +51,11 @@ type xmlSettings struct {
 		Username string `xml:"username"`
 		Password string `xml:"password"`
 	} `xml:"servers>server"`
+	Mirrors []struct {
+		ID       string `xml:"id"`
+		URL      string `xml:"url"`
+		MirrorOf string `xml:"mirrorOf"`
+	} `xml:"mirrors>mirror"`
 	Profiles []struct {
 		Repositories []struct {
 			ID  string `xml:"id"`
@@ -95,6 +111,17 @@ func parseSettings(data []byte) (*Settings, error) {
 			Password: strings.TrimSpace(srv.Password),
 		}
 	}
+	for _, m := range x.Mirrors {
+		url := strings.TrimSpace(m.URL)
+		if url == "" {
+			continue
+		}
+		s.Mirrors = append(s.Mirrors, SettingsMirror{
+			ID:       strings.TrimSpace(m.ID),
+			URL:      url,
+			MirrorOf: strings.TrimSpace(m.MirrorOf),
+		})
+	}
 	seen := make(map[string]bool)
 	for _, prof := range x.Profiles {
 		for _, repo := range prof.Repositories {
@@ -112,21 +139,81 @@ func parseSettings(data []byte) (*Settings, error) {
 	return s, nil
 }
 
-// RemoteSources builds a RemoteSource for each repository in the settings,
-// attaching the matching server's Basic-auth credentials by repository id.
-// Repositories without a URL are skipped. The client (nil = default) is shared.
+// mirrorFor returns the mirror that handles the given repository id, or nil when
+// none matches. Maven applies the first matching mirror.
+func (s *Settings) mirrorFor(repoID string) *SettingsMirror {
+	for i := range s.Mirrors {
+		if mirrorMatches(s.Mirrors[i].MirrorOf, repoID) {
+			return &s.Mirrors[i]
+		}
+	}
+	return nil
+}
+
+// mirrorMatches implements Maven's mirrorOf pattern matching: comma-separated
+// tokens of "*", "external:*" (treated as "*" here -- we have no notion of
+// local repos), explicit ids, and "!id" exclusions.
+func mirrorMatches(mirrorOf, repoID string) bool {
+	matched := false
+	for _, p := range strings.Split(mirrorOf, ",") {
+		p = strings.TrimSpace(p)
+		switch {
+		case p == "":
+			continue
+		case len(p) > 1 && p[0] == '!':
+			if p[1:] == repoID {
+				return false // explicit exclusion wins
+			}
+		case p == repoID:
+			matched = true
+		case p == "*" || p == "external:*":
+			matched = true
+		}
+	}
+	return matched
+}
+
+// RemoteSources builds the remote POM sources implied by the settings, honoring
+// Maven mirror semantics. Each declared repository is routed through a matching
+// mirror (using the mirror's URL and the mirror id's credentials) or used
+// directly with its own server credentials. Mirrors are deduplicated, so a
+// catch-all mirror (mirrorOf=*) collapses all repositories to one source. A
+// catch-all mirror with no declared repositories still yields a source (it is
+// the effective repository). The client (nil = default) is shared.
 func (s *Settings) RemoteSources(client httpDoer) []PomSource {
 	if s == nil {
 		return nil
 	}
+
 	var sources []PomSource
-	for _, repo := range s.Repositories {
-		opts := RemoteOptions{BaseURL: repo.URL, Client: client}
-		if srv, ok := s.Servers[repo.ID]; ok {
+	seen := make(map[string]bool)
+	add := func(url, serverID string) {
+		if url == "" || seen[url] {
+			return
+		}
+		seen[url] = true
+		opts := RemoteOptions{BaseURL: url, Client: client}
+		if srv, ok := s.Servers[serverID]; ok {
 			opts.Username = srv.Username
 			opts.Password = srv.Password
 		}
 		sources = append(sources, NewRemoteSource(opts))
+	}
+
+	for _, repo := range s.Repositories {
+		if m := s.mirrorFor(repo.ID); m != nil {
+			add(m.URL, m.ID)
+		} else {
+			add(repo.URL, repo.ID)
+		}
+	}
+
+	// A catch-all mirror with no (matched) declared repositories is still the
+	// effective source -- include it so settings with only a mirror work.
+	for i := range s.Mirrors {
+		if mirrorMatches(s.Mirrors[i].MirrorOf, "central") || s.Mirrors[i].MirrorOf == "*" {
+			add(s.Mirrors[i].URL, s.Mirrors[i].ID)
+		}
 	}
 	return sources
 }

@@ -102,6 +102,71 @@ func TestLoadSettings_FromFile(t *testing.T) {
 	}
 }
 
+const mirrorSettings = `<?xml version="1.0"?>
+<settings xmlns="http://maven.apache.org/SETTINGS/1.2.0">
+  <servers>
+    <server><id>central</id><username>u1</username><password>p1</password></server>
+    <server><id>mirror.virtual</id><username>mu</username><password>mp</password></server>
+  </servers>
+  <mirrors>
+    <mirror>
+      <id>mirror.virtual</id>
+      <mirrorOf>*</mirrorOf>
+      <url>https://repo.example.com/artifactory/mirror.virtual</url>
+    </mirror>
+  </mirrors>
+  <profiles>
+    <profile>
+      <id>artifactory</id>
+      <repositories>
+        <repository><id>central</id><url>https://repo.example.com/artifactory/releases</url></repository>
+        <repository><id>snapshots</id><url>https://repo.example.com/artifactory/snapshots</url></repository>
+      </repositories>
+    </profile>
+  </profiles>
+</settings>`
+
+func TestSettings_MirrorOfStarCollapsesToMirror(t *testing.T) {
+	s, err := parseSettings([]byte(mirrorSettings))
+	if err != nil {
+		t.Fatal(err)
+	}
+	sources := s.RemoteSources(nil)
+	// mirrorOf=* routes both repos to the single mirror -> one deduplicated source.
+	if len(sources) != 1 {
+		t.Fatalf("expected 1 mirror source, got %d", len(sources))
+	}
+	rs := sources[0].(*RemoteSource)
+	if rs.baseURL != "https://repo.example.com/artifactory/mirror.virtual" {
+		t.Errorf("expected mirror URL, got %q", rs.baseURL)
+	}
+	// Credentials come from the mirror id's <server>, not the original repo's.
+	if rs.username != "mu" || rs.password != "mp" {
+		t.Errorf("expected mirror creds mu/mp, got %q", rs.username)
+	}
+}
+
+func TestMirrorMatches(t *testing.T) {
+	cases := []struct {
+		mirrorOf, repoID string
+		want             bool
+	}{
+		{"*", "central", true},
+		{"external:*", "central", true},
+		{"central", "central", true},
+		{"central", "snapshots", false},
+		{"*,!central", "central", false}, // exclusion wins
+		{"*,!central", "snapshots", true},
+		{"a,b,c", "b", true},
+		{"", "central", false},
+	}
+	for _, c := range cases {
+		if got := mirrorMatches(c.mirrorOf, c.repoID); got != c.want {
+			t.Errorf("mirrorMatches(%q,%q) = %v, want %v", c.mirrorOf, c.repoID, got, c.want)
+		}
+	}
+}
+
 // RemoteSources on a nil *Settings must be safe.
 func TestSettings_RemoteSources_Nil(t *testing.T) {
 	var s *Settings
