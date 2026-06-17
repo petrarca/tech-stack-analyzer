@@ -235,6 +235,14 @@ func (p *MavenParser) ParsePomXMLWithProvider(content string, pomDir string, pro
 	pluginDeps := p.parsePluginDependencies(project.Build.Plugins, properties)
 	dependencies = append(dependencies, pluginDeps...)
 
+	// Backfill versionless dependencies from cross-POM dependencyManagement
+	// (this POM plus parent/BOM POMs reachable through the provider). This is
+	// the offline equivalent of Maven's managed-version resolution and closes
+	// the common case of a child <dependency> whose version lives in a parent
+	// or imported BOM POM committed to the same repository.
+	managed := p.collectManagedVersions(content, pomDir, provider, properties)
+	p.applyManagedVersions(dependencies, managed)
+
 	return dependencies
 }
 
