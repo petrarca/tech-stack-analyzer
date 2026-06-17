@@ -181,18 +181,30 @@ func (d *Detector) newBomResolver(provider types.Provider) parsers.BomResolver {
 		return nil
 	}
 	index := components.GetSourceIndex(provider)
-	return func(groupID, artifactID, _ string) ([]byte, string, bool) {
-		paths := index.Lookup("maven", groupID+":"+artifactID)
-		if len(paths) == 0 {
-			return nil, "", false
+
+	// Online fallback: fetch third-party BOM POMs (e.g. Quarkus, Spring) that
+	// are not in the repo, yielding their exact managed versions. Opt-in only.
+	// Uses a Maven repository (Central by default); this is a distinct API from
+	// the deps.dev resolve-online endpoint, so it is not reused here.
+	var online *parsers.MavenPomFetcher
+	if components.ResolveOnline() {
+		online = parsers.NewMavenPomFetcher("", nil)
+	}
+
+	return func(groupID, artifactID, version string) ([]byte, string, bool) {
+		// 1. Offline: a BOM committed to the scanned tree.
+		if paths := index.Lookup("maven", groupID+":"+artifactID); len(paths) > 0 {
+			// Prefer the first indexed match; BOM coordinates are unique per repo.
+			pomPath := paths[0]
+			if content, err := provider.ReadFile(pomPath); err == nil {
+				return content, filepath.Dir(pomPath), true
+			}
 		}
-		// Prefer the first indexed match; BOM coordinates are unique per repo.
-		pomPath := paths[0]
-		content, err := provider.ReadFile(pomPath)
-		if err != nil {
-			return nil, "", false
+		// 2. Online (opt-in): a published third-party BOM.
+		if online != nil {
+			return online.FetchPOM(groupID, artifactID, version)
 		}
-		return content, filepath.Dir(pomPath), true
+		return nil, "", false
 	}
 }
 

@@ -286,17 +286,28 @@ remaining PyPI gap is genuinely unpinned sources (`requirements.txt` without
 `==`, `pyproject.toml` ranges with no committed lock) -- addressed by online
 backfill or an upstream pinning fix, not by lock association.
 
-### Stage 3 -- Online version backfill (opt-in, public packages only)
+### Stage 3 -- Online third-party BOM resolution (opt-in, public packages only, implemented)
 
-- Under `--resolve-online`, for dependencies still lacking a concrete version
-  after stages 1-2, query deps.dev (or a configured mirror) for a concrete
-  version (e.g. latest stable matching the declared range) before graph
-  resolution.
-- Strictly public-only: 404 -> leave versionless. Never attempt private
-  registries.
-- Tag online-resolved versions so consumers can distinguish them from
-  authoritative repo-derived values (consistent with the existing
-  `SourceDepsDev` edge tagging).
+- Under `--resolve-online`, when a `scope=import` BOM is **not** in the scanned
+  tree (e.g. the Quarkus or Spring BOM), fetch its published POM from a Maven
+  repository (Maven Central by default) and read its managed versions. This
+  yields the **exact** versions the build uses, not a guessed "latest".
+- Implemented as an *online `BomResolver`* composed after the offline source
+  index: the same Stage-1 resolution logic handles both, so nested imports
+  (internal BOM in repo -> public BOM online) resolve transparently. Verified:
+  an internal BOM importing `io.quarkus:quarkus-bom@${quarkus.platform.version}`
+  resolves the property, fetches the BOM, and pins `quarkus-core@3.36.0`.
+- Distinct from the deps.dev resolver already in the tree: deps.dev returns a
+  resolved **dependency graph** for an *already-versioned* coordinate (it cannot
+  supply a missing version); the Maven POM fetch returns the **raw BOM** whose
+  `<dependencyManagement>` provides the missing versions. They share only the
+  `--resolve-online` gate, not the endpoint (the POM repo is a different API).
+- Strictly public-only: a 404 leaves the dependency versionless. Private BOMs
+  (not on a public repository) are never resolvable this way and remain a
+  documented gap.
+- Network access is build-tag-free in production (off unless `--resolve-online`)
+  with a mocked-HTTP unit test and a `//go:build online` live test against
+  Maven Central (`task test:online`).
 
 ### Out of scope (documented gaps, not closable from source)
 
