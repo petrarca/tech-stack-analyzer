@@ -133,6 +133,80 @@ func TestDetector_Detect_BasicPackageJson(t *testing.T) {
 	assert.True(t, depNames["jest"], "Should have jest dependency")
 }
 
+func TestDetector_Detect_WorkspaceAncestorLock(t *testing.T) {
+	detector := &Detector{}
+
+	// A nested workspace member with ranges and NO adjacent lock; the resolved
+	// versions live in the workspace-root yarn.lock one level up.
+	memberPkg := `{
+  "name": "@example/ui",
+  "version": "1.0.0",
+  "dependencies": {
+    "react": "^18.2.0",
+    "classnames": "~2.3.2"
+  }
+}`
+	rootLock := `# yarn lockfile v1
+
+"classnames@npm:~2.3.2":
+  version: 2.3.2
+  resolution: "classnames@npm:2.3.2"
+
+"react@npm:^18.2.0":
+  version: 18.2.0
+  resolution: "react@npm:18.2.0"
+`
+
+	provider := &MockProvider{
+		files: map[string]string{
+			"/ws/packages/ui/package.json": memberPkg,
+			"/ws/yarn.lock":                rootLock,
+		},
+	}
+	depDetector := &MockDependencyDetector{matchedTechs: map[string][]string{}}
+	files := []types.File{{Name: "package.json", Path: "/ws/packages/ui/package.json"}}
+
+	results := detector.Detect(files, "/ws/packages/ui", "/ws", provider, depDetector)
+	require.Len(t, results, 1)
+
+	versions := make(map[string]string)
+	source := make(map[string]interface{})
+	for _, dep := range results[0].Dependencies {
+		versions[dep.Name] = dep.Version
+		if dep.Metadata != nil {
+			source[dep.Name] = dep.Metadata["source"]
+		}
+	}
+	assert.Equal(t, "18.2.0", versions["react"], "react should resolve from ancestor workspace lock")
+	assert.Equal(t, "2.3.2", versions["classnames"], "classnames should resolve from ancestor workspace lock")
+	assert.Equal(t, "workspace-lock", source["react"], "resolution origin should be recorded")
+}
+
+func TestDetector_Detect_NoAncestorLockKeepsRanges(t *testing.T) {
+	detector := &Detector{}
+
+	// No lock anywhere: ranges from package.json are retained (fallback).
+	memberPkg := `{
+  "name": "@example/api",
+  "version": "1.0.0",
+  "dependencies": {
+    "express": "^4.18.0"
+  }
+}`
+	provider := &MockProvider{
+		files: map[string]string{
+			"/ws/packages/api/package.json": memberPkg,
+		},
+	}
+	depDetector := &MockDependencyDetector{matchedTechs: map[string][]string{}}
+	files := []types.File{{Name: "package.json", Path: "/ws/packages/api/package.json"}}
+
+	results := detector.Detect(files, "/ws/packages/api", "/ws", provider, depDetector)
+	require.Len(t, results, 1)
+	require.Len(t, results[0].Dependencies, 1)
+	assert.Equal(t, "^4.18.0", results[0].Dependencies[0].Version, "range retained when no lock found")
+}
+
 func TestDetector_Detect_PackageJsonWithLicense(t *testing.T) {
 	detector := &Detector{}
 

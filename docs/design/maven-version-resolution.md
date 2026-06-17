@@ -267,16 +267,24 @@ each online stage is gated behind `--resolve-online`.
   only `compile`/`runtime` non-optional deps as packages). We mirror the
   algorithm, replacing Trivy's `~/.m2`/remote fetch with the repo source index.
 
-### Stage 2 -- Offline npm/PyPI workspace lock association
+### Stage 2 -- Offline npm workspace lock association (implemented)
 
 - Associate a nested `package.json` with the nearest ancestor lock file
-  (`yarn.lock` / `package-lock.json` / `pnpm-lock.yaml`) when no adjacent lock
-  exists, resolving ranges to the locked version.
-- Do the equivalent for Python where a lock exists higher in the tree.
-- Expected impact: most of the 94 npm gap (workspace case) and the lock-backed
-  part of the 25 PyPI gap.
-- Reference: Trivy's nodejs/python analyzers (see the table above) for
-  workspace/lock association.
+  (`package-lock.json` / `yarn.lock`) when no adjacent lock exists, resolving
+  the member's declared ranges to the locked version. The climb is bounded to
+  the scan root so a member never picks up an unrelated lock outside the
+  workspace. Resolution origin is recorded as `metadata.source =
+  "workspace-lock"`.
+- Expected impact: the npm workspace/monorepo case (nested members declaring
+  ranges while a single hoisted root lock holds the resolved versions).
+- Reference: Trivy's nodejs analyzers (see the table above) for workspace/lock
+  association.
+
+Python is intentionally **not** handled here: uv/poetry locks sit adjacent to
+their `pyproject.toml`, so there is no ancestor-lock pattern to resolve. The
+remaining PyPI gap is genuinely unpinned sources (`requirements.txt` without
+`==`, `pyproject.toml` ranges with no committed lock) -- addressed by online
+backfill or an upstream pinning fix, not by lock association.
 
 ### Stage 3 -- Online version backfill (opt-in, public packages only)
 

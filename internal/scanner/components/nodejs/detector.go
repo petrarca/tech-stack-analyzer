@@ -88,7 +88,7 @@ func (d *Detector) processPackageJSON(file types.File, currentPath, basePath str
 	payload.Properties["nodejs"] = nodejsInfo
 
 	// Process dependencies using priority-based extraction (lock files first)
-	d.processDependenciesWithPriority(currentPath, provider, depDetector, payload)
+	d.processDependenciesWithPriority(currentPath, basePath, provider, depDetector, payload)
 
 	// Process license
 	d.processLicense(&packageJSON, payload)
@@ -100,9 +100,10 @@ func (d *Detector) processPackageJSON(file types.File, currentPath, basePath str
 // Priority 1: package-lock.json (npm)
 // Priority 2: pnpm-lock.yaml (pnpm)
 // Priority 3: yarn.lock (yarn)
-// Priority 4: package.json (fallback)
-func (d *Detector) processDependenciesWithPriority(currentPath string, provider types.Provider, depDetector components.DependencyDetector, payload *types.Payload) {
-	dependencies := d.extractDependenciesFromLockFiles(currentPath, provider)
+// Priority 4: nearest ancestor lock file (workspace/monorepo hoisted lock)
+// Priority 5: package.json (fallback, ranges)
+func (d *Detector) processDependenciesWithPriority(currentPath, basePath string, provider types.Provider, depDetector components.DependencyDetector, payload *types.Payload) {
+	dependencies := d.extractDependenciesFromLockFiles(currentPath, basePath, provider)
 
 	// Add dependencies to payload
 	payload.Dependencies = append(payload.Dependencies, dependencies...)
@@ -128,7 +129,7 @@ var lockfileGraphProducers = []components.LockfileGraphProducer{
 }
 
 // extractDependenciesFromLockFiles tries lock files in priority order and returns dependencies
-func (d *Detector) extractDependenciesFromLockFiles(currentPath string, provider types.Provider) []types.Dependency {
+func (d *Detector) extractDependenciesFromLockFiles(currentPath, basePath string, provider types.Provider) []types.Dependency {
 	// Check if lock files are enabled
 	if !components.UseLockFiles() {
 		return d.tryPackageJSON(currentPath, provider)
@@ -149,8 +150,89 @@ func (d *Detector) extractDependenciesFromLockFiles(currentPath string, provider
 		return deps
 	}
 
-	// Priority 4: package.json fallback
+	// Priority 4: nearest ancestor lock file. In a workspace/monorepo, nested
+	// package.json files declare ranges while a single hoisted lock at the
+	// workspace root holds the resolved versions. Resolve this member's
+	// declared deps against that ancestor lock.
+	if deps := d.tryAncestorLock(currentPath, basePath, provider); len(deps) > 0 {
+		return deps
+	}
+
+	// Priority 5: package.json fallback (ranges)
 	return d.tryPackageJSON(currentPath, provider)
+}
+
+// ancestorLockFiles lists workspace lock filenames in npm/pnpm/yarn priority
+// order, paired with a resolver that parses the lock against this member's
+// package.json so only its declared deps are returned with resolved versions.
+var ancestorLockFiles = []struct {
+	name  string
+	parse func(lockContent, packageContent []byte) []types.Dependency
+}{
+	{"package-lock.json", func(lock, pkgContent []byte) []types.Dependency {
+		var pkg *parsers.PackageJSON
+		if len(pkgContent) > 0 {
+			pkg, _ = parsers.NewNodeJSParser().ParsePackageJSON(pkgContent)
+		}
+		return parsers.ParsePackageLockWithOptions(lock, pkg, pkgContent, parsers.ParsePackageLockOptions{})
+	}},
+	{"yarn.lock", func(lock, pkgContent []byte) []types.Dependency {
+		pkg, err := parsers.NewNodeJSParser().ParsePackageJSON(pkgContent)
+		if err != nil {
+			return nil
+		}
+		return parsers.ParseYarnLock(lock, pkg)
+	}},
+}
+
+// tryAncestorLock climbs from currentPath toward basePath looking for the
+// nearest lock file, and resolves this directory's package.json deps against
+// it. The climb is bounded to the scan root so a member never picks up an
+// unrelated lock outside the scanned workspace.
+func (d *Detector) tryAncestorLock(currentPath, basePath string, provider types.Provider) []types.Dependency {
+	packageContent, err := provider.ReadFile(filepath.Join(currentPath, "package.json"))
+	if err != nil || len(packageContent) == 0 {
+		return nil
+	}
+
+	root := filepath.Clean(basePath)
+	dir := filepath.Dir(filepath.Clean(currentPath)) // start at the parent; adjacent locks already tried
+	for i := 0; i < maxAncestorClimb; i++ {
+		for _, lf := range ancestorLockFiles {
+			lockContent, err := provider.ReadFile(filepath.Join(dir, lf.name))
+			if err != nil || len(lockContent) == 0 {
+				continue
+			}
+			if deps := lf.parse(lockContent, packageContent); len(deps) > 0 {
+				markResolvedFromAncestorLock(deps)
+				return deps
+			}
+		}
+		if dir == root || dir == "." || dir == string(filepath.Separator) {
+			break
+		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			break
+		}
+		dir = parent
+	}
+	return nil
+}
+
+// maxAncestorClimb bounds the workspace-lock search up the directory tree.
+const maxAncestorClimb = 12
+
+// markResolvedFromAncestorLock records the resolution origin on each dependency
+// so consumers can distinguish a workspace-lock-resolved version from one read
+// from an adjacent lock.
+func markResolvedFromAncestorLock(deps []types.Dependency) {
+	for i := range deps {
+		if deps[i].Metadata == nil {
+			deps[i].Metadata = make(map[string]interface{})
+		}
+		deps[i].Metadata["source"] = "workspace-lock"
+	}
 }
 
 func (d *Detector) tryPackageLock(currentPath string, provider types.Provider) []types.Dependency {
