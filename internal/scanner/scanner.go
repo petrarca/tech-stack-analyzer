@@ -523,13 +523,25 @@ func (s *Scanner) resolveDependencies() {
 	}
 }
 
-// formatResolveStats renders a one-line resolution metric.
+// formatResolveStats renders a one-line resolution metric, broken down by
+// source: Maven repository POM fetches, deps.dev graph requests, and cache hits.
+// Only the active sources are shown, so a deps.dev-only or repo-only scan reads
+// cleanly.
 func formatResolveStats(d resolvestats.Snapshot) string {
-	msg := fmt.Sprintf("%d POMs fetched (%d cached)", d.POMFetched, d.CacheHits)
-	if d.DepsDevCalls > 0 {
-		msg += fmt.Sprintf(", %d deps.dev", d.DepsDevCalls)
+	var parts []string
+	if d.POMFetched > 0 {
+		parts = append(parts, fmt.Sprintf("%d POMs", d.POMFetched))
 	}
-	return msg
+	if d.DepsDevCalls > 0 {
+		parts = append(parts, fmt.Sprintf("%d deps.dev", d.DepsDevCalls))
+	}
+	if d.CacheHits > 0 {
+		parts = append(parts, fmt.Sprintf("%d cached", d.CacheHits))
+	}
+	if len(parts) == 0 {
+		return "no fetches"
+	}
+	return strings.Join(parts, ", ")
 }
 
 // countFilesAndComponents recursively counts files and components in the payload tree
