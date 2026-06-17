@@ -16,6 +16,11 @@ const DefaultMavenCentralBaseURL = "https://repo1.maven.org/maven2"
 // maxPomFetchBytes caps a fetched POM size (a POM is normally a few KB).
 const maxPomFetchBytes = 4 << 20 // 4 MiB
 
+// userAgent identifies the client to Maven repositories. Maven Central serves a
+// 200 "abusive tool" notice (not the POM) to requests with a missing or default
+// User-Agent, so a descriptive one is required.
+const userAgent = "tech-stack-analyzer (+https://github.com/petrarca/tech-stack-analyzer)"
+
 // httpDoer is the minimal HTTP client interface (satisfied by *http.Client),
 // injectable for testing.
 type httpDoer interface {
@@ -133,6 +138,9 @@ func (s *RemoteSource) request(groupID, artifactID, version string) (body []byte
 	if err != nil {
 		return nil, true
 	}
+	// Maven Central rejects requests with no/default User-Agent (it returns a
+	// 200 "abusive tool" notice instead of the POM), so identify the client.
+	req.Header.Set("User-Agent", userAgent)
 	switch {
 	case s.username != "" || s.password != "":
 		req.SetBasicAuth(s.username, s.password)

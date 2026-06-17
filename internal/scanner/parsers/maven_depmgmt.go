@@ -66,15 +66,30 @@ func (p *MavenParser) collectManagedVersionsRecursive(content, pomDir string, pr
 		return
 	}
 
+	// Build the property view for THIS POM: inherited properties from the
+	// caller, plus this POM's own <properties>, parent properties reachable via
+	// the provider, and project/parent coordinates (so ${project.version} and
+	// ${some.version} in managed/import entries resolve). Without this, a
+	// version reference in an ancestor's dependencyManagement (e.g. an imported
+	// BOM's ${platform.version}) would stay unresolved and the fetch would fail.
+	localProps := make(map[string]string)
+	mergeProperties(localProps, properties)
+	if provider != nil && pomDir != "" {
+		mergeProperties(localProps, p.resolveParentProperties(content, pomDir, provider, 0))
+	}
+	mergeProperties(localProps, p.extractProperties(content))
+	p.addProjectCoordinates(localProps, project.GroupId, project.ArtifactId, project.Version)
+	p.addParentCoordinates(localProps, project.Parent)
+
 	// Direct and profile dependencyManagement (excluding imports) win over
 	// ancestors and imports.
-	p.addManagedEntries(project.DependencyManagement.Dependencies, properties, managed)
+	p.addManagedEntries(project.DependencyManagement.Dependencies, localProps, managed)
 	for _, profile := range p.getActiveProfiles(project.Profiles) {
-		p.addManagedEntries(profile.DependencyManagement.Dependencies, properties, managed)
+		p.addManagedEntries(profile.DependencyManagement.Dependencies, localProps, managed)
 	}
 
 	// Follow imported BOMs (scope=import, type=pom) when a resolver is wired.
-	p.importBomManagedVersions(project.DependencyManagement.Dependencies, provider, properties, managed, bomResolver, visited)
+	p.importBomManagedVersions(project.DependencyManagement.Dependencies, provider, localProps, managed, bomResolver, visited)
 
 	// Climb to the parent POM when reachable through the provider.
 	if provider == nil || pomDir == "" || project.Parent.GroupId == "" {
