@@ -25,6 +25,33 @@ const maxParentDepth = 10
 // following (parent-chain resolution still works).
 type BomResolver func(groupID, artifactID, version string) (content []byte, dir string, ok bool)
 
+// CollectBomManagedVersions resolves a BOM by its coordinates and returns its
+// "groupId:artifactId" -> resolved version table, following the BOM's own
+// parent chain and nested imports. It is the Gradle-platform analogue of Maven
+// dependencyManagement-import resolution: a Gradle platform()/enforcedPlatform()
+// declaration references a pom-packaged BOM identical to a Maven imported BOM.
+//
+// Returns nil when the BOM cannot be fetched (resolver nil or ok=false) or
+// declares no managed versions.
+func CollectBomManagedVersions(groupID, artifactID, version string, provider types.Provider, bomResolver BomResolver) map[string]string {
+	if bomResolver == nil || groupID == "" || artifactID == "" {
+		return nil
+	}
+	content, dir, ok := bomResolver(groupID, artifactID, version)
+	if !ok || len(content) == 0 {
+		return nil
+	}
+	p := NewMavenParser()
+	properties := p.extractProperties(string(content))
+	managed := make(map[string]string)
+	visited := map[string]bool{groupID + ":" + artifactID: true}
+	p.collectManagedVersionsRecursive(string(content), dir, provider, properties, managed, bomResolver, visited, 0)
+	if len(managed) == 0 {
+		return nil
+	}
+	return managed
+}
+
 // collectManagedVersions builds a "groupId:artifactId" -> resolved version
 // table from the current POM's <dependencyManagement>, those inherited from
 // parent POMs, and those contributed by imported BOMs (scope=import,type=pom)
@@ -202,4 +229,12 @@ func (p *MavenParser) applyManagedVersions(deps []types.Dependency, managed map[
 		}
 		dep.Metadata["source"] = "dependency-management"
 	}
+}
+
+// ApplyManagedVersions backfills any unresolved dependency version (empty,
+// "latest", "${prop}", range) from a "groupId:artifactId" -> version table,
+// leaving already-resolved versions untouched. Exported for the Gradle detector
+// to apply versions managed by a platform()/enforcedPlatform() BOM.
+func ApplyManagedVersions(deps []types.Dependency, managed map[string]string) {
+	(&MavenParser{}).applyManagedVersions(deps, managed)
 }

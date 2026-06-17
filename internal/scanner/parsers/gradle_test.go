@@ -342,3 +342,77 @@ dependencies {
 	// Unresolved references are left intact (the SBOM emitter omits them).
 	assert.Equal(t, "$missingVersion", got["com.example:unresolved"])
 }
+
+// TestParseGradle_PlatformBom verifies that platform()/enforcedPlatform()
+// declarations are recognized as BOM imports (ScopeImport) while the
+// dependencies they manage are emitted without a version (to be backfilled by
+// the detector). Fixture uses fictional coordinates.
+func TestParseGradle_PlatformBom(t *testing.T) {
+	content := `dependencies {
+    implementation(enforcedPlatform("com.example:my-bom:3.36.2"))
+    implementation(platform("org.example:other-bom:1.0.0"))
+    implementation("com.example:managed-lib")
+    implementation("com.example:pinned-lib:9.9.9")
+    testImplementation("com.example:test-lib")
+}
+`
+	deps := NewGradleParser().ParseGradle(content)
+	byName := map[string]types.Dependency{}
+	for _, d := range deps {
+		byName[d.Name] = d
+	}
+
+	// Platform BOMs are marked ScopeImport and keep their coordinate version.
+	if d := byName["com.example:my-bom"]; d.Scope != types.ScopeImport || d.Version != "3.36.2" {
+		t.Errorf("enforcedPlatform: got scope=%q version=%q, want import/3.36.2", d.Scope, d.Version)
+	}
+	if d := byName["org.example:other-bom"]; d.Scope != types.ScopeImport || d.Version != "1.0.0" {
+		t.Errorf("platform: got scope=%q version=%q, want import/1.0.0", d.Scope, d.Version)
+	}
+	// Managed (versionless) dep keeps the "latest" placeholder for backfill.
+	if d := byName["com.example:managed-lib"]; d.Scope == types.ScopeImport {
+		t.Errorf("managed-lib should not be ScopeImport, got %q", d.Scope)
+	}
+	if got := byName["com.example:managed-lib"].Version; got != "latest" {
+		t.Errorf("managed-lib version: got %q, want latest (unresolved)", got)
+	}
+	// Pinned dep keeps its explicit version and is not an import.
+	if d := byName["com.example:pinned-lib"]; d.Version != "9.9.9" || d.Scope == types.ScopeImport {
+		t.Errorf("pinned-lib: got version=%q scope=%q", d.Version, d.Scope)
+	}
+}
+
+// TestParseGradleLockfile verifies parsing of a Gradle dependency-lock file:
+// resolved coordinates, dev-only classification by configuration, and skipping
+// of comments and the trailing "empty=" line. Fixture uses fictional names.
+func TestParseGradleLockfile(t *testing.T) {
+	content := `# This is a Gradle generated file for dependency locking.
+# Manual edits can break the build and are not advised.
+com.example:lib-a:1.2.3=compileClasspath,runtimeClasspath
+com.example:lib-b:4.5.6=testCompileClasspath,testRuntimeClasspath
+org.example:tool:7.8.9=runtimeClasspath
+empty=annotationProcessor,kapt
+`
+	deps := ParseGradleLockfile(content)
+	byName := map[string]types.Dependency{}
+	for _, d := range deps {
+		byName[d.Name] = d
+	}
+
+	if len(deps) != 3 {
+		t.Fatalf("got %d deps, want 3: %v", len(deps), byName)
+	}
+	if d := byName["com.example:lib-a"]; d.Version != "1.2.3" || d.Scope != types.ScopeProd {
+		t.Errorf("lib-a: got version=%q scope=%q, want 1.2.3/prod", d.Version, d.Scope)
+	}
+	// Appears only in test configurations -> dev.
+	if d := byName["com.example:lib-b"]; d.Version != "4.5.6" || d.Scope != types.ScopeDev {
+		t.Errorf("lib-b: got version=%q scope=%q, want 4.5.6/dev", d.Version, d.Scope)
+	}
+	if d := byName["org.example:tool"]; d.Version != "7.8.9" {
+		t.Errorf("tool: got version=%q, want 7.8.9", d.Version)
+	}
+	if _, ok := byName["empty"]; ok {
+		t.Error("the empty= line must not produce a dependency")
+	}
+}

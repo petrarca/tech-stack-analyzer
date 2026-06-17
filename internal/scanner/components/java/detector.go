@@ -3,6 +3,7 @@ package java
 import (
 	"path/filepath"
 	"regexp"
+	"strings"
 
 	licensenormalizer "github.com/petrarca/tech-stack-analyzer/internal/license"
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/components"
@@ -246,10 +247,8 @@ func (d *Detector) mavenPomChain(provider types.Provider) *mavenresolve.Chain {
 	// components, not re-fetched per module.
 	cache := components.GetGraphCache(provider)
 
-	explicitConfigured := false
 	if repos := settings.RemoteSources(nil, cache); len(repos) > 0 {
 		sources = append(sources, repos...)
-		explicitConfigured = true
 	}
 	if url := components.MavenRepoURL(); url != "" {
 		opts := mavenresolve.RemoteOptions{BaseURL: url, Cache: cache}
@@ -262,9 +261,12 @@ func (d *Detector) mavenPomChain(provider types.Provider) *mavenresolve.Chain {
 			opts.Token = components.MavenRepoToken()
 		}
 		sources = append(sources, mavenresolve.NewRemoteSource(opts))
-		explicitConfigured = true
 	}
-	if components.UseMavenCentral() && !explicitConfigured {
+	// Maven Central is opt-in via --maven-central (default off). When enabled it
+	// is appended as the lowest-priority source, so it serves public BOMs/POMs
+	// even alongside a configured private repo that does not proxy Central
+	// (private artifacts still resolve from the private repo first).
+	if components.UseMavenCentral() {
 		sources = append(sources, mavenresolve.NewRemoteSource(mavenresolve.RemoteOptions{Cache: cache}))
 	}
 
@@ -568,6 +570,27 @@ func (d *Detector) detectGradle(file types.File, currentPath, basePath string, p
 
 	dependencies := gradleParser.ParseGradleWithProperties(string(content), gradleProps)
 
+	// Extract plugin IDs declared in plugins{} / buildscript{} blocks.
+	// These are matched against "gradle.plugin" rules — the authoritative
+	// signal for Kotlin, Spring Boot, Quarkus, etc. when no explicit
+	// starter coordinates are present in dependencies{}. Parsed before version
+	// resolution because some plugins (e.g. Spring Boot) imply a managed BOM.
+	plugins := gradleParser.ParsePlugins(string(content))
+
+	// Resolve versions managed by a platform()/enforcedPlatform() BOM and by
+	// version-managing plugins (e.g. Spring Boot), then backfill any dependency
+	// declared without a version (the Gradle analogue of Maven
+	// dependencyManagement-import resolution).
+	d.applyGradlePlatformVersions(dependencies, plugins, provider)
+
+	// Prefer a committed gradle.lockfile: it holds fully resolved versions for
+	// this module, superseding build-script + BOM resolution. Matched by
+	// suffix because Gradle names locks per project (e.g. "gradle.lockfile",
+	// "settings-gradle.lockfile").
+	if locked := d.gradleLockfileDependencies(currentPath, provider); len(locked) > 0 {
+		dependencies = mergeGradleLockedVersions(dependencies, locked)
+	}
+
 	// Extract dependency names for tech matching
 	var depNames []string
 	for _, dep := range dependencies {
@@ -577,11 +600,6 @@ func (d *Detector) detectGradle(file types.File, currentPath, basePath string, p
 	// Always add gradle tech
 	payload.AddTech("gradle", "matched file: "+file.Name)
 
-	// Extract plugin IDs declared in plugins{} / buildscript{} blocks.
-	// These are matched against "gradle.plugin" rules — the authoritative
-	// signal for Kotlin, Spring Boot, Quarkus, etc. when no explicit
-	// starter coordinates are present in dependencies{}.
-	plugins := gradleParser.ParsePlugins(string(content))
 	var pluginIDs []string
 	for _, p := range plugins {
 		pluginIDs = append(pluginIDs, p.ID)
@@ -605,6 +623,108 @@ func (d *Detector) detectGradle(file types.File, currentPath, basePath string, p
 	components.AttachLockfileGraph(payload, currentPath, provider, gradleGraphProducers)
 
 	return payload
+}
+
+// applyGradlePlatformVersions resolves every platform()/enforcedPlatform() BOM
+// declared in the dependency list (scope=import) and backfills versions onto
+// dependencies declared without one. It reuses the Maven POM source chain and
+// dependencyManagement collector, since a Gradle platform is a pom-packaged BOM
+// identical to a Maven imported BOM.
+func (d *Detector) applyGradlePlatformVersions(deps []types.Dependency, plugins []parsers.GradlePlugin, provider types.Provider) {
+	bomResolver := d.newBomResolver(provider)
+	if bomResolver == nil {
+		return
+	}
+
+	// Collect BOM coordinates to resolve: explicit platform()/enforcedPlatform()
+	// imports plus the implicit BOMs contributed by version-managing plugins.
+	type bomCoord struct{ group, artifact, version string }
+	var boms []bomCoord
+	for _, dep := range deps {
+		if dep.Scope != types.ScopeImport {
+			continue
+		}
+		if g, a, ok := splitGradleCoordinate(dep.Name); ok {
+			boms = append(boms, bomCoord{g, a, dep.Version})
+		}
+	}
+	for _, p := range gradlePluginManagedBoms(plugins) {
+		boms = append(boms, bomCoord{p.group, p.artifact, p.version})
+	}
+
+	managed := make(map[string]string)
+	for _, b := range boms {
+		for ga, version := range parsers.CollectBomManagedVersions(b.group, b.artifact, b.version, provider, bomResolver) {
+			if _, exists := managed[ga]; !exists {
+				managed[ga] = version
+			}
+		}
+	}
+	parsers.ApplyManagedVersions(deps, managed)
+}
+
+// gradlePluginManagedBoms maps version-managing Gradle plugins to the BOM they
+// implicitly import. The Spring Boot plugin (with io.spring.dependency-management)
+// imports org.springframework.boot:spring-boot-dependencies at the plugin's own
+// version, supplying managed versions for spring-boot-starter-* and friends
+// declared without an explicit version.
+func gradlePluginManagedBoms(plugins []parsers.GradlePlugin) []struct{ group, artifact, version string } {
+	var boms []struct{ group, artifact, version string }
+	for _, p := range plugins {
+		if p.ID == "org.springframework.boot" && p.Version != "" {
+			boms = append(boms, struct{ group, artifact, version string }{
+				"org.springframework.boot", "spring-boot-dependencies", p.Version,
+			})
+		}
+	}
+	return boms
+}
+
+// splitGradleCoordinate splits a "group:artifact" dependency name into its
+// parts. Returns ok=false when the name is not a valid two-part coordinate.
+func splitGradleCoordinate(name string) (group, artifact string, ok bool) {
+	i := strings.Index(name, ":")
+	if i <= 0 || i == len(name)-1 {
+		return "", "", false
+	}
+	return name[:i], name[i+1:], true
+}
+
+// gradleLockfileDependencies reads a committed *.gradle.lockfile in the module
+// directory and returns its resolved dependencies, or nil when none exists.
+func (d *Detector) gradleLockfileDependencies(currentPath string, provider types.Provider) []types.Dependency {
+	files, err := provider.ListDir(currentPath)
+	if err != nil {
+		return nil
+	}
+	for _, f := range files {
+		if !strings.HasSuffix(f.Name, "gradle.lockfile") {
+			continue
+		}
+		content, err := provider.ReadFile(filepath.Join(currentPath, f.Name))
+		if err != nil || len(content) == 0 {
+			continue
+		}
+		if locked := parsers.ParseGradleLockfile(string(content)); len(locked) > 0 {
+			return locked
+		}
+	}
+	return nil
+}
+
+// mergeGradleLockedVersions backfills unresolved versions in the build-script
+// dependency list from the lockfile's resolved versions (keyed by
+// group:artifact), preserving the build script's scope/metadata. Lockfile
+// entries for dependencies not declared in the build script are not added: the
+// build script defines the project's direct dependencies; the lockfile (which
+// also contains transitive entries) only supplies versions.
+func mergeGradleLockedVersions(deps, locked []types.Dependency) []types.Dependency {
+	versions := make(map[string]string, len(locked))
+	for _, l := range locked {
+		versions[l.Name] = l.Version
+	}
+	parsers.ApplyManagedVersions(deps, versions)
+	return deps
 }
 
 // gradleGraphProducers lists the pre-generated Gradle graph file. A resolved

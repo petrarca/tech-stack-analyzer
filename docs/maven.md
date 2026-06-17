@@ -173,7 +173,7 @@ scan:
   maven_repo_url: https://artifactory.example.com/artifactory/my-virtual-repo
   maven_local_repo: true
   # maven_settings: /path/to/settings.xml
-  # maven_central: true        # public fallback (ignored when maven_repo_url set)
+  # maven_central: true        # public fallback (consulted after maven_repo_url)
   # deps_dev: true             # deps.dev for non-Maven ecosystems
 ```
 
@@ -181,11 +181,11 @@ scan:
 
 | Flag | Config key | Purpose |
 |------|-----------|---------|
-| `--maven-repo-url` | `maven_repo_url` | Remote Maven repo base (internal/JFrog or mirror). Always used when set; suppresses Maven Central. |
+| `--maven-repo-url` | `maven_repo_url` | Remote Maven repo base (internal/JFrog or mirror). Always used when set. |
 | `--maven-settings` | `maven_settings` | Path to a Maven `settings.xml` (repos, credentials, mirrors, local repo). Default `~/.m2/settings.xml`. |
 | `--maven-local-repo` | `maven_local_repo` | Read the local `~/.m2/repository` cache (offline). |
 | `--maven-local-repo-dir` | `maven_local_repo_dir` | Override the local repo path. |
-| `--maven-central` | `maven_central` | Enable the public Maven Central fallback. Ignored when `--maven-repo-url` is set. |
+| `--maven-central` | `maven_central` | Enable the public Maven Central fallback. Can be combined with `--maven-repo-url`: Central is consulted last, after the private repo, so public BOMs/POMs resolve even when the private repo does not proxy Central. |
 | `--maven-graph-source` | `maven_graph_source` | Maven transitive graph source: `repo` \| `deps-dev` \| `none`. |
 | `--dependency-graph` | `dependency_graph` | Graph depth: `off` \| `direct` \| `full` (transitive folds into the SBOM). |
 

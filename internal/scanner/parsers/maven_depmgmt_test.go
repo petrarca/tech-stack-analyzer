@@ -284,3 +284,78 @@ func TestMavenParser_DependencyManagement_UnresolvableStaysVersionless(t *testin
 	require.True(t, ok)
 	assert.Equal(t, "latest", lib.Version, "unmanaged versionless dep stays unresolved")
 }
+
+// TestCollectBomManagedVersions_GradlePlatform exercises the exported helpers
+// the Gradle detector uses to resolve a platform()/enforcedPlatform() BOM and
+// backfill versionless dependencies. The BOM (a pom-packaged artifact) supplies
+// managed versions, including one via a property and one from its parent chain.
+func TestCollectBomManagedVersions_GradlePlatform(t *testing.T) {
+	bomPOM := `<?xml version="1.0"?>
+<project>
+	<parent>
+		<groupId>com.example</groupId>
+		<artifactId>parent-bom</artifactId>
+		<version>1.0.0</version>
+	</parent>
+	<groupId>com.example</groupId>
+	<artifactId>my-bom</artifactId>
+	<version>3.36.2</version>
+	<properties>
+		<lib.version>2.5.0</lib.version>
+	</properties>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.example</groupId>
+				<artifactId>managed-lib</artifactId>
+				<version>${lib.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+</project>`
+	parentBOM := `<?xml version="1.0"?>
+<project>
+	<groupId>com.example</groupId>
+	<artifactId>parent-bom</artifactId>
+	<version>1.0.0</version>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.example</groupId>
+				<artifactId>inherited-lib</artifactId>
+				<version>9.9.9</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+</project>`
+	resolver := func(groupID, artifactID, _ string) ([]byte, string, bool) {
+		switch {
+		case groupID == "com.example" && artifactID == "my-bom":
+			return []byte(bomPOM), "/repo/my-bom", true
+		case groupID == "com.example" && artifactID == "parent-bom":
+			return []byte(parentBOM), "/repo/parent-bom", true
+		}
+		return nil, "", false
+	}
+
+	managed := CollectBomManagedVersions("com.example", "my-bom", "3.36.2", nil, resolver)
+	if managed["com.example:managed-lib"] != "2.5.0" {
+		t.Errorf("managed-lib: got %q, want 2.5.0 (via property)", managed["com.example:managed-lib"])
+	}
+	if managed["com.example:inherited-lib"] != "9.9.9" {
+		t.Errorf("inherited-lib: got %q, want 9.9.9 (via parent chain)", managed["com.example:inherited-lib"])
+	}
+
+	// ApplyManagedVersions backfills only unresolved versions.
+	deps := []types.Dependency{
+		{Type: DependencyTypeGradle, Name: "com.example:managed-lib", Version: "latest"},
+		{Type: DependencyTypeGradle, Name: "com.example:pinned-lib", Version: "1.0.0"},
+	}
+	ApplyManagedVersions(deps, managed)
+	if deps[0].Version != "2.5.0" {
+		t.Errorf("managed-lib not backfilled: got %q", deps[0].Version)
+	}
+	if deps[1].Version != "1.0.0" {
+		t.Errorf("pinned-lib must not be overwritten: got %q", deps[1].Version)
+	}
+}

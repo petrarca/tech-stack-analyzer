@@ -107,8 +107,9 @@ const (
 	MetadataSourceCargoLock = "Cargo.lock"
 
 	// JVM ecosystem
-	MetadataSourcePomXML      = "pom.xml"
-	MetadataSourceBuildGradle = "build.gradle"
+	MetadataSourcePomXML         = "pom.xml"
+	MetadataSourceBuildGradle    = "build.gradle"
+	MetadataSourceGradleLockfile = "gradle.lockfile"
 
 	// PHP ecosystem
 	MetadataSourceComposerJSON = "composer.json"

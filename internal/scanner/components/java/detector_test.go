@@ -4,6 +4,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/petrarca/tech-stack-analyzer/internal/scanner/parsers"
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -639,4 +640,39 @@ func TestDetector_Detect_GradleRootPropertiesAboveScanRoot(t *testing.T) {
 	}
 	assert.Equal(t, "1.9.22", versions["org.jetbrains.kotlin:kotlin-stdlib"], "kotlinVersion should resolve from ancestor gradle.properties")
 	assert.Equal(t, "33.0.0-jre", versions["com.google.guava:guava"], "guavaVersion should resolve from ancestor gradle.properties")
+}
+
+func TestGradlePluginManagedBoms(t *testing.T) {
+	boms := gradlePluginManagedBoms([]parsers.GradlePlugin{
+		{ID: "org.springframework.boot", Version: "3.3.0"},
+		{ID: "io.spring.dependency-management", Version: "1.1.5"},
+		{ID: "org.springframework.boot"}, // no version -> ignored
+		{ID: "java"},
+	})
+	require.Len(t, boms, 1, "only the versioned Spring Boot plugin yields an implicit BOM")
+	assert.Equal(t, "org.springframework.boot", boms[0].group)
+	assert.Equal(t, "spring-boot-dependencies", boms[0].artifact)
+	assert.Equal(t, "3.3.0", boms[0].version)
+}
+
+func TestSplitGradleCoordinate(t *testing.T) {
+	cases := []struct {
+		name         string
+		wantGroup    string
+		wantArtifact string
+		wantOK       bool
+	}{
+		{"io.quarkus:quarkus-arc", "io.quarkus", "quarkus-arc", true},
+		{"single", "", "", false},
+		{"group:", "", "", false},
+		{":artifact", "", "", false},
+	}
+	for _, c := range cases {
+		g, a, ok := splitGradleCoordinate(c.name)
+		assert.Equal(t, c.wantOK, ok, c.name)
+		if c.wantOK {
+			assert.Equal(t, c.wantGroup, g, c.name)
+			assert.Equal(t, c.wantArtifact, a, c.name)
+		}
+	}
 }

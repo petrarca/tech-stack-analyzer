@@ -31,6 +31,13 @@ var (
 	// cheap gate by isPotentialDependencyLine before the full parser runs.
 	gradleDepConfigRegex = regexp.MustCompile(`\b(testImplementation|testRuntimeOnly|testCompileOnly|testApi|annotationProcessor|compileOnly|runtimeOnly|implementation|compile|api)\b`)
 
+	// platform(...) / enforcedPlatform(...) wrap a BOM coordinate that supplies
+	// managed versions for sibling dependencies declared without a version,
+	// e.g. implementation(enforcedPlatform("io.quarkus:quarkus-bom:3.36.2")).
+	// The wrapped artifact is a dependencyManagement-style import, not a normal
+	// runtime dependency.
+	gradlePlatformRegex = regexp.MustCompile(`\b(?:enforcedPlatform|platform)\s*\(`)
+
 	// Property reference forms in version strings: "${name}" and "$name".
 	gradlePropertyRefRegex = regexp.MustCompile(`\$\{([A-Za-z0-9_.]+)\}|\$([A-Za-z_][A-Za-z0-9_]*)`)
 
@@ -321,17 +328,26 @@ func (p *GradleParser) parseGradleDependency(line string) *types.Dependency {
 
 	dependencyName := group + ":" + artifact
 
-	// Map Gradle dependency types to scope constants
+	// A platform()/enforcedPlatform() wrapper marks a BOM import: the artifact
+	// is a version-management entry whose managed versions apply to sibling
+	// dependencies, not a runtime dependency itself. Mark it ScopeImport so the
+	// detector can resolve it and backfill versionless deps (mirrors Maven's
+	// dependencyManagement scope=import).
 	var scope string
-	switch depType {
-	case "testImplementation", "testRuntimeOnly", "testCompileOnly", "testApi":
-		scope = types.ScopeDev
-	case "compileOnly", "annotationProcessor":
-		scope = types.ScopeBuild
-	case "implementation", "compile", "api", "runtimeOnly":
-		scope = types.ScopeProd
-	default:
-		scope = types.ScopeProd
+	if gradlePlatformRegex.MatchString(line) {
+		scope = types.ScopeImport
+	} else {
+		// Map Gradle dependency types to scope constants
+		switch depType {
+		case "testImplementation", "testRuntimeOnly", "testCompileOnly", "testApi":
+			scope = types.ScopeDev
+		case "compileOnly", "annotationProcessor":
+			scope = types.ScopeBuild
+		case "implementation", "compile", "api", "runtimeOnly":
+			scope = types.ScopeProd
+		default:
+			scope = types.ScopeProd
+		}
 	}
 
 	return &types.Dependency{
@@ -342,6 +358,70 @@ func (p *GradleParser) parseGradleDependency(line string) *types.Dependency {
 		Direct:   true, // All Gradle dependencies are direct (from build.gradle)
 		Metadata: p.buildGradleMetadata(depType, classifier, extension),
 	}
+}
+
+// ParseGradleLockfile parses a Gradle dependency-lock file (*.gradle.lockfile)
+// produced by `gradle dependencies --write-locks`. Every entry is a fully
+// resolved coordinate, so versions are authoritative and need no BOM/property
+// resolution. The format is one entry per line:
+//
+//	group:artifact:version=config1,config2,...
+//
+// with "#" comment lines and a trailing "empty=config,..." line listing
+// configurations that resolved to nothing. A dependency is classified dev only
+// when every configuration it appears in is a test configuration.
+func ParseGradleLockfile(content string) []types.Dependency {
+	var dependencies []types.Dependency
+	for _, line := range strings.Split(content, "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		coord, configs, ok := strings.Cut(line, "=")
+		if !ok {
+			continue
+		}
+		// "empty=..." lists configurations with no dependencies; not a package.
+		if coord == "empty" {
+			continue
+		}
+		parts := strings.Split(coord, ":")
+		if len(parts) != 3 || parts[0] == "" || parts[1] == "" || parts[2] == "" {
+			continue
+		}
+
+		scope := types.ScopeProd
+		if gradleLockEntryIsDevOnly(configs) {
+			scope = types.ScopeDev
+		}
+
+		dependencies = append(dependencies, types.Dependency{
+			Type:       DependencyTypeGradle,
+			Name:       parts[0] + ":" + parts[1],
+			Version:    parts[2],
+			Scope:      scope,
+			Direct:     true,
+			SourceFile: MetadataSourceGradleLockfile,
+			Metadata:   types.NewMetadata(MetadataSourceGradleLockfile),
+		})
+	}
+	return dependencies
+}
+
+// gradleLockEntryIsDevOnly reports whether every configuration in a lockfile
+// entry's comma-separated list is a test configuration (so the dependency is
+// development-only). An empty list is treated as non-dev.
+func gradleLockEntryIsDevOnly(configs string) bool {
+	configs = strings.TrimSpace(configs)
+	if configs == "" {
+		return false
+	}
+	for _, c := range strings.Split(configs, ",") {
+		if !strings.HasPrefix(strings.TrimSpace(c), "test") {
+			return false
+		}
+	}
+	return true
 }
 
 // buildGradleMetadata creates metadata map for Gradle dependencies
