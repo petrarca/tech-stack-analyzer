@@ -9,6 +9,7 @@ Detailed documentation for the Tech Stack Analyzer. For a quick introduction and
 | [Usage Guide](usage.md) | Commands, flags, verbose mode, code statistics, .gitignore support, content-based detection |
 | [Configuration](configuration.md) | Project config file, environment variables, scan config files, logging |
 | [Output Format](output.md) | Output structure, field reference, aggregated output, metadata, properties |
+| [Maven Resolution](maven.md) | Resolving versionless Maven deps; local `~/.m2`, internal/JFrog repos, settings.xml; transitive graph |
 | [Extending the Analyzer](extending.md) | Adding technology rules, component detectors, file matchers, category configuration |
 | [Building and Architecture](building.md) | Build instructions, project structure, core components, detection pipeline |
 
@@ -19,6 +20,7 @@ Detailed documentation for the Tech Stack Analyzer. For a quick introduction and
 | [Scanner Architecture](design/scanner-architecture.md) | Scanning flow, detection systems, component types, plugin architecture |
 | [Detector Reference](design/detector-implementation.md) | Component detectors with detection files, parsers, and patterns |
 | [Dependency Graph](design/dependency-graph.md) | Package-to-package edges: lockfile producers, resolver chain, online (deps.dev) resolution, ecosystem coverage |
+| [Maven Version Resolution](design/maven-version-resolution.md) | Versionless-dependency resolution, POM source chain, transitive repo crawl, Trivy comparison |
 
 ## Quick Reference
 

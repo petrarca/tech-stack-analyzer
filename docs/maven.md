@@ -1,0 +1,188 @@
+# Maven Dependency Resolution
+
+Maven projects often declare dependencies **without an explicit version**: the
+version comes from a parent POM, a property, or an imported BOM
+(`<scope>import</scope>`). A version that the scanner cannot resolve is emitted
+without one, and a versionless component is invisible to vulnerability scanners
+(Trivy, OSV match on a concrete version).
+
+The scanner resolves these versions offline-first, and -- when you point it at a
+Maven repository -- can also resolve versions and **transitive** dependencies
+that live only in your private artifacts. This guide shows how.
+
+## TL;DR
+
+```bash
+# Offline: resolve versions from the repo's own POMs (no flags needed)
+stack-analyzer scan /path/to/project --also-sbom
+
+# Use your internal Artifactory/JFrog repo (covers private artifacts)
+export STACK_ANALYZER_MAVEN_USER="you@example.com"
+export STACK_ANALYZER_MAVEN_TOKEN="<access-token>"
+stack-analyzer scan /path/to/project --also-sbom \
+  --maven-repo-url https://artifactory.example.com/artifactory/my-virtual-repo
+
+# Add transitive dependencies, resolved from that same repo (Trivy-style)
+stack-analyzer scan /path/to/project --also-sbom \
+  --dependency-graph full --maven-graph-source repo \
+  --maven-repo-url https://artifactory.example.com/artifactory/my-virtual-repo
+```
+
+## How versions are resolved
+
+The scanner resolves a versionless dependency by looking for the POM that
+manages its version, in this order (first hit wins). Each tier degrades
+gracefully -- a miss falls through to the next, and a network error or rate
+limit never aborts the scan.
+
+1. **Committed resolved files** -- `dependency-list.txt` (`mvn dependency:list`)
+   or `dependency-tree.json` (`mvn dependency:tree`), if present. These are
+   Maven's own output and the most authoritative.
+2. **The repo's own POMs** -- cross-POM `dependencyManagement`, parent POMs, and
+   imported BOMs reachable within the scanned tree (offline, no flags).
+3. **Cross-module propagation** -- a version resolved for a coordinate in one
+   module fills the same coordinate left versionless in another (offline).
+4. **Local `~/.m2/repository`** -- previously built/downloaded POMs
+   (`--maven-local-repo`).
+5. **A configured Maven repository** -- an internal Artifactory/JFrog repo or a
+   mirror (`--maven-repo-url`, or from `settings.xml`). Covers **private**
+   artifacts.
+6. **Maven Central** -- the public fallback (`--maven-central`).
+
+Steps 1-3 are fully offline and need no configuration. Steps 4-6 are opt-in.
+
+## Using an internal Maven repository (Artifactory / JFrog)
+
+Point `--maven-repo-url` at a repository base -- typically a **virtual repo**
+that aggregates public proxies and your private artifacts:
+
+```bash
+export STACK_ANALYZER_MAVEN_USER="you@example.com"
+export STACK_ANALYZER_MAVEN_TOKEN="<access-token-or-api-key>"
+stack-analyzer scan /path/to/project --also-sbom \
+  --maven-repo-url https://artifactory.example.com/artifactory/my-virtual-repo
+```
+
+Notes:
+
+- **The URL is the base up to and including the repo key.** The scanner appends
+  the coordinate path (`.../group/path/artifact/version/artifact-version.pom`).
+- **Credentials come from the environment only**, never config files:
+  `STACK_ANALYZER_MAVEN_USER` + `STACK_ANALYZER_MAVEN_TOKEN` are sent as HTTP
+  Basic auth (a JFrog reference token is used as the password). With only a
+  token and no user, it is sent as a Bearer token.
+- **Configuring `--maven-repo-url` is the opt-in to reach it** -- no extra
+  online flag is required.
+- **Maven Central is not added** when `--maven-repo-url` is set: a virtual repo
+  already proxies public artifacts, so the scanner does not also reach the
+  public internet.
+
+### Reusing your `settings.xml`
+
+If you already have a Maven `settings.xml` (with repository URLs, credentials,
+and mirrors), reuse it instead of passing flags:
+
+```bash
+stack-analyzer scan /path/to/project --also-sbom \
+  --maven-settings ~/.m2/settings.xml
+```
+
+The scanner reads `<repositories>` (with their `<server>` credentials by id),
+honors `<mirrors>` (including `mirrorOf=*`), and uses `<localRepository>`. The
+path defaults to `~/.m2/settings.xml`; override it per scan when different
+projects use different settings.
+
+### Local `~/.m2` cache
+
+A developer or CI machine that has built the project usually has most POMs
+cached. Reading that cache is offline and needs no credentials:
+
+```bash
+stack-analyzer scan /path/to/project --also-sbom --maven-local-repo
+# Override the path (otherwise MAVEN_REPO_LOCAL / MAVEN_OPTS / ~/.m2/repository):
+stack-analyzer scan /path/to/project --maven-local-repo \
+  --maven-local-repo-dir /custom/m2/repository
+```
+
+### Public Maven Central only
+
+With no internal repo available, allow the public Maven Central fallback:
+
+```bash
+stack-analyzer scan /path/to/project --also-sbom --maven-central
+```
+
+## Transitive dependencies
+
+By default the SBOM contains the **declared** dependencies. To include
+**transitive** dependencies, enable the dependency graph and choose a Maven
+graph source. The graph's resolved nodes are folded into the SBOM as components.
+
+```bash
+# Transitive deps resolved from the configured Maven repo (covers private deps)
+stack-analyzer scan /path/to/project --also-sbom \
+  --dependency-graph full --maven-graph-source repo \
+  --maven-repo-url https://artifactory.example.com/artifactory/my-virtual-repo
+```
+
+`--maven-graph-source` selects where Maven transitive edges come from:
+
+| Value | Source | Covers private? | Network |
+|-------|--------|-----------------|---------|
+| `repo` | crawls POMs from the repository chain (in-repo -> `~/.m2` -> `--maven-repo-url`/settings) | **yes** | only the tiers you enable |
+| `deps-dev` | the public deps.dev graph | no | public deps.dev |
+| `none` | offline only (a committed `dependency-tree.json` still applies) | from the file | none |
+
+A committed `dependency-tree.json` always takes precedence regardless of this
+flag. When `--maven-graph-source` is unset, Maven follows the global `--deps-dev`
+switch (which also governs non-Maven ecosystems such as npm and PyPI).
+
+The `repo` crawl mirrors Maven's resolution (breadth-first, nearest-wins
+conflict mediation, one version per coordinate) and is tolerant of repository
+rate limits -- it skips an unreachable POM rather than aborting the scan.
+
+## Configuration file
+
+All flags have config-file equivalents (in the `--config` scan config under
+`scan:`). Credentials always stay in the environment.
+
+```yaml
+scan:
+  dependency_graph: full
+  maven_graph_source: repo
+  maven_repo_url: https://artifactory.example.com/artifactory/my-virtual-repo
+  maven_local_repo: true
+  # maven_settings: /path/to/settings.xml
+  # maven_central: true        # public fallback (ignored when maven_repo_url set)
+  # deps_dev: true             # deps.dev for non-Maven ecosystems
+```
+
+## Flags reference
+
+| Flag | Config key | Purpose |
+|------|-----------|---------|
+| `--maven-repo-url` | `maven_repo_url` | Remote Maven repo base (internal/JFrog or mirror). Always used when set; suppresses Maven Central. |
+| `--maven-settings` | `maven_settings` | Path to a Maven `settings.xml` (repos, credentials, mirrors, local repo). Default `~/.m2/settings.xml`. |
+| `--maven-local-repo` | `maven_local_repo` | Read the local `~/.m2/repository` cache (offline). |
+| `--maven-local-repo-dir` | `maven_local_repo_dir` | Override the local repo path. |
+| `--maven-central` | `maven_central` | Enable the public Maven Central fallback. Ignored when `--maven-repo-url` is set. |
+| `--maven-graph-source` | `maven_graph_source` | Maven transitive graph source: `repo` \| `deps-dev` \| `none`. |
+| `--dependency-graph` | `dependency_graph` | Graph depth: `off` \| `direct` \| `full` (transitive folds into the SBOM). |
+
+Environment variables (credentials, never in config):
+
+| Variable | Purpose |
+|----------|---------|
+| `STACK_ANALYZER_MAVEN_USER` | Username for Basic auth against the remote Maven repo. |
+| `STACK_ANALYZER_MAVEN_TOKEN` | Access token / API key (Basic password with a user, else Bearer). |
+
+## Offline guarantee
+
+The scanner is offline by default. Reading outside the scanned tree
+(`--maven-local-repo`) and any network access (`--maven-repo-url`,
+`--maven-central`, `--deps-dev`) are explicit opt-ins. With no Maven flags, only
+the repo's own POMs and committed resolved files are used.
+
+For the internals (resolution algorithm, conflict mediation, source chain, and
+the comparison with Trivy), see the design doc:
+[Maven (and Cross-Manifest) Version Resolution](design/maven-version-resolution.md).

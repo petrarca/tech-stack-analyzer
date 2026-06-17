@@ -1,534 +1,201 @@
 # Maven (and Cross-Manifest) Version Resolution
 
-How the scanner should close the **version gap** in SBOMs: dependencies emitted
-without a resolved version, which are invisible to advisory matching (Trivy,
-OSV). This document records the root-cause analysis behind the gap, compares the
-scanner's behaviour with Trivy's, and lays out a staged plan to close it while
-preserving the scanner's offline-by-default guarantee.
+Design of how the scanner closes the **version gap** for Maven: dependencies
+emitted without a resolved version, which are invisible to advisory matching
+(Trivy, OSV match on a concrete version). It covers the root cause, the
+resolution model and its sources, transitive resolution, and the offline-first
+boundary. For user-facing flags and recipes see the [Maven guide](../maven.md);
+for the broader edge model see [Dependency Graph](dependency-graph.md).
 
-## Background: the version gap
+## The version gap
 
-A component is only useful to a vulnerability scanner when its PURL carries a
-**resolved** version (`pkg:maven/group/artifact@1.2.3`). The SBOM emitter
-(`internal/sbom/cyclonedx.go`) deliberately omits the version from the PURL when
-the value is not a concrete release -- a range (`^1.2.0`), a tag (`latest`), an
-unresolved property (`${x}`), or a placeholder. This is correct: a versionless
-or range PURL cannot identify a release and breaks advisory matching.
+A component is useful to a vulnerability scanner only when its PURL carries a
+**resolved** version (`pkg:maven/group/artifact@1.2.3`). The SBOM emitter omits
+the version when the value is not a concrete release -- a range (`^1.2.0`), a
+tag (`latest`), an unresolved property (`${x}`), or a placeholder -- because a
+versionless or range PURL cannot identify a release.
 
-The problem is upstream of the emitter: too many dependencies arrive at the
-emitter **without** a resolved version, so they are emitted versionless and are
-invisible to scanning.
+The gap is therefore created **upstream** of the emitter: a dependency reaches
+it without a resolved version. Maven uniquely produces many such cases because a
+`<dependency>` routinely omits its version, inheriting it from:
 
-### Observed gap (reference data set: a large monorepo, 816 components)
+- a `<dependencyManagement>` entry in the same POM,
+- a **parent POM** in the inheritance chain,
+- an **imported BOM** (`<scope>import</scope>`, `<type>pom</type>`), or
+- a `${property}` resolved elsewhere in that chain.
 
-| Ecosystem | Total | No version | % missing |
-|-----------|-------|-----------|-----------|
-| `pkg:maven` | 404 | 261 | 65% |
-| `pkg:npm` | 211 | 94 | 45% |
-| `pkg:docker` | 173 | 98 | 57% |
-| `pkg:pypi` | 28 | 25 | 89% |
-| **Total** | **816** | **478** | **59%** |
+The scanner's job is to resolve those versions before emission. The emitter is
+correct as-is; resolution happens before it.
 
-## Root cause
+## Resolution model
 
-When a parser cannot determine a concrete version from the source file, it
-defaults the version to the literal string `"latest"` (see `maven.go:resolveVersion`,
-and the equivalent in the npm/pypi/docker/gradle/gem/cocoapods parsers). The
-SBOM emitter then treats `"latest"` (and ranges, and `${...}`) as unresolved and
-omits it from the PURL. The emitted gap is therefore **accurate** -- the version
-genuinely is not known from the source as currently parsed. The fix is to
-**resolve more versions before they reach the emitter**, not to change the
-emitter.
+Versions are resolved offline-first, by locating the POM that manages a
+coordinate's version. Sources are tried in precedence order (first hit wins);
+each degrades gracefully, and a network error or rate limit never aborts a scan.
 
-There are four distinct causes, one per ecosystem family:
+1. **Committed resolved files** -- `dependency-list.txt` (`mvn dependency:list`)
+   or `dependency-tree.json` (`mvn dependency:tree`). These are Maven's own
+   output and the most authoritative; the analyzer never runs Maven, it only
+   reads what was committed. Rarely present, so not relied upon alone.
+2. **The repo's own POMs** -- cross-POM `dependencyManagement`, parent chains,
+   and imported BOMs reachable within the scanned tree. Fully offline.
+3. **Cross-module propagation** -- a coordinate resolved in one module fills the
+   same coordinate left versionless in a sibling module. Fully offline.
+4. **Local `~/.m2/repository`** -- previously built/downloaded POMs.
+5. **A configured Maven repository** -- an internal Artifactory/JFrog repo or
+   mirror; covers **private** artifacts.
+6. **Maven Central** -- the public fallback.
 
-### 1. Maven -- cross-POM `dependencyManagement` not applied (261, biggest)
+Steps 1-3 need no configuration; 4-6 are opt-in. A coordinate still unresolved
+after all sources is emitted versionless (a documented gap).
 
-A versionless `<dependency>` in one POM is **not** matched against a managed
-version declared in another POM (a parent POM or an imported BOM). The parser
-processes each POM in isolation:
+### Resolved value and provenance
 
-- `maven.go` parses `<dependencyManagement>` only to extract BOM *imports*
-  (`scope=import`, `type=pom`); it does **not** build a managed-version table and
-  apply it to versionless `<dependency>` entries.
-- It resolves `${property}` references only within a **single** POM's property
-  scope, so a property defined in a parent/BOM POM stays unresolved.
+When a version is resolved, the concrete value goes in the dependency's
+`version`; the originally declared form (range / `${...}` / empty) is preserved
+in `metadata.declared`, and `metadata.source` records the origin
+(`dependency-management`, `cross-module`, `workspace-lock`, ...). This follows
+the [Dependency Resolution Model](dependency-resolution-model.md): declared and
+resolved are kept as distinct facts.
 
-Illustrative pattern (fictional coordinates):
+### Import-scope BOMs are not packages
+
+A `<scope>import</scope>` BOM is a version-management entry, not an artifact.
+The parser keeps it as a tech-detection signal, but the SBOM emitter excludes
+import-scope entries -- they have no resolvable artifact to scan. (Maven and
+Trivy likewise never emit import-scope entries as packages.)
+
+## POM source chain
+
+Resolution needs to *locate* a POM by coordinates. The places a POM can come
+from are encapsulated behind a single `PomSource` seam and composed into a
+precedence `Chain` (`internal/scanner/mavenresolve`), mirroring the
+edge-resolver pattern in `internal/scanner/resolver`:
 
 ```
-services/example-service/pom.xml   <dependency> com.example/example-lib   (no <version>)
-bom/pom.xml                        <example.lib.version>7.6.0</...>
-                                   manages com.example/example-lib -> ${example.lib.version}
+in-repo source index  ->  local ~/.m2  ->  configured repo / settings.xml  ->  Maven Central
 ```
 
-`com.example/example-lib` is emitted versionless today, but `7.6.0` is **fully
-determinable offline** from the repo's own POMs by cross-POM `dependencyManagement`
-+ parent + property resolution. This is the single largest, deterministic,
-network-free win.
+- **in-repo** -- BOMs/parent POMs committed to the scanned tree, located via a
+  generic, ecosystem-agnostic source index (`coordinate -> manifest path`, built
+  once per scan; reusable by other ecosystems). Offline.
+- **local `~/.m2`** -- the local cache, holding individual POMs. Offline; opt-in
+  because it reads outside the scanned tree. Path follows Maven
+  (`MAVEN_REPO_LOCAL`, `-Dmaven.repo.local` in `MAVEN_OPTS`, then
+  `~/.m2/repository`).
+- **configured repo** -- an HTTP Maven repository (internal Artifactory/JFrog
+  virtual repo, or a mirror). Resolves private artifacts. Credentials come from
+  the environment or `settings.xml` (HTTP Basic, or Bearer with a bare token).
+- **Maven Central** -- public fallback, opt-in.
 
-A second class within Maven is genuinely unresolvable offline:
+The chain is the single mechanism for *every* POM lookup: the same chain
+resolves a versionless dependency's managing BOM, climbs parent POMs (by
+relative path in-repo, by coordinate when published), follows nested/imported
+BOMs (with a visited-coordinate cycle guard), and -- for the transitive graph --
+fetches each dependency's POM. The parser stays free of repository knowledge by
+receiving the chain through a small resolver hook.
 
-- **Private/internal artifacts** (e.g. `com.example.internal/*`) whose versions
-  live in a parent/BOM POM that is **not in the repo** (published to a private
-  registry). These cannot be resolved offline and cannot be resolved via
-  deps.dev (not public). They remain a documented gap.
+### Configuration collapses to one internal view
 
-### 2. npm -- workspace lock not associated with nested `package.json` (94)
-
-The versionless npm components carry **range** versions (`^6.1.20`, `~2.1.2`)
-read from `package.json`. The repo is a workspace/monorepo: nested
-`packages/*/package.json` declare ranges, and a single hoisted root
-`yarn.lock` resolves them. The scanner resolves a `package.json` against a lock
-file only when the lock is **adjacent** (same directory), so the nested
-manifests never see the parent workspace lock.
-
-Illustrative pattern: a nested package such as `@scope/example-pkg` is emitted
-versionless (range `^6.1.20`) but **is present in the workspace-root
-`yarn.lock`** with a resolved version. This is fixable offline by associating
-nested workspace manifests with the nearest ancestor lock file.
-
-### 3. Docker -- unpinned / templated / private-registry tags (98)
-
-`FROM image` without a tag, `FROM ${base_image}` (CI-injected), and private
-registry references (e.g. `myregistry.example.com/...`) have no version in
-source. Some are an upstream-Dockerfile fix (pin the tag);
-the templated/private ones are an architectural pattern (resolved only at
-build/deploy time) and are **not** fixable from source. Documented gap.
-
-### 4. PyPI -- unpinned requirements (25)
-
-`requirements*.txt` without `==` pins, or `pyproject.toml` ranges with no
-committed `uv.lock` / `poetry.lock` / `requirements.lock`. Fixable when a lock
-exists (associate it); otherwise an upstream pinning fix. Mostly minor.
-
-## Pre-generated resolved files (most authoritative, when present)
-
-Maven cannot produce a fully resolved graph statically -- conflict mediation,
-version ranges, and cross-POM `dependencyManagement` require Maven itself. The
-scanner therefore reads two **pre-generated** files when a user/CI committed
-them (the analyzer never runs Maven):
-
-| File | Command | What it carries | Used today for |
-|------|---------|-----------------|----------------|
-| `dependency-list.txt` | `mvn dependency:list -DoutputFile=...` | resolved flat versions (LATEST/RELEASE/`${...}` already resolved) | flat versions -> SBOM (overrides pom.xml) |
-| `dependency-tree.json` | `mvn dependency:tree -DoutputType=json -DoutputFile=...` | resolved graph (post-mediation) | graph **edges only** |
-
-These resolved files are the **most authoritative** source and must take
-precedence over any static or online resolution -- they are Maven's own output.
-**But in practice they are rarely committed** (they are CI-only build
-artifacts), so they cannot be relied on to close the gap on their own. They are
-the top of the precedence chain when present, with the offline static resolution
-(Stage 1) as the fallback when they are absent.
-
-Current precedence for the **flat** dependency list (what the SBOM emits), from
-`internal/scanner/components/java/detector.go`:
-
-1. `dependency-list.txt` if present (overrides pom.xml versions).
-2. Otherwise pom.xml only -- with the cross-POM gap described above.
-
-Gap in the current handling: when only `dependency-tree.json` is committed (no
-`dependency-list.txt`), its resolved versions are used **only for graph edges**
-and are **not** harvested back into the flat dependency list, so the SBOM does
-not benefit from them. Stage 1 should also harvest flat resolved versions from
-`dependency-tree.json` when present.
-
-## How Trivy resolves Maven (comparison)
-
-Source: `pkg/dependency/parser/java/pom/parse.go` in the Trivy repo.
-
-Trivy resolves Maven versions by **reconstructing Maven's resolution**:
-
-1. Builds a `dependencyManagement` table from the root POM and applies it to
-   transitive dependencies (`resolveDepManagement`).
-2. Follows the **parent POM** chain and **modules**, inheriting properties,
-   `dependencyManagement`, and repositories.
-3. **Fetches** parent/BOM/transitive POMs that are not local -- from the local
-   `~/.m2/repository` cache and from remote Maven repositories over HTTP.
-
-Steps 1-2 operate on POMs **already available** (the repo's own POMs + parents
-that happen to be present). Step 3 crosses the network/offline boundary.
-
-The scanner can replicate **steps 1-2 offline** from the repo's POMs (this is
-the 261 Maven win). Step 3 -- fetching parent/BOM POMs that live in a registry
--- is the online piece, and for **public** coordinates it overlaps with what
-deps.dev already provides. It will never resolve **private** coordinates.
-
-## Reference implementation (Trivy)
-
-Trivy is the reference implementation for ecosystem-faithful version resolution.
-Its source is available locally for direct inspection while implementing each
-stage. Consult it for the resolution algorithm and edge cases; do **not** copy
-its network-fetching behaviour into the offline stages (that belongs only in the
-opt-in online stage). Paths are relative to the Trivy repo root.
-
-| Stage | Trivy reference | Functions / notes |
-|-------|-----------------|-------------------|
-| 1 (Maven) | `pkg/dependency/parser/java/pom/parse.go` | `parseRoot` (orchestration), `resolveDepManagement` + `mergeDependencyManagements` (managed-version table), `parseDependencies` (apply managed version to versionless deps), `resolveParent`/`parseParent`/`retrieveParent` + `mergeProperties`/`mergeDependencies` (parent chain + property/dep inheritance). **Offline-relevant** parts: everything that operates on already-available POMs. **Skip for offline**: `tryRepository`, `loadPOMFromLocalRepository` (`~/.m2`), `fetchPOMFromRemoteRepositories` (HTTP). |
-| 1 (Maven, properties/ranges) | `pkg/dependency/parser/java/pom/pom.go`, `version.go`/`var.go` | property interpolation and Maven version-range handling. |
-| 2 (npm workspace) | `pkg/fanal/analyzer/language/nodejs/{npm,yarn,pnpm}/*.go`, `pkg/dependency/parser/nodejs/{npm,yarn,pnpm,packagejson}/` | how a workspace `package.json` is associated with the root lock and ranges are resolved to locked versions. |
-| 2 (PyPI lock) | `pkg/fanal/analyzer/language/python/{poetry,uv,pip,pipenv}/`, `pkg/dependency/parser/python/` | lock-file association and constraint -> resolved version. |
-
-Trivy gates its network access behind an offline option (`WithOffline` in
-`parse.go`); the scanner's equivalent boundary is offline-by-default with the
-opt-in `--resolve-online` flag (see below). Use Trivy's offline code paths as
-the model for Stages 1-2.
-
-## deps.dev (online) -- what it can and cannot do
-
-The scanner already has an opt-in online resolver (`--resolve-online`,
-`internal/scanner/resolver/depsdev.go`) backed by deps.dev. Two limits matter
-for the version gap:
-
-1. **It resolves the transitive graph of an already-versioned coordinate.** The
-   resolver skips any dependency with an empty version
-   (`if dep.Name == "" || dep.Version == "" { continue }`) and queries
-   `.../versions/{version}:dependencies`. It does **not** backfill a *missing*
-   version. To make it close the gap, a separate step must first pick a concrete
-   version (e.g. the latest published release for a range) via a
-   `GetVersion`/`GetPackage`-style lookup, then feed that into resolution.
-2. **It only covers published, public packages** (npm, PyPI, Cargo, Maven on
-   deps.dev). Private/internal artifacts (`com.example.internal/*`, private
-   registries) return 404 and are skipped. **Online resolution can never close
-   the private-package gap** -- by design, those packages are not on deps.dev.
-
-## Offline/online boundary (design constraint)
-
-The scanner is **offline by default**; any network access is opt-in and
-explicit. The staged plan respects this:
-
-- **Offline stages** (1, 2) run by default, are deterministic, and need no
-  network. They resolve from the repo's own files only.
-- **Online stages** (3) run only under `--resolve-online` (and the existing
-  `--resolve-online-endpoint` override for a mirror/facade). They resolve only
-  public coordinates and degrade gracefully (404 -> skip) for private ones.
-
-This keeps the single-binary, offline guarantee intact while letting operators
-opt into broader coverage when a network/VPN is available.
-
-### Resolution precedence (highest to lowest)
-
-1. **Committed resolved files** (`dependency-list.txt`, `dependency-tree.json`)
-   -- Maven's own output; authoritative but rarely present. *(Stage 0)*
-2. **Offline static cross-POM resolution** -- managed versions + parent +
-   property interpolation from the repo's own POMs / workspace locks. *(Stages
-   1-2, default)*
-3. **Online backfill** (deps.dev / mirror) -- public coordinates only, opt-in.
-   *(Stage 3, `--resolve-online`)*
-4. **Unresolved** -- left versionless (range/`latest`/`${...}`); emitted without
-   a PURL version and documented as a known gap.
-
-## Staged plan
-
-Implement step by step; each stage is independently shippable and testable, and
-each online stage is gated behind `--resolve-online`.
-
-### Stage 0 -- Use committed resolved files first (already partly present)
-
-- Keep `dependency-list.txt` as the top-priority flat-version source (already
-  done).
-- **Add**: when `dependency-tree.json` is present, harvest resolved flat
-  versions from it into `payload.Dependencies` (not just edges), so the SBOM
-  benefits even when no `dependency-list.txt` exists.
-- These files win over Stage 1 static resolution. They are rarely committed, so
-  Stage 1 remains necessary as the offline fallback.
-
-### Stage 1 -- Offline cross-POM Maven `dependencyManagement` + parent + BOM imports (implemented)
-
-- Applies only to dependencies still versionless after Stage 0.
-- Build a managed-version table (`groupId:artifactId -> resolved version`) from:
-  - the POM's own `<dependencyManagement>` (and active profiles');
-  - **parent POMs** reachable through the provider (climbing the chain);
-  - **imported BOMs** (`scope=import`, `type=pom`) located in the repo.
-- Resolve `${property}` references across the merged parent/property scope.
-- Apply managed versions to versionless `<dependency>` entries; never overwrite
-  a concrete version. Record the declared form in `metadata.declared` and the
-  origin in `metadata.source = "dependency-management"`.
-- **BOM-import resolution (the dominant real-world case)**: a child's version
-  often lives in a sibling BOM module imported by an ancestor POM, addressed by
-  Maven *coordinates*, not a path. To resolve this offline we built a generic,
-  ecosystem-agnostic **source index** (`components.SourceIndex`) that maps
-  `(ecosystem, coordinate) -> manifest path` by walking the scanned tree once
-  (cached per scan). The Maven detector injects a `parsers.BomResolver` backed
-  by this index; the parser stays free of any repository/index knowledge.
-  Nested and inherited BOMs are followed, with a visited-coordinate set
-  guarding against import cycles.
-  - The source index is intentionally reusable beyond Maven (e.g. npm/Go/Python
-    workspace-member resolution): ecosystems opt in via
-    `components.RegisterSourceIndexer`.
-- **Import-scope entries are not packages**: the parser keeps `scope=import`
-  BOMs as a tech-detection signal, but the SBOM emitter now excludes them
-  (they declare no artifact). This matches Maven semantics and Trivy, which
-  never emits import-scope entries as packages.
-- Private artifacts managed only in a non-repo parent/BOM remain versionless
-  (expected; documented gap).
-- Reference: Trivy's offline POM resolution (`resolveDepManagement` follows
-  `scope=import` BOMs via the same artifact resolver; `parseDependencies` emits
-  only `compile`/`runtime` non-optional deps as packages). We mirror the
-  algorithm, replacing Trivy's `~/.m2`/remote fetch with the repo source index.
-
-### Stage 2 -- Offline npm workspace lock association (implemented)
-
-- Associate a nested `package.json` with the nearest ancestor lock file
-  (`package-lock.json` / `yarn.lock`) when no adjacent lock exists, resolving
-  the member's declared ranges to the locked version. The climb is bounded to
-  the scan root so a member never picks up an unrelated lock outside the
-  workspace. Resolution origin is recorded as `metadata.source =
-  "workspace-lock"`.
-- Expected impact: the npm workspace/monorepo case (nested members declaring
-  ranges while a single hoisted root lock holds the resolved versions).
-- Reference: Trivy's nodejs analyzers (see the table above) for workspace/lock
-  association.
-
-Python is intentionally **not** handled here: uv/poetry locks sit adjacent to
-their `pyproject.toml`, so there is no ancestor-lock pattern to resolve. The
-remaining PyPI gap is genuinely unpinned sources (`requirements.txt` without
-`==`, `pyproject.toml` ranges with no committed lock) -- addressed by online
-backfill or an upstream pinning fix, not by lock association.
-
-### Stage 3 -- Online third-party BOM resolution (opt-in, public packages only, implemented)
-
-- Under `--resolve-online`, when a `scope=import` BOM is **not** in the scanned
-  tree (e.g. the Quarkus or Spring BOM), fetch its published POM from a Maven
-  repository (Maven Central by default) and read its managed versions. This
-  yields the **exact** versions the build uses, not a guessed "latest".
-- Implemented as an *online `BomResolver`* composed after the offline source
-  index: the same Stage-1 resolution logic handles both, so nested imports
-  (internal BOM in repo -> public BOM online) resolve transparently. Verified:
-  an in-repo BOM that imports a public platform BOM via a `${...}` version
-  property resolves the property, fetches the BOM, and pins the managed
-  artifacts to their exact versions.
-- Distinct from the deps.dev resolver already in the tree: deps.dev returns a
-  resolved **dependency graph** for an *already-versioned* coordinate (it cannot
-  supply a missing version); the Maven POM fetch returns the **raw BOM** whose
-  `<dependencyManagement>` provides the missing versions. They share only the
-  `--resolve-online` gate, not the endpoint (the POM repo is a different API).
-- Strictly public-only: a 404 leaves the dependency versionless. Private BOMs
-  (not on a public repository) are never resolvable this way and remain a
-  documented gap.
-- Network access is build-tag-free in production (off unless `--resolve-online`)
-  with a mocked-HTTP unit test and a `//go:build online` live test against
-  Maven Central (`task test:integration`).
-
-### POM source chain (`internal/scanner/mavenresolve`)
-
-BOM-import and parent-POM resolution needs to *locate* a POM by coordinates.
-The places a POM can come from are encapsulated behind a `PomSource` seam
-(mirroring `internal/scanner/resolver`, which applies the same precedence-chain
-pattern to graph edges), composed into a `Chain` tried in order:
-
-1. `RepoSource` -- BOMs committed to the scanned tree, via the components source
-   index (offline, no network).
-2. `LocalRepoSource` -- the local `~/.m2/repository` cache (offline, no
-   credentials). Opt-in (`--maven-local-repo`) since it reads outside the
-   scanned tree. The repo path follows Maven: `MAVEN_REPO_LOCAL`, then
-   `-Dmaven.repo.local` in `MAVEN_OPTS`, then `~/.m2/repository`
-   (`--maven-local-repo-dir` overrides).
-3. `RemoteSource` -- a Maven repository over HTTP. Opt-in (`--resolve-online`);
-   defaults to **Maven Central**, overridable to a mirror or internal
-   Artifactory/JFrog virtual repo via `--maven-repo-url`. Optional bearer-token
-   auth (`STACK_ANALYZER_MAVEN_TOKEN`, env-only) resolves private artifacts. A
-   JFrog URL is the base up to and including the repo key, e.g.
-   `https://host/artifactory/<repo>`; the coordinate path is appended.
-
-Each tier degrades gracefully (a miss or a transient 429/5xx falls through; only
-a definitive 404 is cached) and never aborts the scan. The chain is adapted to
-the parser's `BomResolver` hook, so the parser stays free of repository/index
-knowledge.
-
-#### Configuration (collapses to one internal view)
-
-Repository URLs, credentials, and the local-repo path can come from several
-inputs that **merge into a single internal configuration** the chain reads --
-the resolver never sees the individual sources:
-
-- **Maven `settings.xml`** (default `~/.m2/settings.xml`, per-scan override via
-  `--maven-settings` / `maven_settings` so different projects can use their own)
-  supplies `<repositories>` URLs with their `<server>` credentials (HTTP Basic;
-  a JFrog reference token is the password) and `<localRepository>`. `<mirrors>`
-  are honored per Maven semantics: a `mirrorOf` match (`*`, `external:*`,
-  explicit ids, `!exclusions`) routes the repository through the mirror URL with
-  the mirror id's credentials, so a catch-all `mirrorOf=*` collapses all repos
-  to the single mirror.
-- **Scanner config / flags** supply `--maven-repo-url`, `--maven-local-repo`,
-  `--maven-local-repo-dir`.
-- **Environment** supplies secrets only: `STACK_ANALYZER_MAVEN_USER` and
-  `STACK_ANALYZER_MAVEN_TOKEN` (never in config files).
-
-The merged remote chain is: settings.xml repos (with their creds) -> configured
-`--maven-repo-url` -> Maven Central (public fallback). The local-repo path
-resolves as: `--maven-local-repo-dir` -> settings.xml `<localRepository>` ->
-`MAVEN_REPO_LOCAL` / `MAVEN_OPTS` -> `~/.m2/repository`. A repository that does
-not carry a given coordinate (e.g. an internal JFrog virtual repo returning 404
+Repository URLs, credentials, and the local-repo path may come from a Maven
+`settings.xml` (repositories with `<server>` credentials by id, `<mirrors>`
+including `mirrorOf` semantics, `<localRepository>`), from scanner flags/config,
+or from the environment (secrets only). These **merge into one internal
+configuration** the chain reads; the resolver never sees the individual inputs.
+The merged remote order is: settings.xml repos -> configured repo URL -> Maven
+Central. A repository that lacks a coordinate (e.g. a virtual repo returning 404
 for a public BOM) simply falls through to the next.
 
-#### Online sources are gated independently
+### Online sources are gated independently
 
-The two public online sources are separate concerns and have their own
-switches, rather than one umbrella flag:
+The two public online sources are separate concerns with separate switches (no
+single umbrella):
 
-- **`--maven-central` / `maven_central`** enables the public Maven Central
-  fallback for resolving Maven BOM/parent versions.
-- **`--deps-dev` / `deps_dev`** enables deps.dev for transitive dependency-graph
-  edges (effective only with `--dependency-graph direct|full`).
+- **Maven Central** -- public fallback for version (BOM/parent) resolution.
+- **deps.dev** -- transitive dependency-graph edges.
 
-An **explicitly configured** Maven repository (`--maven-repo-url` or
-settings.xml repos) is the user's deliberate opt-in and is **always** used --
-no online flag required; configuring it is the consent. When such a repository
-is set, Maven Central is **not** appended (an internal virtual repo already
-proxies public artifacts, so adding Central would be redundant and an egress
-surprise). For nais this means a single `--maven-repo-url` pointing at the
-aggregating JFrog virtual repo (plus the env token) reaches ~99% Maven version
-coverage with no other online flag.
+An **explicitly configured** Maven repository (repo URL or settings.xml repos)
+is always used -- configuring it *is* the opt-in, no separate online flag. When
+one is set, Maven Central is **not** also appended: an internal virtual repo
+already proxies public artifacts, so reaching Central too would be redundant and
+an egress surprise.
 
-### Transitive components in the SBOM (implemented)
+## Transitive dependencies
 
-By default the SBOM contains the **declared** dependencies. When the scan
-resolved a dependency graph (`--dependency-graph full`), the SBOM emitter also
-folds the graph's **transitive nodes** in as components, deduplicated against
-the declared set. Edge nodes carry resolved `name@version` identities; the
-owning component's ecosystem supplies the PURL type.
+By default the SBOM lists **declared** dependencies. When a dependency graph is
+resolved (`--dependency-graph full`), the emitter folds the graph's transitive
+nodes in as components, deduplicated against the declared set (edge nodes carry
+resolved `name@version`; the owning component's ecosystem supplies the PURL
+type).
 
-This gives transitive breadth **without replicating a package manager's
-recursive POM/registry crawl**. The transitive graph itself comes from:
-- committed lockfiles / `dependency-tree.json` (offline, full and private), or
-- deps.dev under `--resolve-online`, which returns the pre-computed resolved
-  transitive graph for a public, already-versioned coordinate (one call per
-  declared dep, not a per-artifact crawl).
+Maven transitive edges can come from two sources, selected per ecosystem (a
+committed `dependency-tree.json` always takes precedence over both):
 
-Why this is sufficient (vs. Trivy's approach): Trivy reconstructs the transitive
-tree by fetching every dependency's POM, which is broad but brittle (on a large
-monorepo it hit a Maven Central 429 rate-limit and aborted the whole scan).
-deps.dev already provides the resolved graph for public coordinates, so we get
-the transitive set with far fewer requests and never abort on rate-limiting.
-Measured on a large monorepo: declared-only ~360 Maven components (~58%
-versioned) vs. online + full graph ~1560 components (~90% versioned). The
-residual gap to a full POM crawl is dominated by private subtrees that no public
-source can resolve.
+- **Repository crawl** -- recursively fetch each dependency's POM through the
+  POM source chain, read its `<dependencies>`, and walk. This is the only source
+  that covers **private** artifacts (they are in the internal repo / `~/.m2`,
+  never on deps.dev), and it needs no Maven Central. It reproduces Maven's
+  resolution: breadth-first with **nearest-wins** conflict mediation (one
+  version per coordinate per module, edges rewritten to the mediated version),
+  transitive-scope filtering (`test`/`provided`/`optional`/`import` excluded),
+  and a visited-set cycle guard. An unreachable POM yields no children and never
+  aborts the scan.
+- **deps.dev** -- the pre-computed resolved graph for a public, already-versioned
+  coordinate (one request per declared dependency, not a per-artifact crawl).
+  Covers public coordinates only.
 
-### Maven transitive graph from the Maven repository (design; not yet implemented)
+The two are not combined within one tree (different walk models -> inconsistent
+mediation). The selector is `--maven-graph-source=repo|deps-dev|none`, defaulting
+to the global `--deps-dev` toggle; the same per-ecosystem-override pattern can
+extend to other ecosystems later.
 
-Transitive dependency edges for Maven currently come only from a committed
-`dependency-tree.json` or from deps.dev. deps.dev covers **public** coordinates
-only -- it has no knowledge of private artifacts (`com.example.internal/*`), so
-the transitive closure of a private dependency is unreachable through it. The
-one source that has both public and private POMs is a **Maven repository** the
-organisation already runs (an internal Artifactory/JFrog virtual repo that
-proxies public repos and hosts private artifacts). Resolving transitives by
-crawling that repository -- the way Maven and Trivy do -- is therefore the only
-way to get transitive coverage for private artifacts, and it needs no Maven
-Central.
+### Why a crawl is acceptable here (vs. Trivy)
 
-#### Model: depth axis x source axis
+Trivy resolves Maven by recursively fetching every dependency's POM from
+repositories. That is faithful but brittle against the public Maven Central
+rate limiter -- on a large monorepo it can abort the whole scan on a 429. The
+scanner's crawl rides the same offline-first source chain: it prefers in-repo
+and `~/.m2`, targets an internal repository (no public rate limit) when
+configured, and treats a 429/5xx as a fall-through rather than a fatal error.
+For public-only environments without a configured repo, deps.dev's pre-computed
+graph avoids the crawl entirely. The transitive sets produced match Trivy's on
+the same inputs.
 
-Two orthogonal axes already exist and are kept:
+## Offline-by-default boundary
 
-- `--dependency-graph off|direct|full` -- whether and how deep to emit edges
-  (all ecosystems).
-- **graph source** -- where the edges come from. This is the new axis.
+The scanner is offline by default. Reading outside the scanned tree (local
+`~/.m2`) and any network access (configured repo, Maven Central, deps.dev) are
+explicit opt-ins. With no Maven flags, only the repo's own POMs, committed
+resolved files, and cross-module propagation are used -- deterministic and
+network-free.
 
-The graph source is a **global default with per-ecosystem override**:
+## Other ecosystems (brief)
 
-- `--deps-dev` (`deps_dev`) -- the global online-graph toggle. When set, every
-  ecosystem's online graph source defaults to deps.dev (Maven included).
-- `--maven-graph-source=none|repo|deps-dev` (`maven_graph_source`) -- a
-  **fine-tuning override for Maven only**. When set it wins for Maven; other
-  ecosystems still follow `--deps-dev`. The same pattern can later extend to
-  other ecosystems (`--npm-graph-source`, ...) without changing this design.
+The same "resolve before emit" principle applies elsewhere, by ecosystem-native
+means:
 
-#### Maven graph source precedence (when `--dependency-graph` != off)
+- **npm** -- a nested workspace `package.json` (declaring ranges) is associated
+  with the nearest ancestor lock file (`package-lock.json`/`yarn.lock`) up to
+  the scan root, resolving ranges to the locked version.
+- **PyPI, Cargo, etc.** -- resolved from committed lockfiles adjacent to the
+  manifest; transitive edges via deps.dev under `--deps-dev`.
 
-1. **Committed `dependency-tree.json`** -- always first when present. It is a
-   whole resolved tree in one file (offline, authoritative, public + private),
-   so a network source never overrides it.
-2. Otherwise the **effective Maven source**: `--maven-graph-source` if set, else
-   `deps-dev` when `--deps-dev` is set, else `none`.
-   - `none` (offline default) -- stop; emit only what a committed tree provided.
-     With no flags, `--dependency-graph full` reaches no network.
-   - `repo` -- recursive POM crawl (below).
-   - `deps-dev` -- the existing pre-computed public graph resolver.
-3. **No cross-fallback** between `repo` and `deps-dev`: they are different walk
-   models (recursive POM crawl vs. pre-computed graph) and mixing them within
-   one tree would produce inconsistent mediation. A public artifact missing from
-   an internal proxy is a proxy-configuration issue, not a reason to splice in
-   deps.dev.
+## Out of scope (gaps not closable from source)
 
-#### The `repo` crawl
-
-`repo` reuses the existing POM-source chain (`internal/scanner/mavenresolve`),
-the same one used for version resolution, so it needs no new endpoint config:
-
-    in-repo source index  ->  local ~/.m2  ->  --maven-repo-url / settings.xml  ->  (Maven Central if --maven-central)
-
-The local `~/.m2` cache is the **offline first tier** of this chain, not a
-separate source: it holds individual POMs the crawl reads with no network.
-Consequently `repo` degrades gracefully -- it is fully offline when only `~/.m2`
-is populated, internal-network-backed when a JFrog URL is configured, and only
-reaches the public internet if `--maven-central` is explicitly set. The
-network tiers are gated exactly as for version resolution (an explicit
-`--maven-repo-url` is always used; Central only under `--maven-central`).
-
-Algorithm (Maven's resolution, mirrored offline-first):
-
-1. Seed the queue with the component's declared dependencies, each resolved to a
-   concrete version by the existing version-resolution machinery
-   (dependencyManagement / parent / imported BOMs).
-2. For each artifact: fetch its POM via the chain; read its `<dependencies>`
-   (skipping `test`/`provided`/`optional`/`import` per Maven's transitive
-   rules); resolve each child's version against the artifact's own
-   dependencyManagement + properties; emit a parent->child edge.
-3. Recurse into children with **nearest-wins conflict mediation** (the version
-   nearest the root wins; a coordinate already resolved at a shallower depth is
-   not re-fetched at a deeper one) and a **visited set** keyed by coordinate to
-   bound work and break cycles.
-4. A POM that cannot be fetched (private artifact absent from every tier, or a
-   transient 429/5xx) yields no children for that node and never aborts the
-   scan -- the existing graceful-degradation of the source chain.
-
-Edges are tagged with their provenance (a new `repo` provenance alongside the
-existing `lockfile` and `deps.dev`) so consumers can tell repo-crawled edges
-from the others. The resolved transitive nodes fold into the SBOM via the
-existing transitive-component fold-in.
-
-#### Where it plugs in
-
-It is a new `DependencyResolver` in the existing graph chain
-(`internal/scanner/resolver`), selected for Maven by the effective source. The
-chain order for Maven becomes: committed-tree lockfile resolver -> (repo crawl |
-deps.dev) according to the effective source. Non-Maven ecosystems are
-unchanged: committed lockfile -> deps.dev under `--deps-dev`.
-
-#### Behaviour and validation
-
-- `repo` selected but no repository reachable (no `--maven-repo-url`/settings
-  and empty `~/.m2`): warn and fall through (no hard fail).
-- A source selected while `--dependency-graph off`: no-op.
-- Offline-by-default is preserved: any network tier within `repo` is itself
-  opt-in (`--maven-repo-url` configured, or `--maven-central`).
-
-#### Net effect for an internal-repo environment
-
-`--dependency-graph full --maven-graph-source=repo --maven-repo-url <virtual-repo>`
-(plus the env token) produces a transitive Maven graph that includes **private**
-artifacts, using only the internal repository -- no deps.dev, no Maven Central.
-This is the Trivy-equivalent capability, but riding on the scanner's existing,
-rate-limit-tolerant POM-source chain rather than a hard-failing public crawl.
-
-### Out of scope (documented gaps, not closable from source)
-
-- Docker templated/private tags (`${base_image}`, private registries).
-- Private Maven artifacts whose versions are not in any repo POM.
-- Unpinned Docker/PyPI with no lock and no upstream pin (upstream fix).
+- Private Maven artifacts whose versions live only in a repository not reachable
+  by any configured source.
+- Docker templated/private tags (`${base_image}`, private registries) -- bound
+  at build/deploy time, not present in source.
+- Unpinned PyPI/Docker with no committed lock and no upstream pin.
 
 ## Verification
 
-For each stage, on the reference data set:
-
-- Re-scan and re-count versionless PURLs per ecosystem (the breakdown table
-  above); record the reduction.
-- Spot-check known cases (a BOM-managed artifact resolving to its managed
-  version; a nested workspace package resolving from the workspace-root lock).
-- Confirm no regression in offline mode (stages 1-2 must not require network).
-- Run `trivy sbom` before/after and compare the count of components that Trivy
-  is able to evaluate (versionless components are skipped by Trivy).
-- Standard `task fct` and `go test -race ./...`.
+- Re-scan and count versionless PURLs per ecosystem before/after; confirm the
+  reduction.
+- Spot-check known cases: a BOM-managed artifact resolving to its managed
+  version; a nested workspace package resolving from the workspace-root lock; a
+  transitive subtree matching the dependency's published POM.
+- Confirm offline mode requires no network.
+- Compare the SBOM against `trivy sbom` / `trivy fs` output where a fair
+  baseline is available (same resolved transitive sets; the scanner additionally
+  resolves private artifacts when pointed at the internal repository).

@@ -21,6 +21,7 @@ Detection is powered by **800+ technology rules** across 48 categories, using fi
 - **800+ Technology Rules** - Comprehensive detection across 48 categories
 - **Lock File Support** - Extracts exact resolved versions from package-lock.json, pnpm-lock.yaml, Cargo.lock, uv.lock, poetry.lock, etc., and records the originally declared range alongside the resolved version
 - **Dependency Graph** - Emits the package-to-package dependency graph (edges) across 19 ecosystems, off by default via `--dependency-graph`; optional online resolution (deps.dev) fills gaps for manifest-only ecosystems
+- **Maven Version Resolution** - Resolves versionless Maven dependencies (BOM-managed, parent-inherited, property references) offline from the repo's own POMs, plus optional local `~/.m2`, an internal Artifactory/JFrog repo (incl. private artifacts), or Maven Central. Optional Trivy-style transitive resolution by crawling the configured Maven repo. See the [Maven guide](docs/maven.md)
 - **CycloneDX SBOM** - Emits a PURL-based SBOM consumable directly by vulnerability scanners such as Trivy
 - **Code Statistics** - Lines of code, complexity metrics, and language breakdown via SCC
 - **Automatic .gitignore** - Respects `.gitignore` files with full gitignore semantics (negation `!`, dir-only `/`, last-match-wins)
@@ -77,6 +78,11 @@ go install github.com/petrarca/tech-stack-analyzer/cmd/scanner@latest
 
 # Emit the package-to-package dependency graph (off by default)
 ./bin/stack-analyzer scan /path/to/project --dependency-graph full -o out.json
+
+# Resolve Maven versions (incl. private artifacts) from an internal Maven repo
+export STACK_ANALYZER_MAVEN_USER=... STACK_ANALYZER_MAVEN_TOKEN=...
+./bin/stack-analyzer scan /path/to/project --also-sbom \
+  --maven-repo-url https://artifactory.example.com/artifactory/my-virtual-repo
 
 # Strip fields not needed by downstream consumers
 ./bin/stack-analyzer scan /path/to/project --omit-fields reason,edges
@@ -151,6 +157,7 @@ For detailed documentation, see the [docs/](docs/) folder:
 | [Usage Guide](docs/usage.md) | Commands, flags, verbose mode, code statistics, content-based detection |
 | [Configuration](docs/configuration.md) | Project config, environment variables, scan config files, logging |
 | [Output Format](docs/output.md) | Output structure, field reference, aggregated output, metadata |
+| [Maven Resolution](docs/maven.md) | Resolving versionless Maven deps, local `~/.m2`, internal/JFrog repos, settings.xml, transitive graph |
 | [Extending](docs/extending.md) | Adding technology rules, component detectors, category configuration |
 | [Building](docs/building.md) | Build instructions, project structure, architecture overview |
 
