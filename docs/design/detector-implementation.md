@@ -383,7 +383,7 @@ The dependency-graph feature is tested at three levels, all in the default
    plus the off-by-default guarantee.
 
 A **live deps.dev** test is build-tag gated (`//go:build online`) and excluded
-from the default suite; run it with `task test:online`.
+from the default suite; run it with `task test:integration`.
 
 > **Fixtures policy:** lockfile fixtures under `testdata/` must contain ONLY
 > public open-source packages (serde, express, requests, sinatra, monolog,

@@ -95,7 +95,7 @@ exclude:
   lockfile from an internal or proprietary repository. No internal package
   names, registry URLs, or filesystem paths may appear in a committed fixture.
 - Network-dependent tests must be build-tag gated (`//go:build online`) and
-  excluded from the default `task test` suite (run via `task test:online`).
+  excluded from the default `task test` suite (run via `task test:integration`).
 
 ## Before Making Repository Public
 

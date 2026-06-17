@@ -308,7 +308,7 @@ backfill or an upstream pinning fix, not by lock association.
   documented gap.
 - Network access is build-tag-free in production (off unless `--resolve-online`)
   with a mocked-HTTP unit test and a `//go:build online` live test against
-  Maven Central (`task test:online`).
+  Maven Central (`task test:integration`).
 
 ### POM source chain (`internal/scanner/mavenresolve`)
 

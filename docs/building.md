@@ -35,7 +35,7 @@ task run -- /path/to/project
 | `task format` | Format Go code using gofmt |
 | `task check` | Run go vet and golangci-lint |
 | `task test` | Run all tests (offline; the default suite) |
-| `task test:online` | Run the opt-in live network tests (deps.dev online resolution); requires internet |
+| `task test:integration` | Run the opt-in integration tests (live network: deps.dev resolution, Maven BOM fetch); requires internet. `task test:online` is an alias |
 | `task fct` | Run format, check, and test in sequence |
 | `task clean` | Clean up build artifacts and caches |
 | `task run` | Run stack-analyzer on a directory |

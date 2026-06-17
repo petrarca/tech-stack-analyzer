@@ -43,11 +43,16 @@ tasks:
     cmds:
       - go test -v ./... -count=1
 
-  test:online:
-    desc: Run live network tests (deps.dev resolution, Maven BOM POM fetch). Opt-in; requires internet.
+  test:integration:
+    desc: Run integration tests (live network; build-tag gated). Opt-in; requires internet.
     cmds:
       - go test -tags online -count=1 ./internal/scanner/resolver/ -run Live
       - go test -tags online -count=1 ./internal/scanner/mavenresolve/ -run Live
+
+  test:online:
+    desc: Alias of test:integration (live network tests).
+    cmds:
+      - task: test:integration
 
   fct:
     desc: Run format, check, and test in sequence
