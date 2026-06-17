@@ -6,6 +6,7 @@ import (
 
 	licensenormalizer "github.com/petrarca/tech-stack-analyzer/internal/license"
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/components"
+	"github.com/petrarca/tech-stack-analyzer/internal/scanner/mavenresolve"
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/parsers"
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/providers"
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/semver"
@@ -176,36 +177,47 @@ func (d *Detector) mergeDependencyList(payload *types.Payload, listFile types.Fi
 // repository. Returns ok=false when the BOM is not in the repo (third-party or
 // private BOMs published only to a registry), leaving those versions
 // unresolved.
+// newBomResolver composes the Maven POM-source chain used to resolve
+// scope=import BOMs and parent POMs, in precedence order:
+//
+//  1. in-repo source index   -- BOMs committed to the scanned tree (offline)
+//  2. local ~/.m2 repository -- previously built/downloaded POMs (offline)
+//  3. remote Maven repository -- Central or a configured mirror/JFrog (opt-in)
+//
+// The chain is adapted to parsers.BomResolver. Returns nil when no source is
+// available (so the parser skips BOM-import following).
 func (d *Detector) newBomResolver(provider types.Provider) parsers.BomResolver {
 	if provider == nil {
 		return nil
 	}
 	index := components.GetSourceIndex(provider)
+	repoSource := mavenresolve.NewRepoSource(
+		func(coordinate string) []string { return index.Lookup("maven", coordinate) },
+		provider,
+	)
 
-	// Online fallback: fetch third-party BOM POMs (e.g. Quarkus, Spring) that
-	// are not in the repo, yielding their exact managed versions. Opt-in only.
-	// Uses a Maven repository (Central by default); this is a distinct API from
-	// the deps.dev resolve-online endpoint, so it is not reused here.
-	var online *parsers.MavenPomFetcher
+	// Local ~/.m2 cache: offline, no credentials. Opt-in to reading outside the
+	// scanned tree (Trivy reads it by default; we keep it explicit).
+	var localSource mavenresolve.PomSource
+	if components.UseMavenLocalRepo() {
+		localSource = mavenresolve.NewLocalRepoSource(components.MavenLocalRepoDir())
+	}
+
+	// Remote repository (Central or configured mirror/JFrog): opt-in via online
+	// resolution. Distinct from the deps.dev resolve-online endpoint.
+	var remoteSource mavenresolve.PomSource
 	if components.ResolveOnline() {
-		online = parsers.NewMavenPomFetcher("", nil)
+		remoteSource = mavenresolve.NewRemoteSource(mavenresolve.RemoteOptions{
+			BaseURL: components.MavenRepoURL(),
+			Token:   components.MavenRepoToken(),
+		})
 	}
 
-	return func(groupID, artifactID, version string) ([]byte, string, bool) {
-		// 1. Offline: a BOM committed to the scanned tree.
-		if paths := index.Lookup("maven", groupID+":"+artifactID); len(paths) > 0 {
-			// Prefer the first indexed match; BOM coordinates are unique per repo.
-			pomPath := paths[0]
-			if content, err := provider.ReadFile(pomPath); err == nil {
-				return content, filepath.Dir(pomPath), true
-			}
-		}
-		// 2. Online (opt-in): a published third-party BOM.
-		if online != nil {
-			return online.FetchPOM(groupID, artifactID, version)
-		}
-		return nil, "", false
+	chain := mavenresolve.NewChain(repoSource, localSource, remoteSource)
+	if chain.Empty() {
+		return nil
 	}
+	return chain.FetchPOM
 }
 
 // mergeDependencyTreeVersions backfills resolved versions from a pre-generated

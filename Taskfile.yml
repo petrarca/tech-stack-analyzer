@@ -47,7 +47,7 @@ tasks:
     desc: Run live network tests (deps.dev resolution, Maven BOM POM fetch). Opt-in; requires internet.
     cmds:
       - go test -tags online -count=1 ./internal/scanner/resolver/ -run Live
-      - go test -tags online -count=1 ./internal/scanner/parsers/ -run Live
+      - go test -tags online -count=1 ./internal/scanner/mavenresolve/ -run Live
 
   fct:
     desc: Run format, check, and test in sequence

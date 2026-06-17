@@ -310,6 +310,32 @@ backfill or an upstream pinning fix, not by lock association.
   with a mocked-HTTP unit test and a `//go:build online` live test against
   Maven Central (`task test:online`).
 
+### POM source chain (`internal/scanner/mavenresolve`)
+
+BOM-import and parent-POM resolution needs to *locate* a POM by coordinates.
+The places a POM can come from are encapsulated behind a `PomSource` seam
+(mirroring `internal/scanner/resolver`, which applies the same precedence-chain
+pattern to graph edges), composed into a `Chain` tried in order:
+
+1. `RepoSource` -- BOMs committed to the scanned tree, via the components source
+   index (offline, no network).
+2. `LocalRepoSource` -- the local `~/.m2/repository` cache (offline, no
+   credentials). Opt-in (`--maven-local-repo`) since it reads outside the
+   scanned tree. The repo path follows Maven: `MAVEN_REPO_LOCAL`, then
+   `-Dmaven.repo.local` in `MAVEN_OPTS`, then `~/.m2/repository`
+   (`--maven-local-repo-dir` overrides).
+3. `RemoteSource` -- a Maven repository over HTTP. Opt-in (`--resolve-online`);
+   defaults to **Maven Central**, overridable to a mirror or internal
+   Artifactory/JFrog virtual repo via `--maven-repo-url`. Optional bearer-token
+   auth (`STACK_ANALYZER_MAVEN_TOKEN`, env-only) resolves private artifacts. A
+   JFrog URL is the base up to and including the repo key, e.g.
+   `https://host/artifactory/<repo>`; the coordinate path is appended.
+
+Each tier degrades gracefully (a miss or a transient 429/5xx falls through; only
+a definitive 404 is cached) and never aborts the scan. The chain is adapted to
+the parser's `BomResolver` hook, so the parser stays free of repository/index
+knowledge.
+
 ### Transitive components in the SBOM (implemented)
 
 By default the SBOM contains the **declared** dependencies. When the scan

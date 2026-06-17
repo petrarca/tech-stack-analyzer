@@ -15,6 +15,23 @@ import (
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
 
+// mavenTokenEnvVar names the environment variable holding the bearer token for
+// an authenticated remote Maven repository. The token is read from the
+// environment (never a flag or config file) so it is not persisted or exposed
+// in shell history.
+const mavenTokenEnvVar = "STACK_ANALYZER_MAVEN_TOKEN"
+
+// applyMavenSettings pushes the Maven version-resolution settings (local-repo
+// read, remote repo URL, env-sourced token) into the components layer.
+func applyMavenSettings() {
+	components.SetUseMavenLocalRepo(settings.MavenLocalRepo)
+	components.SetMavenLocalRepoDir(settings.MavenLocalRepoDir)
+	components.SetMavenRepoURL(settings.MavenRepoURL)
+	if tok := strings.TrimSpace(os.Getenv(mavenTokenEnvVar)); tok != "" {
+		components.SetMavenRepoToken(tok)
+	}
+}
+
 // loadAndMergeScanConfig loads scan configuration and merges with settings.
 func loadAndMergeScanConfig(logger *slog.Logger) *config.ScanConfigFile {
 	if scanConfigPath == "" {
@@ -133,6 +150,7 @@ func runScanner(absPath string, isFile bool, mergedConfig *config.ScanConfig, lo
 	components.SetDependencyGraphMode(types.ParseDependencyGraphMode(settings.DependencyGraph))
 	components.SetResolveOnline(settings.ResolveOnline)
 	components.SetResolveOnlineEndpoint(settings.ResolveOnlineEndpoint)
+	applyMavenSettings()
 	if obsCollector != nil {
 		s.SetObservationCollector(obsCollector)
 	}

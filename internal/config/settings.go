@@ -37,6 +37,10 @@ type Settings struct {
 	DependencyGraph          string                    // Package-to-package edge emission: "off" (default), "direct", or "full"
 	ResolveOnline            bool                      // Allow online (deps.dev) dependency resolution as a fallback for manifest-only ecosystems (default false)
 	ResolveOnlineEndpoint    string                    // Base URL for online resolution; empty = public deps.dev. Override for a compatible facade or mirror
+	MavenLocalRepo           bool                      // Read the local ~/.m2 repository for Maven BOM/parent POMs (offline; reads outside the scanned tree)
+	MavenLocalRepoDir        string                    // Override the local Maven repo path; empty = MAVEN_REPO_LOCAL / MAVEN_OPTS / ~/.m2/repository
+	MavenRepoURL             string                    // Remote Maven repository base for BOM/parent POM fetch; empty = Maven Central (requires --resolve-online)
+	MavenRepoToken           string                    // Bearer token for an authenticated remote Maven repo; sourced from the environment, never persisted
 	OmitFields               []string                  // Fields to omit from full output (e.g. "reason", "path", "edges")
 	AlsoAggregate            string                    // Also produce an aggregate output alongside the full output (e.g. "tech,techs,languages")
 	SBOM                     bool                      // Emit a CycloneDX SBOM as the primary output instead of the scan tree
