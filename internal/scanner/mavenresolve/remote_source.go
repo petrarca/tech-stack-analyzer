@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/blobcache"
+	"github.com/petrarca/tech-stack-analyzer/internal/scanner/resolvestats"
 )
 
 // DefaultMavenCentralBaseURL is the public Maven Central repository base. A POM
@@ -105,11 +106,14 @@ func (s *RemoteSource) FetchPOM(groupID, artifactID, version string) ([]byte, st
 	key := "maven|" + s.baseURL + "|" + groupID + ":" + artifactID + ":" + version
 
 	if blob, found, notFound := s.cache.Get(key); found {
+		resolvestats.AddCacheHit()
 		return blob, "", true
 	} else if notFound {
+		resolvestats.AddCacheHit()
 		return nil, "", false
 	}
 
+	resolvestats.AddPOMFetched()
 	body, definitive := s.request(groupID, artifactID, version)
 
 	if body == nil {

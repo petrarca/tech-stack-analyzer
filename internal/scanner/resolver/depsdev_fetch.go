@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/petrarca/tech-stack-analyzer/internal/scanner/resolvestats"
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
 
@@ -100,6 +101,7 @@ func (c *depsDevClient) fetch(system, name, version string, mode types.Dependenc
 	}
 	c.mu.Unlock()
 
+	resolvestats.AddDepsDevCall()
 	resp, notFound, err := c.request(system, name, version)
 	if err != nil {
 		return nil, err

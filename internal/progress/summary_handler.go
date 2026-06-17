@@ -14,15 +14,16 @@ import (
 // line with spinner, file/directory/component counts, and elapsed time.
 // Used when neither --verbose nor --debug is set.
 type SummaryHandler struct {
-	writer     io.Writer
-	mu         sync.Mutex
-	scanStart  time.Time
-	dirCount   int
-	fileCount  int
-	compCount  int
-	spinIdx    int
-	lastRender time.Time
-	isTTY      bool
+	writer      io.Writer
+	mu          sync.Mutex
+	scanStart   time.Time
+	dirCount    int
+	fileCount   int
+	compCount   int
+	spinIdx     int
+	lastRender  time.Time
+	isTTY       bool
+	resolveInfo string // latest dependency-resolution status (e.g. POM fetch counts)
 
 	// styles
 	spinnerStyle lipgloss.Style
@@ -79,6 +80,12 @@ func (h *SummaryHandler) Handle(event Event) {
 		h.compCount++
 		h.throttledRender()
 
+	case EventInfo:
+		// Resolution status (e.g. "resolving dependencies — N POMs fetched")
+		// folds into the live line rather than scrolling separate lines.
+		h.resolveInfo = event.Info
+		h.render() // immediate, not throttled, so the latest status shows
+
 	case EventScanComplete:
 		h.renderComplete(event)
 	}
@@ -118,6 +125,9 @@ func (h *SummaryHandler) render() {
 		strings.Join(parts, h.dimStyle.Render("  ·  ")),
 		h.dimStyle.Render(fmt.Sprintf("(%s)", elapsed)),
 	)
+	if h.resolveInfo != "" {
+		line += "  " + h.dimStyle.Render(h.resolveInfo)
+	}
 
 	// \r moves to line start; \033[2K erases the entire line (avoids ANSI-length padding issues)
 	fmt.Fprintf(h.writer, "\r\033[2K%s", line)
@@ -142,4 +152,7 @@ func (h *SummaryHandler) renderComplete(event Event) {
 		fmt.Fprintf(h.writer, "\r\033[2K")
 	}
 	fmt.Fprintf(h.writer, "  %s  %s\n", check, summary)
+	if h.resolveInfo != "" {
+		fmt.Fprintf(h.writer, "  %s\n", h.dimStyle.Render(h.resolveInfo))
+	}
 }

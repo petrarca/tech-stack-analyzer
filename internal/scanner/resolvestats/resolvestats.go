@@ -1,0 +1,56 @@
+// Package resolvestats holds process-wide counters for dependency-resolution
+// activity (POM fetches, cache hits, deps.dev calls). The network fetchers
+// increment them cheaply; a reporter samples them to surface progress through
+// the normal progress/event mechanism (never raw stderr), so a long resolution
+// phase is not silent.
+//
+// Counters are global and monotonic for the process. Callers that want a
+// per-scan delta should snapshot at the start and subtract.
+package resolvestats
+
+import "sync/atomic"
+
+var (
+	pomFetched   atomic.Int64 // POMs fetched over the network (Maven repos)
+	cacheHits    atomic.Int64 // POM/response cache hits (fetch avoided)
+	depsDevCalls atomic.Int64 // deps.dev graph requests
+)
+
+// AddPOMFetched records a network POM fetch.
+func AddPOMFetched() { pomFetched.Add(1) }
+
+// AddCacheHit records a cache hit (a fetch avoided).
+func AddCacheHit() { cacheHits.Add(1) }
+
+// AddDepsDevCall records a deps.dev graph request.
+func AddDepsDevCall() { depsDevCalls.Add(1) }
+
+// Snapshot is a point-in-time copy of the counters.
+type Snapshot struct {
+	POMFetched   int64
+	CacheHits    int64
+	DepsDevCalls int64
+}
+
+// Get returns the current counter values.
+func Get() Snapshot {
+	return Snapshot{
+		POMFetched:   pomFetched.Load(),
+		CacheHits:    cacheHits.Load(),
+		DepsDevCalls: depsDevCalls.Load(),
+	}
+}
+
+// Sub returns the delta s - base (per field), for per-scan reporting.
+func (s Snapshot) Sub(base Snapshot) Snapshot {
+	return Snapshot{
+		POMFetched:   s.POMFetched - base.POMFetched,
+		CacheHits:    s.CacheHits - base.CacheHits,
+		DepsDevCalls: s.DepsDevCalls - base.DepsDevCalls,
+	}
+}
+
+// Active reports whether any resolution activity has been recorded in the delta.
+func (s Snapshot) Active() bool {
+	return s.POMFetched > 0 || s.CacheHits > 0 || s.DepsDevCalls > 0
+}
