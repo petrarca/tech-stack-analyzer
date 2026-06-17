@@ -127,11 +127,11 @@ stack-analyzer scan /path/to/project --also-sbom \
 
 `--maven-graph-source` selects where Maven transitive edges come from:
 
-| Value | Source | Covers private? | Network |
-|-------|--------|-----------------|---------|
-| `repo` | crawls POMs from the repository chain (in-repo -> `~/.m2` -> `--maven-repo-url`/settings) | **yes** | only the tiers you enable |
-| `deps-dev` | the public deps.dev graph | no | public deps.dev |
-| `none` | offline only (a committed `dependency-tree.json` still applies) | from the file | none |
+| Value | Source | Covers private? | Speed |
+|-------|--------|-----------------|-------|
+| `repo` | crawls every dependency's POM from the repository chain (in-repo -> `~/.m2` -> `--maven-repo-url`/settings). Never contacts deps.dev. | **yes** | slower (crawls the whole tree, public included) |
+| `deps-dev` | **hybrid**: deps.dev for the public tree (whole subtree per request) + a repo crawl for the private artifacts deps.dev cannot resolve | **yes** (when a repo is configured) | faster (skips crawling the large public tree) |
+| `none` | offline only (a committed `dependency-tree.json` still applies) | from the file | instant |
 
 A committed `dependency-tree.json` always takes precedence regardless of this
 flag. When `--maven-graph-source` is unset, Maven follows the global `--deps-dev`
@@ -140,6 +140,26 @@ switch (which also governs non-Maven ecosystems such as npm and PyPI).
 The `repo` crawl mirrors Maven's resolution (breadth-first, nearest-wins
 conflict mediation, one version per coordinate) and is tolerant of repository
 rate limits -- it skips an unreachable POM rather than aborting the scan.
+
+**Which to use:** prefer `deps-dev` (hybrid) when deps.dev is acceptable -- it
+resolves the public tree far faster while still crawling private artifacts from
+your repo. Use `repo` for a privacy-strict scan that must never send coordinates
+to deps.dev, accepting that it crawls the full tree.
+
+### Performance and progress
+
+Transitive resolution over a large private monorepo fetches many POMs and can
+take minutes; the version-only scan (omit `--dependency-graph`) is much faster
+and already gives ~99% versioned components for vulnerability matching. A
+scan-wide cache and a per-coordinate subtree memo avoid re-fetching and
+re-resolving shared subtrees across modules.
+
+Resolution is reported as a phase with a one-line status broken down by source,
+e.g. `dependencies resolved — 2294 POMs, 393 deps.dev, 4630 cached`. The
+`deps.dev` count appears for any ecosystem using online resolution; `POMs` and
+`cached` are Maven repository fetches (other ecosystems read local lockfiles,
+so they have nothing to fetch). A `401/403` from a configured repository prints
+a warning that credentials are missing and private artifacts went unresolved.
 
 ## Configuration file
 
