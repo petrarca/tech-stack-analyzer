@@ -108,6 +108,9 @@ func (h *SimpleHandler) Handle(event Event) {
 	case EventInfo:
 		fmt.Fprintf(h.writer, "[INFO] %s\n", event.Info)
 
+	case EventResolveStart, EventResolveProgress, EventResolveComplete:
+		h.handleResolveEvent(event)
+
 	case EventGitIgnoreEnter:
 		fmt.Fprintf(h.writer, "[GIT]  %s\n", event.Info)
 
@@ -138,6 +141,18 @@ func (h *SimpleHandler) Handle(event Event) {
 		} else {
 			fmt.Fprintf(h.writer, "[RULE] ✗ NOT MATCHED: %s - %s\n", event.Tech, event.Reason)
 		}
+	}
+}
+
+// handleResolveEvent renders the dependency-resolution phase events.
+func (h *SimpleHandler) handleResolveEvent(event Event) {
+	switch event.Type {
+	case EventResolveStart:
+		fmt.Fprintf(h.writer, "[RESOLVE] Resolving dependencies...\n")
+	case EventResolveProgress:
+		fmt.Fprintf(h.writer, "[RESOLVE] %s\n", event.Info)
+	case EventResolveComplete:
+		fmt.Fprintf(h.writer, "[RESOLVE] Done: %s (%.1fs)\n", event.Info, event.Duration.Seconds())
 	}
 }
 

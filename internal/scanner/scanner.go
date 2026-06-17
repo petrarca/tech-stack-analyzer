@@ -5,7 +5,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"sync"
 	"time"
 
 	"log/slog"
@@ -398,13 +397,6 @@ func (s *Scanner) Scan() (*types.Payload, error) {
 	// Report scan start
 	s.progress.ScanStart(basePath, s.excludePatterns)
 
-	// Surface dependency-resolution activity periodically so a long, network-
-	// bound resolution phase is not silent. Reports through the normal progress
-	// mechanism (honors quiet/handler). Stopped before ScanComplete so the final
-	// resolution summary precedes the completion line.
-	stopStats := s.startResolveStatsReporter()
-	defer stopStats() // safety net if an early return skips the explicit stop
-
 	// Use the scanner's stored config (already merged with project config)
 	cfg := s.config
 	if cfg == nil {
@@ -428,13 +420,20 @@ func (s *Scanner) Scan() (*types.Payload, error) {
 	payload.Git = git.GetGitInfo(basePath)
 	slog.Debug("Retrieved git info", "duration", time.Since(t1))
 
-	// Start recursive directory scanning from base path
+	// Start recursive directory scanning from base path. Detection collects
+	// components and their declared dependencies; dependency-graph resolution is
+	// deferred to a dedicated phase below.
 	slog.Debug("Starting directory recursion", "path", basePath)
 	err := s.recurse(payload, basePath)
 	if err != nil {
 		return nil, err
 	}
 	slog.Debug("Completed directory recursion")
+
+	// Dependency-resolution phase: resolve the (network-bound) dependency graph
+	// for all detected components now that the fast, local walk is done. No-op
+	// when graph mode is off or nothing was queued.
+	s.resolveDependencies()
 
 	// Set scan duration
 	scanMeta.SetDuration(time.Since(startTime))
@@ -473,27 +472,25 @@ func (s *Scanner) Scan() (*types.Payload, error) {
 	// module fills its versionless siblings elsewhere in the scan.
 	mavenresolve.PropagateVersions(payload)
 
-	// Finalize the resolution reporter (emits its final summary) before the
-	// completion line, so the summary precedes "scan complete".
-	stopStats()
-
 	// Report scan complete
 	s.progress.ScanComplete(fileCount, componentCount, time.Since(startTime))
 
 	return payload, nil
 }
 
-// startResolveStatsReporter starts a goroutine that periodically reports
-// dependency-resolution activity (POM fetches, cache hits, deps.dev calls) via
-// the progress mechanism, so a long network-bound resolution phase is visible.
-// It only reports once activity has started, and emits a final line when work
-// occurred. Returns a stop function (call via defer).
-func (s *Scanner) startResolveStatsReporter() func() {
+// resolveDependencies runs the dependency-resolution phase: it executes the
+// graph-resolution requests deferred during the walk. It is reported as a
+// distinct phase (start / periodic progress / complete) so the network-bound
+// work is visible and clearly separated from the file walk. The phase is
+// silent when nothing was queued or no resolution activity occurs.
+func (s *Scanner) resolveDependencies() {
 	const interval = 2 * time.Second
 	base := resolvestats.Get()
+	start := time.Now()
+	started := false
+
 	done := make(chan struct{})
 	stopped := make(chan struct{})
-
 	go func() {
 		defer close(stopped)
 		ticker := time.NewTicker(interval)
@@ -503,36 +500,32 @@ func (s *Scanner) startResolveStatsReporter() func() {
 			case <-done:
 				return
 			case <-ticker.C:
-				if delta := resolvestats.Get().Sub(base); delta.Active() {
-					s.progress.Info(formatResolveStats(delta, true))
+				delta := resolvestats.Get().Sub(base)
+				if !delta.Active() {
+					continue
 				}
+				if !started {
+					started = true
+					s.progress.ResolveStart()
+				}
+				s.progress.ResolveProgress(formatResolveStats(delta))
 			}
 		}
 	}()
 
-	var once sync.Once
-	return func() {
-		once.Do(func() {
-			close(done)
-			<-stopped
-			// Final summary when any resolution happened.
-			if delta := resolvestats.Get().Sub(base); delta.Active() {
-				s.progress.Info("dependency resolution done — " + formatResolveStats(delta, false))
-			}
-		})
+	components.ResolveDeferredGraphs()
+
+	close(done)
+	<-stopped
+
+	if delta := resolvestats.Get().Sub(base); delta.Active() {
+		s.progress.ResolveComplete(formatResolveStats(delta), time.Since(start))
 	}
 }
 
-// formatResolveStats renders a one-line resolution status. When inProgress is
-// true it is phrased as an ongoing action ("resolving dependencies — ...");
-// otherwise it is a bare metric suffix for a summary line.
-func formatResolveStats(d resolvestats.Snapshot, inProgress bool) string {
-	var msg string
-	if inProgress {
-		msg = fmt.Sprintf("resolving dependencies — %d POMs fetched (%d cached)", d.POMFetched, d.CacheHits)
-	} else {
-		msg = fmt.Sprintf("%d POMs fetched (%d cached)", d.POMFetched, d.CacheHits)
-	}
+// formatResolveStats renders a one-line resolution metric.
+func formatResolveStats(d resolvestats.Snapshot) string {
+	msg := fmt.Sprintf("%d POMs fetched (%d cached)", d.POMFetched, d.CacheHits)
 	if d.DepsDevCalls > 0 {
 		msg += fmt.Sprintf(", %d deps.dev", d.DepsDevCalls)
 	}

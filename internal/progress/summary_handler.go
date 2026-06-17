@@ -23,6 +23,7 @@ type SummaryHandler struct {
 	spinIdx     int
 	lastRender  time.Time
 	isTTY       bool
+	resolving   bool   // in the dependency-resolution phase
 	resolveInfo string // latest dependency-resolution status (e.g. POM fetch counts)
 
 	// styles
@@ -81,10 +82,24 @@ func (h *SummaryHandler) Handle(event Event) {
 		h.throttledRender()
 
 	case EventInfo:
-		// Resolution status (e.g. "resolving dependencies — N POMs fetched")
-		// folds into the live line rather than scrolling separate lines.
+		// Generic info folds into the live line rather than scrolling.
 		h.resolveInfo = event.Info
-		h.render() // immediate, not throttled, so the latest status shows
+		h.render()
+
+	case EventResolveStart:
+		// Begin the dependency-resolution phase: the scan-walk completion line
+		// has already printed; switch the live line to resolution status.
+		h.resolving = true
+		h.resolveInfo = "resolving dependencies"
+		h.render()
+
+	case EventResolveProgress:
+		h.resolving = true
+		h.resolveInfo = "resolving dependencies — " + event.Info
+		h.render()
+
+	case EventResolveComplete:
+		h.renderResolveComplete(event)
 
 	case EventScanComplete:
 		h.renderComplete(event)
@@ -107,30 +122,45 @@ func (h *SummaryHandler) render() {
 	}
 
 	h.spinIdx = (h.spinIdx + 1) % len(spinFrames)
-	elapsed := time.Since(h.scanStart).Truncate(time.Second)
-
 	spinner := h.spinnerStyle.Render(spinFrames[h.spinIdx])
 
-	var parts []string
-	parts = append(parts, h.countStyle.Render(fmt.Sprintf("%d", h.dirCount))+" "+h.labelStyle.Render("dirs"))
-	if h.fileCount > 0 {
-		parts = append(parts, h.countStyle.Render(fmt.Sprintf("%d", h.fileCount))+" "+h.labelStyle.Render("files"))
-	}
-	if h.compCount > 0 {
-		parts = append(parts, h.compStyle.Render(fmt.Sprintf("%d", h.compCount))+" "+h.labelStyle.Render("components"))
-	}
-
-	line := fmt.Sprintf("  %s  %s  %s",
-		spinner,
-		strings.Join(parts, h.dimStyle.Render("  ·  ")),
-		h.dimStyle.Render(fmt.Sprintf("(%s)", elapsed)),
-	)
-	if h.resolveInfo != "" {
-		line += "  " + h.dimStyle.Render(h.resolveInfo)
+	var line string
+	if h.resolving {
+		// Resolution phase: show the resolution status, not file/dir counts.
+		line = fmt.Sprintf("  %s  %s", spinner, h.labelStyle.Render(h.resolveInfo))
+	} else {
+		elapsed := time.Since(h.scanStart).Truncate(time.Second)
+		var parts []string
+		parts = append(parts, h.countStyle.Render(fmt.Sprintf("%d", h.dirCount))+" "+h.labelStyle.Render("dirs"))
+		if h.fileCount > 0 {
+			parts = append(parts, h.countStyle.Render(fmt.Sprintf("%d", h.fileCount))+" "+h.labelStyle.Render("files"))
+		}
+		if h.compCount > 0 {
+			parts = append(parts, h.compStyle.Render(fmt.Sprintf("%d", h.compCount))+" "+h.labelStyle.Render("components"))
+		}
+		line = fmt.Sprintf("  %s  %s  %s",
+			spinner,
+			strings.Join(parts, h.dimStyle.Render("  ·  ")),
+			h.dimStyle.Render(fmt.Sprintf("(%s)", elapsed)),
+		)
 	}
 
 	// \r moves to line start; \033[2K erases the entire line (avoids ANSI-length padding issues)
 	fmt.Fprintf(h.writer, "\r\033[2K%s", line)
+}
+
+// renderResolveComplete prints the final line for the dependency-resolution
+// phase (a checkmark + the resolution metrics + elapsed time).
+func (h *SummaryHandler) renderResolveComplete(event Event) {
+	h.resolving = false
+	check := h.doneStyle.Render("✓")
+	summary := h.labelStyle.Render("dependencies resolved") + "  " +
+		h.dimStyle.Render(event.Info) + "  " +
+		h.dimStyle.Render(fmt.Sprintf("(%s)", event.Duration.Truncate(100*time.Millisecond)))
+	if h.isTTY {
+		fmt.Fprintf(h.writer, "\r\033[2K")
+	}
+	fmt.Fprintf(h.writer, "  %s  %s\n", check, summary)
 }
 
 func (h *SummaryHandler) renderComplete(event Event) {
@@ -152,7 +182,4 @@ func (h *SummaryHandler) renderComplete(event Event) {
 		fmt.Fprintf(h.writer, "\r\033[2K")
 	}
 	fmt.Fprintf(h.writer, "  %s  %s\n", check, summary)
-	if h.resolveInfo != "" {
-		fmt.Fprintf(h.writer, "  %s\n", h.dimStyle.Render(h.resolveInfo))
-	}
 }

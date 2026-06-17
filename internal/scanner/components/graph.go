@@ -1,6 +1,8 @@
 package components
 
 import (
+	"sync"
+
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/parsers"
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/resolver"
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
@@ -11,14 +13,33 @@ import (
 // "components" and "parsers", keeping the detector API surface small.
 type LockfileGraphProducer = parsers.LockfileProducer
 
-// AttachLockfileGraph attaches package-to-package dependency edges to the
-// payload, resolving them through the dependency-resolver chain.
+// graphRequest is a deferred dependency-graph resolution captured during the
+// scan walk and executed afterwards, in a dedicated resolution phase. Detectors
+// register one per component (via AttachLockfileGraph*); the scanner drains the
+// queue once the walk is complete (ResolveDeferredGraphs).
 //
-// It is the single, generic entry point every detector uses -- there is no
-// per-ecosystem special-casing. A detector supplies an ordered list of
-// lockfile -> graph parser for the ecosystem(s) it handles; this helper builds
-// a resolver chain (local lockfile first, online fallback) and honors the
-// global dependency-graph mode, remaining a no-op when the mode is off.
+// Deferring keeps the (fast, local) scan walk separate from the (slow, network-
+// bound) dependency resolution: detection produces components with their
+// declared dependencies, then resolution enriches them with the graph. It also
+// gives resolution a clear phase boundary for progress reporting.
+type graphRequest struct {
+	payload   *types.Payload
+	dir       string
+	provider  types.Provider
+	producers []LockfileGraphProducer
+	fallback  resolver.DependencyResolver
+}
+
+var (
+	graphQueueMu sync.Mutex
+	graphQueue   []graphRequest
+)
+
+// AttachLockfileGraph registers a deferred dependency-graph resolution for the
+// component. It is the single, generic entry point every detector uses -- a
+// detector supplies an ordered list of lockfile -> graph parser for its
+// ecosystem(s). Nothing is resolved here; the work runs later in
+// ResolveDeferredGraphs. It is a no-op when the dependency-graph mode is off.
 //
 // Producers are tried in slice order and the first lockfile that exists wins,
 // so callers must list them in the same priority order they use for flat
@@ -29,36 +50,59 @@ func AttachLockfileGraph(payload *types.Payload, currentPath string, provider ty
 
 // AttachLockfileGraphWithFallback is AttachLockfileGraph with an optional
 // caller-supplied fallback resolver tried after the committed lockfile/tree and
-// before deps.dev. Maven uses this to insert the repo-crawl resolver per
-// --maven-graph-source; nil falls back to the default (deps.dev only).
-//
-// Precedence: committed lockfile/tree -> fallback (if any) -> deps.dev.
+// before deps.dev (e.g. the Maven repo-crawl resolver per --maven-graph-source).
 func AttachLockfileGraphWithFallback(payload *types.Payload, currentPath string, provider types.Provider, producers []LockfileGraphProducer, fallback resolver.DependencyResolver) {
-	mode := DependencyGraphMode()
-	if mode == types.DependencyGraphOff || !UseLockFiles() {
+	if DependencyGraphMode() == types.DependencyGraphOff || !UseLockFiles() {
 		return
 	}
+	graphQueueMu.Lock()
+	graphQueue = append(graphQueue, graphRequest{
+		payload:   payload,
+		dir:       currentPath,
+		provider:  provider,
+		producers: producers,
+		fallback:  fallback,
+	})
+	graphQueueMu.Unlock()
+}
 
-	resolvers := []resolver.DependencyResolver{resolver.NewLockfileResolver(producers...)}
-	if fallback != nil {
-		resolvers = append(resolvers, fallback)
+// ResolveDeferredGraphs executes all deferred graph-resolution requests
+// registered during the scan walk, then clears the queue. This is the
+// dependency-resolution phase: it runs once, after detection, so the network-
+// bound resolution is isolated from the file walk. Returns the number of
+// requests processed.
+func ResolveDeferredGraphs() int {
+	graphQueueMu.Lock()
+	queue := graphQueue
+	graphQueue = nil
+	graphQueueMu.Unlock()
+
+	for _, r := range queue {
+		resolveGraphRequest(r)
 	}
-	// Online fallback (deps.dev). Disabled by default; wired only when enabled.
-	// Safe to include unconditionally -- it falls through when not enabled.
-	resolvers = append(resolvers, depsDevResolver(provider))
+	return len(queue)
+}
+
+// resolveGraphRequest runs one component's graph resolution: committed
+// lockfile/tree -> fallback (if any) -> deps.dev, fanned out over the
+// component's declared dependencies.
+func resolveGraphRequest(r graphRequest) {
+	mode := DependencyGraphMode()
+
+	resolvers := []resolver.DependencyResolver{resolver.NewLockfileResolver(r.producers...)}
+	if r.fallback != nil {
+		resolvers = append(resolvers, r.fallback)
+	}
+	resolvers = append(resolvers, depsDevResolver(r.provider))
 	chain := resolver.NewChain(resolvers...)
 
 	req := resolver.Request{
-		Dir:       currentPath,
-		Provider:  provider,
+		Dir:       r.dir,
+		Provider:  r.provider,
 		Mode:      mode,
-		Ecosystem: payload.ComponentType,
+		Ecosystem: r.payload.ComponentType,
 	}
-	// Fan-out online resolution over the component's declared dependencies.
-	// Any dep with a name and version is a candidate coordinate; the online
-	// resolver skips 404s (private deps) and unions the rest. No detector
-	// changes are needed: payload.Dependencies is always set by the flat parser.
-	for _, dep := range payload.Dependencies {
+	for _, dep := range r.payload.Dependencies {
 		if dep.Name != "" && dep.Version != "" {
 			req.Dependencies = append(req.Dependencies, resolver.Coordinates{
 				Name:    dep.Name,
@@ -69,16 +113,11 @@ func AttachLockfileGraphWithFallback(payload *types.Payload, currentPath string,
 
 	res, err := chain.Resolve(req)
 	if err != nil {
-		// F-02: surface chain errors rather than silently swallowing them.
-		payload.SetComponentProperty("dependency_graph", "error", err.Error())
+		r.payload.SetComponentProperty("dependency_graph", "error", err.Error())
 		return
 	}
-
-	payload.DependencyEdges = append(payload.DependencyEdges, res.Edges...)
-
-	// Surface unresolved dependency references (lockfile drift, unparseable
-	// refs) rather than dropping them silently, so consumers can detect gaps.
+	r.payload.DependencyEdges = append(r.payload.DependencyEdges, res.Edges...)
 	if len(res.Unresolved) > 0 {
-		payload.SetComponentProperty("dependency_graph", "unresolved", res.Unresolved)
+		r.payload.SetComponentProperty("dependency_graph", "unresolved", res.Unresolved)
 	}
 }

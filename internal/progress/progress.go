@@ -179,6 +179,22 @@ func (p *Progress) Info(message string) {
 	})
 }
 
+// ResolveStart reports the start of the dependency-resolution phase.
+func (p *Progress) ResolveStart() {
+	p.Report(Event{Type: EventResolveStart})
+}
+
+// ResolveProgress reports an in-phase resolution status (POM fetches, etc.).
+func (p *Progress) ResolveProgress(status string) {
+	p.Report(Event{Type: EventResolveProgress, Info: status})
+}
+
+// ResolveComplete reports the end of the dependency-resolution phase with a
+// final status line and the elapsed duration.
+func (p *Progress) ResolveComplete(status string, duration time.Duration) {
+	p.Report(Event{Type: EventResolveComplete, Info: status, Duration: duration})
+}
+
 func (p *Progress) GitIgnoreEnter(path string) {
 	p.Report(Event{
 		Type: EventGitIgnoreEnter,

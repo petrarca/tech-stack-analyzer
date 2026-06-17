@@ -29,6 +29,9 @@ const (
 	EventRuleResult
 	EventGitIgnoreEnter
 	EventGitIgnoreLeave
+	EventResolveStart    // dependency-resolution phase begins
+	EventResolveProgress // periodic resolution status (Info carries the metrics)
+	EventResolveComplete // resolution phase done (Info = metrics, Duration = elapsed)
 )
 
 // Event represents something that happened during scanning
