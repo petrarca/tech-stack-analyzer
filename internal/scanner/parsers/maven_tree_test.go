@@ -91,3 +91,32 @@ func TestParseMavenTreeGraph_Modes(t *testing.T) {
 		t.Error("direct mode: must not include transitive hamcrest-core edge")
 	}
 }
+
+func TestParseMavenTreeVersions(t *testing.T) {
+	versions := ParseMavenTreeVersions([]byte(mavenTreeFixture))
+
+	want := map[string]string{
+		"com.google.guava:guava":         "32.1.3-jre",
+		"com.google.guava:failureaccess": "1.0.1",
+		"junit:junit":                    "4.13.2",
+		"org.hamcrest:hamcrest-core":     "1.3",
+	}
+	for coord, ver := range want {
+		if got := versions[coord]; got != ver {
+			t.Errorf("version[%q] = %q, want %q", coord, got, ver)
+		}
+	}
+	// The root project itself must not appear as a dependency.
+	if _, ok := versions["com.example:sample-app"]; ok {
+		t.Error("root project must be excluded from versions map")
+	}
+}
+
+func TestParseMavenTreeVersions_Invalid(t *testing.T) {
+	if got := ParseMavenTreeVersions([]byte("not json")); got != nil {
+		t.Errorf("invalid input: expected nil, got %v", got)
+	}
+	if got := ParseMavenTreeVersions([]byte(`{"groupId":"x","artifactId":"y","version":"1","children":[]}`)); got != nil {
+		t.Errorf("no children: expected nil, got %v", got)
+	}
+}

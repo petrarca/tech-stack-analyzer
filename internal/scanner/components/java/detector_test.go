@@ -132,6 +132,76 @@ func TestDetector_Detect_MavenProject(t *testing.T) {
 	assert.Equal(t, "test-app", mavenProps["artifact_id"])
 }
 
+func TestDetector_Detect_MavenTreeVersionBackfill(t *testing.T) {
+	detector := &Detector{}
+
+	// pom.xml declares hibernate-core with no version (BOM-managed) and
+	// spring-boot-starter with a concrete version.
+	pomContent := `<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.example</groupId>
+    <artifactId>test-app</artifactId>
+    <version>1.0.0</version>
+    <dependencies>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+            <version>2.7.0</version>
+        </dependency>
+    </dependencies>
+</project>`
+
+	// dependency-tree.json carries Maven's resolved versions.
+	treeContent := `{
+  "groupId": "com.example",
+  "artifactId": "test-app",
+  "version": "1.0.0",
+  "children": [
+    {"groupId": "org.hibernate", "artifactId": "hibernate-core", "version": "6.4.1.Final", "scope": "compile"},
+    {"groupId": "org.springframework", "artifactId": "spring-boot-starter", "version": "2.7.0", "scope": "compile"}
+  ]
+}`
+
+	provider := &MockProvider{
+		files: map[string]string{
+			"/project/pom.xml":              pomContent,
+			"/project/dependency-tree.json": treeContent,
+		},
+	}
+	depDetector := &MockDependencyDetector{matchedTechs: map[string][]string{}}
+
+	files := []types.File{
+		{Name: "pom.xml", Path: "/project/pom.xml"},
+		{Name: "dependency-tree.json", Path: "/project/dependency-tree.json"},
+	}
+
+	results := detector.Detect(files, "/project", "/project", provider, depDetector)
+	require.Len(t, results, 1)
+	payload := results[0]
+
+	byName := map[string]types.Dependency{}
+	for _, dep := range payload.Dependencies {
+		byName[dep.Name] = dep
+	}
+
+	hib, ok := byName["org.hibernate:hibernate-core"]
+	require.True(t, ok, "hibernate-core should be present")
+	assert.Equal(t, "6.4.1.Final", hib.Version, "versionless dep should be backfilled from tree")
+	assert.Equal(t, "dependency-tree", hib.Metadata["source"])
+	assert.Equal(t, "latest", hib.Metadata[types.MetadataKeyDeclared], "declared form should be recorded")
+
+	// A concrete pom.xml version must not be touched by the backfill.
+	spring, ok := byName["org.springframework:spring-boot-starter"]
+	require.True(t, ok)
+	assert.Equal(t, "2.7.0", spring.Version)
+	assert.Nil(t, spring.Metadata["source"], "resolved pom.xml version must not be overwritten")
+}
+
 func TestDetector_Detect_GradleProject(t *testing.T) {
 	detector := &Detector{}
 

@@ -141,38 +141,5 @@ func TestFromDependencies_ComponentFields(t *testing.T) {
 	}
 }
 
-func TestResolvedVersion(t *testing.T) {
-	tests := []struct {
-		in   string
-		want string
-	}{
-		{"1.2.3", "1.2.3"},
-		{"v1.2.3", "v1.2.3"},
-		{"^1.2.3", ""},
-		{"~1.2", ""},
-		{">=1.0", ""},
-		{"latest", ""},
-		{"git", ""},
-		{"", ""},
-		{"git:https://example.com/repo.git", ""},
-		{"path:../local", ""},
-		{"  2.0.0  ", "2.0.0"},
-		// Real-world unresolved tokens observed across product scans.
-		{"${project.parent.version}", ""},
-		{"${ktor_version}", ""},
-		{"$ktor_version", ""},
-		{"4.10.*", ""},
-		{"8.*", ""},
-		{"RELEASE", ""},
-		{"LATEST", ""},
-		{"workspace", ""},
-		{"31.1-jre", "31.1-jre"},
-		{"7.14.0", "7.14.0"},
-		{"2.2.8", "2.2.8"},
-	}
-	for _, tt := range tests {
-		if got := resolvedVersion(tt.in); got != tt.want {
-			t.Errorf("resolvedVersion(%q) = %q, want %q", tt.in, got, tt.want)
-		}
-	}
-}
+// Note: the resolved-version classification is tested in
+// internal/scanner/semver (TestResolvedVersion), where the logic now lives.

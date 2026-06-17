@@ -38,6 +38,52 @@ func (n mavenTreeNode) node() string {
 	return n.GroupID + ":" + n.ArtifactID + "@" + n.Version
 }
 
+// coordinate returns the "groupId:artifactId" coordinate (without version),
+// matching the flat dependency Name used elsewhere for Maven.
+func (n mavenTreeNode) coordinate() string {
+	if n.GroupID == "" || n.ArtifactID == "" {
+		return ""
+	}
+	return n.GroupID + ":" + n.ArtifactID
+}
+
+// ParseMavenTreeVersions parses a pre-generated `mvn dependency:tree
+// -DoutputType=json` file and returns a map of "groupId:artifactId" ->
+// resolved version. Maven's dependency:tree output carries fully resolved
+// versions (conflict mediation, dependencyManagement/BOM overrides, and
+// property interpolation already applied), so it is an authoritative source
+// for backfilling versionless dependencies parsed from pom.xml.
+//
+// When the same coordinate appears at multiple versions in the tree (rare for
+// a mediated tree, but possible across modules), the first occurrence in a
+// depth-first walk wins; this matches Maven's nearest-wins mediation for the
+// flat view. The root project itself is excluded.
+func ParseMavenTreeVersions(content []byte) map[string]string {
+	var root mavenTreeNode
+	if err := json.Unmarshal(content, &root); err != nil {
+		return nil
+	}
+
+	versions := make(map[string]string)
+	var walk func(nodes []mavenTreeNode)
+	walk = func(nodes []mavenTreeNode) {
+		for _, n := range nodes {
+			if coord := n.coordinate(); coord != "" && n.Version != "" {
+				if _, seen := versions[coord]; !seen {
+					versions[coord] = n.Version
+				}
+			}
+			walk(n.Children)
+		}
+	}
+	walk(root.Children)
+
+	if len(versions) == 0 {
+		return nil
+	}
+	return versions
+}
+
 // ParseMavenTreeGraph parses a pre-generated `mvn dependency:tree
 // -DoutputType=json` file and returns the package-to-package edges, honoring
 // the requested graph mode. It implements the GraphProducer contract

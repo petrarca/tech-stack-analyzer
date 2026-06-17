@@ -8,6 +8,7 @@ import (
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/components"
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/parsers"
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/providers"
+	"github.com/petrarca/tech-stack-analyzer/internal/scanner/semver"
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
 
@@ -43,8 +44,9 @@ func (d *Detector) Detect(files []types.File, currentPath, basePath string, prov
 func (d *Detector) detectMaven(files []types.File, currentPath, basePath string, provider types.Provider, depDetector components.DependencyDetector) *types.Payload {
 	var payload *types.Payload
 	var dependencyListFile *types.File
+	var dependencyTreeFile *types.File
 
-	// Look for pom.xml and dependency-list.txt
+	// Look for pom.xml and the pre-generated resolved-version files.
 	for i := range files {
 		if files[i].Name == "pom.xml" {
 			payload = d.detectPomXML(files[i], currentPath, basePath, provider, depDetector)
@@ -52,11 +54,19 @@ func (d *Detector) detectMaven(files []types.File, currentPath, basePath string,
 		if files[i].Name == "dependency-list.txt" {
 			dependencyListFile = &files[i]
 		}
+		if files[i].Name == parsers.MavenTreeFileName {
+			dependencyTreeFile = &files[i]
+		}
 	}
 
-	// If we have dependency-list.txt, use it for resolved versions
+	// Backfill resolved versions from pre-generated files (most authoritative,
+	// when present). dependency-list.txt is preferred; dependency-tree.json is
+	// the fallback so its resolved versions reach the flat dependency list (and
+	// thus the SBOM), not only the graph edges.
 	if payload != nil && dependencyListFile != nil {
 		d.mergeDependencyList(payload, *dependencyListFile, currentPath, provider)
+	} else if payload != nil && dependencyTreeFile != nil {
+		d.mergeDependencyTreeVersions(payload, *dependencyTreeFile, currentPath, provider)
 	}
 
 	// Attach the dependency graph from a pre-generated dependency-tree.json
@@ -156,6 +166,46 @@ func (d *Detector) mergeDependencyList(payload *types.Payload, listFile types.Fi
 			originalMetadata["source"] = "dependency-list"
 			payload.Dependencies[idx].Metadata = originalMetadata
 		}
+	}
+}
+
+// mergeDependencyTreeVersions backfills resolved versions from a pre-generated
+// dependency-tree.json (mvn dependency:tree) into the flat dependency list.
+// Maven's tree output carries fully resolved versions, so this fills the gap
+// for direct dependencies that pom.xml left versionless (BOM-managed) or
+// declared as an unresolved property. It only updates dependencies that do not
+// already carry a concrete version, so an authoritative pom.xml/list value is
+// never overwritten.
+func (d *Detector) mergeDependencyTreeVersions(payload *types.Payload, treeFile types.File, currentPath string, provider types.Provider) {
+	content, err := provider.ReadFile(filepath.Join(currentPath, treeFile.Name))
+	if err != nil {
+		return
+	}
+
+	versions := parsers.ParseMavenTreeVersions(content)
+	if len(versions) == 0 {
+		return
+	}
+
+	for i := range payload.Dependencies {
+		dep := &payload.Dependencies[i]
+		if dep.Type != "maven" && dep.Type != "gradle" {
+			continue
+		}
+		if semver.IsResolved(dep.Version) {
+			continue
+		}
+		resolved, ok := versions[dep.Name]
+		if !ok || resolved == "" {
+			continue
+		}
+		declared := dep.Version
+		dep.Version = resolved
+		dep.SetDeclaredVersion(declared)
+		if dep.Metadata == nil {
+			dep.Metadata = make(map[string]interface{})
+		}
+		dep.Metadata["source"] = "dependency-tree"
 	}
 }
 
