@@ -272,21 +272,42 @@ func (d *Detector) mavenPomChain(provider types.Provider) *mavenresolve.Chain {
 }
 
 // mavenGraphFallback returns the transitive-graph resolver to try after a
-// committed tree and before deps.dev, per the effective Maven graph source.
-// Returns nil for "deps-dev"/"none" (deps.dev is wired by the chain itself; a
-// committed dependency-tree.json still always wins first).
+// committed tree (which always wins first), per the effective Maven graph
+// source:
+//
+//   - "repo"     -> pure repository crawl; never contacts deps.dev (privacy).
+//   - "deps-dev" -> deps.dev for the public set, with a repository-crawl
+//     fallback for the coordinates deps.dev cannot resolve (private artifacts),
+//     when a repository chain is available. Without a repo chain it returns nil
+//     and the chain's own deps.dev resolver handles it.
+//   - "none"     -> nil (offline; only a committed tree applies).
 func (d *Detector) mavenGraphFallback(provider types.Provider) resolver.DependencyResolver {
-	if components.MavenGraphSource() != "repo" {
+	switch components.MavenEffectiveGraphSource() {
+	case "repo":
+		if repo := d.mavenRepoGraphResolver(provider); repo != nil {
+			return repo
+		}
+		return nil
+	case "deps-dev":
+		repo := d.mavenRepoGraphResolver(provider)
+		if repo == nil {
+			return nil // no repo chain: let the chain's deps.dev resolver run
+		}
+		// Hybrid: deps.dev public + repo-crawl fallback for private artifacts.
+		return mavenresolve.NewHybridResolver(components.NewDepsDevResolver(provider), repo)
+	default:
 		return nil
 	}
+}
+
+// mavenRepoGraphResolver builds the repository-crawl transitive resolver over
+// the POM source chain, or nil when no source is available.
+func (d *Detector) mavenRepoGraphResolver(provider types.Provider) *mavenresolve.GraphResolver {
 	chain := d.mavenPomChain(provider)
 	if chain.Empty() {
 		return nil
 	}
-	if r := mavenresolve.NewGraphResolver(chain); r != nil {
-		return r
-	}
-	return nil
+	return mavenresolve.NewGraphResolver(chain)
 }
 
 // mergeDependencyTreeVersions backfills resolved versions from a pre-generated

@@ -144,10 +144,27 @@ committed `dependency-tree.json` always takes precedence over both):
   coordinate (one request per declared dependency, not a per-artifact crawl).
   Covers public coordinates only.
 
-The two are not combined within one tree (different walk models -> inconsistent
-mediation). The selector is `--maven-graph-source=repo|deps-dev|none`, defaulting
-to the global `--deps-dev` toggle; the same per-ecosystem-override pattern can
-extend to other ecosystems later.
+The selector is `--maven-graph-source=repo|deps-dev|none`, defaulting to the
+global `--deps-dev` toggle; the same per-ecosystem-override pattern can extend
+to other ecosystems later.
+
+- **`repo`** is a pure crawl and **never contacts deps.dev** (the privacy-strict
+  mode for environments that must not send coordinates externally).
+- **`deps-dev`**, when a repository chain is configured, runs as a **hybrid**:
+  deps.dev resolves the public set (fast -- whole subtrees per request), and the
+  repository crawl fills only the coordinates deps.dev reports as unresolved
+  (the private artifacts it 404s). This avoids crawling the large public tree
+  POM-by-POM (the dominant cost) while still covering private artifacts. The two
+  partition cleanly by coordinate (public vs. private subtrees are disjoint), so
+  they are not interleaved within a single subtree -- avoiding mixed mediation.
+  Without a repository chain, `deps-dev` is deps.dev alone (public only).
+
+Because the public and private parts use different resolution models (deps.dev's
+pre-computed graph vs. a faithful POM crawl), the hybrid's public subtree can
+differ slightly from a pure `repo` crawl (deps.dev scoping/mediation). `repo`
+maximizes fidelity at the cost of speed; `deps-dev` (hybrid) trades a little
+public-tree fidelity for a large speed win, with private artifacts always
+crawled exactly.
 
 ### Why a crawl is acceptable here (vs. Trivy)
 

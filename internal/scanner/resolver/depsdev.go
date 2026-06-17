@@ -95,6 +95,7 @@ func (r *DepsDevResolver) Resolve(req Request) (Result, error) {
 
 	seen := make(map[string]bool)
 	var allEdges []types.DependencyEdge
+	var unresolved []string
 	anyResolved := false
 
 	for _, dep := range req.Dependencies {
@@ -104,7 +105,9 @@ func (r *DepsDevResolver) Resolve(req Request) (Result, error) {
 		edges, err := r.Online.ResolveGraph(system, dep.Name, dep.Version, req.Mode)
 		if err != nil {
 			if errors.Is(err, ErrCoordinateNotFound) {
-				// Private/internal dep: skip, continue with the rest.
+				// Private/internal dep: deps.dev does not know it. Report it so a
+				// fallback resolver (e.g. a private-repo crawl) can pick it up.
+				unresolved = append(unresolved, dep.Name+"@"+dep.Version)
 				continue
 			}
 			return Result{}, err
@@ -120,12 +123,14 @@ func (r *DepsDevResolver) Resolve(req Request) (Result, error) {
 
 	if !anyResolved {
 		// All deps were either 404 or skipped; treat as not resolvable so the
-		// chain can fall through rather than returning an empty authoritative result.
-		return Result{Resolved: false}, nil
+		// chain can fall through rather than returning an empty authoritative
+		// result. The unresolved list still flows so a fallback can use it.
+		return Result{Resolved: false, Unresolved: unresolved}, nil
 	}
 	return Result{
-		Edges:    allEdges,
-		Source:   SourceDepsDev,
-		Resolved: true,
+		Edges:      allEdges,
+		Source:     SourceDepsDev,
+		Resolved:   true,
+		Unresolved: unresolved,
 	}, nil
 }

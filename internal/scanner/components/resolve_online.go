@@ -214,7 +214,19 @@ var (
 // When disabled it carries no Online resolver and falls through (no edges, no
 // network), preserving the offline default.
 func depsDevResolver(provider types.Provider) *resolver.DepsDevResolver {
-	r := &resolver.DepsDevResolver{Enabled: UseDepsDev()}
+	return newDepsDevResolver(provider, UseDepsDev())
+}
+
+// NewDepsDevResolver builds an enabled deps.dev resolver for the tree behind
+// provider, sharing the scan-wide fetcher cache. It is used by ecosystem
+// detectors that compose deps.dev explicitly (e.g. the Maven hybrid graph
+// source), independent of the global --deps-dev default.
+func NewDepsDevResolver(provider types.Provider) *resolver.DepsDevResolver {
+	return newDepsDevResolver(provider, true)
+}
+
+func newDepsDevResolver(provider types.Provider, enabled bool) *resolver.DepsDevResolver {
+	r := &resolver.DepsDevResolver{Enabled: enabled}
 	if !r.Enabled {
 		return r
 	}
@@ -228,4 +240,17 @@ func depsDevResolver(provider types.Provider) *resolver.DepsDevResolver {
 	}
 	r.Online = f
 	return r
+}
+
+// MavenEffectiveGraphSource resolves the effective Maven transitive-graph
+// source: the explicit --maven-graph-source override when set, otherwise the
+// global --deps-dev default ("deps-dev" when enabled, else "none").
+func MavenEffectiveGraphSource() string {
+	if s := MavenGraphSource(); s != "" {
+		return s
+	}
+	if UseDepsDev() {
+		return "deps-dev"
+	}
+	return "none"
 }
