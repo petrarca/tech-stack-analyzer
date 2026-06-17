@@ -45,7 +45,7 @@ func AttachLockfileGraphWithFallback(payload *types.Payload, currentPath string,
 	}
 	// Online fallback (deps.dev). Disabled by default; wired only when enabled.
 	// Safe to include unconditionally -- it falls through when not enabled.
-	resolvers = append(resolvers, depsDevResolver())
+	resolvers = append(resolvers, depsDevResolver(provider))
 	chain := resolver.NewChain(resolvers...)
 
 	req := resolver.Request{

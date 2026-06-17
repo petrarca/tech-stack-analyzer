@@ -58,7 +58,7 @@ func TestSettings_RemoteSources_AttachCreds(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	sources := s.RemoteSources(nil)
+	sources := s.RemoteSources(nil, nil)
 	if len(sources) != 2 {
 		t.Fatalf("expected 2 sources, got %d", len(sources))
 	}
@@ -131,7 +131,7 @@ func TestSettings_MirrorOfStarCollapsesToMirror(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	sources := s.RemoteSources(nil)
+	sources := s.RemoteSources(nil, nil)
 	// mirrorOf=* routes both repos to the single mirror -> one deduplicated source.
 	if len(sources) != 1 {
 		t.Fatalf("expected 1 mirror source, got %d", len(sources))
@@ -170,7 +170,7 @@ func TestMirrorMatches(t *testing.T) {
 // RemoteSources on a nil *Settings must be safe.
 func TestSettings_RemoteSources_Nil(t *testing.T) {
 	var s *Settings
-	if got := s.RemoteSources(nil); got != nil {
+	if got := s.RemoteSources(nil, nil); got != nil {
 		t.Errorf("nil settings should yield nil sources, got %v", got)
 	}
 }

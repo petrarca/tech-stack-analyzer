@@ -242,13 +242,17 @@ func (d *Detector) mavenPomChain(provider types.Provider) *mavenresolve.Chain {
 	// otherwise it would bypass or supplement the user's chosen internal
 	// mirror, which is both pointless (the mirror proxies public artifacts) and
 	// a potential egress surprise.
+	// Scan-wide cache: shared so a POM is fetched at most once across all
+	// components, not re-fetched per module.
+	cache := components.GetGraphCache(provider)
+
 	explicitConfigured := false
-	if repos := settings.RemoteSources(nil); len(repos) > 0 {
+	if repos := settings.RemoteSources(nil, cache); len(repos) > 0 {
 		sources = append(sources, repos...)
 		explicitConfigured = true
 	}
 	if url := components.MavenRepoURL(); url != "" {
-		opts := mavenresolve.RemoteOptions{BaseURL: url}
+		opts := mavenresolve.RemoteOptions{BaseURL: url, Cache: cache}
 		// With a username, the token is the Basic-auth password (JFrog
 		// reference token); without one, it is a Bearer token.
 		if user := components.MavenRepoUser(); user != "" {
@@ -261,7 +265,7 @@ func (d *Detector) mavenPomChain(provider types.Provider) *mavenresolve.Chain {
 		explicitConfigured = true
 	}
 	if components.UseMavenCentral() && !explicitConfigured {
-		sources = append(sources, mavenresolve.NewRemoteSource(mavenresolve.RemoteOptions{}))
+		sources = append(sources, mavenresolve.NewRemoteSource(mavenresolve.RemoteOptions{Cache: cache}))
 	}
 
 	return mavenresolve.NewChain(sources...)

@@ -5,8 +5,9 @@ import (
 	"io"
 	"net/http"
 	"strings"
-	"sync"
 	"time"
+
+	"github.com/petrarca/tech-stack-analyzer/internal/scanner/blobcache"
 )
 
 // DefaultMavenCentralBaseURL is the public Maven Central repository base. A POM
@@ -43,10 +44,7 @@ type RemoteSource struct {
 	username string
 	password string
 	http     httpDoer
-
-	mu       sync.Mutex
-	cache    map[string][]byte
-	notFound map[string]bool
+	cache    blobcache.Cache
 }
 
 // RemoteOptions configures a RemoteSource. Auth precedence: Username/Password
@@ -64,6 +62,10 @@ type RemoteOptions struct {
 	Password string
 	// Client overrides the HTTP client (nil uses a default with a timeout).
 	Client httpDoer
+	// Cache, when set, is shared across the scan so a POM is fetched at most
+	// once regardless of how many components/modules need it. Nil uses a
+	// private in-memory cache (per source).
+	Cache blobcache.Cache
 }
 
 // NewRemoteSource builds a RemoteSource from options.
@@ -77,14 +79,17 @@ func NewRemoteSource(opts RemoteOptions) *RemoteSource {
 	if client == nil {
 		client = &http.Client{Timeout: 30 * time.Second}
 	}
+	cache := opts.Cache
+	if cache == nil {
+		cache = blobcache.NewMemory()
+	}
 	return &RemoteSource{
 		baseURL:  baseURL,
 		token:    opts.Token,
 		username: opts.Username,
 		password: opts.Password,
 		http:     client,
-		cache:    make(map[string][]byte),
-		notFound: make(map[string]bool),
+		cache:    cache,
 	}
 }
 
@@ -96,33 +101,27 @@ func (s *RemoteSource) FetchPOM(groupID, artifactID, version string) ([]byte, st
 	if groupID == "" || artifactID == "" || version == "" {
 		return nil, "", false
 	}
-	key := groupID + ":" + artifactID + ":" + version
+	// Key by repository base so distinct repos do not share entries.
+	key := "maven|" + s.baseURL + "|" + groupID + ":" + artifactID + ":" + version
 
-	s.mu.Lock()
-	if s.notFound[key] {
-		s.mu.Unlock()
+	if blob, found, notFound := s.cache.Get(key); found {
+		return blob, "", true
+	} else if notFound {
 		return nil, "", false
 	}
-	if cached, hit := s.cache[key]; hit {
-		s.mu.Unlock()
-		return cached, "", true
-	}
-	s.mu.Unlock()
 
 	body, definitive := s.request(groupID, artifactID, version)
 
-	s.mu.Lock()
-	defer s.mu.Unlock()
 	if body == nil {
 		// Cache only definitive misses (404). Transient failures (429/5xx/
 		// network) are not cached so a later lookup may still succeed, and a
 		// rate-limit never aborts the scan.
 		if definitive {
-			s.notFound[key] = true
+			s.cache.PutNotFound(key)
 		}
 		return nil, "", false
 	}
-	s.cache[key] = body
+	s.cache.Put(key, body)
 	return body, "", true
 }
 

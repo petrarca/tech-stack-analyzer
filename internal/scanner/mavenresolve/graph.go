@@ -1,6 +1,8 @@
 package mavenresolve
 
 import (
+	"sync"
+
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/parsers"
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/resolver"
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/semver"
@@ -10,6 +12,11 @@ import (
 // maxGraphDepth bounds the transitive crawl depth (deep enough for real trees,
 // a guard against pathological cases on top of the visited-set cycle break).
 const maxGraphDepth = 64
+
+// graphFetchConcurrency bounds parallel POM fetches within one BFS level. POM
+// fetches are independent, latency-dominated network calls, so a moderate fan-
+// out cuts wall-clock time without overwhelming a repository.
+const graphFetchConcurrency = 16
 
 // GraphResolver produces the transitive Maven dependency graph by crawling POMs
 // from the repository chain (in-repo source index, local ~/.m2, configured
@@ -55,20 +62,16 @@ func (r *GraphResolver) Resolve(req resolver.Request) (resolver.Result, error) {
 	// chosen version per coordinate, edges by coordinate, then rewriting edge
 	// endpoints to the chosen version at the end.
 	c := &crawl{
-		source: r.source,
-		chosen: make(map[string]string), // coordinate -> mediated version
-		edges:  make([]coordEdge, 0),    // edges keyed by coordinate (from/to)
-		seen:   make(map[string]bool),   // coordinate-edge dedup
+		source:   r.source,
+		chosen:   make(map[string]string), // coordinate -> mediated version
+		edges:    make([]coordEdge, 0),    // edges keyed by coordinate (from/to)
+		seen:     make(map[string]bool),   // coordinate-edge dedup
+		expanded: make(map[string]bool),   // coordinate already expanded (cycle guard)
 	}
-
-	type qitem struct {
-		coord, version string
-		depth          int
-	}
-	var queue []qitem
 
 	// Seed: root -> each declared dependency. The synthetic "." root matches the
 	// node identity convention of the other resolvers.
+	var queue []qitem
 	for _, dep := range req.Dependencies {
 		if dep.Name == "" || !semver.IsResolved(dep.Version) {
 			continue
@@ -80,32 +83,9 @@ func (r *GraphResolver) Resolve(req resolver.Request) (resolver.Result, error) {
 		}
 	}
 
-	expanded := make(map[string]bool) // coordinate already expanded (cycle guard)
+	// Expand the queue level by level; each level fetches concurrently.
 	for len(queue) > 0 {
-		it := queue[0]
-		queue = queue[1:]
-		if it.depth > maxGraphDepth || expanded[it.coord] {
-			continue
-		}
-		expanded[it.coord] = true
-
-		group, artifact := splitMavenName(it.coord)
-		if group == "" || artifact == "" {
-			continue
-		}
-		// Fetch the version chosen for this coordinate (nearest-wins).
-		content, _, ok := c.source.FetchPOM(group, artifact, c.chosen[it.coord])
-		if !ok {
-			continue // private/absent or transient: no children, never aborts
-		}
-		for _, child := range parsers.ParsePomDependenciesForGraph(content, c.source.FetchPOM) {
-			if !semver.IsResolved(child.Version) {
-				continue
-			}
-			c.choose(child.Name, child.Version) // first (nearest) request wins
-			c.addEdge(it.coord, child.Name)
-			queue = append(queue, qitem{child.Name, child.Version, it.depth + 1})
-		}
+		queue = c.processLevel(queue)
 	}
 
 	edges := c.resolveEdges()
@@ -115,16 +95,77 @@ func (r *GraphResolver) Resolve(req resolver.Request) (resolver.Result, error) {
 	return resolver.Result{Edges: edges, Source: resolver.SourceMavenRepo, Resolved: true}, nil
 }
 
+// qitem is a queued coordinate to expand at a given BFS depth.
+type qitem struct {
+	coord, version string
+	depth          int
+}
+
+// processLevel expands one BFS level and returns the next level's queue. POM
+// fetches for the level's coordinates run concurrently (bounded) -- they are
+// independent, latency-dominated network calls. Edge recording, version
+// mediation (nearest-wins, preserved by BFS order), and building the next
+// frontier run sequentially after the fetches, so the result is deterministic.
+func (c *crawl) processLevel(level []qitem) []qitem {
+	// Deduplicate the level and skip already-expanded / too-deep items.
+	var items []qitem
+	for _, it := range level {
+		if it.depth > maxGraphDepth || c.expanded[it.coord] {
+			continue
+		}
+		c.expanded[it.coord] = true
+		items = append(items, qitem{it.coord, c.chosen[it.coord], it.depth})
+	}
+
+	// Fetch + parse each item's children concurrently.
+	results := make([][]types.Dependency, len(items))
+	sem := make(chan struct{}, graphFetchConcurrency)
+	var wg sync.WaitGroup
+	for i := range items {
+		group, artifact := splitMavenName(items[i].coord)
+		if group == "" || artifact == "" {
+			continue
+		}
+		wg.Add(1)
+		sem <- struct{}{}
+		go func(i int, group, artifact, version string) {
+			defer wg.Done()
+			defer func() { <-sem }()
+			content, _, ok := c.source.FetchPOM(group, artifact, version)
+			if !ok {
+				return // private/absent or transient: no children, never aborts
+			}
+			results[i] = parsers.ParsePomDependenciesForGraph(content, c.source.FetchPOM)
+		}(i, group, artifact, items[i].version)
+	}
+	wg.Wait()
+
+	// Merge: record edges, mediate versions, enqueue the next level.
+	var next []qitem
+	for i, item := range items {
+		for _, child := range results[i] {
+			if !semver.IsResolved(child.Version) {
+				continue
+			}
+			c.choose(child.Name, child.Version)
+			c.addEdge(item.coord, child.Name)
+			next = append(next, qitem{child.Name, child.Version, item.depth + 1})
+		}
+	}
+	return next
+}
+
 // coordEdge is a parent->child edge keyed by coordinate (no version); the
 // version is applied from the mediated choice when materializing.
 type coordEdge struct{ from, to string }
 
 // crawl holds the mutable state of one transitive walk.
 type crawl struct {
-	source PomSource
-	chosen map[string]string // coordinate -> mediated (nearest-wins) version
-	edges  []coordEdge
-	seen   map[string]bool
+	source   PomSource
+	chosen   map[string]string // coordinate -> mediated (nearest-wins) version
+	edges    []coordEdge
+	seen     map[string]bool // coordinate-edge dedup
+	expanded map[string]bool // coordinate already expanded (cycle guard)
 }
 
 // choose records the mediated version for a coordinate: the first (nearest in

@@ -5,6 +5,7 @@ import (
 
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/mavenresolve"
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/resolver"
+	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
 
 // The public online sources are off by default to preserve the offline
@@ -199,14 +200,32 @@ func MavenSettings() *mavenresolve.Settings {
 	return mavenSettings
 }
 
-// depsDevResolver builds the online fallback resolver, wired to the configured
-// endpoint when deps.dev resolution is enabled. When disabled it carries no
-// Online resolver and falls through (no edges, no network), preserving the
-// offline default.
-func depsDevResolver() *resolver.DepsDevResolver {
+// depsDevFetcherCache memoizes one deps.dev fetcher per provider base path, so
+// its response cache is shared across every component in a scan instead of
+// being rebuilt (empty) per component.
+var (
+	depsDevFetcherMu    sync.Mutex
+	depsDevFetcherCache = map[string]resolver.OnlineGraphResolver{}
+)
+
+// depsDevResolver builds the online fallback resolver for the tree behind
+// provider, wired to the configured endpoint when deps.dev resolution is
+// enabled. The underlying fetcher (and its response cache) is shared per scan.
+// When disabled it carries no Online resolver and falls through (no edges, no
+// network), preserving the offline default.
+func depsDevResolver(provider types.Provider) *resolver.DepsDevResolver {
 	r := &resolver.DepsDevResolver{Enabled: UseDepsDev()}
-	if r.Enabled {
-		r.Online = resolver.NewDepsDevFetcher(DepsDevEndpoint(), nil)
+	if !r.Enabled {
+		return r
 	}
+	base := provider.GetBasePath()
+	depsDevFetcherMu.Lock()
+	defer depsDevFetcherMu.Unlock()
+	f, ok := depsDevFetcherCache[base]
+	if !ok {
+		f = resolver.NewDepsDevFetcher(DepsDevEndpoint(), nil)
+		depsDevFetcherCache[base] = f
+	}
+	r.Online = f
 	return r
 }

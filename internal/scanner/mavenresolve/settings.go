@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/petrarca/tech-stack-analyzer/internal/scanner/blobcache"
 )
 
 // Settings is the subset of a Maven settings.xml this package needs: the local
@@ -180,7 +182,7 @@ func mirrorMatches(mirrorOf, repoID string) bool {
 // catch-all mirror (mirrorOf=*) collapses all repositories to one source. A
 // catch-all mirror with no declared repositories still yields a source (it is
 // the effective repository). The client (nil = default) is shared.
-func (s *Settings) RemoteSources(client httpDoer) []PomSource {
+func (s *Settings) RemoteSources(client httpDoer, cache blobcache.Cache) []PomSource {
 	if s == nil {
 		return nil
 	}
@@ -192,7 +194,7 @@ func (s *Settings) RemoteSources(client httpDoer) []PomSource {
 			return
 		}
 		seen[url] = true
-		opts := RemoteOptions{BaseURL: url, Client: client}
+		opts := RemoteOptions{BaseURL: url, Client: client, Cache: cache}
 		if srv, ok := s.Servers[serverID]; ok {
 			opts.Username = srv.Username
 			opts.Password = srv.Password
