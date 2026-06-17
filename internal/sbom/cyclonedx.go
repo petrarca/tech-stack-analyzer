@@ -10,9 +10,12 @@
 package sbom
 
 import (
+	"crypto/rand"
+	"fmt"
 	"net/url"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/petrarca/tech-stack-analyzer/internal/aggregator"
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/semver"
@@ -20,7 +23,11 @@ import (
 )
 
 // SpecVersion is the CycloneDX specification version produced.
-const SpecVersion = "1.5"
+const SpecVersion = "1.7"
+
+// jsonSchema is the CycloneDX JSON schema URL for SpecVersion, emitted as the
+// document's "$schema" field.
+const jsonSchema = "http://cyclonedx.org/schema/bom-1.7.schema.json"
 
 // bomFormat is the fixed CycloneDX format identifier.
 const bomFormat = "CycloneDX"
@@ -50,17 +57,21 @@ var purlTypes = map[string]bool{
 	"docker":    true,
 }
 
-// BOM is the top-level CycloneDX document.
+// BOM is the top-level CycloneDX document. Field order follows the CycloneDX
+// JSON schema ($schema, bomFormat, specVersion, serialNumber, version, ...).
 type BOM struct {
-	BOMFormat   string      `json:"bomFormat"`
-	SpecVersion string      `json:"specVersion"`
-	Version     int         `json:"version"`
-	Metadata    *Metadata   `json:"metadata,omitempty"`
-	Components  []Component `json:"components"`
+	JSONSchema   string      `json:"$schema,omitempty"`
+	BOMFormat    string      `json:"bomFormat"`
+	SpecVersion  string      `json:"specVersion"`
+	SerialNumber string      `json:"serialNumber,omitempty"`
+	Version      int         `json:"version"`
+	Metadata     *Metadata   `json:"metadata,omitempty"`
+	Components   []Component `json:"components"`
 }
 
 // Metadata holds document-level metadata.
 type Metadata struct {
+	Timestamp string     `json:"timestamp,omitempty"`
 	Component *Component `json:"component,omitempty"`
 }
 
@@ -228,6 +239,7 @@ func FromDependencies(deps []types.Dependency, rootName string) *BOM {
 	})
 
 	bom := &BOM{
+		JSONSchema:  jsonSchema,
 		BOMFormat:   bomFormat,
 		SpecVersion: SpecVersion,
 		Version:     1,
@@ -366,4 +378,35 @@ func rootName(payload *types.Payload) string {
 		return ""
 	}
 	return payload.Name
+}
+
+// Stamp sets the document's per-emission identity: a unique serialNumber
+// (urn:uuid) and the metadata timestamp (RFC 3339, UTC). These are
+// non-deterministic by nature, so they are applied at output time rather than
+// in the pure builders -- keeping FromPayload/FromDependencies reproducible for
+// tests and diffs. A no-op for a nil BOM.
+func Stamp(bom *BOM) {
+	if bom == nil {
+		return
+	}
+	if id := newUUIDv4(); id != "" {
+		bom.SerialNumber = "urn:uuid:" + id
+	}
+	ts := time.Now().UTC().Format(time.RFC3339)
+	if bom.Metadata == nil {
+		bom.Metadata = &Metadata{}
+	}
+	bom.Metadata.Timestamp = ts
+}
+
+// newUUIDv4 returns a random RFC 4122 version-4 UUID, or "" if the system
+// random source is unavailable (in which case serialNumber is simply omitted).
+func newUUIDv4() string {
+	var b [16]byte
+	if _, err := rand.Read(b[:]); err != nil {
+		return ""
+	}
+	b[6] = (b[6] & 0x0f) | 0x40 // version 4
+	b[8] = (b[8] & 0x3f) | 0x80 // variant 10
+	return fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:16])
 }

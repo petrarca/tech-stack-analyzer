@@ -116,6 +116,7 @@ func generateSBOM(payload interface{}, prettyPrint bool) ([]byte, error) {
 		return nil, fmt.Errorf("SBOM output requires a scan payload")
 	}
 	bom := sbom.FromPayload(p)
+	sbom.Stamp(bom) // per-emission serialNumber + timestamp
 	return marshalJSON(bom, prettyPrint)
 }
 

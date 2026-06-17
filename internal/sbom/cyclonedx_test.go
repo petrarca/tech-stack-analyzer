@@ -1,7 +1,9 @@
 package sbom
 
 import (
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
@@ -113,6 +115,49 @@ func TestFromDependencies_FiltersNonPackageTypes(t *testing.T) {
 	if bom.Metadata == nil || bom.Metadata.Component == nil || bom.Metadata.Component.Name != "myapp" {
 		t.Errorf("expected metadata component name 'myapp'")
 	}
+}
+
+func TestFromDependencies_CycloneDX17Header(t *testing.T) {
+	bom := FromDependencies([]types.Dependency{{Type: "npm", Name: "mylib", Version: "1.0.0"}}, "myapp")
+
+	if bom.SpecVersion != "1.7" {
+		t.Errorf("specVersion = %q, want 1.7", bom.SpecVersion)
+	}
+	if bom.JSONSchema != "http://cyclonedx.org/schema/bom-1.7.schema.json" {
+		t.Errorf("$schema = %q", bom.JSONSchema)
+	}
+	// Pure builders are deterministic: no serialNumber/timestamp until Stamp.
+	if bom.SerialNumber != "" {
+		t.Errorf("serialNumber should be empty before Stamp, got %q", bom.SerialNumber)
+	}
+	if bom.Metadata != nil && bom.Metadata.Timestamp != "" {
+		t.Errorf("timestamp should be empty before Stamp, got %q", bom.Metadata.Timestamp)
+	}
+}
+
+func TestStamp_SetsSerialNumberAndTimestamp(t *testing.T) {
+	bom := FromDependencies([]types.Dependency{{Type: "npm", Name: "mylib", Version: "1.0.0"}}, "myapp")
+	Stamp(bom)
+
+	if !strings.HasPrefix(bom.SerialNumber, "urn:uuid:") || len(bom.SerialNumber) != len("urn:uuid:")+36 {
+		t.Errorf("serialNumber not a urn:uuid: %q", bom.SerialNumber)
+	}
+	if bom.Metadata == nil || bom.Metadata.Timestamp == "" {
+		t.Fatal("Stamp must set metadata timestamp")
+	}
+	if _, err := time.Parse(time.RFC3339, bom.Metadata.Timestamp); err != nil {
+		t.Errorf("timestamp not RFC3339: %q (%v)", bom.Metadata.Timestamp, err)
+	}
+
+	// Two stamps yield distinct serial numbers.
+	other := FromDependencies(nil, "myapp")
+	Stamp(other)
+	if other.SerialNumber == bom.SerialNumber {
+		t.Error("serialNumber should be unique per emission")
+	}
+
+	// Stamp on a nil BOM is a no-op (must not panic).
+	Stamp(nil)
 }
 
 func TestFromDependencies_ExcludesImportScopedBOMs(t *testing.T) {
