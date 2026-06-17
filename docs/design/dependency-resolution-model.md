@@ -36,9 +36,9 @@ When the declaration is already concrete (`version` == declared), no
 
 | Ecosystem | Resolved from | Declared form recorded |
 |-----------|---------------|------------------------|
-| Maven | property/parent interpolation | `${...}` references |
-| Gradle | `gradle.properties` / inline `ext`/`val`/`def` | `$x` / `${x}` references |
-| npm / yarn | `package-lock.json` / `yarn.lock` | range from `package.json` |
+| Maven | property/parent interpolation, imported BOM (`scope=import`) | `${...}` references |
+| Gradle | `gradle.lockfile`; `platform`/`enforcedPlatform` BOM and Spring Boot plugin BOM (via the Maven chain); `gradle.properties` / inline `ext`/`val`/`def` | `$x` / `${x}` references, or the unversioned coordinate |
+| npm / yarn | `package-lock.json` / `yarn.lock` (incl. classic v1, `optionalDependencies`) | range from `package.json` |
 | pnpm (v9) | importer resolved version | importer `specifier` (range) |
 | PyPI (poetry) | `poetry.lock` | constraint from `pyproject.toml` |
 | Cargo | `Cargo.lock` | constraint from `Cargo.toml` |
@@ -69,7 +69,10 @@ lockfiles. It deliberately does not:
 - **Execute build tools** (no `mvn`, `gradle`, `npm install`).
 - **Parse build-script ASTs** (Gradle scripts are Turing-complete; the scanner
   uses regex + property interpolation, which covers the real-world cases and
-  is validated against the product portfolio).
+  is validated against the product portfolio). It does, however, resolve the
+  *referenced* BOM/platform POMs (`platform`/`enforcedPlatform`, the Spring Boot
+  plugin's implicit BOM) through the Maven resolution chain to fill versions
+  those BOMs manage -- that is POM resolution, not script execution.
 - **Compute the transitive graph from registries.** Transitive resolution
   (npm max-satisfying, Maven nearest-wins, Go MVS, pip backtracking) requires
   each registry's full version list -- inherently an online operation. Where a

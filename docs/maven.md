@@ -10,6 +10,9 @@ The scanner resolves these versions offline-first, and -- when you point it at a
 Maven repository -- can also resolve versions and **transitive** dependencies
 that live only in your private artifacts. This guide shows how.
 
+The same resolution applies to **Gradle** projects (a Gradle platform BOM is a
+Maven BOM); see [Gradle dependency versions](#gradle-dependency-versions).
+
 ## TL;DR
 
 ```bash
@@ -47,7 +50,9 @@ limit never aborts the scan.
 5. **A configured Maven repository** -- an internal Artifactory/JFrog repo or a
    mirror (`--maven-repo-url`, or from `settings.xml`). Covers **private**
    artifacts.
-6. **Maven Central** -- the public fallback (`--maven-central`).
+6. **Maven Central** -- the public fallback (`--maven-central`). Can be combined
+   with `--maven-repo-url`, in which case it is consulted last (after the private
+   repo).
 
 Steps 1-3 are fully offline and need no configuration. Steps 4-6 are opt-in.
 
@@ -73,9 +78,10 @@ Notes:
   token and no user, it is sent as a Bearer token.
 - **Configuring `--maven-repo-url` is the opt-in to reach it** -- no extra
   online flag is required.
-- **Maven Central is not added** when `--maven-repo-url` is set: a virtual repo
-  already proxies public artifacts, so the scanner does not also reach the
-  public internet.
+- **Maven Central is not added automatically** when `--maven-repo-url` is set: a
+  virtual repo usually proxies public artifacts already. If your repo does *not*
+  proxy Central (so some public BOMs/POMs 404), add `--maven-central` -- it is
+  then consulted last, after the private repo (see below).
 
 ### Reusing your `settings.xml`
 
@@ -160,6 +166,49 @@ e.g. `dependencies resolved — 2294 POMs, 393 deps.dev, 4630 cached`. The
 `cached` are Maven repository fetches (other ecosystems read local lockfiles,
 so they have nothing to fetch). A `401/403` from a configured repository prints
 a warning that credentials are missing and private artifacts went unresolved.
+
+## Gradle dependency versions
+
+Gradle projects (`build.gradle`, `build.gradle.kts`) have the same versionless
+problem as Maven: dependencies are routinely declared without a version because
+a BOM or a plugin manages it. The scanner resolves these by reusing the Maven
+resolution chain above -- a Gradle "platform" is a `pom`-packaged BOM identical
+to a Maven imported BOM -- so the same flags (`--maven-repo-url`,
+`--maven-central`, `settings.xml`, `~/.m2`) apply.
+
+Three Gradle-specific sources are resolved, in order of precedence:
+
+1. **`gradle.lockfile`** -- if a committed dependency-lock file is present
+   (`gradle dependencies --write-locks`), its fully resolved versions are
+   authoritative and supersede the build-script analysis. This is the most
+   reliable source and is also what Trivy uses.
+2. **`platform(...)` / `enforcedPlatform(...)` BOM imports** -- the wrapped
+   coordinate (e.g. `enforcedPlatform("io.quarkus.platform:quarkus-bom:3.11.0")`)
+   is resolved as a BOM, and its managed versions backfill any sibling
+   dependency declared without one.
+3. **Version-managing plugins** -- the Spring Boot Gradle plugin
+   (`id("org.springframework.boot") version "3.3.0"`, with
+   `io.spring.dependency-management`) implicitly imports
+   `org.springframework.boot:spring-boot-dependencies` at the plugin's version,
+   supplying versions for `spring-boot-starter-*` and the libraries it manages.
+
+Versions declared inline (`implementation("group:artifact:1.2.3")`) or via a
+`gradle.properties` / `ext`/`val`/`def` property reference are still used as
+before; BOM resolution only fills the ones left without a version.
+
+```bash
+# Quarkus/Spring Boot Gradle project: resolve BOM-managed versions from Central
+stack-analyzer scan /path/to/project --also-sbom --maven-central
+
+# Or from an internal repo (covers private platform BOMs); add --maven-central
+# if that repo does not proxy Central for public BOMs
+stack-analyzer scan /path/to/project --also-sbom \
+  --maven-repo-url https://artifactory.example.com/artifactory/my-virtual-repo \
+  --maven-central
+```
+
+As with Maven, the BOM/platform coordinate itself is a version-management entry,
+not a runtime dependency, so it is not emitted as an SBOM component.
 
 ## Configuration file
 
