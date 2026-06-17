@@ -33,22 +33,30 @@ type httpDoer interface {
 // is treated as transient (not cached, never aborts the scan) -- unlike a
 // recursive package-manager crawl that fails hard on rate-limiting.
 type RemoteSource struct {
-	baseURL string
-	token   string
-	http    httpDoer
+	baseURL  string
+	token    string
+	username string
+	password string
+	http     httpDoer
 
 	mu       sync.Mutex
 	cache    map[string][]byte
 	notFound map[string]bool
 }
 
-// RemoteOptions configures a RemoteSource.
+// RemoteOptions configures a RemoteSource. Auth precedence: Username/Password
+// (HTTP Basic, as Maven settings.xml uses) takes effect when set; otherwise
+// Token (HTTP Bearer) is used when set; otherwise the request is anonymous.
 type RemoteOptions struct {
 	// BaseURL is the repository base ("" uses Maven Central).
 	BaseURL string
-	// Token, when non-empty, is sent as an "Authorization: Bearer" header for
-	// authenticated (e.g. private JFrog) repositories.
+	// Token, when non-empty, is sent as "Authorization: Bearer" (used when no
+	// Username/Password is given).
 	Token string
+	// Username/Password, when set, are sent as HTTP Basic auth. JFrog reference
+	// tokens are supplied as the password here, matching settings.xml.
+	Username string
+	Password string
 	// Client overrides the HTTP client (nil uses a default with a timeout).
 	Client httpDoer
 }
@@ -67,6 +75,8 @@ func NewRemoteSource(opts RemoteOptions) *RemoteSource {
 	return &RemoteSource{
 		baseURL:  baseURL,
 		token:    opts.Token,
+		username: opts.Username,
+		password: opts.Password,
 		http:     client,
 		cache:    make(map[string][]byte),
 		notFound: make(map[string]bool),
@@ -123,7 +133,10 @@ func (s *RemoteSource) request(groupID, artifactID, version string) (body []byte
 	if err != nil {
 		return nil, true
 	}
-	if s.token != "" {
+	switch {
+	case s.username != "" || s.password != "":
+		req.SetBasicAuth(s.username, s.password)
+	case s.token != "":
 		req.Header.Set("Authorization", "Bearer "+s.token)
 	}
 	resp, err := s.http.Do(req)

@@ -12,23 +12,43 @@ import (
 	"github.com/petrarca/tech-stack-analyzer/internal/config"
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner"
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/components"
+	"github.com/petrarca/tech-stack-analyzer/internal/scanner/mavenresolve"
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
 
-// mavenTokenEnvVar names the environment variable holding the bearer token for
-// an authenticated remote Maven repository. The token is read from the
-// environment (never a flag or config file) so it is not persisted or exposed
-// in shell history.
-const mavenTokenEnvVar = "STACK_ANALYZER_MAVEN_TOKEN"
+// Environment variables holding remote Maven repository credentials. They are
+// read from the environment (never a flag or config file) so secrets are not
+// persisted or exposed in shell history.
+const (
+	mavenTokenEnvVar = "STACK_ANALYZER_MAVEN_TOKEN"
+	mavenUserEnvVar  = "STACK_ANALYZER_MAVEN_USER"
+)
 
-// applyMavenSettings pushes the Maven version-resolution settings (local-repo
-// read, remote repo URL, env-sourced token) into the components layer.
-func applyMavenSettings() {
+// applyMavenSettings pushes the Maven version-resolution settings into the
+// components layer: local-repo read, remote repo URL, env-sourced credentials,
+// and a parsed Maven settings.xml (repository URLs + credentials). The
+// settings.xml path is per-scan configurable so different projects can use
+// their own; it defaults to ~/.m2/settings.xml and is silently skipped when
+// absent.
+func applyMavenSettings(logger *slog.Logger) {
 	components.SetUseMavenLocalRepo(settings.MavenLocalRepo)
 	components.SetMavenLocalRepoDir(settings.MavenLocalRepoDir)
 	components.SetMavenRepoURL(settings.MavenRepoURL)
 	if tok := strings.TrimSpace(os.Getenv(mavenTokenEnvVar)); tok != "" {
 		components.SetMavenRepoToken(tok)
+	}
+	if user := strings.TrimSpace(os.Getenv(mavenUserEnvVar)); user != "" {
+		components.SetMavenRepoUser(user)
+	}
+
+	settingsPath := settings.MavenSettings
+	if settingsPath == "" {
+		settingsPath = mavenresolve.DefaultSettingsPath()
+	}
+	if s, err := mavenresolve.LoadSettings(settingsPath); err != nil {
+		logger.Warn("Failed to load Maven settings.xml", "path", settingsPath, "error", err)
+	} else {
+		components.SetMavenSettings(s)
 	}
 }
 
@@ -150,7 +170,7 @@ func runScanner(absPath string, isFile bool, mergedConfig *config.ScanConfig, lo
 	components.SetDependencyGraphMode(types.ParseDependencyGraphMode(settings.DependencyGraph))
 	components.SetResolveOnline(settings.ResolveOnline)
 	components.SetResolveOnlineEndpoint(settings.ResolveOnlineEndpoint)
-	applyMavenSettings()
+	applyMavenSettings(logger)
 	if obsCollector != nil {
 		s.SetObservationCollector(obsCollector)
 	}

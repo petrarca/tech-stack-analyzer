@@ -199,6 +199,23 @@
                 "resolve_online_endpoint": {
                     "type": "string",
                     "description": "Base URL for online resolution (default: public deps.dev). Override with a deps.dev-API-compatible facade or mirror. (matches --resolve-online-endpoint flag)"
+                },
+                "maven_local_repo": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Resolve Maven BOM/parent POM versions from the local ~/.m2 repository (offline; reads outside the scanned tree). (matches --maven-local-repo flag)"
+                },
+                "maven_local_repo_dir": {
+                    "type": "string",
+                    "description": "Override the local Maven repository path (default: MAVEN_REPO_LOCAL / MAVEN_OPTS / ~/.m2/repository). (matches --maven-local-repo-dir flag)"
+                },
+                "maven_repo_url": {
+                    "type": "string",
+                    "description": "Remote Maven repository base for BOM/parent POM fetch (default: Maven Central; requires resolve_online). Credentials via the STACK_ANALYZER_MAVEN_TOKEN environment variable, never in config. (matches --maven-repo-url flag)"
+                },
+                "maven_settings": {
+                    "type": "string",
+                    "description": "Path to a Maven settings.xml for repository URLs and credentials (default: ~/.m2/settings.xml). Per-scan override for projects with their own settings. (matches --maven-settings flag)"
                 }
             },
             "additionalProperties": false,

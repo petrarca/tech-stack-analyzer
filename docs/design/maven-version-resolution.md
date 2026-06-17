@@ -336,6 +336,28 @@ a definitive 404 is cached) and never aborts the scan. The chain is adapted to
 the parser's `BomResolver` hook, so the parser stays free of repository/index
 knowledge.
 
+#### Configuration (collapses to one internal view)
+
+Repository URLs, credentials, and the local-repo path can come from several
+inputs that **merge into a single internal configuration** the chain reads --
+the resolver never sees the individual sources:
+
+- **Maven `settings.xml`** (default `~/.m2/settings.xml`, per-scan override via
+  `--maven-settings` / `maven_settings` so different projects can use their own)
+  supplies `<repositories>` URLs with their `<server>` credentials (HTTP Basic;
+  a JFrog reference token is the password) and `<localRepository>`.
+- **Scanner config / flags** supply `--maven-repo-url`, `--maven-local-repo`,
+  `--maven-local-repo-dir`.
+- **Environment** supplies secrets only: `STACK_ANALYZER_MAVEN_USER` and
+  `STACK_ANALYZER_MAVEN_TOKEN` (never in config files).
+
+The merged remote chain is: settings.xml repos (with their creds) -> configured
+`--maven-repo-url` -> Maven Central (public fallback). The local-repo path
+resolves as: `--maven-local-repo-dir` -> settings.xml `<localRepository>` ->
+`MAVEN_REPO_LOCAL` / `MAVEN_OPTS` -> `~/.m2/repository`. A repository that does
+not carry a given coordinate (e.g. an internal JFrog virtual repo returning 404
+for a public BOM) simply falls through to the next.
+
 ### Transitive components in the SBOM (implemented)
 
 By default the SBOM contains the **declared** dependencies. When the scan

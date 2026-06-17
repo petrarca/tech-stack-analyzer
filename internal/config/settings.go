@@ -40,7 +40,9 @@ type Settings struct {
 	MavenLocalRepo           bool                      // Read the local ~/.m2 repository for Maven BOM/parent POMs (offline; reads outside the scanned tree)
 	MavenLocalRepoDir        string                    // Override the local Maven repo path; empty = MAVEN_REPO_LOCAL / MAVEN_OPTS / ~/.m2/repository
 	MavenRepoURL             string                    // Remote Maven repository base for BOM/parent POM fetch; empty = Maven Central (requires --resolve-online)
-	MavenRepoToken           string                    // Bearer token for an authenticated remote Maven repo; sourced from the environment, never persisted
+	MavenSettings            string                    // Path to a Maven settings.xml (repos+credentials); empty = ~/.m2/settings.xml. Per-scan override for projects with their own settings
+	MavenRepoToken           string                    // Token for an authenticated remote Maven repo; sourced from the environment, never persisted
+	MavenRepoUser            string                    // Username for Basic auth against the remote Maven repo; sourced from the environment
 	OmitFields               []string                  // Fields to omit from full output (e.g. "reason", "path", "edges")
 	AlsoAggregate            string                    // Also produce an aggregate output alongside the full output (e.g. "tech,techs,languages")
 	SBOM                     bool                      // Emit a CycloneDX SBOM as the primary output instead of the scan tree

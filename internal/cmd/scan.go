@@ -79,6 +79,7 @@ func init() {
 	scanCmd.Flags().BoolVar(&settings.MavenLocalRepo, "maven-local-repo", settings.MavenLocalRepo, "Resolve Maven BOM/parent POM versions from the local ~/.m2 repository (offline; reads outside the scanned tree)")
 	scanCmd.Flags().StringVar(&settings.MavenLocalRepoDir, "maven-local-repo-dir", settings.MavenLocalRepoDir, "Override the local Maven repository path (default: MAVEN_REPO_LOCAL / MAVEN_OPTS / ~/.m2/repository)")
 	scanCmd.Flags().StringVar(&settings.MavenRepoURL, "maven-repo-url", settings.MavenRepoURL, "Remote Maven repository base for BOM/parent POM fetch (default: Maven Central; requires --resolve-online). Credentials via STACK_ANALYZER_MAVEN_TOKEN.")
+	scanCmd.Flags().StringVar(&settings.MavenSettings, "maven-settings", settings.MavenSettings, "Path to a Maven settings.xml for repository URLs and credentials (default: ~/.m2/settings.xml). Per-scan override for projects with their own settings.")
 	scanCmd.Flags().IntVar(&settings.ComponentStatsDepth, "component-stats-depth", 0, "Include code_stats on components up to this tree depth in output (0=none, 1=top-level only, 2=two levels deep, ...)")
 	scanCmd.Flags().IntVar(&settings.SubsystemDepth, "subsystem-depth", 0, "Produce subsystem_stats[] rolled up per depth-N path prefix (0=none, 1=top-level folders). Useful for large monorepos.")
 	scanCmd.Flags().StringVar(&settings.RootID, "root-id", "", "Override random root ID for deterministic scans (e.g., 'my-project-2024')")
@@ -222,7 +223,7 @@ func runMultiPathScan(args []string, cmd *cobra.Command, logger *slog.Logger) {
 	components.SetDependencyGraphMode(types.ParseDependencyGraphMode(settings.DependencyGraph))
 	components.SetResolveOnline(settings.ResolveOnline)
 	components.SetResolveOnlineEndpoint(settings.ResolveOnlineEndpoint)
-	applyMavenSettings()
+	applyMavenSettings(logger)
 
 	payload, err := s.Scan()
 	if err != nil {

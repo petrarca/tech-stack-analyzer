@@ -20,6 +20,7 @@ import (
 	"github.com/petrarca/tech-stack-analyzer/internal/rules"
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/components"
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/matchers"
+	"github.com/petrarca/tech-stack-analyzer/internal/scanner/mavenresolve"
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/parsers"
 	"github.com/petrarca/tech-stack-analyzer/internal/spec"
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
@@ -458,6 +459,10 @@ func (s *Scanner) Scan() (*types.Payload, error) {
 
 	// Resolve inter-component references
 	s.resolveComponentRefs(payload)
+
+	// Propagate Maven versions across modules: a coordinate resolved in one
+	// module fills its versionless siblings elsewhere in the scan.
+	mavenresolve.PropagateVersions(payload)
 
 	// Report scan complete
 	s.progress.ScanComplete(fileCount, componentCount, time.Since(startTime))

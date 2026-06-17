@@ -191,29 +191,52 @@ func (d *Detector) newBomResolver(provider types.Provider) parsers.BomResolver {
 		return nil
 	}
 	index := components.GetSourceIndex(provider)
-	repoSource := mavenresolve.NewRepoSource(
-		func(coordinate string) []string { return index.Lookup("maven", coordinate) },
-		provider,
-	)
 
-	// Local ~/.m2 cache: offline, no credentials. Opt-in to reading outside the
-	// scanned tree (Trivy reads it by default; we keep it explicit).
-	var localSource mavenresolve.PomSource
+	// Tier 1: BOMs committed to the scanned tree (offline, no network).
+	sources := []mavenresolve.PomSource{
+		mavenresolve.NewRepoSource(
+			func(coordinate string) []string { return index.Lookup("maven", coordinate) },
+			provider,
+		),
+	}
+
+	// Maven settings.xml supplies the local-repo path, repository URLs, and
+	// credentials, reused by both the local and remote tiers below.
+	settings := components.MavenSettings()
+
+	// Tier 2: local ~/.m2 cache (offline, no credentials). Opt-in -- reads
+	// outside the scanned tree. Honors settings.xml <localRepository>.
 	if components.UseMavenLocalRepo() {
-		localSource = mavenresolve.NewLocalRepoSource(components.MavenLocalRepoDir())
+		dir := components.MavenLocalRepoDir()
+		if dir == "" && settings != nil {
+			dir = settings.LocalRepository
+		}
+		sources = append(sources, mavenresolve.NewLocalRepoSource(dir))
 	}
 
-	// Remote repository (Central or configured mirror/JFrog): opt-in via online
-	// resolution. Distinct from the deps.dev resolve-online endpoint.
-	var remoteSource mavenresolve.PomSource
+	// Tiers 3+: remote repositories (opt-in via online resolution). settings.xml
+	// repos (with their credentials) first, then any explicitly configured URL,
+	// then Maven Central as the public fallback. Distinct from the deps.dev
+	// resolve-online endpoint.
 	if components.ResolveOnline() {
-		remoteSource = mavenresolve.NewRemoteSource(mavenresolve.RemoteOptions{
-			BaseURL: components.MavenRepoURL(),
-			Token:   components.MavenRepoToken(),
-		})
+		sources = append(sources, settings.RemoteSources(nil)...)
+		if url := components.MavenRepoURL(); url != "" {
+			opts := mavenresolve.RemoteOptions{BaseURL: url}
+			// With a username, the token is the Basic-auth password (JFrog
+			// reference token); without one, it is a Bearer token.
+			if user := components.MavenRepoUser(); user != "" {
+				opts.Username = user
+				opts.Password = components.MavenRepoToken()
+			} else {
+				opts.Token = components.MavenRepoToken()
+			}
+			sources = append(sources, mavenresolve.NewRemoteSource(opts))
+		}
+		// Maven Central public fallback.
+		sources = append(sources, mavenresolve.NewRemoteSource(mavenresolve.RemoteOptions{}))
 	}
 
-	chain := mavenresolve.NewChain(repoSource, localSource, remoteSource)
+	chain := mavenresolve.NewChain(sources...)
 	if chain.Empty() {
 		return nil
 	}

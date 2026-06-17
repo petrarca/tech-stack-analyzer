@@ -38,6 +38,10 @@ type ScanOptions struct {
 	DependencyGraph          string   `yaml:"dependency_graph,omitempty" json:"dependency_graph,omitempty" default:"off"` // off | direct | full
 	ResolveOnline            bool     `yaml:"resolve_online,omitempty" json:"resolve_online,omitempty"`                   // online dependency-resolution fallback (default false)
 	ResolveOnlineEndpoint    string   `yaml:"resolve_online_endpoint,omitempty" json:"resolve_online_endpoint,omitempty"` // base URL override for online resolution (empty = public deps.dev)
+	MavenLocalRepo           bool     `yaml:"maven_local_repo,omitempty" json:"maven_local_repo,omitempty"`               // read local ~/.m2 for Maven BOM/parent POMs (default false)
+	MavenLocalRepoDir        string   `yaml:"maven_local_repo_dir,omitempty" json:"maven_local_repo_dir,omitempty"`       // override local Maven repo path (empty = Maven default resolution)
+	MavenRepoURL             string   `yaml:"maven_repo_url,omitempty" json:"maven_repo_url,omitempty"`                   // remote Maven repo base for BOM/parent POM fetch (empty = Maven Central). Token via STACK_ANALYZER_MAVEN_TOKEN env, never in config
+	MavenSettings            string   `yaml:"maven_settings,omitempty" json:"maven_settings,omitempty"`                   // path to a Maven settings.xml (repos + credentials); empty = ~/.m2/settings.xml. Per-scan override
 }
 
 // SubsystemGroup defines a named group of path prefixes for subsystem stats rollup.

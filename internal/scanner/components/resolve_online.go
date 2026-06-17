@@ -3,6 +3,7 @@ package components
 import (
 	"sync"
 
+	"github.com/petrarca/tech-stack-analyzer/internal/scanner/mavenresolve"
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/resolver"
 )
 
@@ -60,10 +61,12 @@ func ResolveOnlineEndpoint() string {
 // (local cache) and the network (remote) are both explicit.
 var (
 	mavenSettingsMu   sync.RWMutex
-	useMavenLocalRepo bool   // read ~/.m2/repository for BOM/parent POMs
-	mavenLocalRepoDir string // override for the local repo path ("" = default)
-	mavenRepoURL      string // remote Maven repo base ("" = Maven Central)
-	mavenRepoToken    string // bearer token for an authenticated remote repo
+	useMavenLocalRepo bool                   // read ~/.m2/repository for BOM/parent POMs
+	mavenLocalRepoDir string                 // override for the local repo path ("" = default)
+	mavenRepoURL      string                 // remote Maven repo base ("" = Maven Central)
+	mavenRepoUser     string                 // username for Basic auth (paired with token)
+	mavenRepoToken    string                 // token: Basic password (with user) or Bearer
+	mavenSettings     *mavenresolve.Settings // parsed settings.xml (repos, creds, local repo)
 )
 
 // SetUseMavenLocalRepo enables reading the local ~/.m2 repository as a POM
@@ -118,11 +121,43 @@ func SetMavenRepoToken(token string) {
 	mavenRepoToken = token
 }
 
-// MavenRepoToken returns the configured remote Maven repository bearer token.
+// MavenRepoToken returns the configured remote Maven repository token (Basic
+// password when a user is set, otherwise a Bearer token).
 func MavenRepoToken() string {
 	mavenSettingsMu.RLock()
 	defer mavenSettingsMu.RUnlock()
 	return mavenRepoToken
+}
+
+// SetMavenRepoUser sets the username for Basic auth against the configured
+// remote Maven repository (env-sourced, paired with the token as password).
+func SetMavenRepoUser(user string) {
+	mavenSettingsMu.Lock()
+	defer mavenSettingsMu.Unlock()
+	mavenRepoUser = user
+}
+
+// MavenRepoUser returns the configured remote Maven repository username.
+func MavenRepoUser() string {
+	mavenSettingsMu.RLock()
+	defer mavenSettingsMu.RUnlock()
+	return mavenRepoUser
+}
+
+// SetMavenSettings stores the loaded Maven settings.xml (repository URLs,
+// credentials, and local-repository path) for reuse by the resolution chain.
+func SetMavenSettings(s *mavenresolve.Settings) {
+	mavenSettingsMu.Lock()
+	defer mavenSettingsMu.Unlock()
+	mavenSettings = s
+}
+
+// MavenSettings returns the loaded Maven settings.xml, or nil when none was
+// configured/found.
+func MavenSettings() *mavenresolve.Settings {
+	mavenSettingsMu.RLock()
+	defer mavenSettingsMu.RUnlock()
+	return mavenSettings
 }
 
 // depsDevResolver builds the online fallback resolver, wired to the configured
