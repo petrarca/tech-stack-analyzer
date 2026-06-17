@@ -44,7 +44,7 @@ func TestHybridResolver_DepsDevPlusRepoFallback(t *testing.T) {
 		"com.private:app:1.0":  pom("com.private", "app", "1.0", "com.private:core:1.0"),
 		"com.private:core:1.0": pom("com.private", "core", "1.0"),
 	}
-	repo := NewGraphResolver(repoSrc)
+	repo := NewGraphResolver(repoSrc, nil)
 
 	h := NewHybridResolver(depsDev, repo)
 	if h == nil {
@@ -79,7 +79,7 @@ func TestHybridResolver_NoUnresolvedSkipsCrawl(t *testing.T) {
 		"org.public:lib@1.0": {{From: ".", To: "org.public:lib@1.0"}},
 	}}
 	// A repo source that would panic if queried (it won't be).
-	repo := NewGraphResolver(pomMap{})
+	repo := NewGraphResolver(pomMap{}, nil)
 
 	h := NewHybridResolver(depsDev, repo)
 	res, err := h.Resolve(resolver.Request{
@@ -95,7 +95,7 @@ func TestHybridResolver_NoUnresolvedSkipsCrawl(t *testing.T) {
 }
 
 func TestNewHybridResolver_NilArgs(t *testing.T) {
-	if NewHybridResolver(nil, NewGraphResolver(pomMap{})) != nil {
+	if NewHybridResolver(nil, NewGraphResolver(pomMap{}, nil)) != nil {
 		t.Error("nil deps.dev should yield nil hybrid")
 	}
 	if NewHybridResolver(fakeDepsDev{}, nil) != nil {

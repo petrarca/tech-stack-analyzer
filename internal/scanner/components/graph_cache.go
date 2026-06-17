@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/blobcache"
+	"github.com/petrarca/tech-stack-analyzer/internal/scanner/mavenresolve"
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
 
@@ -14,6 +15,9 @@ import (
 var (
 	graphCacheMu sync.Mutex
 	graphCache   = map[string]blobcache.Cache{}
+
+	mavenMemoMu sync.Mutex
+	mavenMemo   = map[string]*mavenresolve.ChildMemo{}
 )
 
 // GetGraphCache returns the scan-wide blob cache for the tree behind provider,
@@ -30,4 +34,19 @@ func GetGraphCache(provider types.Provider) blobcache.Cache {
 	c := blobcache.NewMemory()
 	graphCache[base] = c
 	return c
+}
+
+// GetMavenChildMemo returns the scan-wide Maven graph child memo for the tree
+// behind provider, keyed by base path. Sharing it across all components lets a
+// coordinate's transitive subtree be resolved once instead of per component.
+func GetMavenChildMemo(provider types.Provider) *mavenresolve.ChildMemo {
+	base := provider.GetBasePath()
+	mavenMemoMu.Lock()
+	defer mavenMemoMu.Unlock()
+	if m, ok := mavenMemo[base]; ok {
+		return m
+	}
+	m := mavenresolve.NewChildMemo()
+	mavenMemo[base] = m
+	return m
 }

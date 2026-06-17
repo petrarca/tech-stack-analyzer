@@ -64,7 +64,7 @@ func TestGraphResolver_Transitive(t *testing.T) {
 		"g:c:2.0": pom("g", "c", "2.0"),
 		"g:c:1.0": pom("g", "c", "1.0"),
 	}
-	r := NewGraphResolver(src)
+	r := NewGraphResolver(src, nil)
 
 	res, err := r.Resolve(resolver.Request{
 		Mode:         types.DependencyGraphFull,
@@ -95,7 +95,7 @@ func TestGraphResolver_Transitive(t *testing.T) {
 
 func TestGraphResolver_DirectModeNoTransitive(t *testing.T) {
 	src := pomMap{"g:a:1.0": pom("g", "a", "1.0", "g:b:1.0")}
-	r := NewGraphResolver(src)
+	r := NewGraphResolver(src, nil)
 	res, _ := r.Resolve(resolver.Request{
 		Mode:         types.DependencyGraphDirect,
 		Dependencies: []resolver.Coordinates{{Name: "g:a", Version: "1.0"}},
@@ -115,7 +115,7 @@ func TestGraphResolver_Cycle(t *testing.T) {
 		"g:a:1.0": pom("g", "a", "1.0", "g:b:1.0"),
 		"g:b:1.0": pom("g", "b", "1.0", "g:a:1.0"),
 	}
-	r := NewGraphResolver(src)
+	r := NewGraphResolver(src, nil)
 	res, err := r.Resolve(resolver.Request{
 		Mode:         types.DependencyGraphFull,
 		Dependencies: []resolver.Coordinates{{Name: "g:a", Version: "1.0"}},
@@ -132,7 +132,7 @@ func TestGraphResolver_Cycle(t *testing.T) {
 func TestGraphResolver_MissingPomNoChildren(t *testing.T) {
 	// a's POM is absent (e.g. private/unreachable): direct edge stays, no crash.
 	src := pomMap{}
-	r := NewGraphResolver(src)
+	r := NewGraphResolver(src, nil)
 	res, _ := r.Resolve(resolver.Request{
 		Mode:         types.DependencyGraphFull,
 		Dependencies: []resolver.Coordinates{{Name: "g:a", Version: "1.0"}},

@@ -18,6 +18,35 @@ const maxGraphDepth = 64
 // out cuts wall-clock time without overwhelming a repository.
 const graphFetchConcurrency = 16
 
+// ChildMemo memoizes a coordinate's resolved direct children (its declared,
+// version-resolved dependencies) keyed by "coordinate@version". A published
+// POM's declared dependencies are fixed, so this is context-independent and can
+// be shared across every component in a scan -- avoiding re-fetching and
+// re-parsing the same (large, shared) subtrees per component, which is the
+// dominant cost of a multi-module transitive crawl. Concurrency-safe.
+type ChildMemo struct {
+	mu sync.Mutex
+	m  map[string][]types.Dependency
+}
+
+// NewChildMemo returns an empty memo.
+func NewChildMemo() *ChildMemo {
+	return &ChildMemo{m: make(map[string][]types.Dependency)}
+}
+
+func (cm *ChildMemo) get(key string) ([]types.Dependency, bool) {
+	cm.mu.Lock()
+	defer cm.mu.Unlock()
+	v, ok := cm.m[key]
+	return v, ok
+}
+
+func (cm *ChildMemo) put(key string, deps []types.Dependency) {
+	cm.mu.Lock()
+	defer cm.mu.Unlock()
+	cm.m[key] = deps
+}
+
 // GraphResolver produces the transitive Maven dependency graph by crawling POMs
 // from the repository chain (in-repo source index, local ~/.m2, configured
 // remote) -- the way Maven and Trivy resolve, but offline-first and tolerant of
@@ -31,15 +60,36 @@ const graphFetchConcurrency = 16
 type GraphResolver struct {
 	// source fetches a POM by coordinates (the composed POM-source chain).
 	source PomSource
+	// memo caches each coordinate's resolved children, shared across the scan.
+	memo *ChildMemo
 }
 
-// NewGraphResolver builds a GraphResolver over a POM source (typically a Chain).
-// Returns nil when source is nil so callers can include it conditionally.
-func NewGraphResolver(source PomSource) *GraphResolver {
+// NewGraphResolver builds a GraphResolver over a POM source (typically a Chain),
+// sharing a child memo across the scan. A nil memo creates a private one (no
+// cross-component reuse). Returns nil when source is nil.
+func NewGraphResolver(source PomSource, memo *ChildMemo) *GraphResolver {
 	if source == nil {
 		return nil
 	}
-	return &GraphResolver{source: source}
+	if memo == nil {
+		memo = NewChildMemo()
+	}
+	return &GraphResolver{source: source, memo: memo}
+}
+
+// resolveChildren returns the resolved direct children of coordinate@version,
+// using the scan-wide memo to avoid re-fetching/re-parsing shared subtrees.
+func (r *GraphResolver) resolveChildren(group, artifact, version string) []types.Dependency {
+	key := group + ":" + artifact + "@" + version
+	if deps, ok := r.memo.get(key); ok {
+		return deps
+	}
+	var deps []types.Dependency
+	if content, _, ok := r.source.FetchPOM(group, artifact, version); ok {
+		deps = parsers.ParsePomDependenciesForGraph(content, r.source.FetchPOM)
+	}
+	r.memo.put(key, deps) // memoize even an empty result (private/absent)
+	return deps
 }
 
 // Name implements resolver.DependencyResolver.
@@ -62,7 +112,7 @@ func (r *GraphResolver) Resolve(req resolver.Request) (resolver.Result, error) {
 	// chosen version per coordinate, edges by coordinate, then rewriting edge
 	// endpoints to the chosen version at the end.
 	c := &crawl{
-		source:   r.source,
+		resolver: r,
 		chosen:   make(map[string]string), // coordinate -> mediated version
 		edges:    make([]coordEdge, 0),    // edges keyed by coordinate (from/to)
 		seen:     make(map[string]bool),   // coordinate-edge dedup
@@ -117,7 +167,9 @@ func (c *crawl) processLevel(level []qitem) []qitem {
 		items = append(items, qitem{it.coord, c.chosen[it.coord], it.depth})
 	}
 
-	// Fetch + parse each item's children concurrently.
+	// Resolve each item's children concurrently. resolveChildren is memoized
+	// scan-wide, so a coordinate's (large, shared) subtree is fetched+parsed
+	// once and reused across components rather than re-walked per component.
 	results := make([][]types.Dependency, len(items))
 	sem := make(chan struct{}, graphFetchConcurrency)
 	var wg sync.WaitGroup
@@ -131,11 +183,7 @@ func (c *crawl) processLevel(level []qitem) []qitem {
 		go func(i int, group, artifact, version string) {
 			defer wg.Done()
 			defer func() { <-sem }()
-			content, _, ok := c.source.FetchPOM(group, artifact, version)
-			if !ok {
-				return // private/absent or transient: no children, never aborts
-			}
-			results[i] = parsers.ParsePomDependenciesForGraph(content, c.source.FetchPOM)
+			results[i] = c.resolver.resolveChildren(group, artifact, version)
 		}(i, group, artifact, items[i].version)
 	}
 	wg.Wait()
@@ -161,7 +209,7 @@ type coordEdge struct{ from, to string }
 
 // crawl holds the mutable state of one transitive walk.
 type crawl struct {
-	source   PomSource
+	resolver *GraphResolver
 	chosen   map[string]string // coordinate -> mediated (nearest-wins) version
 	edges    []coordEdge
 	seen     map[string]bool // coordinate-edge dedup

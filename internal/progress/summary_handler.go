@@ -123,26 +123,27 @@ func (h *SummaryHandler) render() {
 
 	h.spinIdx = (h.spinIdx + 1) % len(spinFrames)
 	spinner := h.spinnerStyle.Render(spinFrames[h.spinIdx])
+	elapsed := time.Since(h.scanStart).Truncate(time.Second)
 
-	var line string
-	if h.resolving {
-		// Resolution phase: show the resolution status, not file/dir counts.
-		line = fmt.Sprintf("  %s  %s", spinner, h.labelStyle.Render(h.resolveInfo))
-	} else {
-		elapsed := time.Since(h.scanStart).Truncate(time.Second)
-		var parts []string
-		parts = append(parts, h.countStyle.Render(fmt.Sprintf("%d", h.dirCount))+" "+h.labelStyle.Render("dirs"))
-		if h.fileCount > 0 {
-			parts = append(parts, h.countStyle.Render(fmt.Sprintf("%d", h.fileCount))+" "+h.labelStyle.Render("files"))
-		}
-		if h.compCount > 0 {
-			parts = append(parts, h.compStyle.Render(fmt.Sprintf("%d", h.compCount))+" "+h.labelStyle.Render("components"))
-		}
-		line = fmt.Sprintf("  %s  %s  %s",
-			spinner,
-			strings.Join(parts, h.dimStyle.Render("  ·  ")),
-			h.dimStyle.Render(fmt.Sprintf("(%s)", elapsed)),
-		)
+	// Always show the scan counts (dirs/files/components), then append the
+	// resolution status when resolution is in progress -- so the file-walk
+	// progress remains visible even while dependencies are being resolved.
+	var parts []string
+	parts = append(parts, h.countStyle.Render(fmt.Sprintf("%d", h.dirCount))+" "+h.labelStyle.Render("dirs"))
+	if h.fileCount > 0 {
+		parts = append(parts, h.countStyle.Render(fmt.Sprintf("%d", h.fileCount))+" "+h.labelStyle.Render("files"))
+	}
+	if h.compCount > 0 {
+		parts = append(parts, h.compStyle.Render(fmt.Sprintf("%d", h.compCount))+" "+h.labelStyle.Render("components"))
+	}
+
+	line := fmt.Sprintf("  %s  %s  %s",
+		spinner,
+		strings.Join(parts, h.dimStyle.Render("  ·  ")),
+		h.dimStyle.Render(fmt.Sprintf("(%s)", elapsed)),
+	)
+	if h.resolving && h.resolveInfo != "" {
+		line += h.dimStyle.Render("  ·  ") + h.labelStyle.Render(h.resolveInfo)
 	}
 
 	// \r moves to line start; \033[2K erases the entire line (avoids ANSI-length padding issues)

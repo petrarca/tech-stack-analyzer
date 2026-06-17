@@ -307,7 +307,9 @@ func (d *Detector) mavenRepoGraphResolver(provider types.Provider) *mavenresolve
 	if chain.Empty() {
 		return nil
 	}
-	return mavenresolve.NewGraphResolver(chain)
+	// Share the child memo scan-wide so each coordinate's subtree resolves once
+	// across all components, not per component.
+	return mavenresolve.NewGraphResolver(chain, components.GetMavenChildMemo(provider))
 }
 
 // mergeDependencyTreeVersions backfills resolved versions from a pre-generated
