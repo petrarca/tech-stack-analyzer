@@ -35,11 +35,12 @@ type Settings struct {
 	PrimaryLanguageThreshold float64                   // Minimum percentage for primary languages (default 0.05 = 5%)
 	UseLockFiles             bool                      // Use lock files for dependency resolution (default true)
 	DependencyGraph          string                    // Package-to-package edge emission: "off" (default), "direct", or "full"
-	ResolveOnline            bool                      // Allow online (deps.dev) dependency resolution as a fallback for manifest-only ecosystems (default false)
-	ResolveOnlineEndpoint    string                    // Base URL for online resolution; empty = public deps.dev. Override for a compatible facade or mirror
+	UseDepsDev               bool                      // Enable online deps.dev dependency-graph resolution (default false)
+	DepsDevEndpoint          string                    // Base URL for deps.dev; empty = public. Override for a compatible facade or mirror
+	UseMavenCentral          bool                      // Enable the public Maven Central fallback for Maven BOM/parent POM fetch (default false)
 	MavenLocalRepo           bool                      // Read the local ~/.m2 repository for Maven BOM/parent POMs (offline; reads outside the scanned tree)
 	MavenLocalRepoDir        string                    // Override the local Maven repo path; empty = MAVEN_REPO_LOCAL / MAVEN_OPTS / ~/.m2/repository
-	MavenRepoURL             string                    // Remote Maven repository base for BOM/parent POM fetch; empty = Maven Central (requires --resolve-online)
+	MavenRepoURL             string                    // Remote Maven repository base for BOM/parent POM fetch (e.g. internal JFrog); always used when set (no extra flag needed)
 	MavenSettings            string                    // Path to a Maven settings.xml (repos+credentials); empty = ~/.m2/settings.xml. Per-scan override for projects with their own settings
 	MavenRepoToken           string                    // Token for an authenticated remote Maven repo; sourced from the environment, never persisted
 	MavenRepoUser            string                    // Username for Basic auth against the remote Maven repo; sourced from the environment
@@ -232,10 +233,17 @@ func (s *Settings) Validate() error {
 		}
 	}
 
-	// Validate online-resolution endpoint if specified (must be an http(s) URL).
-	if s.ResolveOnlineEndpoint != "" {
-		if u, err := url.Parse(s.ResolveOnlineEndpoint); err != nil || (u.Scheme != "http" && u.Scheme != "https") {
-			return fmt.Errorf("invalid resolve-online-endpoint '%s': must be an http(s) URL", s.ResolveOnlineEndpoint)
+	// Validate the deps.dev endpoint if specified (must be an http(s) URL).
+	if s.DepsDevEndpoint != "" {
+		if u, err := url.Parse(s.DepsDevEndpoint); err != nil || (u.Scheme != "http" && u.Scheme != "https") {
+			return fmt.Errorf("invalid deps-dev-endpoint '%s': must be an http(s) URL", s.DepsDevEndpoint)
+		}
+	}
+
+	// Validate the Maven repository URL if specified (must be an http(s) URL).
+	if s.MavenRepoURL != "" {
+		if u, err := url.Parse(s.MavenRepoURL); err != nil || (u.Scheme != "http" && u.Scheme != "https") {
+			return fmt.Errorf("invalid maven-repo-url '%s': must be an http(s) URL", s.MavenRepoURL)
 		}
 	}
 

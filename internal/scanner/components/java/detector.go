@@ -214,25 +214,38 @@ func (d *Detector) newBomResolver(provider types.Provider) parsers.BomResolver {
 		sources = append(sources, mavenresolve.NewLocalRepoSource(dir))
 	}
 
-	// Tiers 3+: remote repositories (opt-in via online resolution). settings.xml
-	// repos (with their credentials) first, then any explicitly configured URL,
-	// then Maven Central as the public fallback. Distinct from the deps.dev
-	// resolve-online endpoint.
-	if components.ResolveOnline() {
-		sources = append(sources, settings.RemoteSources(nil)...)
-		if url := components.MavenRepoURL(); url != "" {
-			opts := mavenresolve.RemoteOptions{BaseURL: url}
-			// With a username, the token is the Basic-auth password (JFrog
-			// reference token); without one, it is a Bearer token.
-			if user := components.MavenRepoUser(); user != "" {
-				opts.Username = user
-				opts.Password = components.MavenRepoToken()
-			} else {
-				opts.Token = components.MavenRepoToken()
-			}
-			sources = append(sources, mavenresolve.NewRemoteSource(opts))
+	// Tiers 3+: remote repositories.
+	//
+	// An EXPLICITLY configured repository -- settings.xml <repositories> or
+	// --maven-repo-url -- is the user's deliberate opt-in, so it is always
+	// used; configuring it IS the consent to reach it. Such repositories are
+	// typically internal mirrors/virtual repos that already proxy public
+	// artifacts.
+	//
+	// Maven Central is the implicit PUBLIC fallback. It is added only under
+	// --maven-central AND only when no explicit repository is configured --
+	// otherwise it would bypass or supplement the user's chosen internal
+	// mirror, which is both pointless (the mirror proxies public artifacts) and
+	// a potential egress surprise.
+	explicitConfigured := false
+	if repos := settings.RemoteSources(nil); len(repos) > 0 {
+		sources = append(sources, repos...)
+		explicitConfigured = true
+	}
+	if url := components.MavenRepoURL(); url != "" {
+		opts := mavenresolve.RemoteOptions{BaseURL: url}
+		// With a username, the token is the Basic-auth password (JFrog
+		// reference token); without one, it is a Bearer token.
+		if user := components.MavenRepoUser(); user != "" {
+			opts.Username = user
+			opts.Password = components.MavenRepoToken()
+		} else {
+			opts.Token = components.MavenRepoToken()
 		}
-		// Maven Central public fallback.
+		sources = append(sources, mavenresolve.NewRemoteSource(opts))
+		explicitConfigured = true
+	}
+	if components.UseMavenCentral() && !explicitConfigured {
 		sources = append(sources, mavenresolve.NewRemoteSource(mavenresolve.RemoteOptions{}))
 	}
 

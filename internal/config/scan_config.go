@@ -36,8 +36,9 @@ type ScanOptions struct {
 	PrimaryLanguageThreshold float64  `yaml:"primary_language_threshold,omitempty" json:"primary_language_threshold,omitempty" default:"0.05"`
 	UseLockFiles             *bool    `yaml:"use_lock_files,omitempty" json:"use_lock_files,omitempty"`                   // nil = default (true), explicit false disables
 	DependencyGraph          string   `yaml:"dependency_graph,omitempty" json:"dependency_graph,omitempty" default:"off"` // off | direct | full
-	ResolveOnline            bool     `yaml:"resolve_online,omitempty" json:"resolve_online,omitempty"`                   // online dependency-resolution fallback (default false)
-	ResolveOnlineEndpoint    string   `yaml:"resolve_online_endpoint,omitempty" json:"resolve_online_endpoint,omitempty"` // base URL override for online resolution (empty = public deps.dev)
+	UseDepsDev               bool     `yaml:"deps_dev,omitempty" json:"deps_dev,omitempty"`                               // enable online deps.dev dependency-graph resolution (default false)
+	DepsDevEndpoint          string   `yaml:"deps_dev_endpoint,omitempty" json:"deps_dev_endpoint,omitempty"`             // base URL override for deps.dev (empty = public)
+	UseMavenCentral          bool     `yaml:"maven_central,omitempty" json:"maven_central,omitempty"`                     // enable the public Maven Central fallback for Maven BOM/parent POM fetch (default false)
 	MavenLocalRepo           bool     `yaml:"maven_local_repo,omitempty" json:"maven_local_repo,omitempty"`               // read local ~/.m2 for Maven BOM/parent POMs (default false)
 	MavenLocalRepoDir        string   `yaml:"maven_local_repo_dir,omitempty" json:"maven_local_repo_dir,omitempty"`       // override local Maven repo path (empty = Maven default resolution)
 	MavenRepoURL             string   `yaml:"maven_repo_url,omitempty" json:"maven_repo_url,omitempty"`                   // remote Maven repo base for BOM/parent POM fetch (empty = Maven Central). Token via STACK_ANALYZER_MAVEN_TOKEN env, never in config

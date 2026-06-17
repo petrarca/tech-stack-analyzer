@@ -7,52 +7,72 @@ import (
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/resolver"
 )
 
-// Online (deps.dev) dependency resolution is off by default to preserve the
-// offline guarantee; the online resolver only fills gaps where no local
-// lockfile/tree-file is present, and only when explicitly enabled. The endpoint
-// is configurable so an API-compatible facade or mirror can be used instead of
-// the public deps.dev API.
-// resolveOnlineMu and resolveOnlineEndpointMu are intentionally separate: the
-// two settings are logically independent and set by different callers at
-// startup. Sharing one lock would couple unrelated state (F-14).
+// The public online sources are off by default to preserve the offline
+// guarantee, and are enabled independently:
+//
+//   - deps.dev: online dependency-graph resolution (edges) for manifest-only
+//     ecosystems. Endpoint configurable for an API-compatible facade/mirror.
+//   - Maven Central: the public fallback for Maven BOM/parent POM fetch.
+//
+// They are separate concerns (graph vs. version resolution, different
+// services), so each has its own switch rather than one umbrella flag. An
+// explicitly configured private Maven repo (--maven-repo-url) is a distinct,
+// always-on opt-in and is not gated here.
 var (
-	resolveOnlineMu sync.RWMutex
-	resolveOnline   bool
+	useDepsDevMu sync.RWMutex
+	useDepsDev   bool
 
-	resolveOnlineEndpointMu sync.RWMutex
-	resolveOnlineEndpoint   string
+	depsDevEndpointMu sync.RWMutex
+	depsDevEndpoint   string
+
+	useMavenCentralMu sync.RWMutex
+	useMavenCentral   bool
 )
 
-// SetResolveOnline enables or disables the online dependency-resolution
-// fallback.
-func SetResolveOnline(enable bool) {
-	resolveOnlineMu.Lock()
-	defer resolveOnlineMu.Unlock()
-	resolveOnline = enable
+// SetUseDepsDev enables or disables online dependency-graph resolution via
+// deps.dev.
+func SetUseDepsDev(enable bool) {
+	useDepsDevMu.Lock()
+	defer useDepsDevMu.Unlock()
+	useDepsDev = enable
 }
 
-// ResolveOnline reports whether the online fallback is enabled.
-func ResolveOnline() bool {
-	resolveOnlineMu.RLock()
-	defer resolveOnlineMu.RUnlock()
-	return resolveOnline
+// UseDepsDev reports whether deps.dev resolution is enabled.
+func UseDepsDev() bool {
+	useDepsDevMu.RLock()
+	defer useDepsDevMu.RUnlock()
+	return useDepsDev
 }
 
-// SetResolveOnlineEndpoint overrides the online-resolver base URL. Empty uses
-// the public deps.dev API. A deps.dev-API-compatible facade or mirror (same
+// SetDepsDevEndpoint overrides the deps.dev base URL. Empty uses the public
+// deps.dev API. A deps.dev-API-compatible facade or mirror (same
 // /v3/systems/.../versions/...:dependencies shape) can be supplied here.
-func SetResolveOnlineEndpoint(endpoint string) {
-	resolveOnlineEndpointMu.Lock()
-	defer resolveOnlineEndpointMu.Unlock()
-	resolveOnlineEndpoint = endpoint
+func SetDepsDevEndpoint(endpoint string) {
+	depsDevEndpointMu.Lock()
+	defer depsDevEndpointMu.Unlock()
+	depsDevEndpoint = endpoint
 }
 
-// ResolveOnlineEndpoint returns the configured online-resolver base URL ("" =
-// public deps.dev).
-func ResolveOnlineEndpoint() string {
-	resolveOnlineEndpointMu.RLock()
-	defer resolveOnlineEndpointMu.RUnlock()
-	return resolveOnlineEndpoint
+// DepsDevEndpoint returns the configured deps.dev base URL ("" = public).
+func DepsDevEndpoint() string {
+	depsDevEndpointMu.RLock()
+	defer depsDevEndpointMu.RUnlock()
+	return depsDevEndpoint
+}
+
+// SetUseMavenCentral enables or disables the public Maven Central fallback for
+// Maven BOM/parent POM fetch.
+func SetUseMavenCentral(enable bool) {
+	useMavenCentralMu.Lock()
+	defer useMavenCentralMu.Unlock()
+	useMavenCentral = enable
+}
+
+// UseMavenCentral reports whether the public Maven Central fallback is enabled.
+func UseMavenCentral() bool {
+	useMavenCentralMu.RLock()
+	defer useMavenCentralMu.RUnlock()
+	return useMavenCentral
 }
 
 // Maven repository settings for offline-first version resolution. The local
@@ -161,13 +181,13 @@ func MavenSettings() *mavenresolve.Settings {
 }
 
 // depsDevResolver builds the online fallback resolver, wired to the configured
-// endpoint when online resolution is enabled. When disabled it carries no
+// endpoint when deps.dev resolution is enabled. When disabled it carries no
 // Online resolver and falls through (no edges, no network), preserving the
 // offline default.
 func depsDevResolver() *resolver.DepsDevResolver {
-	r := &resolver.DepsDevResolver{Enabled: ResolveOnline()}
+	r := &resolver.DepsDevResolver{Enabled: UseDepsDev()}
 	if r.Enabled {
-		r.Online = resolver.NewDepsDevFetcher(ResolveOnlineEndpoint(), nil)
+		r.Online = resolver.NewDepsDevFetcher(DepsDevEndpoint(), nil)
 	}
 	return r
 }

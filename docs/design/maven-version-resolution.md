@@ -362,6 +362,25 @@ resolves as: `--maven-local-repo-dir` -> settings.xml `<localRepository>` ->
 not carry a given coordinate (e.g. an internal JFrog virtual repo returning 404
 for a public BOM) simply falls through to the next.
 
+#### Online sources are gated independently
+
+The two public online sources are separate concerns and have their own
+switches, rather than one umbrella flag:
+
+- **`--maven-central` / `maven_central`** enables the public Maven Central
+  fallback for resolving Maven BOM/parent versions.
+- **`--deps-dev` / `deps_dev`** enables deps.dev for transitive dependency-graph
+  edges (effective only with `--dependency-graph direct|full`).
+
+An **explicitly configured** Maven repository (`--maven-repo-url` or
+settings.xml repos) is the user's deliberate opt-in and is **always** used --
+no online flag required; configuring it is the consent. When such a repository
+is set, Maven Central is **not** appended (an internal virtual repo already
+proxies public artifacts, so adding Central would be redundant and an egress
+surprise). For nais this means a single `--maven-repo-url` pointing at the
+aggregating JFrog virtual repo (plus the env token) reaches ~99% Maven version
+coverage with no other online flag.
+
 ### Transitive components in the SBOM (implemented)
 
 By default the SBOM contains the **declared** dependencies. When the scan

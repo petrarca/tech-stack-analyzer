@@ -20,7 +20,7 @@ import (
 var ErrCoordinateNotFound = errors.New("coordinate not found in online resolver")
 
 // DefaultDepsDevBaseURL is the public deps.dev v3 API base. It can be overridden
-// (SetResolveOnlineEndpoint / config) to point at any API-compatible facade or
+// (SetDepsDevEndpoint / config) to point at any API-compatible facade or
 // mirror that exposes the same
 // /v3/systems/{system}/packages/{name}/versions/{version}:dependencies shape.
 const DefaultDepsDevBaseURL = "https://api.deps.dev"
