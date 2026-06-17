@@ -396,8 +396,10 @@ func extractVersion(valueStr string) string {
 		strings.HasPrefix(valueStr, ">=") || strings.HasPrefix(valueStr, "<=") ||
 		strings.HasPrefix(valueStr, "==") || strings.HasPrefix(valueStr, "!=") ||
 		strings.HasPrefix(valueStr, ">") || strings.HasPrefix(valueStr, "<") {
-		// Strip the operator for clean version - check 2-char operators first
-		if len(valueStr) > 2 && (strings.HasPrefix(valueStr, ">=") || strings.HasPrefix(valueStr, "<=") || strings.HasPrefix(valueStr, "==") || strings.HasPrefix(valueStr, "!=")) {
+		// Strip the operator for clean version - check 2-char operators first.
+		// "~=" (compatible release) must be handled here too; otherwise the
+		// single-char "~" branch leaves a stray leading "=".
+		if len(valueStr) > 2 && (strings.HasPrefix(valueStr, ">=") || strings.HasPrefix(valueStr, "<=") || strings.HasPrefix(valueStr, "==") || strings.HasPrefix(valueStr, "!=") || strings.HasPrefix(valueStr, "~=")) {
 			return valueStr[2:]
 		}
 		if len(valueStr) > 1 && (strings.HasPrefix(valueStr, "^") || strings.HasPrefix(valueStr, "~") || strings.HasPrefix(valueStr, ">") || strings.HasPrefix(valueStr, "<")) {

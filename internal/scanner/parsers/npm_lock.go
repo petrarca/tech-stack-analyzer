@@ -20,13 +20,49 @@ type PackageLockJSON struct {
 // PackageInfo represents a package in package-lock.json
 // Enhanced with deps.dev patterns for better dependency classification
 type PackageInfo struct {
-	Version      string                 `json:"version"`
-	Resolved     string                 `json:"resolved,omitempty"`
-	Link         bool                   `json:"link,omitempty"`
-	Dev          bool                   `json:"dev,omitempty"`
-	Optional     bool                   `json:"optional,omitempty"`
-	Bundled      bool                   `json:"bundled,omitempty"`
-	Dependencies map[string]PackageInfo `json:"dependencies,omitempty"`
+	Version      string          `json:"version"`
+	Resolved     string          `json:"resolved,omitempty"`
+	Link         bool            `json:"link,omitempty"`
+	Dev          bool            `json:"dev,omitempty"`
+	Optional     bool            `json:"optional,omitempty"`
+	Bundled      bool            `json:"bundled,omitempty"`
+	Dependencies npmDependencies `json:"dependencies,omitempty"`
+}
+
+// npmDependencies tolerates the two incompatible shapes the "dependencies"
+// field takes across package-lock.json formats:
+//   - In the legacy v1 "dependencies" tree, each value is a nested package
+//     object (recursed into for transitive parsing).
+//   - In the v2/v3 "packages" map (and inside each package object there), each
+//     value is a version-range STRING (e.g. "otplib": "^12.0.1").
+//
+// A single struct-typed map cannot decode both; before this, a string value
+// caused the whole lockfile unmarshal to fail and every dependency to be
+// dropped (emitted versionless). This type keeps the object form (the only
+// form any caller reads) and silently ignores string values.
+type npmDependencies map[string]PackageInfo
+
+// UnmarshalJSON decodes only object-valued entries, skipping string-valued
+// ones (version ranges) so a mixed/foreign shape never fails the whole parse.
+func (d *npmDependencies) UnmarshalJSON(data []byte) error {
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	out := make(npmDependencies, len(raw))
+	for name, msg := range raw {
+		trimmed := strings.TrimSpace(string(msg))
+		if len(trimmed) == 0 || trimmed[0] != '{' {
+			continue // string range (or null); not a nested package object
+		}
+		var info PackageInfo
+		if err := json.Unmarshal(msg, &info); err != nil {
+			continue // tolerate unexpected shapes rather than failing the file
+		}
+		out[name] = info
+	}
+	*d = out
+	return nil
 }
 
 // ParsePackageLockOptions contains configuration options for ParsePackageLock

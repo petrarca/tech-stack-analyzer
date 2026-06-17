@@ -149,7 +149,46 @@ func (p *PythonParser) resolveVersion(constraint string) string {
 		return "latest"
 	}
 
+	// A single exact-pin clause (PEP 440 "==", "===", or compatible-release
+	// "~=") identifies a concrete release: emit the bare version so it forms a
+	// valid PURL. "~=1.32.0" pins the release whose version is 1.32.0; treating
+	// it as a range left these dependencies versionless in the SBOM.
+	if v := pinnedRequirementVersion(constraint); v != "" {
+		return v
+	}
+
 	// Use semver package to normalize version according to PEP 440
 	// Returns original string if parsing fails
 	return semver.Normalize(semver.PyPI, constraint)
+}
+
+// pinnedRequirementVersion returns the concrete version from a single-clause
+// exact or compatible-release constraint ("==X", "===X", "~=X"), or "" when the
+// constraint is a true range, a multi-clause expression, or contains a
+// wildcard. The returned value must be a concrete release (no operators,
+// wildcards, or commas) so it is safe to use directly as a PURL version.
+func pinnedRequirementVersion(constraint string) string {
+	c := strings.TrimSpace(constraint)
+	// Multi-clause expressions (e.g. ">=1.0,<2.0") are ranges, not pins.
+	if strings.ContainsAny(c, ", ") {
+		return ""
+	}
+	switch {
+	case strings.HasPrefix(c, "==="):
+		c = c[3:]
+	case strings.HasPrefix(c, "=="), strings.HasPrefix(c, "~="):
+		c = c[2:]
+	default:
+		return ""
+	}
+	c = strings.TrimSpace(c)
+	// A trailing ".*" (e.g. "==1.4.*") is a wildcard range, not a concrete pin.
+	if c == "" || strings.Contains(c, "*") {
+		return ""
+	}
+	// Reject anything that still carries operator/range characters.
+	if strings.ContainsAny(c, "^~><=!*|") {
+		return ""
+	}
+	return c
 }

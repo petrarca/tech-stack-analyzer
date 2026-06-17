@@ -106,6 +106,56 @@ func TestParsePackageLock(t *testing.T) {
 	}
 }
 
+// TestParsePackageLock_StringDependenciesMap is a regression test for a
+// lockfile-wide unmarshal failure. In package-lock.json v2/v3, the root ""
+// entry (and each package entry) carries a "dependencies" map of
+// name -> version-range STRINGS. The struct previously typed this field as a
+// map of nested package OBJECTS, so any such string value made the entire
+// json.Unmarshal fail and ParsePackageLock return zero dependencies (every
+// component emitted versionless). Fixture uses fictional package names.
+func TestParsePackageLock_StringDependenciesMap(t *testing.T) {
+	content := `{
+		"name": "myapp",
+		"version": "1.0.0",
+		"lockfileVersion": 2,
+		"packages": {
+			"": {
+				"name": "myapp",
+				"version": "1.0.0",
+				"dependencies": {
+					"widget": "^1.2.0",
+					"@scope/helper": "^3.0.0"
+				}
+			},
+			"node_modules/widget": {
+				"version": "1.2.3",
+				"dependencies": {
+					"leftpad": "^1.0.0"
+				}
+			},
+			"node_modules/@scope/helper": {"version": "3.4.5"},
+			"node_modules/leftpad": {"version": "1.3.0"}
+		}
+	}`
+	deps := ParsePackageLock([]byte(content), nil)
+
+	got := make(map[string]string, len(deps))
+	for _, d := range deps {
+		got[d.Name] = d.Version
+	}
+	for name, version := range map[string]string{
+		"widget":        "1.2.3",
+		"@scope/helper": "3.4.5",
+	} {
+		if got[name] != version {
+			t.Errorf("dep %s: got version %q, want %q (all: %v)", name, got[name], version, got)
+		}
+	}
+	if len(deps) == 0 {
+		t.Fatal("expected dependencies, got none (lockfile unmarshal regression)")
+	}
+}
+
 func TestExtractNameFromNodeModulesPath(t *testing.T) {
 	tests := []struct {
 		path     string

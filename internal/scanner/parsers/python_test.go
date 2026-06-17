@@ -30,8 +30,8 @@ pydantic==1.8.0
 `,
 			expectedDeps: []types.Dependency{
 				{Type: "pypi", Name: "fastapi", Version: "latest"},
-				{Type: "pypi", Name: "requests", Version: ">=2.25.0"},
-				{Type: "pypi", Name: "pydantic", Version: "==1.8.0"},
+				{Type: "pypi", Name: "requests", Version: ">=2.25.0"}, // true range: left unresolved for deps.dev
+				{Type: "pypi", Name: "pydantic", Version: "1.8.0"},    // exact pin: bare version
 			},
 		},
 		{
@@ -71,8 +71,8 @@ package.with.dots==2.0.0
 `,
 			expectedDeps: []types.Dependency{
 				{Type: "pypi", Name: "package-name", Version: "latest"},
-				{Type: "pypi", Name: "another-package", Version: ">=1.0.0"},   // Canonical: underscore → hyphen
-				{Type: "pypi", Name: "package-with-dots", Version: "==2.0.0"}, // Canonical: dots → hyphens
+				{Type: "pypi", Name: "another-package", Version: ">=1.0.0"}, // Canonical: underscore -> hyphen; range left unresolved
+				{Type: "pypi", Name: "package-with-dots", Version: "2.0.0"}, // Canonical: dots -> hyphens; exact pin -> bare version
 			},
 		},
 	}
@@ -118,6 +118,42 @@ black
 	assert.Equal(t, ">=0.68.0", depMap["fastapi"].Version, "FastAPI should have correct version")
 	assert.Equal(t, "pypi", depMap["black"].Type, "Black should be python type")
 	assert.Equal(t, "latest", depMap["black"].Version, "Black should have latest version")
+}
+
+// TestParseRequirementsTxt_PinnedVersions verifies that exact ("==", "===")
+// and compatible-release ("~=") single-clause pins yield a bare, PURL-usable
+// version, while true ranges (">=", multi-clause, wildcards) are left as-is for
+// later resolution. Real-world requirements.txt mix "==" and "~=" pins, and
+// keeping the operator left those dependencies versionless in the SBOM.
+func TestParseRequirementsTxt_PinnedVersions(t *testing.T) {
+	parser := NewPythonParser()
+	content := `mylib-exact==2.9.9
+mylib-compat~=1.26.4
+mylib-compat-two~=1.32.0
+mylib-arbitrary===1.16.0
+mylib-lowerbound>=1.28.67
+mylib-multiclause>=3.0,<4.0
+mylib-wildcard==1.4.*
+`
+	deps := parser.ParseRequirementsTxt(content)
+	got := make(map[string]string, len(deps))
+	for _, d := range deps {
+		got[d.Name] = d.Version
+	}
+	want := map[string]string{
+		"mylib-exact":       "2.9.9",      // == exact pin
+		"mylib-compat":      "1.26.4",     // ~= compatible-release base
+		"mylib-compat-two":  "1.32.0",     // ~= compatible-release base
+		"mylib-arbitrary":   "1.16.0",     // === arbitrary equality
+		"mylib-lowerbound":  ">=1.28.67",  // true range, unresolved
+		"mylib-multiclause": ">=3.0,<4.0", // multi-clause range, unresolved
+		"mylib-wildcard":    "==1.4.*",    // wildcard, not a concrete pin
+	}
+	for name, version := range want {
+		if got[name] != version {
+			t.Errorf("dep %s: got version %q, want %q", name, got[name], version)
+		}
+	}
 }
 
 // Enhanced parser tests for deps.dev features
