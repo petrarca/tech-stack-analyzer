@@ -22,6 +22,7 @@ type ScanOptions struct {
 	AlsoAggregate string   `yaml:"also_aggregate,omitempty" json:"also_aggregate,omitempty" default:""`
 	SBOM          bool     `yaml:"sbom,omitempty" json:"sbom,omitempty" default:"false"`
 	AlsoSBOM      bool     `yaml:"also_sbom,omitempty" json:"also_sbom,omitempty" default:"false"`
+	SBOMFormat    string   `yaml:"sbom_format,omitempty" json:"sbom_format,omitempty" default:"cyclonedx"`
 
 	// Scan behavior
 	ExcludePatterns          []string `yaml:"exclude_patterns,omitempty" json:"exclude_patterns,omitempty"`

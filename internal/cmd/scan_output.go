@@ -97,23 +97,39 @@ func aggregateOutputFile(outputFile string) string {
 	return base + "-agg" + ext
 }
 
-// sbomOutputFile derives the SBOM companion filename from the primary output filename.
-// Returns empty string when primary output is stdout.
-// Example: "output.json" → "output.cdx.json"
+// sbomOutputFile derives the SBOM companion filename from the primary output
+// filename, using a format-specific infix. Returns empty string when primary
+// output is stdout.
+// Example: "output.json" → "output.cdx.json" (CycloneDX) or
+// "output.spdx.json" (SPDX).
 func sbomOutputFile(outputFile string) string {
 	if outputFile == "" {
 		return ""
 	}
 	ext := filepath.Ext(outputFile)
 	base := strings.TrimSuffix(outputFile, ext)
-	return base + ".cdx" + ext
+	return base + "." + sbomFileInfix(settings.SBOMFormat) + ext
 }
 
-// generateSBOM builds a CycloneDX SBOM from the payload and marshals it.
+// sbomFileInfix returns the filename infix for an SBOM format.
+func sbomFileInfix(format string) string {
+	if strings.EqualFold(format, "spdx") {
+		return "spdx"
+	}
+	return "cdx"
+}
+
+// generateSBOM builds an SBOM from the payload in the configured format and
+// marshals it. Defaults to CycloneDX when no format is set.
 func generateSBOM(payload interface{}, prettyPrint bool) ([]byte, error) {
 	p, ok := payload.(*types.Payload)
 	if !ok {
 		return nil, fmt.Errorf("SBOM output requires a scan payload")
+	}
+	if strings.EqualFold(settings.SBOMFormat, "spdx") {
+		doc := sbom.SPDXFromPayload(p)
+		sbom.SPDXStamp(doc) // per-emission documentNamespace + timestamp
+		return marshalJSON(doc, prettyPrint)
 	}
 	bom := sbom.FromPayload(p)
 	sbom.Stamp(bom) // per-emission serialNumber + timestamp

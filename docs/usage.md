@@ -16,8 +16,9 @@ stack-analyzer scan [path] [flags]
 - `--output, -o` - Output file path (default: stack-analysis.json). Use `-o -` or `-o /dev/stdout` for piping
 - `--aggregate` - Aggregate fields: `tech,techs,languages,licenses,dependencies,git,components,all` (use `all` for all aggregated fields). The `components` field produces a flat list of all components with `id`, `name`, `type`, `tech`, `techs`, `path`.
 - `--also-aggregate` - Produce both full and aggregate output in one scan pass. The aggregate file gets a `-agg` suffix (e.g. `output.json` → `output-agg.json`). Cannot be combined with `--aggregate`. Useful for large codebases where scanning twice would be too slow.
-- `--sbom` - Emit a CycloneDX SBOM (with Package URLs) as the primary output instead of the scan tree. Consumable directly by vulnerability scanners such as Trivy (`trivy sbom ...`). Only dependencies with a PURL-mappable ecosystem are included; non-package types (terraform, docker images as build steps, etc.) are skipped.
-- `--also-sbom` - Produce both the scan output and a CycloneDX SBOM in one scan pass. The SBOM file gets a `.cdx` suffix (e.g. `output.json` → `output.cdx.json`).
+- `--sbom` - Emit an SBOM (with Package URLs) as the primary output instead of the scan tree. Consumable directly by vulnerability scanners such as Trivy (`trivy sbom ...`). Only dependencies with a PURL-mappable ecosystem are included; non-package types (terraform, docker images as build steps, etc.) are skipped.
+- `--also-sbom` - Produce both the scan output and an SBOM in one scan pass. The SBOM file gets a format-specific suffix (e.g. `output.json` → `output.cdx.json` for CycloneDX, `output.spdx.json` for SPDX).
+- `--sbom-format` - SBOM format for `--sbom`/`--also-sbom`: `cyclonedx` (CycloneDX 1.7 JSON, default) or `spdx` (SPDX 2.3 JSON). Both carry the same package set with PURLs and are read by Trivy.
 - `--omit-fields` - Strip fields from the full output tree before writing (e.g. `reason,edges`). Applied recursively to all components. Useful to reduce file size when downstream consumers don't need certain fields.
 - `--exclude` - Additional patterns to exclude (combined with `.gitignore`; full gitignore semantics including `**` globs, `!` negation, trailing `/` for dir-only; can be specified multiple times)
 - `--dependency-graph` - Emit package-to-package dependency edges read from lockfiles: `off` (default), `direct` (root-to-direct edges only), or `full` (the full transitive graph). The full graph can be very large in big projects, so it is off by default. Produced directly from lockfiles for: JS (`package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`, `bun.lock`), Python (`uv.lock`, `poetry.lock`), Rust (`Cargo.lock`), Go (`go.mod` for direct; full graph from a pre-generated `go.mod.graph`), Ruby (`Gemfile.lock`), PHP (`composer.lock`), .NET (`packages.lock.json`), C/C++ (`conan.lock`), Swift/iOS (`Podfile.lock`, `Package.resolved`), Dart (`pubspec.lock`), Elixir (`mix.lock`), Perl (`cpanfile.snapshot`), and R (`renv.lock`). For Maven and Gradle the scanner ingests a pre-generated resolved tree it never produces -- `dependency-tree.json` (`mvn dependency:tree -DoutputType=json`) or `gradle-dependencies.txt` (`gradle dependencies`) -- or a CycloneDX `bom.json` dependency-graph section. Each edge carries `source` (provenance: `lockfile` or `deps.dev`) and, on direct edges, `scope` (`prod`/`dev`/`build`/`optional`/`peer`). Edges appear per component in the full tree and as a single deduplicated, sorted top-level `dependency_edges` array in the aggregate output.
@@ -63,6 +64,9 @@ stack-analyzer scan /path --omit-fields reason,edges --also-aggregate tech,techs
 # Emit a CycloneDX SBOM for vulnerability scanning, then scan it with Trivy
 stack-analyzer scan /path --sbom -o sbom.cdx.json
 trivy sbom sbom.cdx.json
+
+# Emit an SPDX 2.3 SBOM instead
+stack-analyzer scan /path --sbom --sbom-format spdx -o sbom.spdx.json
 
 # Produce the scan output AND an SBOM in one pass (results.json + results.cdx.json)
 stack-analyzer scan /path --output results.json --also-sbom

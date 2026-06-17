@@ -76,8 +76,9 @@ scan:
   - **`deps_dev_endpoint`** - Base URL for deps.dev (default: public). Override with a deps.dev-API-compatible facade or mirror. Matches `--deps-dev-endpoint` flag.
   - **`maven_central`** - Enable the public Maven Central fallback for Maven/Gradle BOM/parent version resolution (default: false). Matches `--maven-central` flag. May be combined with `maven_repo_url`; Central is then consulted last (after the private repo), so public BOMs/POMs resolve when the private repo does not proxy Central.
   - **`maven_repo_url`**, **`maven_graph_source`**, **`maven_local_repo`**, **`maven_local_repo_dir`**, **`maven_settings`** - Maven/Gradle resolution against an internal/JFrog repository (incl. private artifacts and transitive graph; Gradle `platform`/`enforcedPlatform` BOMs and the Spring Boot plugin BOM reuse this chain). See the [Maven guide](maven.md). Credentials via `STACK_ANALYZER_MAVEN_USER`/`STACK_ANALYZER_MAVEN_TOKEN` env.
-  - **`sbom`** - Emit a CycloneDX SBOM (with PURLs) as the primary output instead of the scan tree (default: false). Matches `--sbom` flag.
-  - **`also_sbom`** - Also write a CycloneDX SBOM alongside the scan output, with a `.cdx` filename suffix (default: false). Matches `--also-sbom` flag.
+  - **`sbom`** - Emit an SBOM (with PURLs) as the primary output instead of the scan tree (default: false). Matches `--sbom` flag.
+  - **`also_sbom`** - Also write an SBOM alongside the scan output, with a format-specific filename suffix (`.cdx.json` or `.spdx.json`) (default: false). Matches `--also-sbom` flag.
+  - **`sbom_format`** - SBOM format for `sbom`/`also_sbom`: `cyclonedx` (CycloneDX 1.7 JSON, default) or `spdx` (SPDX 2.3 JSON). Matches `--sbom-format` flag.
 
 ### Benefits
 

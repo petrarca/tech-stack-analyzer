@@ -47,8 +47,9 @@ type Settings struct {
 	MavenRepoUser            string                    // Username for Basic auth against the remote Maven repo; sourced from the environment
 	OmitFields               []string                  // Fields to omit from full output (e.g. "reason", "path", "edges")
 	AlsoAggregate            string                    // Also produce an aggregate output alongside the full output (e.g. "tech,techs,languages")
-	SBOM                     bool                      // Emit a CycloneDX SBOM as the primary output instead of the scan tree
-	AlsoSBOM                 bool                      // Also write a CycloneDX SBOM (.cdx.json) alongside the scan output
+	SBOM                     bool                      // Emit an SBOM as the primary output instead of the scan tree
+	AlsoSBOM                 bool                      // Also write an SBOM alongside the scan output
+	SBOMFormat               string                    // SBOM format: "cyclonedx" (default) or "spdx"
 
 	// Logging
 	LogLevel  slog.Level
@@ -231,6 +232,15 @@ func (s *Settings) Validate() error {
 		case "off", "direct", "full":
 		default:
 			return fmt.Errorf("invalid dependency-graph mode '%s'. Valid values: off, direct, full", s.DependencyGraph)
+		}
+	}
+
+	// Validate SBOM format if specified
+	if s.SBOMFormat != "" {
+		switch strings.ToLower(s.SBOMFormat) {
+		case "cyclonedx", "spdx":
+		default:
+			return fmt.Errorf("invalid sbom-format '%s'. Valid values: cyclonedx, spdx", s.SBOMFormat)
 		}
 	}
 

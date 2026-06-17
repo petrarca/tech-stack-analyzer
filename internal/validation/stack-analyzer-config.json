@@ -120,11 +120,16 @@
                 },
                 "sbom": {
                     "type": "boolean",
-                    "description": "Emit a CycloneDX SBOM (with PURLs, for vulnerability scanning) as the primary output instead of the scan tree. (matches --sbom flag)"
+                    "description": "Emit an SBOM (with PURLs, for vulnerability scanning) as the primary output instead of the scan tree. (matches --sbom flag)"
                 },
                 "also_sbom": {
                     "type": "boolean",
-                    "description": "Also write a CycloneDX SBOM alongside the scan output. Suffix .cdx is added to the output filename. (matches --also-sbom flag)"
+                    "description": "Also write an SBOM alongside the scan output. A format-specific suffix is added to the output filename (.cdx.json or .spdx.json). (matches --also-sbom flag)"
+                },
+                "sbom_format": {
+                    "type": "string",
+                    "enum": ["cyclonedx", "spdx"],
+                    "description": "SBOM format for sbom/also_sbom: 'cyclonedx' (CycloneDX 1.7 JSON, default) or 'spdx' (SPDX 2.3 JSON). (matches --sbom-format flag)"
                 },
                 "verbose": {
                     "type": "boolean",

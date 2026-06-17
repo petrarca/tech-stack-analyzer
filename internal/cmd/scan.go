@@ -91,8 +91,9 @@ func init() {
 	scanCmd.Flags().StringVar(&scanConfigPath, "config", "", "Scan configuration file path or inline JSON")
 	scanCmd.Flags().StringSliceVar(&settings.OmitFields, "omit-fields", settings.OmitFields, "Fields to omit from output (e.g. reason,path,edges). Applies to all components recursively.")
 	scanCmd.Flags().StringVar(&settings.AlsoAggregate, "also-aggregate", "", "Also produce an aggregate output alongside the full output. Suffix -agg is added to the output filename. (e.g. tech,techs,languages,dependencies,git)")
-	scanCmd.Flags().BoolVar(&settings.SBOM, "sbom", false, "Emit a CycloneDX SBOM (with PURLs, for vulnerability scanning) as the primary output instead of the scan tree.")
-	scanCmd.Flags().BoolVar(&settings.AlsoSBOM, "also-sbom", false, "Also write a CycloneDX SBOM alongside the scan output. Suffix .cdx is added to the output filename (e.g. out.json -> out.cdx.json).")
+	scanCmd.Flags().BoolVar(&settings.SBOM, "sbom", false, "Emit an SBOM (with PURLs, for vulnerability scanning) as the primary output instead of the scan tree.")
+	scanCmd.Flags().BoolVar(&settings.AlsoSBOM, "also-sbom", false, "Also write an SBOM alongside the scan output. A format-specific suffix is added to the output filename (e.g. out.json -> out.cdx.json or out.spdx.json).")
+	scanCmd.Flags().StringVar(&settings.SBOMFormat, "sbom-format", "", "SBOM format for --sbom/--also-sbom: 'cyclonedx' (CycloneDX 1.7 JSON, default) or 'spdx' (SPDX 2.3 JSON). Empty default lets the scan-config sbom_format apply.")
 }
 
 // configureLogging sets up logging based on command flags.
