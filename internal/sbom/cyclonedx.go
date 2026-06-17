@@ -83,10 +83,122 @@ type Property struct {
 // FromPayload builds a CycloneDX BOM from a scan payload. It aggregates the
 // payload's dependencies (flattened and deduplicated across the component
 // tree), then emits one component per PURL-typed dependency.
+//
+// When the scan resolved a dependency graph (--dependency-graph full, populating
+// each component's DependencyEdges), the transitive nodes discovered there --
+// which carry resolved versions from lockfiles/tree-files or deps.dev -- are
+// also emitted as components, deduplicated against the declared set. This gives
+// the SBOM transitive breadth without a recursive package-manager crawl: the
+// resolved graph is the source of truth. Without graph resolution the SBOM
+// contains only declared dependencies (the default).
 func FromPayload(payload *types.Payload) *BOM {
 	agg := aggregator.NewAggregator([]string{"dependencies"})
 	out := agg.Aggregate(payload)
-	return FromDependencies(out.Dependencies, rootName(payload))
+	bom := FromDependencies(out.Dependencies, rootName(payload))
+	addTransitiveComponents(bom, payload)
+	return bom
+}
+
+// addTransitiveComponents folds dependency-graph nodes into the BOM as
+// components. Edge nodes are bare "name@version" strings with no ecosystem tag,
+// so the owning component's ComponentType (which is known per payload) supplies
+// the PURL type. Components already present (by PURL) are not duplicated;
+// added ones are marked scope "" and carry no declared metadata.
+func addTransitiveComponents(bom *BOM, payload *types.Payload) {
+	existing := make(map[string]bool, len(bom.Components))
+	for _, c := range bom.Components {
+		if c.PURL != "" {
+			existing[c.PURL] = true
+		}
+	}
+
+	var added []Component
+	var walk func(p *types.Payload)
+	walk = func(p *types.Payload) {
+		depType := componentTypeToDepType(p.ComponentType)
+		if depType != "" {
+			for _, node := range graphNodes(p.DependencyEdges) {
+				name, version := splitNodeVersion(node)
+				if name == "" {
+					continue
+				}
+				c := toComponent(types.Dependency{Type: depType, Name: name, Version: version})
+				if c.PURL == "" || existing[c.PURL] {
+					continue
+				}
+				existing[c.PURL] = true
+				added = append(added, c)
+			}
+		}
+		for _, child := range p.Children {
+			walk(child)
+		}
+	}
+	walk(payload)
+	if len(added) == 0 {
+		return
+	}
+
+	bom.Components = append(bom.Components, added...)
+	sort.Slice(bom.Components, func(i, j int) bool {
+		if bom.Components[i].PURL != bom.Components[j].PURL {
+			return bom.Components[i].PURL < bom.Components[j].PURL
+		}
+		return bom.Components[i].Name < bom.Components[j].Name
+	})
+}
+
+// graphNodes returns the unique node identities appearing in edges (both
+// endpoints), excluding the synthetic root marker ".".
+func graphNodes(edges []types.DependencyEdge) []string {
+	seen := make(map[string]bool)
+	var nodes []string
+	for _, e := range edges {
+		for _, n := range []string{e.From, e.To} {
+			if n == "" || n == "." || seen[n] {
+				continue
+			}
+			seen[n] = true
+			nodes = append(nodes, n)
+		}
+	}
+	return nodes
+}
+
+// splitNodeVersion splits a "name@version" node identity into its name and
+// version. For npm scoped packages ("@scope/name@version") only the final "@"
+// separates the version. Returns an empty name when no version delimiter is
+// present (an unresolved node is not a useful component).
+func splitNodeVersion(node string) (name, version string) {
+	i := strings.LastIndex(node, "@")
+	if i <= 0 { // no "@", or leading "@" only (scoped name without version)
+		return "", ""
+	}
+	return node[:i], node[i+1:]
+}
+
+// componentTypeToDepType maps a payload ComponentType (ecosystem) to the
+// dependency type vocabulary used to build PURLs. Returns "" for ecosystems
+// that do not map to a PURL type.
+func componentTypeToDepType(componentType string) string {
+	switch componentType {
+	case "nodejs":
+		return "npm"
+	case "python":
+		return "pypi"
+	case "ruby":
+		return "gem"
+	case "php":
+		return "composer"
+	case "rust":
+		return "cargo"
+	default:
+		// maven, gradle, golang, nuget, etc. already use the PURL-type name.
+		if purlTypes[componentType] {
+			return componentType
+		}
+		return ""
+	}
 }
 
 // FromDependencies builds a CycloneDX BOM from an already-aggregated set of

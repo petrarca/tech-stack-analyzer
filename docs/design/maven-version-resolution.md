@@ -295,8 +295,9 @@ backfill or an upstream pinning fix, not by lock association.
 - Implemented as an *online `BomResolver`* composed after the offline source
   index: the same Stage-1 resolution logic handles both, so nested imports
   (internal BOM in repo -> public BOM online) resolve transparently. Verified:
-  an internal BOM importing `io.quarkus:quarkus-bom@${quarkus.platform.version}`
-  resolves the property, fetches the BOM, and pins `quarkus-core@3.36.0`.
+  an in-repo BOM that imports a public platform BOM via a `${...}` version
+  property resolves the property, fetches the BOM, and pins the managed
+  artifacts to their exact versions.
 - Distinct from the deps.dev resolver already in the tree: deps.dev returns a
   resolved **dependency graph** for an *already-versioned* coordinate (it cannot
   supply a missing version); the Maven POM fetch returns the **raw BOM** whose
@@ -308,6 +309,31 @@ backfill or an upstream pinning fix, not by lock association.
 - Network access is build-tag-free in production (off unless `--resolve-online`)
   with a mocked-HTTP unit test and a `//go:build online` live test against
   Maven Central (`task test:online`).
+
+### Transitive components in the SBOM (implemented)
+
+By default the SBOM contains the **declared** dependencies. When the scan
+resolved a dependency graph (`--dependency-graph full`), the SBOM emitter also
+folds the graph's **transitive nodes** in as components, deduplicated against
+the declared set. Edge nodes carry resolved `name@version` identities; the
+owning component's ecosystem supplies the PURL type.
+
+This gives transitive breadth **without replicating a package manager's
+recursive POM/registry crawl**. The transitive graph itself comes from:
+- committed lockfiles / `dependency-tree.json` (offline, full and private), or
+- deps.dev under `--resolve-online`, which returns the pre-computed resolved
+  transitive graph for a public, already-versioned coordinate (one call per
+  declared dep, not a per-artifact crawl).
+
+Why this is sufficient (vs. Trivy's approach): Trivy reconstructs the transitive
+tree by fetching every dependency's POM, which is broad but brittle (on a large
+monorepo it hit a Maven Central 429 rate-limit and aborted the whole scan).
+deps.dev already provides the resolved graph for public coordinates, so we get
+the transitive set with far fewer requests and never abort on rate-limiting.
+Measured on a large monorepo: declared-only ~360 Maven components (~58%
+versioned) vs. online + full graph ~1560 components (~90% versioned). The
+residual gap to a full POM crawl is dominated by private subtrees that no public
+source can resolve.
 
 ### Out of scope (documented gaps, not closable from source)
 

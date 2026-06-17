@@ -133,6 +133,66 @@ func TestFromDependencies_ExcludesImportScopedBOMs(t *testing.T) {
 	}
 }
 
+func TestFromPayload_FoldsTransitiveGraphNodes(t *testing.T) {
+	// A maven component with one declared dep and a resolved graph that adds
+	// transitive nodes. The transitive nodes should appear as components.
+	p := &types.Payload{
+		Name:          "app",
+		ComponentType: "maven",
+		Dependencies: []types.Dependency{
+			{Type: "maven", Name: "io.quarkus:quarkus-core", Version: "3.36.0", Scope: types.ScopeProd},
+		},
+		DependencyEdges: []types.DependencyEdge{
+			{From: ".", To: "io.quarkus:quarkus-core@3.36.0"},
+			{From: "io.quarkus:quarkus-core@3.36.0", To: "io.smallrye.common:smallrye-common-annotation@2.17.0"},
+			{From: "io.quarkus:quarkus-core@3.36.0", To: "io.quarkus:quarkus-fs-util@1.3.0"},
+		},
+	}
+
+	bom := FromPayload(p)
+
+	purls := make(map[string]bool)
+	for _, c := range bom.Components {
+		purls[c.PURL] = true
+	}
+	// Declared dep present.
+	if !purls["pkg:maven/io.quarkus/quarkus-core@3.36.0"] {
+		t.Error("declared quarkus-core should be present")
+	}
+	// Transitive nodes folded in.
+	if !purls["pkg:maven/io.smallrye.common/smallrye-common-annotation@2.17.0"] {
+		t.Error("transitive smallrye-common-annotation should be folded in")
+	}
+	if !purls["pkg:maven/io.quarkus/quarkus-fs-util@1.3.0"] {
+		t.Error("transitive quarkus-fs-util should be folded in")
+	}
+	// No duplicate of the declared dep (edge node == declared).
+	count := 0
+	for _, c := range bom.Components {
+		if c.PURL == "pkg:maven/io.quarkus/quarkus-core@3.36.0" {
+			count++
+		}
+	}
+	if count != 1 {
+		t.Errorf("quarkus-core should appear once, got %d", count)
+	}
+}
+
+func TestFromPayload_NoGraphMeansDeclaredOnly(t *testing.T) {
+	// Without edges, only declared deps are emitted (default behavior).
+	p := &types.Payload{
+		Name:          "app",
+		ComponentType: "maven",
+		Dependencies: []types.Dependency{
+			{Type: "maven", Name: "org.example:lib", Version: "1.0.0", Scope: types.ScopeProd},
+		},
+	}
+	bom := FromPayload(p)
+	if len(bom.Components) != 1 {
+		t.Fatalf("expected 1 component, got %d", len(bom.Components))
+	}
+}
+
 func TestFromDependencies_ComponentFields(t *testing.T) {
 	deps := []types.Dependency{
 		{Type: "npm", Name: "mylib", Version: "^1.2.3", Scope: types.ScopeProd},
