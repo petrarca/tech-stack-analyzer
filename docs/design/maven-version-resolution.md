@@ -406,6 +406,114 @@ versioned) vs. online + full graph ~1560 components (~90% versioned). The
 residual gap to a full POM crawl is dominated by private subtrees that no public
 source can resolve.
 
+### Maven transitive graph from the Maven repository (design; not yet implemented)
+
+Transitive dependency edges for Maven currently come only from a committed
+`dependency-tree.json` or from deps.dev. deps.dev covers **public** coordinates
+only -- it has no knowledge of private artifacts (`com.example.internal/*`), so
+the transitive closure of a private dependency is unreachable through it. The
+one source that has both public and private POMs is a **Maven repository** the
+organisation already runs (an internal Artifactory/JFrog virtual repo that
+proxies public repos and hosts private artifacts). Resolving transitives by
+crawling that repository -- the way Maven and Trivy do -- is therefore the only
+way to get transitive coverage for private artifacts, and it needs no Maven
+Central.
+
+#### Model: depth axis x source axis
+
+Two orthogonal axes already exist and are kept:
+
+- `--dependency-graph off|direct|full` -- whether and how deep to emit edges
+  (all ecosystems).
+- **graph source** -- where the edges come from. This is the new axis.
+
+The graph source is a **global default with per-ecosystem override**:
+
+- `--deps-dev` (`deps_dev`) -- the global online-graph toggle. When set, every
+  ecosystem's online graph source defaults to deps.dev (Maven included).
+- `--maven-graph-source=none|repo|deps-dev` (`maven_graph_source`) -- a
+  **fine-tuning override for Maven only**. When set it wins for Maven; other
+  ecosystems still follow `--deps-dev`. The same pattern can later extend to
+  other ecosystems (`--npm-graph-source`, ...) without changing this design.
+
+#### Maven graph source precedence (when `--dependency-graph` != off)
+
+1. **Committed `dependency-tree.json`** -- always first when present. It is a
+   whole resolved tree in one file (offline, authoritative, public + private),
+   so a network source never overrides it.
+2. Otherwise the **effective Maven source**: `--maven-graph-source` if set, else
+   `deps-dev` when `--deps-dev` is set, else `none`.
+   - `none` (offline default) -- stop; emit only what a committed tree provided.
+     With no flags, `--dependency-graph full` reaches no network.
+   - `repo` -- recursive POM crawl (below).
+   - `deps-dev` -- the existing pre-computed public graph resolver.
+3. **No cross-fallback** between `repo` and `deps-dev`: they are different walk
+   models (recursive POM crawl vs. pre-computed graph) and mixing them within
+   one tree would produce inconsistent mediation. A public artifact missing from
+   an internal proxy is a proxy-configuration issue, not a reason to splice in
+   deps.dev.
+
+#### The `repo` crawl
+
+`repo` reuses the existing POM-source chain (`internal/scanner/mavenresolve`),
+the same one used for version resolution, so it needs no new endpoint config:
+
+    in-repo source index  ->  local ~/.m2  ->  --maven-repo-url / settings.xml  ->  (Maven Central if --maven-central)
+
+The local `~/.m2` cache is the **offline first tier** of this chain, not a
+separate source: it holds individual POMs the crawl reads with no network.
+Consequently `repo` degrades gracefully -- it is fully offline when only `~/.m2`
+is populated, internal-network-backed when a JFrog URL is configured, and only
+reaches the public internet if `--maven-central` is explicitly set. The
+network tiers are gated exactly as for version resolution (an explicit
+`--maven-repo-url` is always used; Central only under `--maven-central`).
+
+Algorithm (Maven's resolution, mirrored offline-first):
+
+1. Seed the queue with the component's declared dependencies, each resolved to a
+   concrete version by the existing version-resolution machinery
+   (dependencyManagement / parent / imported BOMs).
+2. For each artifact: fetch its POM via the chain; read its `<dependencies>`
+   (skipping `test`/`provided`/`optional`/`import` per Maven's transitive
+   rules); resolve each child's version against the artifact's own
+   dependencyManagement + properties; emit a parent->child edge.
+3. Recurse into children with **nearest-wins conflict mediation** (the version
+   nearest the root wins; a coordinate already resolved at a shallower depth is
+   not re-fetched at a deeper one) and a **visited set** keyed by coordinate to
+   bound work and break cycles.
+4. A POM that cannot be fetched (private artifact absent from every tier, or a
+   transient 429/5xx) yields no children for that node and never aborts the
+   scan -- the existing graceful-degradation of the source chain.
+
+Edges are tagged with their provenance (a new `repo` provenance alongside the
+existing `lockfile` and `deps.dev`) so consumers can tell repo-crawled edges
+from the others. The resolved transitive nodes fold into the SBOM via the
+existing transitive-component fold-in.
+
+#### Where it plugs in
+
+It is a new `DependencyResolver` in the existing graph chain
+(`internal/scanner/resolver`), selected for Maven by the effective source. The
+chain order for Maven becomes: committed-tree lockfile resolver -> (repo crawl |
+deps.dev) according to the effective source. Non-Maven ecosystems are
+unchanged: committed lockfile -> deps.dev under `--deps-dev`.
+
+#### Behaviour and validation
+
+- `repo` selected but no repository reachable (no `--maven-repo-url`/settings
+  and empty `~/.m2`): warn and fall through (no hard fail).
+- A source selected while `--dependency-graph off`: no-op.
+- Offline-by-default is preserved: any network tier within `repo` is itself
+  opt-in (`--maven-repo-url` configured, or `--maven-central`).
+
+#### Net effect for an internal-repo environment
+
+`--dependency-graph full --maven-graph-source=repo --maven-repo-url <virtual-repo>`
+(plus the env token) produces a transitive Maven graph that includes **private**
+artifacts, using only the internal repository -- no deps.dev, no Maven Central.
+This is the Trivy-equivalent capability, but riding on the scanner's existing,
+rate-limit-tolerant POM-source chain rather than a hard-failing public crawl.
+
 ### Out of scope (documented gaps, not closable from source)
 
 - Docker templated/private tags (`${base_image}`, private registries).
