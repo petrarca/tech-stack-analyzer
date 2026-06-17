@@ -135,38 +135,79 @@ func parseYarnLockClassicWithOptions(lockContent []byte, packageJSON *PackageJSO
 
 	content := string(lockContent)
 
-	// Parse yarn.lock v1/v2 format (Classic)
-	// v1 format: "package@npm:^version":\n  version: x.y.z
-	// v2 format: "package@^version":\n  version: x.y.z
-	packagePattern := regexp.MustCompile(`^"((?:@[^/]+/)?[^@"]+)@[^"]*":`)
-	versionPattern := regexp.MustCompile(`^version:\s+"?([^"\s]+)"?`)
+	// Parse the lockfile into blocks (one per resolved package). Each block
+	// starts with a header line listing one or more "name@range" specifiers
+	// (comma-separated) and contains a "version" line with the resolved
+	// version. The package name is shared by all specifiers in the header.
+	//
+	// Real-world classic yarn.lock has several header shapes that must all be
+	// recognized:
+	//   express@^4.18.0:                       (unquoted, single spec)
+	//   "@babel/core@^7.23.0":                 (quoted scoped)
+	//   "@types/node@^20.0.0", "@types/node@^20.1.0":  (multi-spec)
+	//   "lodash@npm:^4.17.21":                 (Berry protocol form)
+	// and two version-line shapes:
+	//   version "4.18.2"   (yarn v1)     version: 4.18.2   (Berry)
+	versionPattern := regexp.MustCompile(`^version:?\s+"?([^"\s]+)"?`)
 
 	lines := strings.Split(content, "\n")
 	var currentPackage string
 
-	for _, line := range lines {
-		line = strings.TrimSpace(line)
-
-		// Check for package declaration
-		if matches := packagePattern.FindStringSubmatch(line); len(matches) > 1 {
-			currentPackage = matches[1]
+	for _, raw := range lines {
+		line := strings.TrimSpace(raw)
+		if line == "" || strings.HasPrefix(line, "#") {
 			continue
 		}
 
-		// Check for version line
-		if currentPackage != "" {
-			if matches := versionPattern.FindStringSubmatch(line); len(matches) > 1 {
-				version := matches[1]
-
-				// Use common filtering to create dependency
-				filter.CreateAndAppendDependency("npm", currentPackage, version, "yarn.lock", &dependencies)
-
+		// A header line is one that is not indented and ends with ':'. We rely
+		// on the absence of leading whitespace in the original line to tell a
+		// header from a nested key (version, resolved, dependencies, etc.).
+		isIndented := raw != "" && (raw[0] == ' ' || raw[0] == '\t')
+		if !isIndented && strings.HasSuffix(line, ":") {
+			if name, ok := yarnClassicHeaderName(strings.TrimSuffix(line, ":")); ok {
+				currentPackage = name
+			} else {
 				currentPackage = ""
 			}
+			continue
+		}
+
+		if currentPackage == "" {
+			continue
+		}
+
+		if matches := versionPattern.FindStringSubmatch(line); len(matches) > 1 {
+			filter.CreateAndAppendDependency("npm", currentPackage, matches[1], "yarn.lock", &dependencies)
+			currentPackage = ""
 		}
 	}
 
 	return dependencies
+}
+
+// yarnClassicHeaderName extracts the package name from a classic yarn.lock
+// header (the ':' already stripped). The header may contain multiple
+// comma-separated "name@range" specifiers that all share the same package
+// name; the first specifier determines the name. Quotes and an optional
+// "<protocol>:" prefix on the range (e.g. "npm:^1.0.0") are tolerated.
+func yarnClassicHeaderName(header string) (string, bool) {
+	first := header
+	if i := strings.Index(header, ", "); i >= 0 {
+		first = header[:i]
+	}
+	first = strings.Trim(strings.TrimSpace(first), `"`)
+
+	// Split "name@range" on the LAST '@', so scoped names ("@scope/pkg")
+	// keep their leading '@'.
+	at := strings.LastIndex(first, "@")
+	if at <= 0 {
+		return "", false
+	}
+	name := first[:at]
+	if name == "" {
+		return "", false
+	}
+	return name, true
 }
 
 // parseYarnVersion parses yarn version with semantic version preservation

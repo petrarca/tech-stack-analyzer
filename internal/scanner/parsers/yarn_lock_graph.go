@@ -195,12 +195,17 @@ func parseYarnEntries(content []byte) []yarnEntry {
 
 		trimmed := strings.TrimSpace(raw)
 
-		// The dependencies sub-block.
-		if trimmed == "dependencies:" {
+		// Edge-bearing sub-blocks. optionalDependencies are real graph edges
+		// (e.g. platform-specific native binaries like @esbuild/linux-x64 that
+		// a package pulls in via "os"/"cpu" gating) and must be traversed, not
+		// just "dependencies". SBOM consumers expect them since the install
+		// target is unknown at scan time.
+		if trimmed == "dependencies:" || trimmed == "optionalDependencies:" {
 			inDeps = true
 			continue
 		}
-		// optionalDependencies and other sub-blocks end the deps block.
+		// Any other sub-block header (peerDependencies, peerDependenciesMeta,
+		// etc.) ends the edge block.
 		if strings.HasSuffix(trimmed, ":") && !strings.Contains(trimmed, " ") {
 			inDeps = false
 		}
