@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"log/slog"
@@ -420,20 +421,26 @@ func (s *Scanner) Scan() (*types.Payload, error) {
 	payload.Git = git.GetGitInfo(basePath)
 	slog.Debug("Retrieved git info", "duration", time.Since(t1))
 
+	// Report dependency-resolution activity (version resolution during the walk
+	// and graph resolution after it) as one phase, so any network-bound work is
+	// visible. No output when nothing resolves over the network.
+	stopResolveReporter := s.startResolveReporter()
+
 	// Start recursive directory scanning from base path. Detection collects
-	// components and their declared dependencies; dependency-graph resolution is
-	// deferred to a dedicated phase below.
+	// components and their declared dependencies (resolving versions inline);
+	// dependency-graph resolution is deferred to after the walk.
 	slog.Debug("Starting directory recursion", "path", basePath)
 	err := s.recurse(payload, basePath)
 	if err != nil {
+		stopResolveReporter()
 		return nil, err
 	}
 	slog.Debug("Completed directory recursion")
 
-	// Dependency-resolution phase: resolve the (network-bound) dependency graph
-	// for all detected components now that the fast, local walk is done. No-op
-	// when graph mode is off or nothing was queued.
-	s.resolveDependencies()
+	// Resolve the deferred dependency graph now that the walk is done.
+	components.ResolveDeferredGraphs()
+
+	stopResolveReporter()
 
 	// Set scan duration
 	scanMeta.SetDuration(time.Since(startTime))
@@ -472,22 +479,32 @@ func (s *Scanner) Scan() (*types.Payload, error) {
 	// module fills its versionless siblings elsewhere in the scan.
 	mavenresolve.PropagateVersions(payload)
 
+	// Warn (always, even when quiet) if a configured Maven repository rejected
+	// us with 401/403: private artifacts could not be resolved, so the result
+	// is degraded -- the user almost certainly forgot the credentials.
+	if resolvestats.Get().AuthFailures > 0 {
+		fmt.Fprintln(os.Stderr,
+			"warning: Maven repository returned 401/403 (authentication required); private "+
+				"artifacts were not resolved. Set STACK_ANALYZER_MAVEN_USER and "+
+				"STACK_ANALYZER_MAVEN_TOKEN (or configure settings.xml credentials).")
+	}
+
 	// Report scan complete
 	s.progress.ScanComplete(fileCount, componentCount, time.Since(startTime))
 
 	return payload, nil
 }
 
-// resolveDependencies runs the dependency-resolution phase: it executes the
-// graph-resolution requests deferred during the walk. It is reported as a
-// distinct phase (start / periodic progress / complete) so the network-bound
-// work is visible and clearly separated from the file walk. The phase is
-// silent when nothing was queued or no resolution activity occurs.
-func (s *Scanner) resolveDependencies() {
+// startResolveReporter starts a goroutine that reports dependency-resolution
+// activity (version-resolution and graph network calls) as one phase: a
+// ResolveStart on first activity, periodic ResolveProgress, and a Resolve
+// Complete with the elapsed time when the returned stop function is called. It
+// is silent when no resolution happens over the network. The stop function is
+// idempotent.
+func (s *Scanner) startResolveReporter() func() {
 	const interval = 2 * time.Second
 	base := resolvestats.Get()
 	start := time.Now()
-	started := false
 
 	done := make(chan struct{})
 	stopped := make(chan struct{})
@@ -495,6 +512,7 @@ func (s *Scanner) resolveDependencies() {
 		defer close(stopped)
 		ticker := time.NewTicker(interval)
 		defer ticker.Stop()
+		started := false
 		for {
 			select {
 			case <-done:
@@ -513,13 +531,15 @@ func (s *Scanner) resolveDependencies() {
 		}
 	}()
 
-	components.ResolveDeferredGraphs()
-
-	close(done)
-	<-stopped
-
-	if delta := resolvestats.Get().Sub(base); delta.Active() {
-		s.progress.ResolveComplete(formatResolveStats(delta), time.Since(start))
+	var once sync.Once
+	return func() {
+		once.Do(func() {
+			close(done)
+			<-stopped
+			if delta := resolvestats.Get().Sub(base); delta.Active() {
+				s.progress.ResolveComplete(formatResolveStats(delta), time.Since(start))
+			}
+		})
 	}
 }
 

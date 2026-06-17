@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/blobcache"
@@ -46,6 +47,11 @@ type RemoteSource struct {
 	password string
 	http     httpDoer
 	cache    blobcache.Cache
+
+	// unauthorized is set after a 401/403 from this repo. Since auth applies to
+	// the whole repository, every later request would fail the same way, so we
+	// short-circuit them (skip the doomed HTTP round-trips) once it is set.
+	unauthorized atomic.Bool
 }
 
 // RemoteOptions configures a RemoteSource. Auth precedence: Username/Password
@@ -100,6 +106,11 @@ func (s *RemoteSource) Name() string { return "remote(" + s.baseURL + ")" }
 // FetchPOM implements PomSource against the remote repository.
 func (s *RemoteSource) FetchPOM(groupID, artifactID, version string) ([]byte, string, bool) {
 	if groupID == "" || artifactID == "" || version == "" {
+		return nil, "", false
+	}
+	// The repo already rejected us with 401/403: every request would fail the
+	// same way, so skip the doomed round-trip and fall through the chain.
+	if s.unauthorized.Load() {
 		return nil, "", false
 	}
 	// Key by repository base so distinct repos do not share entries.
@@ -165,7 +176,16 @@ func (s *RemoteSource) request(groupID, artifactID, version string) (body []byte
 		return data, true
 	case http.StatusNotFound, http.StatusGone:
 		return nil, true
+	case http.StatusUnauthorized, http.StatusForbidden:
+		// Missing/invalid credentials. Auth applies to the whole repo, so mark
+		// it unauthorized to short-circuit further requests, and record it so
+		// the scan can warn that private artifacts went unresolved. The first
+		// such response is counted; subsequent requests are skipped entirely.
+		if !s.unauthorized.Swap(true) {
+			resolvestats.AddAuthFailure()
+		}
+		return nil, false
 	default:
-		return nil, false // 401/403/429/5xx: transient or auth -- do not cache as a genuine miss
+		return nil, false // 429/5xx: transient -- do not cache as a genuine miss
 	}
 }
