@@ -230,7 +230,8 @@ func (d *Detector) mavenPomChain(provider types.Provider) *mavenresolve.Chain {
 		sources = append(sources, mavenresolve.NewLocalRepoSource(dir))
 	}
 
-	// Tiers 3+: remote repositories.
+	// Tiers 3+: remote repositories, in precedence order:
+	//   settings.xml <repositories> -> --maven-repo-url -> Maven Central.
 	//
 	// An EXPLICITLY configured repository -- settings.xml <repositories> or
 	// --maven-repo-url -- is the user's deliberate opt-in, so it is always
@@ -238,11 +239,13 @@ func (d *Detector) mavenPomChain(provider types.Provider) *mavenresolve.Chain {
 	// typically internal mirrors/virtual repos that already proxy public
 	// artifacts.
 	//
-	// Maven Central is the implicit PUBLIC fallback. It is added only under
-	// --maven-central AND only when no explicit repository is configured --
-	// otherwise it would bypass or supplement the user's chosen internal
-	// mirror, which is both pointless (the mirror proxies public artifacts) and
-	// a potential egress surprise.
+	// Maven Central is the PUBLIC fallback, contacted only under --maven-central
+	// (default off). It is appended last, so it is consulted only for
+	// coordinates the higher tiers could not resolve. It may coexist with a
+	// configured private repo: when that repo does not proxy Central, public
+	// BOMs/POMs still resolve, while private artifacts resolve from the private
+	// repo first.
+	//
 	// Scan-wide cache: shared so a POM is fetched at most once across all
 	// components, not re-fetched per module.
 	cache := components.GetGraphCache(provider)
