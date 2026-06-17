@@ -27,7 +27,26 @@ var (
 
 	useMavenCentralMu sync.RWMutex
 	useMavenCentral   bool
+
+	mavenGraphSourceMu sync.RWMutex
+	mavenGraphSource   string // "" (default) | "repo" | "deps-dev" | "none"
 )
+
+// SetMavenGraphSource sets the Maven transitive-graph source override. Empty
+// means "follow the global --deps-dev default".
+func SetMavenGraphSource(source string) {
+	mavenGraphSourceMu.Lock()
+	defer mavenGraphSourceMu.Unlock()
+	mavenGraphSource = source
+}
+
+// MavenGraphSource returns the Maven graph-source override ("" = follow
+// --deps-dev). Values: "repo" (crawl the POM-source chain), "deps-dev", "none".
+func MavenGraphSource() string {
+	mavenGraphSourceMu.RLock()
+	defer mavenGraphSourceMu.RUnlock()
+	return mavenGraphSource
+}
 
 // SetUseDepsDev enables or disables online dependency-graph resolution via
 // deps.dev.

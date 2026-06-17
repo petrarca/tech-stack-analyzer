@@ -171,6 +171,42 @@ func (p *MavenParser) ParsePomXML(content string) []types.Dependency {
 	return p.ParsePomXMLWithProvider(content, "", nil)
 }
 
+// ParsePomDependenciesForGraph parses a fetched, self-contained POM (as served
+// by a Maven repository) and returns the dependencies relevant to TRANSITIVE
+// resolution: it resolves each version against the POM's own
+// dependencyManagement and properties, then keeps only those Maven carries
+// transitively. Per Maven's transitive rules, test- and system-scoped,
+// optional, and BOM-import (scope=import) entries are excluded; compile/runtime
+// (mapped to prod) propagate. Plugin and build-only entries are not included.
+//
+// bomResolver, when non-nil, resolves the POM's parent chain and imported BOMs
+// (by coordinate) so that dependencies whose versions are managed -- not inline
+// -- still resolve. This is essential for real published POMs (e.g. a library
+// whose dependency versions all come from its parent's dependencyManagement).
+//
+// It is a package-level helper (not tied to a filesystem provider) because the
+// crawl fetches each POM's bytes itself and walks them independently.
+func ParsePomDependenciesForGraph(content []byte, bomResolver BomResolver) []types.Dependency {
+	p := NewMavenParser()
+	all := p.ParsePomXMLWithBomResolver(string(content), "", nil, bomResolver)
+	out := make([]types.Dependency, 0, len(all))
+	for _, dep := range all {
+		if dep.Type != DependencyTypeMaven && dep.Type != DependencyTypeGradle {
+			continue
+		}
+		// Only prod-scope (compile/runtime/provided) propagates transitively.
+		// dev (test), system, import, build, optional do not.
+		if dep.Scope != types.ScopeProd {
+			continue
+		}
+		if optional, ok := dep.Metadata["optional"].(bool); ok && optional {
+			continue
+		}
+		out = append(out, dep)
+	}
+	return out
+}
+
 // ParsePomXMLWithProvider parses pom.xml with parent POM resolution support.
 // If provider and pomDir are given, it will look up parent POMs to inherit
 // properties and managed versions. BOM-import following is disabled (no

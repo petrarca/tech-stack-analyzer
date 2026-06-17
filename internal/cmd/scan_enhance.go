@@ -171,6 +171,7 @@ func runScanner(absPath string, isFile bool, mergedConfig *config.ScanConfig, lo
 	components.SetUseDepsDev(settings.UseDepsDev)
 	components.SetDepsDevEndpoint(settings.DepsDevEndpoint)
 	components.SetUseMavenCentral(settings.UseMavenCentral)
+	components.SetMavenGraphSource(settings.MavenGraphSource)
 	applyMavenSettings(logger)
 	if obsCollector != nil {
 		s.SetObservationCollector(obsCollector)

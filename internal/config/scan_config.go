@@ -39,6 +39,7 @@ type ScanOptions struct {
 	UseDepsDev               bool     `yaml:"deps_dev,omitempty" json:"deps_dev,omitempty"`                               // enable online deps.dev dependency-graph resolution (default false)
 	DepsDevEndpoint          string   `yaml:"deps_dev_endpoint,omitempty" json:"deps_dev_endpoint,omitempty"`             // base URL override for deps.dev (empty = public)
 	UseMavenCentral          bool     `yaml:"maven_central,omitempty" json:"maven_central,omitempty"`                     // enable the public Maven Central fallback for Maven BOM/parent POM fetch (default false)
+	MavenGraphSource         string   `yaml:"maven_graph_source,omitempty" json:"maven_graph_source,omitempty"`           // Maven transitive-graph source: "" (follow deps_dev) | "repo" | "deps-dev" | "none"
 	MavenLocalRepo           bool     `yaml:"maven_local_repo,omitempty" json:"maven_local_repo,omitempty"`               // read local ~/.m2 for Maven BOM/parent POMs (default false)
 	MavenLocalRepoDir        string   `yaml:"maven_local_repo_dir,omitempty" json:"maven_local_repo_dir,omitempty"`       // override local Maven repo path (empty = Maven default resolution)
 	MavenRepoURL             string   `yaml:"maven_repo_url,omitempty" json:"maven_repo_url,omitempty"`                   // remote Maven repo base for BOM/parent POM fetch (empty = Maven Central). Token via STACK_ANALYZER_MAVEN_TOKEN env, never in config

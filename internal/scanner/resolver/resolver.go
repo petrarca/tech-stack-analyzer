@@ -28,6 +28,10 @@ const (
 	// SourceDepsDev marks edges resolved online via deps.dev. An approximation
 	// keyed by published version, not the repo's own resolution.
 	SourceDepsDev Provenance = "deps.dev"
+	// SourceMavenRepo marks edges resolved by crawling Maven POMs from the
+	// repository chain (in-repo, ~/.m2, configured remote). Covers private
+	// artifacts and reflects each POM's own declared dependencies.
+	SourceMavenRepo Provenance = "maven-repo"
 )
 
 // Request carries everything a resolver needs to produce edges for one

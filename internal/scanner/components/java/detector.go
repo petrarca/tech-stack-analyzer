@@ -9,6 +9,7 @@ import (
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/mavenresolve"
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/parsers"
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/providers"
+	"github.com/petrarca/tech-stack-analyzer/internal/scanner/resolver"
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/semver"
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
@@ -70,11 +71,13 @@ func (d *Detector) detectMaven(files []types.File, currentPath, basePath string,
 		d.mergeDependencyTreeVersions(payload, *dependencyTreeFile, currentPath, provider)
 	}
 
-	// Attach the dependency graph from a pre-generated dependency-tree.json
-	// (mvn dependency:tree -DoutputType=json). No-op unless the dependency-graph
-	// mode is on and the file is present; the analyzer never runs Maven.
+	// Attach the dependency graph. A committed dependency-tree.json (or
+	// CycloneDX) always wins first; otherwise the effective Maven graph source
+	// applies -- the repo crawl (--maven-graph-source=repo) or deps.dev. No-op
+	// unless the dependency-graph mode is on.
 	if payload != nil {
-		components.AttachLockfileGraph(payload, currentPath, provider, mavenGraphProducers)
+		components.AttachLockfileGraphWithFallback(payload, currentPath, provider,
+			mavenGraphProducers, d.mavenGraphFallback(provider))
 	}
 
 	return payload
@@ -187,8 +190,20 @@ func (d *Detector) mergeDependencyList(payload *types.Payload, listFile types.Fi
 // The chain is adapted to parsers.BomResolver. Returns nil when no source is
 // available (so the parser skips BOM-import following).
 func (d *Detector) newBomResolver(provider types.Provider) parsers.BomResolver {
-	if provider == nil {
+	chain := d.mavenPomChain(provider)
+	if chain.Empty() {
 		return nil
+	}
+	return chain.FetchPOM
+}
+
+// mavenPomChain composes the POM-source chain shared by version resolution
+// (BOM/parent fetch) and the transitive graph crawl: in-repo source index ->
+// local ~/.m2 -> settings.xml repos / --maven-repo-url -> optional Maven
+// Central. Returns an empty chain when nothing is available.
+func (d *Detector) mavenPomChain(provider types.Provider) *mavenresolve.Chain {
+	if provider == nil {
+		return mavenresolve.NewChain()
 	}
 	index := components.GetSourceIndex(provider)
 
@@ -249,11 +264,25 @@ func (d *Detector) newBomResolver(provider types.Provider) parsers.BomResolver {
 		sources = append(sources, mavenresolve.NewRemoteSource(mavenresolve.RemoteOptions{}))
 	}
 
-	chain := mavenresolve.NewChain(sources...)
+	return mavenresolve.NewChain(sources...)
+}
+
+// mavenGraphFallback returns the transitive-graph resolver to try after a
+// committed tree and before deps.dev, per the effective Maven graph source.
+// Returns nil for "deps-dev"/"none" (deps.dev is wired by the chain itself; a
+// committed dependency-tree.json still always wins first).
+func (d *Detector) mavenGraphFallback(provider types.Provider) resolver.DependencyResolver {
+	if components.MavenGraphSource() != "repo" {
+		return nil
+	}
+	chain := d.mavenPomChain(provider)
 	if chain.Empty() {
 		return nil
 	}
-	return chain.FetchPOM
+	if r := mavenresolve.NewGraphResolver(chain); r != nil {
+		return r
+	}
+	return nil
 }
 
 // mergeDependencyTreeVersions backfills resolved versions from a pre-generated

@@ -77,6 +77,7 @@ func init() {
 	scanCmd.Flags().BoolVar(&settings.UseDepsDev, "deps-dev", settings.UseDepsDev, "Enable online deps.dev resolution for transitive dependency graphs (default false; sends public package coordinates over the network). Requires --dependency-graph direct|full to have effect.")
 	scanCmd.Flags().StringVar(&settings.DepsDevEndpoint, "deps-dev-endpoint", settings.DepsDevEndpoint, "Base URL for deps.dev (default: public deps.dev). Override with a deps.dev-API-compatible facade or mirror.")
 	scanCmd.Flags().BoolVar(&settings.UseMavenCentral, "maven-central", settings.UseMavenCentral, "Enable the public Maven Central fallback for resolving Maven BOM/parent POM versions (default false; reaches the public internet). Ignored when --maven-repo-url is set.")
+	scanCmd.Flags().StringVar(&settings.MavenGraphSource, "maven-graph-source", settings.MavenGraphSource, "Source for Maven transitive dependency edges (with --dependency-graph direct|full): 'repo' crawls the configured Maven repo chain (covers private artifacts), 'deps-dev' uses deps.dev (public only), 'none' offline-only. Default follows --deps-dev. A committed dependency-tree.json always wins first.")
 	scanCmd.Flags().BoolVar(&settings.MavenLocalRepo, "maven-local-repo", settings.MavenLocalRepo, "Resolve Maven BOM/parent POM versions from the local ~/.m2 repository (offline; reads outside the scanned tree)")
 	scanCmd.Flags().StringVar(&settings.MavenLocalRepoDir, "maven-local-repo-dir", settings.MavenLocalRepoDir, "Override the local Maven repository path (default: MAVEN_REPO_LOCAL / MAVEN_OPTS / ~/.m2/repository)")
 	scanCmd.Flags().StringVar(&settings.MavenRepoURL, "maven-repo-url", settings.MavenRepoURL, "Remote Maven repository base (e.g. an internal Artifactory/JFrog virtual repo) for BOM/parent POM fetch. Always used when set -- configuring it is the opt-in; Maven Central is not added. Credentials via STACK_ANALYZER_MAVEN_USER/TOKEN.")
@@ -225,6 +226,7 @@ func runMultiPathScan(args []string, cmd *cobra.Command, logger *slog.Logger) {
 	components.SetUseDepsDev(settings.UseDepsDev)
 	components.SetDepsDevEndpoint(settings.DepsDevEndpoint)
 	components.SetUseMavenCentral(settings.UseMavenCentral)
+	components.SetMavenGraphSource(settings.MavenGraphSource)
 	applyMavenSettings(logger)
 
 	payload, err := s.Scan()

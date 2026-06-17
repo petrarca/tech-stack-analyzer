@@ -38,6 +38,7 @@ type Settings struct {
 	UseDepsDev               bool                      // Enable online deps.dev dependency-graph resolution (default false)
 	DepsDevEndpoint          string                    // Base URL for deps.dev; empty = public. Override for a compatible facade or mirror
 	UseMavenCentral          bool                      // Enable the public Maven Central fallback for Maven BOM/parent POM fetch (default false)
+	MavenGraphSource         string                    // Maven transitive-graph source override: "" (follow --deps-dev) | "repo" | "deps-dev" | "none"
 	MavenLocalRepo           bool                      // Read the local ~/.m2 repository for Maven BOM/parent POMs (offline; reads outside the scanned tree)
 	MavenLocalRepoDir        string                    // Override the local Maven repo path; empty = MAVEN_REPO_LOCAL / MAVEN_OPTS / ~/.m2/repository
 	MavenRepoURL             string                    // Remote Maven repository base for BOM/parent POM fetch (e.g. internal JFrog); always used when set (no extra flag needed)

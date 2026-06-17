@@ -91,17 +91,29 @@ func (p *MavenParser) collectManagedVersionsRecursive(content, pomDir string, pr
 	// Follow imported BOMs (scope=import, type=pom) when a resolver is wired.
 	p.importBomManagedVersions(project.DependencyManagement.Dependencies, provider, localProps, managed, bomResolver, visited)
 
-	// Climb to the parent POM when reachable through the provider.
-	if provider == nil || pomDir == "" || project.Parent.GroupId == "" {
+	if project.Parent.GroupId == "" {
 		return
 	}
-	parentPath := p.resolveParentPath(pomDir, project.Parent.RelativePath)
-	parentContent, err := provider.ReadFile(parentPath)
-	if err != nil {
-		return
+
+	// Climb to the parent POM. Prefer a provider/relativePath read (in-repo
+	// modules); fall back to fetching the parent by coordinate via the resolver
+	// (published POMs, e.g. when crawling a fetched POM whose parent lives in a
+	// repository, not on disk).
+	if provider != nil && pomDir != "" {
+		parentPath := p.resolveParentPath(pomDir, project.Parent.RelativePath)
+		if parentContent, err := provider.ReadFile(parentPath); err == nil {
+			p.collectManagedVersionsRecursive(string(parentContent), filepath.Dir(parentPath),
+				provider, properties, managed, bomResolver, visited, depth+1)
+			return
+		}
 	}
-	p.collectManagedVersionsRecursive(string(parentContent), filepath.Dir(parentPath),
-		provider, properties, managed, bomResolver, visited, depth+1)
+	if bomResolver != nil {
+		parentVersion := p.resolvePropertyRefs(project.Parent.Version, localProps, make(map[string]bool))
+		if parentContent, parentDir, ok := bomResolver(project.Parent.GroupId, project.Parent.ArtifactId, parentVersion); ok {
+			p.collectManagedVersionsRecursive(string(parentContent), parentDir,
+				provider, properties, managed, bomResolver, visited, depth+1)
+		}
+	}
 }
 
 // importBomManagedVersions resolves each BOM import (scope=import, type=pom) to

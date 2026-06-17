@@ -205,6 +205,11 @@
                     "default": false,
                     "description": "Enable the public Maven Central fallback for resolving Maven BOM/parent POM versions. Off by default; reaches the public internet. Ignored when maven_repo_url is set. (matches --maven-central flag)"
                 },
+                "maven_graph_source": {
+                    "type": "string",
+                    "enum": ["repo", "deps-dev", "none"],
+                    "description": "Source for Maven transitive dependency edges (with dependency_graph direct|full): 'repo' crawls the configured Maven repo chain (covers private artifacts), 'deps-dev' uses deps.dev (public only), 'none' offline-only. Default follows deps_dev. A committed dependency-tree.json always wins first. (matches --maven-graph-source flag)"
+                },
                 "maven_local_repo": {
                     "type": "boolean",
                     "default": false,

@@ -24,18 +24,29 @@ type LockfileGraphProducer = parsers.LockfileProducer
 // so callers must list them in the same priority order they use for flat
 // dependency extraction.
 func AttachLockfileGraph(payload *types.Payload, currentPath string, provider types.Provider, producers []LockfileGraphProducer) {
+	AttachLockfileGraphWithFallback(payload, currentPath, provider, producers, nil)
+}
+
+// AttachLockfileGraphWithFallback is AttachLockfileGraph with an optional
+// caller-supplied fallback resolver tried after the committed lockfile/tree and
+// before deps.dev. Maven uses this to insert the repo-crawl resolver per
+// --maven-graph-source; nil falls back to the default (deps.dev only).
+//
+// Precedence: committed lockfile/tree -> fallback (if any) -> deps.dev.
+func AttachLockfileGraphWithFallback(payload *types.Payload, currentPath string, provider types.Provider, producers []LockfileGraphProducer, fallback resolver.DependencyResolver) {
 	mode := DependencyGraphMode()
 	if mode == types.DependencyGraphOff || !UseLockFiles() {
 		return
 	}
 
-	chain := resolver.NewChain(
-		resolver.NewLockfileResolver(producers...),
-		// Online fallback. Disabled by default; wired only when online
-		// resolution is explicitly enabled. Safe to include unconditionally --
-		// it falls through when not enabled.
-		depsDevResolver(),
-	)
+	resolvers := []resolver.DependencyResolver{resolver.NewLockfileResolver(producers...)}
+	if fallback != nil {
+		resolvers = append(resolvers, fallback)
+	}
+	// Online fallback (deps.dev). Disabled by default; wired only when enabled.
+	// Safe to include unconditionally -- it falls through when not enabled.
+	resolvers = append(resolvers, depsDevResolver())
+	chain := resolver.NewChain(resolvers...)
 
 	req := resolver.Request{
 		Dir:       currentPath,
