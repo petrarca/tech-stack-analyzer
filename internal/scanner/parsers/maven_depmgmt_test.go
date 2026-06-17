@@ -140,6 +140,127 @@ func TestMavenParser_DependencyManagement_DoesNotOverwriteConcrete(t *testing.T)
 	assert.Nil(t, hib.Metadata["source"])
 }
 
+func TestMavenParser_ImportedBomDependencyManagement(t *testing.T) {
+	// fhir-server has no <dependencyManagement> of its own; its parent chain
+	// reaches an ancestor that imports a BOM (scope=import) whose POM holds the
+	// managed version. The resolver locates that BOM in the "repo".
+	childPath := "/repo/backend/platform-services/fhir-server/pom.xml"
+	files := map[string]string{
+		childPath: `<?xml version="1.0"?>
+<project>
+	<parent>
+		<groupId>com.example.app</groupId>
+		<artifactId>platform-services</artifactId>
+		<version>1.0</version>
+	</parent>
+	<artifactId>fhir-server</artifactId>
+	<dependencies>
+		<dependency>
+			<groupId>ca.uhn.hapi.fhir</groupId>
+			<artifactId>hapi-fhir-base</artifactId>
+		</dependency>
+	</dependencies>
+</project>`,
+		"/repo/backend/platform-services/pom.xml": `<?xml version="1.0"?>
+<project>
+	<parent>
+		<groupId>com.example.app</groupId>
+		<artifactId>backend</artifactId>
+		<version>1.0</version>
+	</parent>
+	<artifactId>platform-services</artifactId>
+</project>`,
+		"/repo/backend/pom.xml": `<?xml version="1.0"?>
+<project>
+	<groupId>com.example.app</groupId>
+	<artifactId>backend</artifactId>
+	<version>1.0</version>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.example.app</groupId>
+				<artifactId>bom</artifactId>
+				<version>1.0</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+</project>`,
+	}
+	bomPOM := `<?xml version="1.0"?>
+<project>
+	<groupId>com.example.app</groupId>
+	<artifactId>bom</artifactId>
+	<version>1.0</version>
+	<properties>
+		<fhir.version>7.6.0</fhir.version>
+	</properties>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>ca.uhn.hapi.fhir</groupId>
+				<artifactId>hapi-fhir-base</artifactId>
+				<version>${fhir.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+</project>`
+
+	provider := &mockFileProvider{files: files}
+	// Resolver maps the imported BOM coordinate to its POM content.
+	resolver := func(groupID, artifactID, _ string) ([]byte, string, bool) {
+		if groupID == "com.example.app" && artifactID == "bom" {
+			return []byte(bomPOM), "/repo/backend/bom", true
+		}
+		return nil, "", false
+	}
+
+	deps := NewMavenParser().ParsePomXMLWithBomResolver(files[childPath], "/repo/backend/platform-services/fhir-server", provider, resolver)
+	byName := depByName(deps)
+
+	hapi, ok := byName["ca.uhn.hapi.fhir:hapi-fhir-base"]
+	require.True(t, ok)
+	assert.Equal(t, "7.6.0", hapi.Version, "version should resolve from imported BOM via property")
+	assert.Equal(t, "dependency-management", hapi.Metadata["source"])
+}
+
+func TestMavenParser_ImportedBom_NotInRepoStaysVersionless(t *testing.T) {
+	// A versionless dep managed only by a BOM that the resolver cannot find
+	// (third-party/private) stays unresolved.
+	pom := `<?xml version="1.0"?>
+<project>
+	<groupId>com.example.app</groupId>
+	<artifactId>app</artifactId>
+	<version>1.0</version>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.thirdparty</groupId>
+				<artifactId>thirdparty-bom</artifactId>
+				<version>3.0.0</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+	<dependencies>
+		<dependency>
+			<groupId>org.thirdparty</groupId>
+			<artifactId>some-lib</artifactId>
+		</dependency>
+	</dependencies>
+</project>`
+	// Resolver finds nothing.
+	resolver := func(_, _, _ string) ([]byte, string, bool) { return nil, "", false }
+
+	deps := NewMavenParser().ParsePomXMLWithBomResolver(pom, "", nil, resolver)
+	byName := depByName(deps)
+	lib, ok := byName["org.thirdparty:some-lib"]
+	require.True(t, ok)
+	assert.Equal(t, "latest", lib.Version)
+}
+
 func TestMavenParser_DependencyManagement_UnresolvableStaysVersionless(t *testing.T) {
 	// A versionless dependency with no managed entry anywhere stays unresolved
 	// (e.g. a private artifact whose BOM is not in the repo).

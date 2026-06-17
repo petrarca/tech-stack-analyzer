@@ -10,24 +10,39 @@ import (
 
 // maxParentDepth bounds the parent-POM climb when collecting managed versions,
 // matching the property-resolution bound (Maven typically allows ~10 levels).
+// Nested BOM imports are bounded instead by a visited-coordinate set.
 const maxParentDepth = 10
 
-// collectManagedVersions builds a "groupId:artifactId" -> resolved version
-// table from the current POM's <dependencyManagement> plus those inherited from
-// parent POMs reachable through the provider. Versions are resolved against the
-// supplied properties (already merged across the parent/property scope), so
-// "${property}" references become concrete where possible.
+// BomResolver locates an imported BOM POM within the scanned tree by its
+// coordinates and returns its raw content and directory (for parent/relative
+// resolution). It returns ok=false when the BOM is not present in the repo
+// (e.g. a third-party or private BOM published only to a registry), in which
+// case its managed versions stay unresolved -- the offline equivalent of
+// Trivy's repository fetch being unavailable.
 //
-// This is the offline analogue of Maven's dependencyManagement resolution: a
-// versionless <dependency> in a child POM takes its version from a managed
-// entry declared in this POM or an ancestor/BOM POM. POMs not present on disk
-// (published to a registry) cannot contribute and leave the entry unresolved.
+// The parser stays free of any repository/index knowledge: the detector injects
+// a resolver backed by the source index. A nil resolver disables BOM-import
+// following (parent-chain resolution still works).
+type BomResolver func(groupID, artifactID, version string) (content []byte, dir string, ok bool)
+
+// collectManagedVersions builds a "groupId:artifactId" -> resolved version
+// table from the current POM's <dependencyManagement>, those inherited from
+// parent POMs, and those contributed by imported BOMs (scope=import,type=pom)
+// resolved through bomResolver. Versions are resolved against the supplied
+// properties so "${property}" references become concrete where possible.
+//
+// This is the offline analogue of Maven's dependencyManagement resolution. POMs
+// not present in the repo cannot contribute and leave their entries unresolved.
 //
 // Nearest-wins: an entry already in the table (declared closer to the child) is
-// not overwritten by a more distant ancestor.
-func (p *MavenParser) collectManagedVersions(content, pomDir string, provider types.Provider, properties map[string]string) map[string]string {
+// not overwritten by a more distant ancestor or import. Per the Maven spec,
+// the POM's own and inherited managed entries take precedence over imported
+// BOMs, so imports are processed after the parent chain.
+func (p *MavenParser) collectManagedVersions(content, pomDir string, provider types.Provider,
+	properties map[string]string, bomResolver BomResolver) map[string]string {
 	managed := make(map[string]string)
-	p.collectManagedVersionsRecursive(content, pomDir, provider, properties, managed, 0)
+	visited := make(map[string]bool) // imported-BOM coordinates already followed (cycle guard)
+	p.collectManagedVersionsRecursive(content, pomDir, provider, properties, managed, bomResolver, visited, 0)
 	if len(managed) == 0 {
 		return nil
 	}
@@ -36,9 +51,12 @@ func (p *MavenParser) collectManagedVersions(content, pomDir string, provider ty
 
 // collectManagedVersionsRecursive walks the POM and its parent chain, filling
 // the managed-version table. Closer declarations win, so the current POM is
-// added before recursing into the parent.
+// added before recursing into the parent. BOM imports found along the way are
+// resolved after the direct/inherited entries. visited records imported-BOM
+// coordinates already followed, preventing cycles across the mutual recursion
+// with importBomManagedVersions.
 func (p *MavenParser) collectManagedVersionsRecursive(content, pomDir string, provider types.Provider,
-	properties map[string]string, managed map[string]string, depth int) {
+	properties map[string]string, managed map[string]string, bomResolver BomResolver, visited map[string]bool, depth int) {
 	if depth > maxParentDepth {
 		return
 	}
@@ -48,11 +66,15 @@ func (p *MavenParser) collectManagedVersionsRecursive(content, pomDir string, pr
 		return
 	}
 
-	// Current POM's dependencyManagement (and active profiles') win over ancestors.
+	// Direct and profile dependencyManagement (excluding imports) win over
+	// ancestors and imports.
 	p.addManagedEntries(project.DependencyManagement.Dependencies, properties, managed)
 	for _, profile := range p.getActiveProfiles(project.Profiles) {
 		p.addManagedEntries(profile.DependencyManagement.Dependencies, properties, managed)
 	}
+
+	// Follow imported BOMs (scope=import, type=pom) when a resolver is wired.
+	p.importBomManagedVersions(project.DependencyManagement.Dependencies, provider, properties, managed, bomResolver, visited)
 
 	// Climb to the parent POM when reachable through the provider.
 	if provider == nil || pomDir == "" || project.Parent.GroupId == "" {
@@ -64,13 +86,51 @@ func (p *MavenParser) collectManagedVersionsRecursive(content, pomDir string, pr
 		return
 	}
 	p.collectManagedVersionsRecursive(string(parentContent), filepath.Dir(parentPath),
-		provider, properties, managed, depth+1)
+		provider, properties, managed, bomResolver, visited, depth+1)
+}
+
+// importBomManagedVersions resolves each BOM import (scope=import, type=pom) to
+// its POM in the repo (via bomResolver) and merges its managed versions,
+// following the BOM's own parent chain and nested BOM imports. The visited set
+// guards against import cycles (a BOM that, directly or transitively, imports
+// itself). Properties from the importing scope are carried in so the BOM's
+// coordinate and version references resolve.
+func (p *MavenParser) importBomManagedVersions(deps []MavenDependency, provider types.Provider,
+	properties map[string]string, managed map[string]string, bomResolver BomResolver, visited map[string]bool) {
+	if bomResolver == nil {
+		return
+	}
+	for _, dep := range deps {
+		if dep.Scope != types.ScopeImport || dep.GroupId == "" || dep.ArtifactId == "" {
+			continue
+		}
+		coord := dep.GroupId + ":" + dep.ArtifactId
+		if visited[coord] {
+			continue
+		}
+		visited[coord] = true
+
+		version := p.resolvePropertyRefs(dep.Version, properties, make(map[string]bool))
+		bomContent, bomDir, ok := bomResolver(dep.GroupId, dep.ArtifactId, version)
+		if !ok {
+			continue
+		}
+
+		// Merge the imported BOM's own properties on top of the importing
+		// scope so its managed versions and coordinates resolve.
+		bomProps := make(map[string]string)
+		mergeProperties(bomProps, properties)
+		mergeProperties(bomProps, p.extractProperties(string(bomContent)))
+
+		// Collect the BOM's managed versions, following its own parent chain
+		// (via provider) and any nested BOM imports.
+		p.collectManagedVersionsRecursive(string(bomContent), bomDir, provider, bomProps, managed, bomResolver, visited, 0)
+	}
 }
 
 // addManagedEntries records resolved managed versions, keyed by
 // "groupId:artifactId", without overwriting closer (already-present) entries.
-// Only concrete versions are recorded; BOM imports (scope=import) manage
-// versions transitively and are not direct version sources here.
+// BOM imports (scope=import) are skipped here; they are followed separately.
 func (p *MavenParser) addManagedEntries(deps []MavenDependency, properties map[string]string, managed map[string]string) {
 	for _, dep := range deps {
 		if dep.GroupId == "" || dep.ArtifactId == "" || dep.Version == "" {

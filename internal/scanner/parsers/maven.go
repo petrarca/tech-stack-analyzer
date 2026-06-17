@@ -171,9 +171,19 @@ func (p *MavenParser) ParsePomXML(content string) []types.Dependency {
 	return p.ParsePomXMLWithProvider(content, "", nil)
 }
 
-// ParsePomXMLWithProvider parses pom.xml with parent POM resolution support
-// If provider and pomDir are given, it will look up parent POMs to inherit properties
+// ParsePomXMLWithProvider parses pom.xml with parent POM resolution support.
+// If provider and pomDir are given, it will look up parent POMs to inherit
+// properties and managed versions. BOM-import following is disabled (no
+// resolver); use ParsePomXMLWithBomResolver to enable it.
 func (p *MavenParser) ParsePomXMLWithProvider(content string, pomDir string, provider types.Provider) []types.Dependency {
+	return p.ParsePomXMLWithBomResolver(content, pomDir, provider, nil)
+}
+
+// ParsePomXMLWithBomResolver parses pom.xml with full offline version
+// resolution: parent-chain and imported-BOM dependencyManagement. The
+// bomResolver locates imported BOM POMs within the scanned tree; pass nil to
+// disable BOM-import following.
+func (p *MavenParser) ParsePomXMLWithBomResolver(content string, pomDir string, provider types.Provider, bomResolver BomResolver) []types.Dependency {
 	var dependencies []types.Dependency
 
 	// Parse the POM structure
@@ -240,7 +250,7 @@ func (p *MavenParser) ParsePomXMLWithProvider(content string, pomDir string, pro
 	// the offline equivalent of Maven's managed-version resolution and closes
 	// the common case of a child <dependency> whose version lives in a parent
 	// or imported BOM POM committed to the same repository.
-	managed := p.collectManagedVersions(content, pomDir, provider, properties)
+	managed := p.collectManagedVersions(content, pomDir, provider, properties, bomResolver)
 	p.applyManagedVersions(dependencies, managed)
 
 	return dependencies

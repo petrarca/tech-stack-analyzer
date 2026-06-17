@@ -169,6 +169,33 @@ func (d *Detector) mergeDependencyList(payload *types.Payload, listFile types.Fi
 	}
 }
 
+// newBomResolver returns a parsers.BomResolver that locates an imported BOM's
+// pom.xml within the scanned tree via the source index. This lets the Maven
+// parser follow scope=import BOMs to sibling/ancestor modules in the repo and
+// read their managed versions -- offline, without contacting a Maven
+// repository. Returns ok=false when the BOM is not in the repo (third-party or
+// private BOMs published only to a registry), leaving those versions
+// unresolved.
+func (d *Detector) newBomResolver(provider types.Provider) parsers.BomResolver {
+	if provider == nil {
+		return nil
+	}
+	index := components.GetSourceIndex(provider)
+	return func(groupID, artifactID, _ string) ([]byte, string, bool) {
+		paths := index.Lookup("maven", groupID+":"+artifactID)
+		if len(paths) == 0 {
+			return nil, "", false
+		}
+		// Prefer the first indexed match; BOM coordinates are unique per repo.
+		pomPath := paths[0]
+		content, err := provider.ReadFile(pomPath)
+		if err != nil {
+			return nil, "", false
+		}
+		return content, filepath.Dir(pomPath), true
+	}
+}
+
 // mergeDependencyTreeVersions backfills resolved versions from a pre-generated
 // dependency-tree.json (mvn dependency:tree) into the flat dependency list.
 // Maven's tree output carries fully resolved versions, so this fills the gap
@@ -276,7 +303,8 @@ func (d *Detector) detectPomXML(file types.File, currentPath, basePath string, p
 	// Process licenses from pom.xml <licenses> section
 	d.processLicenses(projectInfo.Licenses, payload)
 
-	dependencies := mavenParser.ParsePomXMLWithProvider(string(content), currentPath, provider)
+	dependencies := mavenParser.ParsePomXMLWithBomResolver(string(content), currentPath, provider,
+		d.newBomResolver(provider))
 
 	// Extract dependency names for tech matching
 	var depNames []string

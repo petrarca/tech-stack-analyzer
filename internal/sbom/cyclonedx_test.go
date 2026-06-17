@@ -115,6 +115,24 @@ func TestFromDependencies_FiltersNonPackageTypes(t *testing.T) {
 	}
 }
 
+func TestFromDependencies_ExcludesImportScopedBOMs(t *testing.T) {
+	// A Maven BOM import (scope=import) is a version-management entry, not a
+	// package, and must not become an SBOM component.
+	deps := []types.Dependency{
+		{Type: "maven", Name: "org.example:lib", Version: "1.0.0", Scope: types.ScopeProd},
+		{Type: "maven", Name: "org.example:platform-bom", Version: "2.0.0", Scope: types.ScopeImport},
+	}
+
+	bom := FromDependencies(deps, "myapp")
+
+	if got := len(bom.Components); got != 1 {
+		t.Fatalf("expected 1 component (BOM import excluded), got %d", got)
+	}
+	if bom.Components[0].Name != "org.example:lib" {
+		t.Errorf("unexpected component: %q", bom.Components[0].Name)
+	}
+}
+
 func TestFromDependencies_ComponentFields(t *testing.T) {
 	deps := []types.Dependency{
 		{Type: "npm", Name: "mylib", Version: "^1.2.3", Scope: types.ScopeProd},

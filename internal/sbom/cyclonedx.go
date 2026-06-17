@@ -97,6 +97,14 @@ func FromDependencies(deps []types.Dependency, rootName string) *BOM {
 		if !purlTypes[dep.Type] {
 			continue
 		}
+		// Maven BOM imports (scope=import) are version-management entries, not
+		// packages: they declare no artifact of their own. The parser keeps
+		// them as a tech-detection signal, but they must not appear as SBOM
+		// components (they have no resolvable artifact to scan). This matches
+		// Maven semantics and Trivy, which never emits import-scope entries.
+		if dep.Scope == types.ScopeImport {
+			continue
+		}
 		components = append(components, toComponent(dep))
 	}
 

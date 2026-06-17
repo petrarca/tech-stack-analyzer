@@ -233,23 +233,39 @@ each online stage is gated behind `--resolve-online`.
 - These files win over Stage 1 static resolution. They are rarely committed, so
   Stage 1 remains necessary as the offline fallback.
 
-### Stage 1 -- Offline cross-POM Maven `dependencyManagement` + parent resolution
+### Stage 1 -- Offline cross-POM Maven `dependencyManagement` + parent + BOM imports (implemented)
 
 - Applies only to dependencies still versionless after Stage 0.
-- Collect all POMs in the scanned tree into a coordinate-keyed model.
-- Build a managed-version table from each POM's `<dependencyManagement>` and
-  from parent POMs present in the tree; resolve `${property}` across the
-  parent/property scope (not just the single POM).
-- Apply managed versions to versionless `<dependency>` entries.
-- Record the resolved value in `version` and the declared form
-  (`${...}` / empty) in `metadata.declared` (per the Dependency Resolution
-  Model doc).
-- Expected impact: large reduction of the 261 Maven gap for any artifact whose
-  version is determinable from repo POMs (e.g. `com.example/example-lib -> 7.6.0`).
+- Build a managed-version table (`groupId:artifactId -> resolved version`) from:
+  - the POM's own `<dependencyManagement>` (and active profiles');
+  - **parent POMs** reachable through the provider (climbing the chain);
+  - **imported BOMs** (`scope=import`, `type=pom`) located in the repo.
+- Resolve `${property}` references across the merged parent/property scope.
+- Apply managed versions to versionless `<dependency>` entries; never overwrite
+  a concrete version. Record the declared form in `metadata.declared` and the
+  origin in `metadata.source = "dependency-management"`.
+- **BOM-import resolution (the dominant real-world case)**: a child's version
+  often lives in a sibling BOM module imported by an ancestor POM, addressed by
+  Maven *coordinates*, not a path. To resolve this offline we built a generic,
+  ecosystem-agnostic **source index** (`components.SourceIndex`) that maps
+  `(ecosystem, coordinate) -> manifest path` by walking the scanned tree once
+  (cached per scan). The Maven detector injects a `parsers.BomResolver` backed
+  by this index; the parser stays free of any repository/index knowledge.
+  Nested and inherited BOMs are followed, with a visited-coordinate set
+  guarding against import cycles.
+  - The source index is intentionally reusable beyond Maven (e.g. npm/Go/Python
+    workspace-member resolution): ecosystems opt in via
+    `components.RegisterSourceIndexer`.
+- **Import-scope entries are not packages**: the parser keeps `scope=import`
+  BOMs as a tech-detection signal, but the SBOM emitter now excludes them
+  (they declare no artifact). This matches Maven semantics and Trivy, which
+  never emits import-scope entries as packages.
 - Private artifacts managed only in a non-repo parent/BOM remain versionless
   (expected; documented gap).
-- Reference: Trivy's offline POM resolution (see the table above) -- mirror the
-  algorithm, not its network fetching.
+- Reference: Trivy's offline POM resolution (`resolveDepManagement` follows
+  `scope=import` BOMs via the same artifact resolver; `parseDependencies` emits
+  only `compile`/`runtime` non-optional deps as packages). We mirror the
+  algorithm, replacing Trivy's `~/.m2`/remote fetch with the repo source index.
 
 ### Stage 2 -- Offline npm/PyPI workspace lock association
 
