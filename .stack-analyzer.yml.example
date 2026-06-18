@@ -7,7 +7,7 @@
 # Alternatively, you can set ANY configuration via command line using inline JSON:
 #   stack-analyzer scan --config '{
 #     "properties": {
-#       "product-key": "cgm-albis"
+#       "product-key": "my-product"
 #     },
 #     "exclude": ["test-dir", "*.log"],
 #     "techs": [
