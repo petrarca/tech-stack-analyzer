@@ -10,9 +10,15 @@ import (
 
 // Compile Dockerfile parsing regexes once at package level for performance
 var (
-	dockerfileFromRegex   = regexp.MustCompile(`(?i)^FROM\s+([^\s]+)(?:\s+AS\s+([^\s]+))?`)
+	dockerfileFromRegex   = regexp.MustCompile(`(?i)^FROM\s+(?:--platform=\S+\s+)?([^\s]+)(?:\s+AS\s+([^\s]+))?`)
 	dockerfileExposeRegex = regexp.MustCompile(`(?i)^EXPOSE\s+(.+)`)
 	dockerfilePortRegex   = regexp.MustCompile(`\d+`)
+	// ARG declarations contributing build-time defaults usable in a FROM, e.g.
+	// "ARG BUILD_IMAGE=node:18-alpine". Only the form with a default value is
+	// captured; an ARG with no default cannot resolve a FROM image statically.
+	dockerfileArgRegex = regexp.MustCompile(`(?i)^ARG\s+([A-Za-z_][A-Za-z0-9_]*)=(\S+)`)
+	// A FROM image that is solely a variable reference: $VAR or ${VAR}.
+	dockerfileVarRefRegex = regexp.MustCompile(`^\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?$`)
 )
 
 // DockerfileParser handles Dockerfile parsing
@@ -42,6 +48,12 @@ func (p *DockerfileParser) ParseDockerfile(content string) *DockerfileInfo {
 
 	lines := strings.Split(content, "\n")
 
+	// Build-time ARG defaults usable to resolve a "FROM $VAR" image, and the
+	// set of named build stages (so a "FROM <stage>" that references a prior
+	// stage is not mistaken for a registry image).
+	argDefaults := make(map[string]string)
+	stageNames := make(map[string]bool)
+
 	for _, line := range lines {
 		line = strings.TrimSpace(line)
 
@@ -50,16 +62,30 @@ func (p *DockerfileParser) ParseDockerfile(content string) *DockerfileInfo {
 			continue
 		}
 
+		// Record ARG defaults (for resolving variable base images).
+		if m := dockerfileArgRegex.FindStringSubmatch(line); m != nil {
+			argDefaults[m[1]] = strings.Trim(m[2], `"'`)
+			continue
+		}
+
 		// Parse FROM statements
 		if matches := dockerfileFromRegex.FindStringSubmatch(line); matches != nil {
-			image := matches[1]
-			info.BaseImages = append(info.BaseImages, image)
+			image := resolveDockerImageRef(matches[1], argDefaults, stageNames)
 
-			// Check for multi-stage build (AS keyword)
+			// Register the stage name regardless of whether the image resolved,
+			// so later "FROM <stage>" references are recognized.
 			if len(matches) > 2 && matches[2] != "" {
 				stageName := matches[2]
 				info.Stages = append(info.Stages, stageName)
 				info.MultiStage = true
+				stageNames[strings.ToLower(stageName)] = true
+			}
+
+			// Only record a real, resolvable registry image as a base image.
+			// A reference to a prior stage or an unresolvable variable is not a
+			// package and must not become an SBOM component.
+			if image != "" {
+				info.BaseImages = append(info.BaseImages, image)
 			}
 		}
 
@@ -82,6 +108,31 @@ func (p *DockerfileParser) ParseDockerfile(content string) *DockerfileInfo {
 	}
 
 	return info
+}
+
+// resolveDockerImageRef normalizes a FROM image reference into a concrete
+// registry image, or "" when it is not a real base image:
+//   - "$VAR" / "${VAR}" -> the ARG default if declared, else "" (unresolvable).
+//   - a name matching a prior build stage -> "" (it references a local stage,
+//     not a registry image).
+//
+// A plain image reference (with or without a tag/digest) is returned unchanged.
+func resolveDockerImageRef(ref string, argDefaults map[string]string, stageNames map[string]bool) string {
+	if m := dockerfileVarRefRegex.FindStringSubmatch(ref); m != nil {
+		if def, ok := argDefaults[m[1]]; ok && def != "" {
+			ref = def
+		} else {
+			return "" // unresolvable build-arg image
+		}
+	}
+	if stageNames[strings.ToLower(ref)] {
+		return "" // references a prior build stage, not an image
+	}
+	// A reference still containing an unresolved variable is not usable.
+	if strings.Contains(ref, "$") {
+		return ""
+	}
+	return ref
 }
 
 // CreateDependencies creates dependency objects from Dockerfile base images
