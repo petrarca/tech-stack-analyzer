@@ -454,3 +454,45 @@ func TestParseDirectoryPackagesProps(t *testing.T) {
 		t.Errorf("Newtonsoft.Json version = %q, want 13.0.3", versions["Newtonsoft.Json"])
 	}
 }
+
+func TestParseDirectoryPackagesProps_GlobalPackageReference(t *testing.T) {
+	content := `<Project>
+  <ItemGroup>
+    <PackageVersion Include="Dapper" Version="2.1.72" />
+  </ItemGroup>
+  <ItemGroup>
+    <GlobalPackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
+  </ItemGroup>
+</Project>`
+	m := NewDotNetParser().ParseDirectoryPackagesProps(content)
+	if m["Dapper"] != "2.1.72" {
+		t.Errorf("PackageVersion not parsed: %v", m)
+	}
+	if m["Microsoft.SourceLink.GitHub"] != "8.0.0" {
+		t.Errorf("GlobalPackageReference not parsed: %v", m)
+	}
+}
+
+func TestParseCsproj_VersionOverride(t *testing.T) {
+	content := `<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <PackageReference Include="Serilog" VersionOverride="2.12.0" />
+    <PackageReference Include="Dapper" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+</Project>`
+	proj := NewDotNetParser().ParseCsproj(content, "Test.csproj")
+	ver := map[string]string{}
+	for _, p := range proj.Packages {
+		ver[p.Name] = p.Version
+	}
+	if ver["Serilog"] != "2.12.0" {
+		t.Errorf("VersionOverride should be the effective version, got %q", ver["Serilog"])
+	}
+	if ver["Dapper"] != "" {
+		t.Errorf("CPM-managed (no version) should be empty for later backfill, got %q", ver["Dapper"])
+	}
+	if ver["Newtonsoft.Json"] != "13.0.3" {
+		t.Errorf("explicit version should be preserved, got %q", ver["Newtonsoft.Json"])
+	}
+}

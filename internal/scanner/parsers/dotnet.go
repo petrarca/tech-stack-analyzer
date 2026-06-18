@@ -50,18 +50,20 @@ type PropertyGroup struct {
 }
 
 type ItemGroup struct {
-	PackageReferences []PackageReference `xml:"PackageReference"`
-	PackageVersions   []PackageVersion   `xml:"PackageVersion"` // Central Package Management (Directory.Packages.props)
-	ProjectReferences []ProjectReference `xml:"ProjectReference"`
+	PackageReferences       []PackageReference `xml:"PackageReference"`
+	PackageVersions         []PackageVersion   `xml:"PackageVersion"`         // Central Package Management (Directory.Packages.props)
+	GlobalPackageReferences []PackageVersion   `xml:"GlobalPackageReference"` // CPM packages applied to every project
+	ProjectReferences       []ProjectReference `xml:"ProjectReference"`
 }
 
 type PackageReference struct {
-	Include       string `xml:"Include,attr"`
-	Version       string `xml:"Version,attr"`
-	Condition     string `xml:"Condition,attr"`     // For conditional references (e.g., Debug/Release)
-	PrivateAssets string `xml:"PrivateAssets,attr"` // For build-time only dependencies
-	IncludeAssets string `xml:"IncludeAssets,attr"` // Asset inclusion control
-	ExcludeAssets string `xml:"ExcludeAssets,attr"` // Asset exclusion control
+	Include         string `xml:"Include,attr"`
+	Version         string `xml:"Version,attr"`
+	VersionOverride string `xml:"VersionOverride,attr"` // CPM per-reference override of the central version
+	Condition       string `xml:"Condition,attr"`       // For conditional references (e.g., Debug/Release)
+	PrivateAssets   string `xml:"PrivateAssets,attr"`   // For build-time only dependencies
+	IncludeAssets   string `xml:"IncludeAssets,attr"`   // Asset inclusion control
+	ExcludeAssets   string `xml:"ExcludeAssets,attr"`   // Asset exclusion control
 }
 
 type ProjectReference struct {
@@ -164,7 +166,7 @@ func (p *DotNetParser) parseModernProject(project Project, content, filePath str
 			if pr.Include != "" {
 				result.Packages = append(result.Packages, DotNetPackage{
 					Name:     pr.Include,
-					Version:  pr.Version,
+					Version:  packageRefVersion(pr),
 					Scope:    p.determineNuGetScope(pr),
 					Metadata: p.buildNuGetMetadata(pr),
 				})
@@ -213,7 +215,7 @@ func (p *DotNetParser) parseLegacyProject(project LegacyProject, content, filePa
 			if pr.Include != "" {
 				result.Packages = append(result.Packages, DotNetPackage{
 					Name:     pr.Include,
-					Version:  pr.Version,
+					Version:  packageRefVersion(pr),
 					Scope:    p.determineNuGetScope(pr),
 					Metadata: p.buildNuGetMetadata(pr),
 				})
@@ -371,6 +373,12 @@ func (p *DotNetParser) ParseDirectoryPackagesProps(content string) map[string]st
 				packageVersions[pv.Include] = pv.Version
 			}
 		}
+		// GlobalPackageReference declares a CPM package applied to every project.
+		for _, gpr := range ig.GlobalPackageReferences {
+			if gpr.Include != "" && gpr.Version != "" {
+				packageVersions[gpr.Include] = gpr.Version
+			}
+		}
 		// Tolerate files that (incorrectly) use <PackageReference Version="...">.
 		for _, pr := range ig.PackageReferences {
 			if pr.Include != "" && pr.Version != "" {
@@ -380,4 +388,15 @@ func (p *DotNetParser) ParseDirectoryPackagesProps(content string) map[string]st
 	}
 
 	return packageVersions
+}
+
+// packageRefVersion returns the effective version of a PackageReference: the CPM
+// per-reference VersionOverride when present, otherwise the Version attribute.
+// An empty result means the version is centrally managed (Directory.Packages.props)
+// and must be backfilled by the detector.
+func packageRefVersion(pr PackageReference) string {
+	if pr.VersionOverride != "" {
+		return pr.VersionOverride
+	}
+	return pr.Version
 }

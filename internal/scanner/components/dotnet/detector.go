@@ -21,8 +21,9 @@ func (d *Detector) Name() string {
 func (d *Detector) Detect(files []types.File, currentPath, basePath string, provider types.Provider, depDetector components.DependencyDetector) []*types.Payload {
 	var results []*types.Payload
 
-	// Detect central package management
-	centralVersions := d.detectCentralPackageVersions(files, currentPath, provider)
+	// Detect central package management (Directory.Packages.props), searching
+	// the project directory and walking up toward the scan root.
+	centralVersions := d.detectCentralPackageVersions(currentPath, basePath, provider)
 
 	// Check if there are any .csproj/.vbproj/.fsproj files in this directory
 	dotnetRegex := regexp.MustCompile(`\.(csproj|vbproj|fsproj)$`)
@@ -48,17 +49,31 @@ func (d *Detector) Detect(files []types.File, currentPath, basePath string, prov
 	return results
 }
 
-// detectCentralPackageVersions checks for Directory.Packages.props and returns central package versions
-func (d *Detector) detectCentralPackageVersions(files []types.File, currentPath string, provider types.Provider) map[string]string {
-	for _, file := range files {
-		if file.Name == "Directory.Packages.props" {
-			content, err := provider.ReadFile(filepath.Join(currentPath, file.Name))
-			if err == nil {
-				dotnetParser := parsers.NewDotNetParser()
-				return dotnetParser.ParseDirectoryPackagesProps(string(content))
-			}
+// maxCPMClimb bounds the upward search for Directory.Packages.props.
+const maxCPMClimb = 12
+
+// detectCentralPackageVersions finds the nearest Directory.Packages.props for a
+// project by searching the project directory and climbing toward the scan root,
+// returning its central package-version map. Central Package Management places
+// this file at a solution/repo root while .csproj files live in subdirectories,
+// so the search must walk up -- not just look in the project's own directory.
+// Nearest-wins: the first file found (closest to the project) is used.
+func (d *Detector) detectCentralPackageVersions(currentPath, basePath string, provider types.Provider) map[string]string {
+	root := filepath.Clean(basePath)
+	dir := filepath.Clean(currentPath)
+	for i := 0; i < maxCPMClimb; i++ {
+		content, err := provider.ReadFile(filepath.Join(dir, "Directory.Packages.props"))
+		if err == nil && len(content) > 0 {
+			return parsers.NewDotNetParser().ParseDirectoryPackagesProps(string(content))
+		}
+		if dir == root || dir == "." || dir == string(filepath.Separator) {
 			break
 		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			break
+		}
+		dir = parent
 	}
 	return make(map[string]string)
 }
@@ -70,12 +85,8 @@ func (d *Detector) detectProjectFiles(files []types.File, currentPath, basePath 
 
 	for _, file := range files {
 		if dotnetRegex.MatchString(file.Name) {
-			payload := d.detectDotNetProject(file, files, currentPath, basePath, provider, depDetector)
+			payload := d.detectDotNetProject(file, files, currentPath, basePath, provider, depDetector, centralVersions)
 			if payload != nil {
-				// Apply central package versions if available
-				if len(centralVersions) > 0 {
-					d.applyCentralPackageVersions(payload, centralVersions)
-				}
 				results = append(results, payload)
 			}
 		}
@@ -98,7 +109,7 @@ func (d *Detector) detectPackagesConfigFiles(files []types.File, currentPath, ba
 	return results
 }
 
-func (d *Detector) detectDotNetProject(file types.File, files []types.File, currentPath, basePath string, provider types.Provider, depDetector components.DependencyDetector) *types.Payload {
+func (d *Detector) detectDotNetProject(file types.File, files []types.File, currentPath, basePath string, provider types.Provider, depDetector components.DependencyDetector, centralVersions map[string]string) *types.Payload {
 	project := d.parseDotNetProject(file, files, currentPath, provider)
 	if project == nil {
 		return nil
@@ -107,6 +118,11 @@ func (d *Detector) detectDotNetProject(file types.File, files []types.File, curr
 	payload := d.createDotNetPayload(project, file, currentPath, basePath)
 	d.addProjectReferences(payload, project.ProjectReferences)
 	d.addNuGetDependencies(payload, project.Packages, depDetector)
+
+	// Backfill versions managed centrally (Directory.Packages.props) before
+	// graph attach, so versionless CPM references resolve and are not dropped
+	// from the graph fan-out (which skips deps with no version).
+	d.applyCentralPackageVersions(payload, centralVersions)
 
 	// Attach the dependency graph (no-op unless the mode is on and
 	// packages.lock.json is present).
@@ -346,22 +362,18 @@ func (d *Detector) detectPackagesConfig(file types.File, currentPath, basePath s
 	return payload
 }
 
-// applyCentralPackageVersions updates dependencies with versions from Directory.Packages.props
+// applyCentralPackageVersions backfills versions from Central Package Management
+// (Directory.Packages.props) onto dependencies declared without a concrete one.
+// It reuses the shared backfill (parsers.ApplyManagedVersions): an unresolved
+// version (empty, "latest", a range, or a floating "6.0.*") is filled from the
+// central map keyed by package id, the declared form is recorded, and the
+// source is tagged. Already-resolved versions (e.g. a per-reference
+// VersionOverride) are left untouched.
 func (d *Detector) applyCentralPackageVersions(payload *types.Payload, centralVersions map[string]string) {
-	for i := range payload.Dependencies {
-		dep := &payload.Dependencies[i]
-		// If dependency has no version, try to get it from central package management
-		if dep.Version == "" {
-			if version, exists := centralVersions[dep.Name]; exists {
-				dep.Version = version
-				// Add metadata to indicate version came from central management
-				if dep.Metadata == nil {
-					dep.Metadata = make(map[string]interface{})
-				}
-				dep.Metadata["central_package_management"] = true
-			}
-		}
+	if len(centralVersions) == 0 {
+		return
 	}
+	parsers.ApplyManagedVersions(payload.Dependencies, centralVersions)
 }
 
 func init() {

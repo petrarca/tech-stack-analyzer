@@ -662,3 +662,55 @@ func TestDetector_Detect_PackageLicenseUrlKnownMapping(t *testing.T) {
 	require.NotEmpty(t, payload.Licenses, "Should detect Apache-2.0 from known URL mapping")
 	assert.Equal(t, "Apache-2.0", payload.Licenses[0].LicenseName)
 }
+
+// TestDetector_CentralPackageManagement verifies that versions managed in a
+// Directory.Packages.props at an ancestor directory (Central Package
+// Management) are backfilled onto versionless <PackageReference> entries in a
+// project located in a subdirectory, that a per-reference VersionOverride wins,
+// and that an explicit version is preserved.
+func TestDetector_CentralPackageManagement(t *testing.T) {
+	detector := &Detector{}
+
+	dirProps := `<Project>
+  <ItemGroup>
+    <PackageVersion Include="Dapper" Version="2.1.72" />
+    <PackageVersion Include="Serilog" Version="3.1.1" />
+  </ItemGroup>
+</Project>`
+
+	csproj := `<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><AssemblyName>MyApp</AssemblyName></PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Dapper" />
+    <PackageReference Include="Serilog" VersionOverride="2.12.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+</Project>`
+
+	provider := &MockProvider{
+		files: map[string]string{
+			// Directory.Packages.props sits at the repo root; the project is nested.
+			"/repo/Directory.Packages.props": dirProps,
+			"/repo/src/MyApp/MyApp.csproj":   csproj,
+		},
+	}
+	depDetector := &MockDependencyDetector{matchedTechs: map[string][]string{}}
+	files := []types.File{{Name: "MyApp.csproj", Path: "/repo/src/MyApp/MyApp.csproj"}}
+
+	results := detector.Detect(files, "/repo/src/MyApp", "/repo", provider, depDetector)
+	require.Len(t, results, 1)
+
+	ver := map[string]string{}
+	for _, d := range results[0].Dependencies {
+		ver[d.Name] = d.Version
+	}
+	if ver["Dapper"] != "2.1.72" {
+		t.Errorf("Dapper should resolve from ancestor Directory.Packages.props, got %q", ver["Dapper"])
+	}
+	if ver["Serilog"] != "2.12.0" {
+		t.Errorf("Serilog VersionOverride should win over central 3.1.1, got %q", ver["Serilog"])
+	}
+	if ver["Newtonsoft.Json"] != "13.0.3" {
+		t.Errorf("explicit version should be preserved, got %q", ver["Newtonsoft.Json"])
+	}
+}
