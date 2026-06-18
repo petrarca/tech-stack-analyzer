@@ -110,6 +110,28 @@ func FromPayload(payload *types.Payload) *BOM {
 	return bom
 }
 
+// FromPayloadDirect builds a CycloneDX BOM from only the payload's direct
+// dependencies (those the project declares in its manifests), without folding
+// in any transitive dependency-graph nodes. Use this to emit a strictly
+// direct-dependency SBOM even from a scan that captured the full transitive
+// graph. This is the direct/transitive axis, distinct from the declared/
+// resolved version axis -- the emitted versions are still the resolved ones.
+func FromPayloadDirect(payload *types.Payload) *BOM {
+	agg := aggregator.NewAggregator([]string{"dependencies"})
+	out := agg.Aggregate(payload)
+	// Keep only dependencies flagged direct. Some ecosystem parsers (e.g. npm
+	// from a lockfile) emit transitive dependencies into the flat list with
+	// Direct=false; those must be excluded here, in addition to not folding in
+	// the transitive graph nodes.
+	direct := make([]types.Dependency, 0, len(out.Dependencies))
+	for _, d := range out.Dependencies {
+		if d.Direct {
+			direct = append(direct, d)
+		}
+	}
+	return FromDependencies(direct, rootName(payload))
+}
+
 // addTransitiveComponents folds dependency-graph nodes into the BOM as
 // components. Edge nodes are bare "name@version" strings with no ecosystem tag,
 // so the owning component's ComponentType (which is known per payload) supplies

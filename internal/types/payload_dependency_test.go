@@ -1,6 +1,7 @@
 package types
 
 import (
+	"encoding/json"
 	"testing"
 )
 
@@ -106,5 +107,43 @@ func TestDependency_SetDeclaredVersion(t *testing.T) {
 				t.Errorf("declared = %v, want %q", val, tt.wantValue)
 			}
 		})
+	}
+}
+
+func TestDependency_JSONRoundTrip(t *testing.T) {
+	cases := []Dependency{
+		{Type: "maven", Name: "com.example:lib", Version: "1.2.3", Scope: "prod", Direct: true,
+			Metadata: map[string]interface{}{"source": "pom.xml", "declared": "${lib.version}"}},
+		{Type: "npm", Name: "@scope/pkg", Version: "4.5.6", Scope: "dev", Direct: false},
+		{Type: "pypi", Name: "requests", Version: "2.32.3", Scope: "prod", Direct: true},
+	}
+	for _, in := range cases {
+		data, err := json.Marshal(in)
+		if err != nil {
+			t.Fatalf("marshal %s: %v", in.Name, err)
+		}
+		var out Dependency
+		if err := json.Unmarshal(data, &out); err != nil {
+			t.Fatalf("unmarshal %s: %v (json=%s)", in.Name, err, data)
+		}
+		if out.Type != in.Type || out.Name != in.Name || out.Version != in.Version ||
+			out.Scope != in.Scope || out.Direct != in.Direct {
+			t.Errorf("round-trip mismatch for %s:\n in=%+v\nout=%+v", in.Name, in, out)
+		}
+		// declared metadata must survive when present
+		if in.Metadata["declared"] != nil && out.Metadata["declared"] != in.Metadata["declared"] {
+			t.Errorf("declared metadata lost for %s: %v", in.Name, out.Metadata)
+		}
+	}
+}
+
+func TestDependency_UnmarshalJSON_ObjectForm(t *testing.T) {
+	// The object (struct) form must also decode, for forward compatibility.
+	var d Dependency
+	if err := json.Unmarshal([]byte(`{"type":"npm","name":"lodash","version":"4.17.21","direct":true}`), &d); err != nil {
+		t.Fatalf("unmarshal object form: %v", err)
+	}
+	if d.Type != "npm" || d.Name != "lodash" || d.Version != "4.17.21" || !d.Direct {
+		t.Errorf("object form decoded wrong: %+v", d)
 	}
 }

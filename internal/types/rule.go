@@ -96,6 +96,50 @@ func (d Dependency) MarshalJSON() ([]byte, error) {
 	return bytes.TrimRight(buf.Bytes(), "\n"), nil
 }
 
+// UnmarshalJSON reverses MarshalJSON, decoding the array form
+// [type, name, version, scope, direct, {metadata}] back into a Dependency. It
+// also tolerates the struct (object) form for forward compatibility and YAML
+// round-trips. This lets a saved scan output be read back into a Payload (e.g.
+// by the "sbom" command) and re-projected into an SBOM.
+func (d *Dependency) UnmarshalJSON(data []byte) error {
+	trimmed := bytes.TrimSpace(data)
+	if len(trimmed) > 0 && trimmed[0] == '{' {
+		// Object form: decode into an alias to avoid recursing into this method.
+		type depAlias Dependency
+		var alias depAlias
+		if err := json.Unmarshal(data, &alias); err != nil {
+			return err
+		}
+		*d = Dependency(alias)
+		return nil
+	}
+
+	// Array form: [type, name, version, scope, direct, metadata]
+	var arr []json.RawMessage
+	if err := json.Unmarshal(data, &arr); err != nil {
+		return err
+	}
+	dep := Dependency{}
+	get := func(i int, dst interface{}) {
+		if i < len(arr) {
+			_ = json.Unmarshal(arr[i], dst)
+		}
+	}
+	get(0, &dep.Type)
+	get(1, &dep.Name)
+	get(2, &dep.Version)
+	get(3, &dep.Scope)
+	get(4, &dep.Direct)
+	if len(arr) > 5 {
+		var md map[string]interface{}
+		if err := json.Unmarshal(arr[5], &md); err == nil && len(md) > 0 {
+			dep.Metadata = md
+		}
+	}
+	*d = dep
+	return nil
+}
+
 // MetadataKeyDeclared is the metadata key recording the originally declared
 // version form (a range, property reference, or specifier) when it differs
 // from the resolved Version. This mirrors the deps.dev model of keeping the

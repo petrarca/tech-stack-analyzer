@@ -266,3 +266,45 @@ func TestFromDependencies_ComponentFields(t *testing.T) {
 
 // Note: the resolved-version classification is tested in
 // internal/scanner/semver (TestResolvedVersion), where the logic now lives.
+
+func TestFromPayloadDirect_ExcludesTransitive(t *testing.T) {
+	p := types.NewPayload("app", nil)
+	p.SetComponentType("nodejs")
+	// Direct + transitive (Direct=false) in the flat list, plus a graph edge to
+	// a node only present in the graph.
+	p.Dependencies = []types.Dependency{
+		{Type: "npm", Name: "express", Version: "4.18.2", Scope: "prod", Direct: true},
+		{Type: "npm", Name: "accepts", Version: "1.3.8", Scope: "prod", Direct: false},
+	}
+	p.DependencyEdges = []types.DependencyEdge{
+		{From: ".", To: "express@4.18.2"},
+		{From: "express@4.18.2", To: "body-parser@1.20.1"},
+	}
+
+	full := FromPayload(p)
+	direct := FromPayloadDirect(p)
+
+	purls := func(b *BOM) map[string]bool {
+		m := map[string]bool{}
+		for _, c := range b.Components {
+			m[c.PURL] = true
+		}
+		return m
+	}
+	fp, dp := purls(full), purls(direct)
+
+	// Full includes the transitive flat dep and the graph-only node.
+	if !fp["pkg:npm/accepts@1.3.8"] || !fp["pkg:npm/body-parser@1.20.1"] {
+		t.Errorf("full BOM should include transitive deps, got %v", fp)
+	}
+	// Direct-only includes the direct dep, excludes both transitive sources.
+	if !dp["pkg:npm/express@4.18.2"] {
+		t.Errorf("direct BOM must include express, got %v", dp)
+	}
+	if dp["pkg:npm/accepts@1.3.8"] {
+		t.Error("direct BOM must exclude transitive flat dep accepts")
+	}
+	if dp["pkg:npm/body-parser@1.20.1"] {
+		t.Error("direct BOM must exclude graph-only transitive node body-parser")
+	}
+}

@@ -80,6 +80,44 @@ stack-analyzer scan /path --log-level debug --log-format json
 stack-analyzer scan /path --log-level trace
 ```
 
+### `sbom` - Generate an SBOM from a saved scan output
+
+Re-projects a previously written scan output JSON into an SBOM, without
+re-scanning. The scan's resolved dependencies are already in the output file, so
+this is a pure transformation -- letting a single (potentially long) scan produce
+multiple SBOM formats, or a direct-only variant, on demand.
+
+**Usage:**
+```bash
+stack-analyzer sbom <scan-output.json> [flags]
+```
+
+**Flags:**
+- `--format` - `cyclonedx` (CycloneDX 1.7 JSON, default) or `spdx` (SPDX 2.3 JSON).
+- `-o, --output` - Output file path (default: stdout).
+- `--pretty` - Pretty-print the JSON (default: true).
+- `--direct-only` - Emit only the project's direct dependencies, excluding transitive (dependency-of-dependency) graph nodes. This is the direct/transitive axis (same as `--dependency-graph direct`); the emitted versions are still the resolved ones. Has no effect on a scan that captured no transitive graph.
+
+The input must be a full scan output that still contains the `dependencies`
+field (i.e. produced without `--omit-fields dependencies` and without an
+`--aggregate` that strips them). Whether the result includes transitive
+dependencies depends on what the original scan captured: a scan run with
+`--dependency-graph full` carries the transitive graph in its output, so the
+`sbom` command can emit it (or exclude it with `--direct-only`); a default scan
+(`--dependency-graph off`) has only direct dependencies to begin with.
+
+**Examples:**
+```bash
+# CycloneDX from a saved scan (to stdout)
+stack-analyzer sbom results.json
+
+# SPDX 2.3 to a file
+stack-analyzer sbom results.json --format spdx -o results.spdx.json
+
+# Direct dependencies only (drop transitive graph nodes)
+stack-analyzer sbom results.json --direct-only -o results-direct.cdx.json
+```
+
 ### `summary` - Human-readable codebase summary
 
 Runs the same scanner pipeline as `scan` but outputs a concise text report

@@ -76,6 +76,13 @@ func SPDXFromPayload(payload *types.Payload) *SPDXDocument {
 	return spdxFromBOM(bom, rootName(payload))
 }
 
+// SPDXFromPayloadDirect builds an SPDX document from only the payload's direct
+// dependencies (those the project declares), excluding transitive graph nodes.
+func SPDXFromPayloadDirect(payload *types.Payload) *SPDXDocument {
+	bom := FromPayloadDirect(payload)
+	return spdxFromBOM(bom, rootName(payload))
+}
+
 // spdxFromBOM converts a built CycloneDX BOM into an SPDX document. The
 // non-deterministic document namespace is left blank here; SPDXStamp fills it
 // (and the timestamp) at output time so the pure builder stays reproducible.
