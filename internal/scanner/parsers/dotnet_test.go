@@ -473,12 +473,15 @@ func TestParseDirectoryPackagesProps_GlobalPackageReference(t *testing.T) {
 	}
 }
 
-func TestParseCsproj_VersionOverride(t *testing.T) {
+func TestParseCsproj_VersionForms(t *testing.T) {
 	content := `<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <PackageReference Include="Serilog" VersionOverride="2.12.0" />
     <PackageReference Include="Dapper" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="AutoMapper">
+      <Version>10.1.1</Version>
+    </PackageReference>
   </ItemGroup>
 </Project>`
 	proj := NewDotNetParser().ParseCsproj(content, "Test.csproj")
@@ -493,6 +496,9 @@ func TestParseCsproj_VersionOverride(t *testing.T) {
 		t.Errorf("CPM-managed (no version) should be empty for later backfill, got %q", ver["Dapper"])
 	}
 	if ver["Newtonsoft.Json"] != "13.0.3" {
-		t.Errorf("explicit version should be preserved, got %q", ver["Newtonsoft.Json"])
+		t.Errorf("Version attribute should be preserved, got %q", ver["Newtonsoft.Json"])
+	}
+	if ver["AutoMapper"] != "10.1.1" {
+		t.Errorf("child <Version> element should be read, got %q", ver["AutoMapper"])
 	}
 }

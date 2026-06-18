@@ -59,6 +59,7 @@ type ItemGroup struct {
 type PackageReference struct {
 	Include         string `xml:"Include,attr"`
 	Version         string `xml:"Version,attr"`
+	VersionElement  string `xml:"Version"`              // Child <Version> element form (older PackageReference style)
 	VersionOverride string `xml:"VersionOverride,attr"` // CPM per-reference override of the central version
 	Condition       string `xml:"Condition,attr"`       // For conditional references (e.g., Debug/Release)
 	PrivateAssets   string `xml:"PrivateAssets,attr"`   // For build-time only dependencies
@@ -390,13 +391,18 @@ func (p *DotNetParser) ParseDirectoryPackagesProps(content string) map[string]st
 	return packageVersions
 }
 
-// packageRefVersion returns the effective version of a PackageReference: the CPM
-// per-reference VersionOverride when present, otherwise the Version attribute.
-// An empty result means the version is centrally managed (Directory.Packages.props)
-// and must be backfilled by the detector.
+// packageRefVersion returns the effective version of a PackageReference, in
+// precedence order: the CPM per-reference VersionOverride, the Version
+// attribute, then the child <Version> element (an older but valid
+// PackageReference style). An empty result means the version is centrally
+// managed (Directory.Packages.props) and must be backfilled by the detector.
 func packageRefVersion(pr PackageReference) string {
-	if pr.VersionOverride != "" {
+	switch {
+	case pr.VersionOverride != "":
 		return pr.VersionOverride
+	case pr.Version != "":
+		return pr.Version
+	default:
+		return strings.TrimSpace(pr.VersionElement)
 	}
-	return pr.Version
 }
