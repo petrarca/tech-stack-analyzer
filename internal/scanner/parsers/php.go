@@ -41,9 +41,15 @@ func (p *PHPParser) ParseComposerJSON(content string) (string, string, []types.D
 	dependencies := make([]types.Dependency, 0)
 	metadata := types.NewMetadata(MetadataSourceComposerJSON)
 
-	// Process production dependencies (nil-safe)
+	// Process production dependencies (nil-safe). Platform requirements (php,
+	// ext-*, lib-*, php-*, hhvm) are runtime/environment constraints, not
+	// installable packages -- skip them so they don't leak into the SBOM as
+	// bogus components. Same rule as Trivy and the composer.lock graph parser.
 	if composerJSON.Require != nil {
 		for name, version := range composerJSON.Require {
+			if isComposerPlatformReq(name) {
+				continue
+			}
 			dependencies = append(dependencies, types.Dependency{
 				Type:     DependencyTypePHP,
 				Name:     name,
@@ -58,6 +64,9 @@ func (p *PHPParser) ParseComposerJSON(content string) (string, string, []types.D
 	// Process development dependencies (nil-safe)
 	if composerJSON.RequireDev != nil {
 		for name, version := range composerJSON.RequireDev {
+			if isComposerPlatformReq(name) {
+				continue
+			}
 			dependencies = append(dependencies, types.Dependency{
 				Type:     DependencyTypePHP,
 				Name:     name,

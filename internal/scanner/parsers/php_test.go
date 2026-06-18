@@ -42,7 +42,7 @@ func TestParseComposerJSON(t *testing.T) {
 			expectedProjectName: "myorg/myapp",
 			expectedLicense:     "MIT",
 			expectedDeps: []types.Dependency{
-				{Type: "composer", Name: "php", Version: "^8.0"},
+				// php is a platform requirement and must be filtered out
 				{Type: "composer", Name: "symfony/console", Version: "^6.0"},
 				{Type: "composer", Name: "doctrine/orm", Version: "^2.14"},
 				{Type: "composer", Name: "phpunit/phpunit", Version: "^9.0"},
@@ -83,7 +83,7 @@ func TestParseComposerJSON(t *testing.T) {
 			expectedProjectName: "myorg/myapp",
 			expectedLicense:     "",
 			expectedDeps: []types.Dependency{
-				{Type: "composer", Name: "php", Version: "^8.0"},
+				// php is a platform requirement and must be filtered out
 				{Type: "composer", Name: "symfony/console", Version: "^6.0"},
 			},
 		},
@@ -255,7 +255,7 @@ func TestPHPParser_Integration(t *testing.T) {
 
 	assert.Equal(t, "laravel/laravel", projectName)
 	assert.Equal(t, "MIT", license)
-	assert.Len(t, dependencies, 12) // 5 require + 7 require-dev
+	assert.Len(t, dependencies, 11) // 4 require (php filtered) + 7 require-dev
 
 	// Verify some key dependencies
 	depMap := make(map[string]types.Dependency)
@@ -263,10 +263,61 @@ func TestPHPParser_Integration(t *testing.T) {
 		depMap[dep.Name] = dep
 	}
 
-	assert.Equal(t, "composer", depMap["php"].Type)
-	assert.Equal(t, "^8.0.2", depMap["php"].Version)
+	// php is a platform requirement and must not appear
+	assert.Empty(t, depMap["php"].Name, "php platform requirement must be filtered")
 	assert.Equal(t, "composer", depMap["laravel/framework"].Type)
 	assert.Equal(t, "^9.19", depMap["laravel/framework"].Version)
 	assert.Equal(t, "composer", depMap["phpunit/phpunit"].Type)
 	assert.Equal(t, "^9.5.10", depMap["phpunit/phpunit"].Version)
+}
+
+// TestParseComposerJSON_PlatformRequirementsFiltered verifies that PHP platform
+// requirements (php, hhvm, ext-*, lib-*, php-*) are excluded from the
+// dependency list. They are runtime/environment constraints, not installable
+// packages, and must not appear as SBOM components. Matches Trivy's behaviour.
+func TestParseComposerJSON_PlatformRequirementsFiltered(t *testing.T) {
+	content := `{
+		"name": "myorg/myapp",
+		"require": {
+			"php": "^8.1",
+			"ext-curl": "*",
+			"ext-json": "*",
+			"lib-openssl": "*",
+			"php-64bit": "*",
+			"hhvm": ">=3.0",
+			"guzzlehttp/guzzle": "^7.0",
+			"laravel/framework": "^10.0"
+		},
+		"require-dev": {
+			"php": ">=7.4",
+			"ext-xdebug": "*",
+			"phpunit/phpunit": "^10.0"
+		}
+	}`
+	p := NewPHPParser()
+	_, _, deps := p.ParseComposerJSON(content)
+
+	got := map[string]bool{}
+	for _, d := range deps {
+		got[d.Name] = true
+	}
+
+	// Real packages must be present.
+	for _, want := range []string{"guzzlehttp/guzzle", "laravel/framework", "phpunit/phpunit"} {
+		if !got[want] {
+			t.Errorf("expected package %q not found in deps: %v", want, got)
+		}
+	}
+
+	// Platform requirements must be absent.
+	for _, banned := range []string{"php", "hhvm", "ext-curl", "ext-json", "ext-xdebug", "lib-openssl", "php-64bit"} {
+		if got[banned] {
+			t.Errorf("platform requirement %q must be filtered out, but was emitted as a dependency", banned)
+		}
+	}
+
+	// Sanity: only the 3 real packages should remain.
+	if len(deps) != 3 {
+		t.Errorf("expected 3 real deps, got %d: %v", len(deps), got)
+	}
 }

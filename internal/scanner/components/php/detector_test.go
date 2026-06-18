@@ -133,8 +133,8 @@ func TestDetector_Detect_BasicComposer(t *testing.T) {
 	}
 	assert.True(t, found, "Should detect MIT license")
 
-	// Check dependencies - should include both require and require-dev
-	assert.Len(t, payload.Dependencies, 5, "Should have 5 dependencies (3 require + 2 require-dev)")
+	// Check dependencies - php is a platform requirement and must be filtered
+	assert.Len(t, payload.Dependencies, 4, "Should have 4 dependencies (2 real require + 2 require-dev; php filtered)")
 
 	depNames := make(map[string]bool)
 	for _, dep := range payload.Dependencies {
@@ -142,7 +142,7 @@ func TestDetector_Detect_BasicComposer(t *testing.T) {
 		assert.Equal(t, "composer", dep.Type, "All dependencies should be composer type")
 	}
 
-	assert.True(t, depNames["php"], "Should have php dependency")
+	assert.False(t, depNames["php"], "php is a platform requirement and must be filtered out")
 	assert.True(t, depNames["laravel/framework"], "Should have laravel dependency")
 	assert.True(t, depNames["guzzlehttp/guzzle"], "Should have guzzle dependency")
 	assert.True(t, depNames["phpunit/phpunit"], "Should have phpunit dependency")
