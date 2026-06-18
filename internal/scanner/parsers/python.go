@@ -27,6 +27,26 @@ func (p *PythonParser) ParseRequirementsTxt(content string) []types.Dependency {
 			continue
 		}
 
+		// Strip inline options and hashes that follow a package specifier,
+		// e.g. "requests==2.32.3 --hash=sha256:abc" or trailing "# comment".
+		// Trivy uses the same approach: strip from "--" onward.
+		if i := strings.Index(line, " --"); i >= 0 {
+			line = strings.TrimSpace(line[:i])
+		}
+		if line == "" {
+			continue
+		}
+
+		// Skip pip directives and options that are not package specifiers:
+		//   -r other-requirements.txt   (file inclusion)
+		//   -e .                        (editable install)
+		//   --extra-index-url https://  (registry option)
+		//   -i / --index-url            (registry option)
+		//   http:// / https://          (direct URL references)
+		if strings.HasPrefix(line, "-") || strings.HasPrefix(line, "http://") || strings.HasPrefix(line, "https://") {
+			continue
+		}
+
 		dep, err := p.parsePEP508Dependency(line)
 		if err != nil {
 			continue // Skip invalid lines

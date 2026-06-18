@@ -120,6 +120,38 @@ black
 	assert.Equal(t, "latest", depMap["black"].Version, "Black should have latest version")
 }
 
+// TestParseRequirementsTxt_PipDirectivesSkipped verifies that pip options and
+// directives are not emitted as package dependencies. Matches Trivy's behaviour.
+func TestParseRequirementsTxt_PipDirectivesSkipped(t *testing.T) {
+	parser := NewPythonParser()
+	content := `--extra-index-url https://registry.example.com/simple
+-r base-requirements.txt
+-e .
+https://example.com/pkg.tar.gz
+mylib-exact==2.9.9
+mylib-hash==1.0.0 --hash=sha256:abc123
+`
+	deps := parser.ParseRequirementsTxt(content)
+	got := map[string]string{}
+	for _, d := range deps {
+		got[d.Name] = d.Version
+	}
+	for _, banned := range []string{"--extra-index-url", "-extra-index-url", "-r", "-e"} {
+		if _, ok := got[banned]; ok {
+			t.Errorf("pip directive %q must be filtered, got: %v", banned, got)
+		}
+	}
+	if got["mylib-exact"] != "2.9.9" {
+		t.Errorf("mylib-exact: got %q, want 2.9.9", got["mylib-exact"])
+	}
+	if got["mylib-hash"] != "1.0.0" {
+		t.Errorf("mylib-hash: version should be 1.0.0 after stripping --hash, got %q", got["mylib-hash"])
+	}
+	if len(deps) != 2 {
+		t.Errorf("expected 2 real deps, got %d: %v", len(deps), got)
+	}
+}
+
 // TestParseRequirementsTxt_PinnedVersions verifies that exact ("==", "===")
 // and compatible-release ("~=") single-clause pins yield a bare, PURL-usable
 // version, while true ranges (">=", multi-clause, wildcards) are left as-is for
