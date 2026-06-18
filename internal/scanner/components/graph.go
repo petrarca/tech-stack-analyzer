@@ -83,6 +83,71 @@ func ResolveDeferredGraphs() int {
 	return len(queue)
 }
 
+// mavenGraphFallbackHook builds the Maven transitive-graph fallback resolver
+// (repo crawl / deps.dev hybrid per --maven-graph-source). It is registered by
+// the java detector via RegisterMavenGraphFallback so this package can build it
+// without importing the java detector package (which imports this one).
+var mavenGraphFallbackHook func(provider types.Provider) resolver.DependencyResolver
+
+// RegisterMavenGraphFallback registers the Maven graph-fallback factory. Called
+// once from the java detector's init().
+func RegisterMavenGraphFallback(fn func(provider types.Provider) resolver.DependencyResolver) {
+	mavenGraphFallbackHook = fn
+}
+
+// mavenEcosystems are the payload ComponentType values whose transitive graph
+// can use the Maven repo-crawl fallback (they share Maven coordinates).
+var mavenEcosystems = map[string]bool{"maven": true, "gradle": true, "java": true}
+
+// ResolvePayloadGraphOnline resolves the transitive dependency graph for an
+// already-built payload tree WITHOUT access to the original source files --
+// purely from each component's resolved direct dependencies (coordinates),
+// using the online resolvers (deps.dev, and the Maven repo crawl/hybrid when a
+// repository is configured). It is the off-scan counterpart to
+// ResolveDeferredGraphs, used by the `sbom` command to enrich a saved
+// direct-only scan with transitive dependencies.
+//
+// It reuses resolveGraphRequest unchanged: each component is resolved with no
+// lockfile producers (the source tree is gone, so the lockfile resolver no-ops
+// and the chain falls through to the online resolvers) and, for Maven-coordinate
+// ecosystems, the registered Maven fallback. Resolution honors the same global
+// flags as a scan (--dependency-graph, --deps-dev, --maven-graph-source,
+// --maven-repo-url, --maven-central, --maven-settings). Returns the number of
+// components processed.
+//
+// provider only needs to satisfy the interface; its file reads are expected to
+// fail (no source tree) -- only GetBasePath is used (as an online-cache key).
+func ResolvePayloadGraphOnline(root *types.Payload, provider types.Provider) int {
+	if root == nil || DependencyGraphMode() == types.DependencyGraphOff {
+		return 0
+	}
+	count := 0
+	var walk func(p *types.Payload)
+	walk = func(p *types.Payload) {
+		if len(p.Dependencies) > 0 {
+			var fallback resolver.DependencyResolver
+			if mavenGraphFallbackHook != nil && mavenEcosystems[p.ComponentType] {
+				fallback = mavenGraphFallbackHook(provider)
+			}
+			resolveGraphRequest(graphRequest{
+				payload:  p,
+				dir:      "",
+				provider: provider,
+				// no producers: the source tree is gone; the lockfile resolver
+				// no-ops and the chain uses the online resolvers.
+				producers: nil,
+				fallback:  fallback,
+			})
+			count++
+		}
+		for _, child := range p.Children {
+			walk(child)
+		}
+	}
+	walk(root)
+	return count
+}
+
 // resolveGraphRequest runs one component's graph resolution: committed
 // lockfile/tree -> fallback (if any) -> deps.dev, fanned out over the
 // component's declared dependencies.

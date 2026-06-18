@@ -97,6 +97,13 @@ stack-analyzer sbom <scan-output.json> [flags]
 - `-o, --output` - Output file path (default: stdout).
 - `--pretty` - Pretty-print the JSON (default: true).
 - `--direct-only` - Emit only the project's direct dependencies, excluding transitive (dependency-of-dependency) graph nodes. This is the direct/transitive axis (same as `--dependency-graph direct`); the emitted versions are still the resolved ones. Has no effect on a scan that captured no transitive graph.
+- `--resolve-transitive` - Resolve the transitive dependency graph **online from the direct-dependency coordinates** and fold it into the SBOM. The original source files (lockfiles, POMs) are gone by this point, so resolution is coordinate-based: deps.dev for public packages (all ecosystems), and, for Maven/Gradle, the configured Maven repository (repo crawl / deps.dev hybrid) for private artifacts. Private non-Maven packages that deps.dev cannot resolve stay direct. Mutually exclusive with `--direct-only`. Progress is reported as a resolution phase, like a scan.
+  - Online sources are opt-in via the same flags as `scan`: `--deps-dev`, `--deps-dev-endpoint`, `--maven-graph-source`, `--maven-repo-url`, `--maven-central`, `--maven-settings`, `--maven-local-repo[-dir]`, `--dependency-graph direct|full`. Maven repository credentials come from `STACK_ANALYZER_MAVEN_USER` / `STACK_ANALYZER_MAVEN_TOKEN` (environment only).
+
+This lets a fast, default (direct-only) scan be enriched with the transitive
+graph later, on demand, without re-scanning -- the transitive resolution that a
+`--dependency-graph full` scan would have done, run from the saved direct
+dependencies instead.
 
 The input must be a full scan output that still contains the `dependencies`
 field (i.e. produced without `--omit-fields dependencies` and without an
@@ -116,6 +123,15 @@ stack-analyzer sbom results.json --format spdx -o results.spdx.json
 
 # Direct dependencies only (drop transitive graph nodes)
 stack-analyzer sbom results.json --direct-only -o results-direct.cdx.json
+
+# Resolve the transitive graph online from a direct-only scan (public packages)
+stack-analyzer sbom results.json --resolve-transitive --deps-dev -o results-full.cdx.json
+
+# Resolve transitive incl. private Maven artifacts from an internal repo
+stack-analyzer sbom results.json --resolve-transitive \
+  --maven-graph-source deps-dev \
+  --maven-repo-url https://artifactory.example.com/artifactory/my-virtual-repo \
+  -o results-full.cdx.json
 ```
 
 ### `summary` - Human-readable codebase summary

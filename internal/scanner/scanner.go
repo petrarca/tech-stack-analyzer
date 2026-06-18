@@ -548,20 +548,7 @@ func (s *Scanner) startResolveReporter() func() {
 // Only the active sources are shown, so a deps.dev-only or repo-only scan reads
 // cleanly.
 func formatResolveStats(d resolvestats.Snapshot) string {
-	var parts []string
-	if d.POMFetched > 0 {
-		parts = append(parts, fmt.Sprintf("%d POMs", d.POMFetched))
-	}
-	if d.DepsDevCalls > 0 {
-		parts = append(parts, fmt.Sprintf("%d deps.dev", d.DepsDevCalls))
-	}
-	if d.CacheHits > 0 {
-		parts = append(parts, fmt.Sprintf("%d cached", d.CacheHits))
-	}
-	if len(parts) == 0 {
-		return "no fetches"
-	}
-	return strings.Join(parts, ", ")
+	return d.Format()
 }
 
 // countFilesAndComponents recursively counts files and components in the payload tree

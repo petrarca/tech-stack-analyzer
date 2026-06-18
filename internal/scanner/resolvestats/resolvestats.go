@@ -8,7 +8,12 @@
 // per-scan delta should snapshot at the start and subtract.
 package resolvestats
 
-import "sync/atomic"
+import (
+	"strings"
+	"sync/atomic"
+
+	"fmt"
+)
 
 var (
 	pomFetched   atomic.Int64 // POMs fetched over the network (Maven repos)
@@ -61,4 +66,24 @@ func (s Snapshot) Sub(base Snapshot) Snapshot {
 // Active reports whether any resolution activity has been recorded in the delta.
 func (s Snapshot) Active() bool {
 	return s.POMFetched > 0 || s.CacheHits > 0 || s.DepsDevCalls > 0 || s.AuthFailures > 0
+}
+
+// Format renders a human-readable, source-broken-down summary of the counters
+// (e.g. "12 POMs, 393 deps.dev, 40 cached"), as shown in the resolution-phase
+// progress line. Returns "no fetches" when nothing was fetched.
+func (s Snapshot) Format() string {
+	var parts []string
+	if s.POMFetched > 0 {
+		parts = append(parts, fmt.Sprintf("%d POMs", s.POMFetched))
+	}
+	if s.DepsDevCalls > 0 {
+		parts = append(parts, fmt.Sprintf("%d deps.dev", s.DepsDevCalls))
+	}
+	if s.CacheHits > 0 {
+		parts = append(parts, fmt.Sprintf("%d cached", s.CacheHits))
+	}
+	if len(parts) == 0 {
+		return "no fetches"
+	}
+	return strings.Join(parts, ", ")
 }

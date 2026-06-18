@@ -48,6 +48,7 @@ tasks:
     cmds:
       - go test -tags online -count=1 ./internal/scanner/resolver/ -run Live
       - go test -tags online -count=1 ./internal/scanner/mavenresolve/ -run Live
+      - go test -tags online -count=1 ./internal/scanner/components/ -run Live
 
   test:online:
     desc: Alias of test:integration (live network tests).

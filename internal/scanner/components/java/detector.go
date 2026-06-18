@@ -762,6 +762,13 @@ func (d *Detector) formatProjectName(groupId, artifactId string) string {
 func init() {
 	components.Register(&Detector{})
 
+	// Expose the Maven graph-fallback builder so off-scan resolution (the sbom
+	// command) can resolve Maven/Gradle transitive graphs from coordinates via
+	// the same repo-crawl/hybrid resolver, without importing this package.
+	components.RegisterMavenGraphFallback(func(provider types.Provider) resolver.DependencyResolver {
+		return (&Detector{}).mavenGraphFallback(provider)
+	})
+
 	// Register maven package provider
 	providers.Register(&providers.PackageProvider{
 		DependencyType:      "maven",
