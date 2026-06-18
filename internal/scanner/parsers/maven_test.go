@@ -584,3 +584,52 @@ func TestParsePomXML_ParentVersionResolution(t *testing.T) {
 		t.Errorf("other version = %q, want 2.5.0 (inherited)", got["com.example:other"])
 	}
 }
+
+// TestParsePomXML_ProjectGroupIdInCoordinate verifies that property references
+// in a dependency's coordinate (not just its version) are resolved. A
+// sibling-module dependency commonly uses <groupId>${project.groupId}</groupId>;
+// the placeholder must resolve to the (parent-inherited) groupId so the PURL is
+// valid and the dependencyManagement backfill can match the resolved name.
+func TestParsePomXML_ProjectGroupIdInCoordinate(t *testing.T) {
+	content := `<project>
+  <parent>
+    <groupId>com.example.app</groupId>
+    <artifactId>parent</artifactId>
+    <version>3.1.0</version>
+  </parent>
+  <artifactId>child</artifactId>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.example.app</groupId>
+        <artifactId>sibling-core</artifactId>
+        <version>3.1.0</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>sibling-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</project>`
+	deps := NewMavenParser().ParsePomXML(content)
+	got := map[string]string{}
+	for _, d := range deps {
+		if d.Scope == types.ScopeImport {
+			continue
+		}
+		got[d.Name] = d.Version
+	}
+	// The unresolved placeholder must NOT survive in the coordinate.
+	if _, bad := got["${project.groupId}:sibling-core"]; bad {
+		t.Errorf("coordinate still has unresolved ${project.groupId}: %v", got)
+	}
+	// Name resolves to the parent-inherited groupId, and the version is then
+	// backfilled from dependencyManagement (impossible before the name fix).
+	if got["com.example.app:sibling-core"] != "3.1.0" {
+		t.Errorf("sibling-core = %q, want 3.1.0 (resolved coordinate + managed version)", got["com.example.app:sibling-core"])
+	}
+}

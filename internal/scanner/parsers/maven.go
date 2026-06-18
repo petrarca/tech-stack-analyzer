@@ -416,6 +416,13 @@ func (p *MavenParser) addParentCoordinates(properties map[string]string, parent 
 	if parent.GroupId != "" {
 		properties["project.parent.groupId"] = parent.GroupId
 		properties["parent.groupId"] = parent.GroupId
+		// Inherited groupId fallback when the child omits its own groupId.
+		// Maven inherits groupId from the parent, so ${project.groupId} in a
+		// sibling-module dependency resolves to the parent's groupId.
+		if _, ok := properties["project.groupId"]; !ok {
+			properties["project.groupId"] = parent.GroupId
+			properties["pom.groupId"] = parent.GroupId
+		}
 	}
 	if parent.ArtifactId != "" {
 		properties["project.parent.artifactId"] = parent.ArtifactId
@@ -466,8 +473,13 @@ func (p *MavenParser) extractProperties(content string) map[string]string {
 // in the version and recording the originally declared form when it differs.
 func (p *MavenParser) newMavenDependency(name, declaredVersion, scope string, properties map[string]string, metadata map[string]interface{}) types.Dependency {
 	dep := types.Dependency{
-		Type:     DependencyTypeMaven,
-		Name:     name,
+		Type: DependencyTypeMaven,
+		// Resolve property references in the coordinate too, not just the
+		// version. A sibling-module dependency commonly uses
+		// <groupId>${project.groupId}</groupId>; leaving it unresolved both
+		// emits a broken PURL and prevents the dependencyManagement backfill
+		// (keyed by the resolved "group:artifact") from finding a version.
+		Name:     p.resolvePropertyRefs(name, properties, make(map[string]bool)),
 		Version:  p.resolveVersion(declaredVersion, properties),
 		Scope:    scope,
 		Direct:   true,
