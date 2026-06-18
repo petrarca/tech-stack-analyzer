@@ -119,3 +119,21 @@ func TestSPDXStamp_SetsNamespaceAndTimestamp(t *testing.T) {
 	// Nil-safe.
 	SPDXStamp(nil)
 }
+
+func TestSPDXFromPayload_UserMetadataAnnotations(t *testing.T) {
+	p := types.NewPayload("app", nil)
+	p.Dependencies = []types.Dependency{{Type: "npm", Name: "lodash", Version: "4.17.21", Direct: true}}
+	p.Metadata = map[string]interface{}{
+		"properties": map[string]interface{}{"product_key": "myproduct"},
+	}
+	doc := SPDXFromPayload(p)
+	found := false
+	for _, a := range doc.Annotations {
+		if a.Comment == "product_key=myproduct" {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected user-metadata annotation, got %+v", doc.Annotations)
+	}
+}

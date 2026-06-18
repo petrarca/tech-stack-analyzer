@@ -31,6 +31,16 @@ type SPDXDocument struct {
 	CreationInfo      SPDXCreationInfo   `json:"creationInfo"`
 	Packages          []SPDXPackage      `json:"packages"`
 	Relationships     []SPDXRelationship `json:"relationships"`
+	Annotations       []SPDXAnnotation   `json:"annotations,omitempty"`
+}
+
+// SPDXAnnotation carries arbitrary document-level metadata (used here to surface
+// the user-provided scan properties). AnnotationDate is filled by SPDXStamp.
+type SPDXAnnotation struct {
+	Annotator      string `json:"annotator"`
+	AnnotationDate string `json:"annotationDate,omitempty"`
+	AnnotationType string `json:"annotationType"`
+	Comment        string `json:"comment"`
 }
 
 // SPDXCreationInfo records who/what/when produced the document.
@@ -102,6 +112,19 @@ func spdxFromBOM(bom *BOM, name string) *SPDXDocument {
 		},
 	}
 
+	// Surface the user-provided metadata (the same name/value pairs as
+	// CycloneDX metadata.properties) as document annotations -- SPDX's mechanism
+	// for arbitrary key/value metadata. One annotation per property.
+	if bom.Metadata != nil {
+		for _, p := range bom.Metadata.Properties {
+			doc.Annotations = append(doc.Annotations, SPDXAnnotation{
+				Annotator:      spdxToolCreator,
+				AnnotationType: "OTHER",
+				Comment:        p.Name + "=" + p.Value,
+			})
+		}
+	}
+
 	// Root package representing the scanned application.
 	doc.Packages = append(doc.Packages, SPDXPackage{
 		Name:             name,
@@ -168,7 +191,11 @@ func SPDXStamp(doc *SPDXDocument) {
 	if doc == nil {
 		return
 	}
-	doc.CreationInfo.Created = time.Now().UTC().Format(time.RFC3339)
+	now := time.Now().UTC().Format(time.RFC3339)
+	doc.CreationInfo.Created = now
+	for i := range doc.Annotations {
+		doc.Annotations[i].AnnotationDate = now
+	}
 	if id := newUUIDv4(); id != "" {
 		doc.DocumentNamespace = spdxNamespaceURI + doc.Name + "-" + id
 	}

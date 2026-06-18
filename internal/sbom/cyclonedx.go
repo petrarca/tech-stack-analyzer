@@ -14,10 +14,12 @@ import (
 	"fmt"
 	"net/url"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/petrarca/tech-stack-analyzer/internal/aggregator"
+	"github.com/petrarca/tech-stack-analyzer/internal/metadata"
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/semver"
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
@@ -71,8 +73,9 @@ type BOM struct {
 
 // Metadata holds document-level metadata.
 type Metadata struct {
-	Timestamp string     `json:"timestamp,omitempty"`
-	Component *Component `json:"component,omitempty"`
+	Timestamp  string     `json:"timestamp,omitempty"`
+	Component  *Component `json:"component,omitempty"`
+	Properties []Property `json:"properties,omitempty"`
 }
 
 // Component is a single CycloneDX component entry.
@@ -107,6 +110,7 @@ func FromPayload(payload *types.Payload) *BOM {
 	out := agg.Aggregate(payload)
 	bom := FromDependencies(out.Dependencies, rootName(payload))
 	addTransitiveComponents(bom, payload)
+	applyUserMetadata(bom, payload)
 	return bom
 }
 
@@ -129,7 +133,95 @@ func FromPayloadDirect(payload *types.Payload) *BOM {
 			direct = append(direct, d)
 		}
 	}
-	return FromDependencies(direct, rootName(payload))
+	bom := FromDependencies(direct, rootName(payload))
+	applyUserMetadata(bom, payload)
+	return bom
+}
+
+// applyUserMetadata copies the user-provided scan metadata (the config
+// `properties`, e.g. product_key/team/owner) onto the BOM's metadata.properties.
+// Only this user-supplied metadata is surfaced -- never internal scan data. The
+// keys are namespaced under "stack-analyzer:" to avoid collisions with other
+// tools' properties. Values are sorted for deterministic output.
+func applyUserMetadata(bom *BOM, payload *types.Payload) {
+	props := userMetadataProperties(payload)
+	if len(props) == 0 {
+		return
+	}
+	if bom.Metadata == nil {
+		bom.Metadata = &Metadata{}
+	}
+
+	// The scanner treats `properties` as opaque user key/values -- it defines no
+	// canonical "product name" key -- so all user metadata is surfaced verbatim
+	// as metadata.properties (the user's own key names, unprefixed) and the SBOM
+	// subject name (metadata.component) is left as the scanned root.
+	keys := make([]string, 0, len(props))
+	for k := range props {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	for _, k := range keys {
+		bom.Metadata.Properties = append(bom.Metadata.Properties, Property{
+			Name:  k,
+			Value: props[k],
+		})
+	}
+}
+
+// userMetadataProperties extracts the user-provided scan-metadata properties
+// from the payload as a flat string map. It handles both shapes the metadata
+// takes: the typed *metadata.ScanMetadata (a live scan) and the
+// map[string]interface{} produced when a saved scan JSON is unmarshaled (the
+// sbom command). Only scalar values are emitted (strings/numbers/bools);
+// non-scalar values are skipped. Returns nil when there are none.
+func userMetadataProperties(payload *types.Payload) map[string]string {
+	if payload == nil || payload.Metadata == nil {
+		return nil
+	}
+
+	var raw map[string]interface{}
+	switch m := payload.Metadata.(type) {
+	case *metadata.ScanMetadata:
+		raw = m.Properties
+	case map[string]interface{}:
+		if p, ok := m["properties"].(map[string]interface{}); ok {
+			raw = p
+		}
+	}
+	if len(raw) == 0 {
+		return nil
+	}
+
+	out := make(map[string]string, len(raw))
+	for k, v := range raw {
+		if s, ok := scalarString(v); ok {
+			out[k] = s
+		}
+	}
+	if len(out) == 0 {
+		return nil
+	}
+	return out
+}
+
+// scalarString renders a scalar metadata value as a string, or returns
+// ok=false for non-scalar values (maps, slices) which are not user metadata.
+func scalarString(v interface{}) (string, bool) {
+	switch x := v.(type) {
+	case string:
+		return x, true
+	case bool:
+		return strconv.FormatBool(x), true
+	case float64:
+		return strconv.FormatFloat(x, 'f', -1, 64), true
+	case int:
+		return strconv.Itoa(x), true
+	case int64:
+		return strconv.FormatInt(x, 10), true
+	default:
+		return "", false
+	}
 }
 
 // addTransitiveComponents folds dependency-graph nodes into the BOM as

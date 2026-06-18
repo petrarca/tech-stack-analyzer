@@ -43,6 +43,7 @@ scan:
 - **`properties`** - Custom metadata added to `metadata.properties` in output
   - Document product context, ownership, deployment information
   - Any key-value pairs relevant to your project
+  - Scalar values are also surfaced in the SBOM, with your key names verbatim: as CycloneDX `metadata.properties` and as SPDX document annotations. Only this user-provided metadata is emitted (never internal scan data); non-scalar values are skipped. This applies to `--sbom`/`--also-sbom` and the `sbom` command.
 
 - **`exclude`** - Additional patterns to exclude from scanning
   - **Combined with .gitignore**: These patterns are added to automatic `.gitignore` exclusions

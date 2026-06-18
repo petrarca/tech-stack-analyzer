@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/petrarca/tech-stack-analyzer/internal/metadata"
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
 
@@ -306,5 +307,72 @@ func TestFromPayloadDirect_ExcludesTransitive(t *testing.T) {
 	}
 	if dp["pkg:npm/body-parser@1.20.1"] {
 		t.Error("direct BOM must exclude graph-only transitive node body-parser")
+	}
+}
+
+func TestFromPayload_UserMetadataProperties_Typed(t *testing.T) {
+	p := types.NewPayload("app", nil)
+	p.SetComponentType("nodejs")
+	p.Dependencies = []types.Dependency{{Type: "npm", Name: "lodash", Version: "4.17.21", Direct: true}}
+	p.Metadata = &metadata.ScanMetadata{
+		Properties: map[string]interface{}{
+			"product_key": "myproduct",
+			"team":        "platform",
+			"build":       float64(42),                    // numeric scalar
+			"internalmap": map[string]interface{}{"x": 1}, // non-scalar: must be skipped
+		},
+	}
+
+	bom := FromPayload(p)
+	got := map[string]string{}
+	for _, pr := range bom.Metadata.Properties {
+		got[pr.Name] = pr.Value
+	}
+	if got["product_key"] != "myproduct" {
+		t.Errorf("product_key not surfaced: %v", got)
+	}
+	if got["team"] != "platform" {
+		t.Errorf("team not surfaced: %v", got)
+	}
+	if got["build"] != "42" {
+		t.Errorf("numeric build not surfaced as string: %v", got)
+	}
+	if _, ok := got["internalmap"]; ok {
+		t.Errorf("non-scalar metadata must be skipped: %v", got)
+	}
+	// The SBOM subject name is the scanned root, not a guessed product key.
+	if bom.Metadata.Component == nil || bom.Metadata.Component.Name != "app" {
+		t.Errorf("component name should remain the root name, got %+v", bom.Metadata.Component)
+	}
+}
+
+func TestFromPayload_UserMetadataProperties_MapShape(t *testing.T) {
+	// The sbom command loads a saved scan JSON, so Metadata is a generic map.
+	p := types.NewPayload("app", nil)
+	p.Dependencies = []types.Dependency{{Type: "npm", Name: "lodash", Version: "4.17.21", Direct: true}}
+	p.Metadata = map[string]interface{}{
+		"format": "full",
+		"properties": map[string]interface{}{
+			"product_key": "fromjson",
+		},
+	}
+
+	bom := FromPayload(p)
+	got := map[string]string{}
+	for _, pr := range bom.Metadata.Properties {
+		got[pr.Name] = pr.Value
+	}
+	if got["product_key"] != "fromjson" {
+		t.Errorf("map-shaped metadata not surfaced: %v", got)
+	}
+}
+
+func TestFromPayload_NoUserMetadata(t *testing.T) {
+	p := types.NewPayload("app", nil)
+	p.Dependencies = []types.Dependency{{Type: "npm", Name: "lodash", Version: "4.17.21", Direct: true}}
+	// no Metadata set
+	bom := FromPayload(p)
+	if bom.Metadata != nil && len(bom.Metadata.Properties) != 0 {
+		t.Errorf("expected no metadata properties, got %v", bom.Metadata.Properties)
 	}
 }
