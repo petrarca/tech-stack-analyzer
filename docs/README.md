@@ -10,6 +10,7 @@ Detailed documentation for the Tech Stack Analyzer. For a quick introduction and
 | [Configuration](configuration.md) | Project config file, environment variables, scan config files, logging |
 | [Output Format](output.md) | Output structure, field reference, aggregated output, metadata, properties |
 | [Maven Resolution](maven.md) | Resolving versionless Maven deps; local `~/.m2`, internal/JFrog repos, settings.xml; transitive graph |
+| [SBOM Quality Guide](sbom-quality.md) | Per-ecosystem recommendations for getting fully-versioned SBOMs (lockfiles, pinning, Maven flags) |
 | [Extending the Analyzer](extending.md) | Adding technology rules, component detectors, file matchers, category configuration |
 | [Building and Architecture](building.md) | Build instructions, project structure, core components, detection pipeline |
 
