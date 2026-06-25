@@ -1,0 +1,13 @@
+tech: ngrx
+name: NgRx
+dependencies:
+  - type: npm
+    name: "@ngrx/store"
+  - type: npm
+    name: "@ngrx/effects"
+  - type: npm
+    name: "@ngrx/entity"
+  - type: npm
+    name: "@ngrx/router-store"
+  - type: npm
+    name: "@ngrx/component-store"

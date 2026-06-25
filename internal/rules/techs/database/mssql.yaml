@@ -1,5 +1,9 @@
 tech: mssql
-name: MS SQL
+name: SQL Server
+aliases:
+  - MS SQL
+  - Microsoft SQL Server
+  - MSSQL
 dependencies:
   - type: gem
     name: jdbc-mssql

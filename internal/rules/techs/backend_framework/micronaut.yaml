@@ -1,0 +1,6 @@
+tech: micronaut
+name: Micronaut
+dependencies:
+  - type: maven
+    name: /^io\.micronaut:/
+    example: io.micronaut:micronaut-inject

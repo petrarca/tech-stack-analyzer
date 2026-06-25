@@ -1,5 +1,8 @@
 tech: nodejs
-name: NodeJS
+name: Node.js
+aliases:
+  - NodeJS
+  - Node
 is_primary_tech: true
 dependencies:
   - type: docker

@@ -1,0 +1,16 @@
+tech: wcf
+name: WCF
+aliases:
+  - Windows Communication Foundation
+  - WCF net.tcp
+dependencies:
+  - type: nuget
+    name: System.ServiceModel.Http
+  - type: nuget
+    name: System.ServiceModel.Primitives
+  - type: nuget
+    name: System.ServiceModel.NetTcp
+  - type: nuget
+    name: CoreWCF.Http
+  - type: nuget
+    name: CoreWCF.NetTcp

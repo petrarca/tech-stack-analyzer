@@ -1,0 +1,13 @@
+tech: jersey
+name: Jersey
+aliases:
+  - JAX-RS
+  - Jersey (JAX-RS)
+dependencies:
+  - type: maven
+    name: /^org\.glassfish\.jersey\./
+    example: org.glassfish.jersey.core:jersey-server
+  - type: maven
+    name: jakarta.ws.rs:jakarta.ws.rs-api
+  - type: maven
+    name: javax.ws.rs:javax.ws.rs-api

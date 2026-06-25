@@ -1,0 +1,10 @@
+tech: vb6
+name: Visual Basic 6.0
+aliases:
+  - VB6
+  - Visual Basic 6
+extensions:
+  - .vbp
+  - .frm
+  - .bas
+  - .cls

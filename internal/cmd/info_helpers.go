@@ -37,6 +37,9 @@ func GroupTechsByCategory(allRules []types.Rule) map[string][]types.TechInfo {
 			Description:   rule.Description,
 			IsPrimaryTech: rule.IsPrimaryTech,
 		}
+		if len(rule.Aliases) > 0 {
+			techInfo.Aliases = rule.Aliases
+		}
 		if len(rule.Properties) > 0 {
 			techInfo.Properties = rule.Properties
 		}

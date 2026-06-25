@@ -7,6 +7,7 @@ type TechInfo struct {
 	Category      string                 `json:"category"`
 	Description   string                 `json:"description,omitempty"`
 	IsPrimaryTech *bool                  `json:"is_primary_tech,omitempty"`
+	Aliases       []string               `json:"aliases,omitempty"`
 	Properties    map[string]interface{} `json:"properties,omitempty"`
 }
 

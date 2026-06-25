@@ -1,0 +1,7 @@
+tech: hazelcast
+name: Hazelcast
+dependencies:
+  - type: maven
+    name: com.hazelcast:hazelcast
+  - type: maven
+    name: com.hazelcast:hazelcast-client

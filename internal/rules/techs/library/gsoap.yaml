@@ -1,0 +1,5 @@
+tech: gsoap
+name: gSOAP
+extensions:
+  - .wsdl
+  - .xsd

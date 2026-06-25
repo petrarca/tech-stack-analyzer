@@ -1,0 +1,11 @@
+tech: cefsharp
+name: CefSharp
+aliases:
+  - CEF
+dependencies:
+  - type: nuget
+    name: CefSharp.WinForms
+  - type: nuget
+    name: CefSharp.Wpf
+  - type: nuget
+    name: CefSharp.OffScreen

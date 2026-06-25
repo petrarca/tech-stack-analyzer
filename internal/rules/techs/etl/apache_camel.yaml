@@ -1,0 +1,8 @@
+tech: apache_camel
+name: Apache Camel
+aliases:
+  - Camel
+dependencies:
+  - type: maven
+    name: /^org\.apache\.camel:/
+    example: org.apache.camel:camel-core

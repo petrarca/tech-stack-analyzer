@@ -1,0 +1,9 @@
+tech: signalr
+name: SignalR
+dependencies:
+  - type: nuget
+    name: Microsoft.AspNetCore.SignalR
+  - type: nuget
+    name: Microsoft.AspNet.SignalR
+  - type: npm
+    name: "@microsoft/signalr"

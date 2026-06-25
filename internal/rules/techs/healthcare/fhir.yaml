@@ -1,5 +1,9 @@
 tech: fhir
 name: FHIR
+aliases:
+  - HAPI FHIR
+  - HAPI HL7
+  - HL7 FHIR
 files:
   - fhir-resources.json
   - fhir-structures.json

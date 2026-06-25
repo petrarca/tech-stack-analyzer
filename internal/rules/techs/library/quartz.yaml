@@ -1,0 +1,11 @@
+tech: quartz
+name: Quartz
+aliases:
+  - Quartz Scheduler
+dependencies:
+  - type: maven
+    name: org.quartz-scheduler:quartz
+  - type: nuget
+    name: Quartz
+  - type: nuget
+    name: Quartz.AspNetCore

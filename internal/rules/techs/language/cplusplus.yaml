@@ -1,5 +1,10 @@
 tech: cplusplus
 name: C++
+aliases:
+  - C++ (MSVC C++17)
+  - C++/MFC
+  - C++20
+  - C++17
 is_component: true
 is_primary_tech: true
 extensions:

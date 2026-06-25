@@ -33,6 +33,7 @@ type Rule struct {
 	Name          string                 `yaml:"name" json:"name"`
 	Type          string                 `yaml:"type" json:"type"`
 	Description   string                 `yaml:"description,omitempty" json:"description,omitempty"`
+	Aliases       []string               `yaml:"aliases,omitempty" json:"aliases,omitempty"` // Alternative display names for downstream name→key resolution
 	Properties    map[string]interface{} `yaml:"properties,omitempty" json:"properties,omitempty"`
 	IsComponent   *bool                  `yaml:"is_component,omitempty" json:"is_component,omitempty"`       // nil = auto (use type-based logic)
 	IsPrimaryTech *bool                  `yaml:"is_primary_tech,omitempty" json:"is_primary_tech,omitempty"` // nil = use current logic (component = primary tech)

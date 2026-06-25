@@ -483,6 +483,15 @@
           "category": "backend_framework"
         },
         {
+          "name": "Jersey",
+          "tech": "jersey",
+          "category": "backend_framework",
+          "aliases": [
+            "JAX-RS",
+            "Jersey (JAX-RS)"
+          ]
+        },
+        {
           "name": "Koa",
           "tech": "koa",
           "category": "backend_framework"
@@ -495,6 +504,11 @@
         {
           "name": "Laravel",
           "tech": "laravel",
+          "category": "backend_framework"
+        },
+        {
+          "name": "Micronaut",
+          "tech": "micronaut",
           "category": "backend_framework"
         },
         {
@@ -526,6 +540,15 @@
           "name": "Symfony",
           "tech": "symfony",
           "category": "backend_framework"
+        },
+        {
+          "name": "WCF",
+          "tech": "wcf",
+          "category": "backend_framework",
+          "aliases": [
+            "Windows Communication Foundation",
+            "WCF net.tcp"
+          ]
         },
         {
           "name": "Yii2",
@@ -1674,6 +1697,11 @@
           "category": "database"
         },
         {
+          "name": "Hazelcast",
+          "tech": "hazelcast",
+          "category": "database"
+        },
+        {
           "name": "InfluxDB",
           "tech": "influxdb",
           "category": "database"
@@ -1729,9 +1757,14 @@
           "category": "database"
         },
         {
-          "name": "MS SQL",
+          "name": "SQL Server",
           "tech": "mssql",
-          "category": "database"
+          "category": "database",
+          "aliases": [
+            "MS SQL",
+            "Microsoft SQL Server",
+            "MSSQL"
+          ]
         },
         {
           "name": "Mysql",
@@ -1993,6 +2026,14 @@
       "is_component": false,
       "technologies": [
         {
+          "name": "CefSharp",
+          "tech": "cefsharp",
+          "category": "desktop_framework",
+          "aliases": [
+            "CEF"
+          ]
+        },
+        {
           "name": "Dioxus",
           "tech": "dioxus",
           "category": "desktop_framework"
@@ -2063,6 +2104,14 @@
           "name": "Apache Airflow",
           "tech": "apache_airflow",
           "category": "etl"
+        },
+        {
+          "name": "Apache Camel",
+          "tech": "apache_camel",
+          "category": "etl",
+          "aliases": [
+            "Camel"
+          ]
         },
         {
           "name": "Apache Flink",
@@ -2206,7 +2255,12 @@
         {
           "name": "FHIR",
           "tech": "fhir",
-          "category": "healthcare"
+          "category": "healthcare",
+          "aliases": [
+            "HAPI FHIR",
+            "HAPI HL7",
+            "HL7 FHIR"
+          ]
         },
         {
           "name": "OpenEHR",
@@ -2646,7 +2700,13 @@
           "name": "C++",
           "tech": "cplusplus",
           "category": "language",
-          "is_primary_tech": true
+          "is_primary_tech": true,
+          "aliases": [
+            "C++ (MSVC C++17)",
+            "C++/MFC",
+            "C++20",
+            "C++17"
+          ]
         },
         {
           "name": "C#",
@@ -2788,6 +2848,15 @@
           "is_primary_tech": true
         },
         {
+          "name": "Visual Basic 6.0",
+          "tech": "vb6",
+          "category": "language",
+          "aliases": [
+            "VB6",
+            "Visual Basic 6"
+          ]
+        },
+        {
           "name": "VB.NET",
           "tech": "vbnet",
           "category": "language"
@@ -2830,6 +2899,11 @@
           "category": "library"
         },
         {
+          "name": "gSOAP",
+          "tech": "gsoap",
+          "category": "library"
+        },
+        {
           "name": "Jackson",
           "tech": "jackson",
           "category": "library"
@@ -2855,6 +2929,11 @@
           "category": "library"
         },
         {
+          "name": "NgRx",
+          "tech": "ngrx",
+          "category": "library"
+        },
+        {
           "name": "NodaTime",
           "tech": "nodatime",
           "category": "library"
@@ -2870,8 +2949,21 @@
           "category": "library"
         },
         {
+          "name": "Quartz",
+          "tech": "quartz",
+          "category": "library",
+          "aliases": [
+            "Quartz Scheduler"
+          ]
+        },
+        {
           "name": "RxJS",
           "tech": "rxjs",
+          "category": "library"
+        },
+        {
+          "name": "SignalR",
+          "tech": "signalr",
           "category": "library"
         },
         {
@@ -3694,10 +3786,14 @@
           "category": "runtime"
         },
         {
-          "name": "NodeJS",
+          "name": "Node.js",
           "tech": "nodejs",
           "category": "runtime",
-          "is_primary_tech": true
+          "is_primary_tech": true,
+          "aliases": [
+            "NodeJS",
+            "Node"
+          ]
         }
       ]
     },
@@ -4521,6 +4617,11 @@
         {
           "name": "Phosphor Icons",
           "tech": "phosphoreicons",
+          "category": "ui"
+        },
+        {
+          "name": "PrimeNG",
+          "tech": "primeng",
           "category": "ui"
         },
         {

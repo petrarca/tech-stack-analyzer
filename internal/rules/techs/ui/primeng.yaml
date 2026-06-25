@@ -1,0 +1,5 @@
+tech: primeng
+name: PrimeNG
+dependencies:
+  - type: npm
+    name: primeng
