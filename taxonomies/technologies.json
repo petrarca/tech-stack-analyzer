@@ -4256,6 +4256,15 @@
           "category": "test"
         },
         {
+          "name": "Google Test",
+          "tech": "googletest",
+          "category": "test",
+          "aliases": [
+            "GoogleTest",
+            "GTest"
+          ]
+        },
+        {
           "name": "JaCoCo",
           "tech": "jacoco",
           "category": "test"

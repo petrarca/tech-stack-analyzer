@@ -5626,6 +5626,15 @@ categories:
           isprimarytech: null
           aliases: []
           properties: {}
+        - name: Google Test
+          tech: googletest
+          category: test
+          description: ""
+          isprimarytech: null
+          aliases:
+            - GoogleTest
+            - GTest
+          properties: {}
         - name: JaCoCo
           tech: jacoco
           category: test

@@ -1,0 +1,10 @@
+tech: googletest
+name: Google Test
+aliases:
+  - GoogleTest
+  - GTest
+dependencies:
+  - type: cmake
+    name: GTest
+  - type: conan
+    name: gtest
