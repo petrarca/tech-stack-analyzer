@@ -1,0 +1,9 @@
+tech: istio
+name: Istio
+dependencies:
+  - type: helm
+    name: istio
+  - type: helm
+    name: istio/istiod
+  - type: helm
+    name: istio/gateway

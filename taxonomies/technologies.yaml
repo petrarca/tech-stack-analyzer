@@ -4357,6 +4357,13 @@ categories:
           isprimarytech: null
           aliases: []
           properties: {}
+        - name: Istio
+          tech: istio
+          category: network
+          description: ""
+          isprimarytech: null
+          aliases: []
+          properties: {}
         - name: Nginx
           tech: nginx
           category: network

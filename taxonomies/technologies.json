@@ -3287,6 +3287,11 @@
           "category": "network"
         },
         {
+          "name": "Istio",
+          "tech": "istio",
+          "category": "network"
+        },
+        {
           "name": "Nginx",
           "tech": "nginx",
           "category": "network"
