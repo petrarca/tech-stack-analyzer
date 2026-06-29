@@ -30,6 +30,7 @@ var (
 	currencyUnsupported atomic.Int64 // no deps.dev system for the ecosystem
 	currencyUnknown     atomic.Int64 // queried, not found (incl. internal/yanked)
 	currencyErrors      atomic.Int64 // transient lookup failures
+	currencyTotal       atomic.Int64 // total dependencies to process (denominator), set once by the engine
 )
 
 // AddPOMFetched records a network POM fetch.
@@ -61,6 +62,10 @@ func AddCurrencyUnknown() { currencyUnknown.Add(1) }
 // AddCurrencyError records a transient currency lookup failure.
 func AddCurrencyError() { currencyErrors.Add(1) }
 
+// SetCurrencyTotal records the total number of dependencies the currency engine
+// will process (the progress denominator). Set once before the loop.
+func SetCurrencyTotal(n int) { currencyTotal.Store(int64(n)) }
+
 // Snapshot is a point-in-time copy of the counters.
 type Snapshot struct {
 	POMFetched   int64
@@ -74,6 +79,7 @@ type Snapshot struct {
 	CurrencyUnsupported int64
 	CurrencyUnknown     int64
 	CurrencyErrors      int64
+	CurrencyTotal       int64 // denominator (fixed; not deltaed by Sub)
 }
 
 // Get returns the current counter values.
@@ -88,6 +94,7 @@ func Get() Snapshot {
 		CurrencyUnsupported: currencyUnsupported.Load(),
 		CurrencyUnknown:     currencyUnknown.Load(),
 		CurrencyErrors:      currencyErrors.Load(),
+		CurrencyTotal:       currencyTotal.Load(),
 	}
 }
 
@@ -103,6 +110,7 @@ func (s Snapshot) Sub(base Snapshot) Snapshot {
 		CurrencyUnsupported: s.CurrencyUnsupported - base.CurrencyUnsupported,
 		CurrencyUnknown:     s.CurrencyUnknown - base.CurrencyUnknown,
 		CurrencyErrors:      s.CurrencyErrors - base.CurrencyErrors,
+		CurrencyTotal:       s.CurrencyTotal, // denominator: carried through, not deltaed
 	}
 }
 
@@ -142,10 +150,19 @@ func (s Snapshot) Format() string {
 // counters only (e.g. "312 resolved, 21 cached, 540 unsupported, 3 unknown"). It
 // is separate from Format so the two phases never conflate.
 func (s Snapshot) FormatCurrency() string {
-	var parts []string
-	if s.CurrencyResolved > 0 {
-		parts = append(parts, fmt.Sprintf("%d resolved", s.CurrencyResolved))
+	// processed = everything classified so far (resolved incl. cached, plus the
+	// non-resolved outcomes). Cache hits are a subset of resolved, so they are
+	// not double-counted in the processed total.
+	processed := s.CurrencyResolved + s.CurrencyUnsupported + s.CurrencyUnknown + s.CurrencyErrors
+
+	var head string
+	if s.CurrencyTotal > 0 {
+		head = fmt.Sprintf("%d/%d", processed, s.CurrencyTotal)
+	} else {
+		head = fmt.Sprintf("%d", processed)
 	}
+
+	var parts []string
 	if s.CurrencyCacheHits > 0 {
 		parts = append(parts, fmt.Sprintf("%d cached", s.CurrencyCacheHits))
 	}
@@ -158,8 +175,11 @@ func (s Snapshot) FormatCurrency() string {
 	if s.CurrencyErrors > 0 {
 		parts = append(parts, fmt.Sprintf("%d errors", s.CurrencyErrors))
 	}
-	if len(parts) == 0 {
+	if processed == 0 && len(parts) == 0 {
 		return "no lookups"
 	}
-	return strings.Join(parts, ", ")
+	if len(parts) == 0 {
+		return head
+	}
+	return head + " (" + strings.Join(parts, ", ") + ")"
 }

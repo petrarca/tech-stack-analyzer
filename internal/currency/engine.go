@@ -52,6 +52,16 @@ func Resolve(deps []types.Dependency, r CurrencyResolver, opt Options) *Artifact
 	art := newArtifact(opt.SourceEndpoint, opt.TTLHours)
 	now := time.Now().UTC().Format(time.RFC3339)
 
+	// Set the progress denominator: how many deps will actually be processed.
+	total := 0
+	for _, dep := range deps {
+		if opt.DirectOnly && !dep.Direct {
+			continue
+		}
+		total++
+	}
+	resolvestats.SetCurrencyTotal(total)
+
 	for _, dep := range deps {
 		if opt.DirectOnly && !dep.Direct {
 			continue

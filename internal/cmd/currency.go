@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mattn/go-isatty"
 	"github.com/spf13/cobra"
 
 	"github.com/petrarca/tech-stack-analyzer/internal/currency"
@@ -122,21 +123,41 @@ func depsDevEndpointOrDefault(url string) string {
 	return url
 }
 
-// startCurrencyReporter mirrors startSBOMResolveReporter but samples the
-// currency counter group and renders with FormatCurrency, so currency lookups
-// show the same live progress as dependency resolution.
+// startCurrencyReporter shows live currency-resolution progress using the same
+// animated spinner as dependency resolution (the SummaryHandler) on a TTY, and
+// a plain line otherwise (piped/CI). It samples the currency counter group and
+// renders with FormatCurrency. The spinner advances on each ResolveProgress
+// event, so it ticks frequently (not every 2s) to animate smoothly.
 func startCurrencyReporter(quiet bool) func() {
 	if quiet {
 		return func() {}
 	}
-	prog := progress.New(true, progress.NewSimpleHandler(os.Stderr))
+	isTTY := isatty.IsTerminal(os.Stderr.Fd()) || isatty.IsCygwinTerminal(os.Stderr.Fd())
+	var prog *progress.Progress
+	var summary *progress.SummaryHandler // non-nil only on a TTY (for the bar)
+	if isTTY {
+		summary = progress.NewSummaryHandler(os.Stderr, true)
+		summary.SetPhaseLabel("currency")
+		prog = progress.New(true, summary)
+	} else {
+		prog = progress.New(true, progress.NewSimpleHandler(os.Stderr))
+	}
+
 	base := resolvestats.Get()
 	start := time.Now()
 	done := make(chan struct{})
 	stopped := make(chan struct{})
+
+	// Fast tick on a TTY so the spinner animates; slower when piped (each tick
+	// is a printed line there, so 2s avoids log spam).
+	tick := 150 * time.Millisecond
+	if !isTTY {
+		tick = 2 * time.Second
+	}
+
 	go func() {
 		defer close(stopped)
-		ticker := time.NewTicker(2 * time.Second)
+		ticker := time.NewTicker(tick)
 		defer ticker.Stop()
 		started := false
 		for {
@@ -151,6 +172,11 @@ func startCurrencyReporter(quiet bool) func() {
 				if !started {
 					started = true
 					prog.ResolveStart()
+				}
+				if summary != nil && delta.CurrencyTotal > 0 {
+					processed := delta.CurrencyResolved + delta.CurrencyUnsupported +
+						delta.CurrencyUnknown + delta.CurrencyErrors
+					summary.SetResolveFraction(float64(processed) / float64(delta.CurrencyTotal))
 				}
 				prog.ResolveProgress(delta.FormatCurrency())
 			}
