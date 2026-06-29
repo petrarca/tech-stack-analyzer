@@ -1,0 +1,15 @@
+tech-stack-analyzer
+Copyright (c) Petrarca / CGM
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+This product includes third-party open-source software. Attribution notices
+and the full license texts for all bundled dependencies are provided in:
+
+  - THIRD_PARTY_NOTICES.md      (summary and component list)
+  - third_party/licenses/       (full license text per component)
+
+Those files are generated from the binary's actual dependency graph
+(`task licenses`) and satisfy the attribution requirements of the bundled
+components' licenses, including the NOTICE-propagation requirement of
+Apache License 2.0 Section 4(d).

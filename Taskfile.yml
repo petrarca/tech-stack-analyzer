@@ -38,6 +38,16 @@ tasks:
       - go vet ./...
       - golangci-lint run
 
+  licenses:
+    desc: Generate third-party license notices (THIRD_PARTY_NOTICES.md + third_party/licenses/)
+    cmds:
+      - ./scripts/gen-licenses.sh
+
+  licenses:check:
+    desc: CI gate — fail on disallowed (strong-copyleft) licenses or stale committed notices
+    cmds:
+      - ./scripts/gen-licenses.sh --check
+
   test:
     desc: Run tests
     cmds:
