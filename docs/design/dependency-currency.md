@@ -177,7 +177,8 @@ or the SBOM.
     "total": 835,
     "resolved": 261,
     "up_to_date": 120, "patch": 40, "minor": 60, "major": 41,
-    "unsupported_ecosystem": 540,
+    "unsupported": 540,
+    "unpinned": 165,
     "unknown": 34,
     "deprecated": 3
   },
@@ -212,13 +213,21 @@ silently dropped:
 | `patch` | behind by a patch release |
 | `minor` | behind by a minor release |
 | `major` | behind by a major release |
-| `unsupported_ecosystem` | no public registry exists for this ecosystem (e.g. delphi, native libs, project references) -- structurally unanswerable |
-| `unknown` | a supported ecosystem was queried, but deps.dev returned no result (yanked, typo, or **internal/private** package) |
+| `unsupported` | no public registry exists for this ecosystem (e.g. delphi, native libs, project references) -- structurally unanswerable |
+| `unpinned` | the installed version is not pinned (`latest`, `RELEASE`, a range like `^1.2.0`, or a property like `${spring.version}`) -- the actual installed version is unknown, so currency cannot be assessed |
+| `unknown` | a supported ecosystem was queried with a **concrete** version, but deps.dev returned no result (yanked, typo, or **internal/private** package) |
 | `error` | transient lookup failure (network/5xx); distinct from a definitive not-found |
 
-`unsupported_ecosystem` vs `unknown` is a meaningful distinction: the former is
-"we know there is nothing to ask"; the latter is "we asked and got nothing."
-Internal packages fall under `unknown` in v1 -- see "Internal dependencies".
+These four non-resolved states are distinct, actionable signals:
+
+- `unsupported` -- "we know there is nothing to ask" (no registry for the ecosystem).
+- `unpinned` -- "we don't know what is installed" (a reproducibility problem; fix: pin the version). Detected up front, so no lookup is made.
+- `unknown` -- "we asked with a concrete version and got nothing" (likely internal/private; see "Internal dependencies").
+- `error` -- a transient failure, retryable.
+
+Keeping `unpinned` separate from `unknown` matters: on a large product the two
+have very different magnitudes and very different fixes (pin versions vs. resolve
+internal packages).
 
 "Latest stable" is taken from deps.dev's `isDefault` version, which is defined
 as the greatest version ignoring pre-releases. Pre-release filtering is handled

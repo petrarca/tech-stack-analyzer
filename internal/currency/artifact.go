@@ -32,7 +32,7 @@ type Summary struct {
 	Patch       int `json:"patch"`
 	Minor       int `json:"minor"`
 	Major       int `json:"major"`
-	Unsupported int `json:"unsupported_ecosystem"`
+	Unsupported int `json:"unsupported"`
 	Unpinned    int `json:"unpinned"`
 	Unknown     int `json:"unknown"`
 	Errors      int `json:"error"`

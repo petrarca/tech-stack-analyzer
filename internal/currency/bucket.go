@@ -17,10 +17,10 @@ const (
 	Patch           Bucket = "patch"
 	Minor           Bucket = "minor"
 	Major           Bucket = "major"
-	Unsupported     Bucket = "unsupported_ecosystem" // no public registry exists
-	Unpinned        Bucket = "unpinned"              // installed version not pinned (latest/RELEASE/range/property) — currency unassessable
-	Unknown         Bucket = "unknown"               // queried with a concrete version, not found (likely internal/private/yanked)
-	ResolutionError Bucket = "error"                 // transient lookup failure
+	Unsupported     Bucket = "unsupported" // no public registry exists for this ecosystem
+	Unpinned        Bucket = "unpinned"    // installed version not pinned (latest/RELEASE/range/property) — currency unassessable
+	Unknown         Bucket = "unknown"     // queried with a concrete version, not found (likely internal/private/yanked)
+	ResolutionError Bucket = "error"       // transient lookup failure
 )
 
 // semverSystemFor maps a deps.dev system identifier to a semver.System parser
