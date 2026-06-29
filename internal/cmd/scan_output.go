@@ -5,11 +5,15 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"log/slog"
 
 	"github.com/petrarca/tech-stack-analyzer/internal/aggregator"
+	"github.com/petrarca/tech-stack-analyzer/internal/currency"
+	currencycache "github.com/petrarca/tech-stack-analyzer/internal/currency/cache"
 	"github.com/petrarca/tech-stack-analyzer/internal/sbom"
+	"github.com/petrarca/tech-stack-analyzer/internal/store"
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
 
@@ -62,6 +66,13 @@ func generateAndWriteOutput(payload interface{}, logger *slog.Logger) {
 		}
 	}
 
+	// Resolve dependency currency alongside the scan output when
+	// --resolve-currency is set. Network-gated and opt-in (like --deps-dev), not
+	// a pure companion-file emitter, so it lives in its own step.
+	if settings.ResolveCurrency {
+		writeCurrencyForPayload(payload, logger)
+	}
+
 	// Produce aggregate output alongside full output when --also-aggregate is set.
 	if settings.AlsoAggregate != "" && settings.Aggregate == "" {
 		aggFile := aggregateOutputFile(settings.OutputFile)
@@ -95,6 +106,77 @@ func aggregateOutputFile(outputFile string) string {
 	ext := filepath.Ext(outputFile)
 	base := strings.TrimSuffix(outputFile, ext)
 	return base + "-agg" + ext
+}
+
+// currencyOutputFile derives the currency companion filename from the primary
+// output filename. Returns empty string when primary output is stdout.
+// Example: "output.json" -> "output.currency.json".
+func currencyOutputFile(outputFile string) string {
+	if outputFile == "" {
+		return ""
+	}
+	ext := filepath.Ext(outputFile)
+	base := strings.TrimSuffix(outputFile, ext)
+	return base + ".currency.json"
+}
+
+// writeCurrencyForPayload resolves dependency currency for the scanned payload
+// and writes the {out}.currency.json companion. It aggregates the payload's
+// dependencies (reusing the aggregator's dedup + direct/transitive merge) and
+// runs the currency engine over the direct set. Failures here are non-fatal:
+// the scan output is already written; a currency error is reported, not exited.
+func writeCurrencyForPayload(payload interface{}, logger *slog.Logger) {
+	p, ok := payload.(*types.Payload)
+	if !ok {
+		logger.Debug("Skipping currency: payload is not a scan tree")
+		return
+	}
+	outFile := currencyOutputFile(settings.OutputFile)
+	if outFile == "" {
+		logger.Debug("Skipping currency output: primary output is stdout")
+		return
+	}
+
+	deps := aggregator.NewAggregator([]string{"dependencies"}).Aggregate(p).Dependencies
+
+	cachePath, _, err := store.ResolvePath(settings.CurrencyCache)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Currency skipped: %v\n", err)
+		return
+	}
+	st, err := store.Open(cachePath, 5000)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Currency skipped: open cache: %v\n", err)
+		return
+	}
+	defer func() { _ = st.Close() }()
+
+	ttl := time.Duration(settings.CurrencyTTLHours) * time.Hour
+	chain := currency.NewChainResolver(currency.NewDepsDevResolver(settings.DepsDevEndpoint))
+	resolver, err := currencycache.New(st, chain, ttl, false)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Currency skipped: %v\n", err)
+		return
+	}
+
+	stop := startCurrencyReporter(settings.Quiet)
+	art := currency.Resolve(deps, resolver, currency.Options{
+		SourceEndpoint: depsDevEndpointOrDefault(settings.DepsDevEndpoint),
+		TTLHours:       settings.CurrencyTTLHours,
+		DirectOnly:     true,
+	})
+	stop()
+
+	if err := art.WriteFile(outFile); err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to write currency output file: %v\n", err)
+		return
+	}
+	if !settings.Quiet {
+		s := art.Summary
+		fmt.Fprintf(os.Stderr,
+			"Currency written to %s (%d direct: %d up-to-date, %d behind, %d unsupported, %d unknown)\n",
+			outFile, s.Total, s.UpToDate, s.Patch+s.Minor+s.Major, s.Unsupported, s.Unknown)
+	}
 }
 
 // sbomOutputFile derives the SBOM companion filename from the primary output

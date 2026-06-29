@@ -50,6 +50,9 @@ type Settings struct {
 	SBOM                     bool                      // Emit an SBOM as the primary output instead of the scan tree
 	AlsoSBOM                 bool                      // Also write an SBOM alongside the scan output
 	SBOMFormat               string                    // SBOM format: "cyclonedx" (default) or "spdx"
+	ResolveCurrency          bool                      // Resolve dependency currency (deps.dev) and write a {out}.currency.json (opt-in; network)
+	CurrencyCache            string                    // Override the currency cache DB path; empty = STACK_ANALYZER_CURRENCY_CACHE or OS cache dir
+	CurrencyTTLHours         int                       // Per-entry currency cache TTL in hours (default 24)
 
 	// Logging
 	LogLevel  slog.Level
@@ -77,6 +80,7 @@ func DefaultSettings() *Settings {
 		LogFile:                  "",
 		PrimaryLanguageThreshold: 0.05, // 5% threshold for primary languages
 		UseLockFiles:             true, // Lock files enabled by default
+		CurrencyTTLHours:         24,   // Currency cache entries valid for 24h by default
 		// DependencyGraph left empty ("") = off. Empty (not "off") is the zero
 		// value so a scanner-config.yml value can merge in; ParseDependencyGraphMode
 		// maps empty -> off at the point of use.
@@ -98,6 +102,12 @@ func LoadSettingsFromEnvironment() *Settings {
 
 	if aggregate := os.Getenv("STACK_ANALYZER_AGGREGATE"); aggregate != "" {
 		settings.Aggregate = aggregate
+	}
+
+	// The only new env var the currency feature introduces. The cache path is
+	// also overridable via --currency-cache (flag wins over env).
+	if cache := os.Getenv("STACK_ANALYZER_CURRENCY_CACHE"); cache != "" {
+		settings.CurrencyCache = cache
 	}
 
 	if verbose := os.Getenv("STACK_ANALYZER_VERBOSE"); verbose != "" {
@@ -249,6 +259,11 @@ func (s *Settings) Validate() error {
 		if u, err := url.Parse(s.DepsDevEndpoint); err != nil || (u.Scheme != "http" && u.Scheme != "https") {
 			return fmt.Errorf("invalid deps-dev-endpoint '%s': must be an http(s) URL", s.DepsDevEndpoint)
 		}
+	}
+
+	// Currency TTL must be positive when currency resolution is enabled.
+	if s.ResolveCurrency && s.CurrencyTTLHours <= 0 {
+		return fmt.Errorf("invalid currency-ttl %d: must be a positive number of hours", s.CurrencyTTLHours)
 	}
 
 	// Validate the Maven repository URL if specified (must be an http(s) URL).
