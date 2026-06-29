@@ -95,12 +95,45 @@ generate() {
 
     rm -rf "$licdir"
     mkdir -p "$(dirname "$licdir")"
-    "$GOLICENSES_BIN" save "$TARGET" --save_path="$licdir" --force 2>/dev/null
+    # go-licenses save exits non-zero when it cannot classify a module's license
+    # (e.g. modernc.org/mathutil). That is expected and handled by the trim +
+    # backfill below, so do not let it abort the script under `set -e`.
+    "$GOLICENSES_BIN" save "$TARGET" --save_path="$licdir" --force 2>/dev/null || true
     # go-licenses save copies whole module subtrees; keep only the legal files.
     find "$licdir" -type f \
         ! -iname 'license*' ! -iname 'licence*' ! -iname 'copying*' \
         ! -iname 'notice*'  ! -iname 'copyright*' -delete
     find "$licdir" -type d -empty -delete
+
+    # go-licenses save skips modules it cannot classify (e.g. modernc.org/mathutil,
+    # whose LICENSE wording does not match the SPDX templates), which would drop a
+    # required attribution. Backfill any module in the report that has no saved
+    # license dir by copying its LICENSE/COPYING from the module cache.
+    backfill_unsaved_licenses "$licdir"
+}
+
+# backfill_unsaved_licenses copies LICENSE-like files from the Go module cache
+# for any reported module that go-licenses save did not write a license for.
+backfill_unsaved_licenses() {
+    local licdir="$1" gomod
+    gomod="$(go env GOMODCACHE)"
+    [ -z "$gomod" ] && return 0
+    "$GOLICENSES_BIN" report "$TARGET" 2>/dev/null | while IFS=',' read -r module _ _; do
+        [ -z "$module" ] && continue
+        # Skip our own module.
+        case "$module" in github.com/petrarca/tech-stack-analyzer*) continue ;; esac
+        # Already saved?
+        [ -d "$licdir/$module" ] && continue
+        # Find the versioned module dir in the cache (module@version).
+        local mdir
+        mdir="$(find "$gomod" -maxdepth 4 -type d -ipath "*${module}@*" 2>/dev/null | head -1)"
+        [ -z "$mdir" ] && continue
+        local lic
+        lic="$(find "$mdir" -maxdepth 1 -type f \( -iname 'license*' -o -iname 'licence*' -o -iname 'copying*' \) 2>/dev/null | head -1)"
+        [ -z "$lic" ] && continue
+        mkdir -p "$licdir/$module"
+        cp "$lic" "$licdir/$module/$(basename "$lic")"
+    done
 }
 
 # --- CI mode: gate + staleness diff, no writes ---

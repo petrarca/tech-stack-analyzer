@@ -11,13 +11,14 @@ verifies it is current.
 
 | License | Count |
 |---------|-------|
-| MIT | 36 |
+| MIT | 39 |
+| BSD-3-Clause | 18 |
 | Apache-2.0 | 17 |
-| BSD-3-Clause | 14 |
 | BSD-2-Clause | 5 |
 | MPL-2.0 | 2 |
+| Unknown | 1 |
 
-Total: 74 components. No strong-copyleft (GPL/LGPL/AGPL) and no
+Total: 82 components. No strong-copyleft (GPL/LGPL/AGPL) and no
 unknown-license components are linked (enforced by the license gate).
 
 ## Components
@@ -47,6 +48,7 @@ unknown-license components are linked (enforced by the license gate).
 | github.com/cyphar/filepath-securejoin | MPL-2.0 | https://github.com/cyphar/filepath-securejoin/blob/v0.6.1/COPYING.md |
 | github.com/danwakefield/fnmatch | BSD-2-Clause | https://github.com/danwakefield/fnmatch/blob/cbb64ac3d964/LICENSE |
 | github.com/dgryski/go-minhash | MIT | https://github.com/dgryski/go-minhash/blob/ad340ca03076/LICENSE |
+| github.com/dustin/go-humanize | MIT | https://github.com/dustin/go-humanize/blob/v1.0.1/LICENSE |
 | github.com/ekzhu/minhash-lsh | MIT | https://github.com/ekzhu/minhash-lsh/blob/faac2c6342f8/LICENSE |
 | github.com/emirpasic/gods | BSD-2-Clause | https://github.com/emirpasic/gods/blob/v1.18.1/LICENSE |
 | github.com/go-enry/go-enry/v2 | Apache-2.0 | https://github.com/go-enry/go-enry/blob/v2.9.6/LICENSE |
@@ -55,6 +57,7 @@ unknown-license components are linked (enforced by the license gate).
 | github.com/go-git/go-billy/v5 | Apache-2.0 | https://github.com/go-git/go-billy/blob/v5.9.0/LICENSE |
 | github.com/go-git/go-git/v5 | Apache-2.0 | https://github.com/go-git/go-git/blob/v5.19.1/LICENSE |
 | github.com/golang/groupcache/lru | Apache-2.0 | https://github.com/golang/groupcache/blob/2c02b8208cf8/LICENSE |
+| github.com/google/uuid | BSD-3-Clause | https://github.com/google/uuid/blob/v1.6.0/LICENSE |
 | github.com/hashicorp/hcl/v2 | MPL-2.0 | https://github.com/hashicorp/hcl/blob/v2.24.0/LICENSE |
 | github.com/hhatto/gorst | MIT | https://github.com/hhatto/gorst/blob/ca9f730cac5b/LICENSE |
 | github.com/jbenet/go-context/io | MIT | https://github.com/jbenet/go-context/blob/d14ea06fba99/LICENSE |
@@ -70,10 +73,12 @@ unknown-license components are linked (enforced by the license gate).
 | github.com/modern-go/reflect2 | Apache-2.0 | https://github.com/modern-go/reflect2/blob/v1.0.2/LICENSE |
 | github.com/montanaflynn/stats | MIT | https://github.com/montanaflynn/stats/blob/v0.6.6/LICENSE |
 | github.com/muesli/termenv | MIT | https://github.com/muesli/termenv/blob/v0.16.0/LICENSE |
+| github.com/ncruces/go-strftime | MIT | https://github.com/ncruces/go-strftime/blob/v1.0.0/LICENSE |
 | github.com/petrarca/tech-stack-analyzer | Apache-2.0 | https://github.com/petrarca/tech-stack-analyzer/blob/HEAD/LICENSE |
 | github.com/pjbgf/sha1cd | Apache-2.0 | https://github.com/pjbgf/sha1cd/blob/v0.6.0/LICENSE |
 | github.com/pkg/errors | BSD-2-Clause | https://github.com/pkg/errors/blob/v0.9.1/LICENSE |
 | github.com/ProtonMail/go-crypto | BSD-3-Clause | https://github.com/ProtonMail/go-crypto/blob/v1.1.6/LICENSE |
+| github.com/remyoudompheng/bigfft | BSD-3-Clause | https://github.com/remyoudompheng/bigfft/blob/24d4a6f8daec/LICENSE |
 | github.com/rivo/uniseg | MIT | https://github.com/rivo/uniseg/blob/v0.4.7/LICENSE.txt |
 | github.com/russross/blackfriday/v2 | BSD-2-Clause | https://github.com/russross/blackfriday/blob/v2.1.0/LICENSE.txt |
 | github.com/santhosh-tekuri/jsonschema/v5 | Apache-2.0 | https://github.com/santhosh-tekuri/jsonschema/blob/v5.3.1/LICENSE |
@@ -86,15 +91,19 @@ unknown-license components are linked (enforced by the license gate).
 | github.com/xo/terminfo | MIT | https://github.com/xo/terminfo/blob/abceb7e1c41e/LICENSE |
 | github.com/zclconf/go-cty/cty | MIT | https://github.com/zclconf/go-cty/blob/v1.18.1/LICENSE |
 | go.yaml.in/yaml/v2 | Apache-2.0 | https://github.com/yaml/go-yaml/blob/v2.4.3/LICENSE |
-| golang.org/x/crypto | BSD-3-Clause | https://cs.opensource.google/go/x/crypto/+/v0.50.0:LICENSE |
+| golang.org/x/crypto | BSD-3-Clause | https://cs.opensource.google/go/x/crypto/+/v0.51.0:LICENSE |
 | golang.org/x/exp/rand | BSD-3-Clause | https://cs.opensource.google/go/x/exp/+/746e56fc:LICENSE |
 | golang.org/x/mod | BSD-3-Clause | https://cs.opensource.google/go/x/mod/+/v0.36.0:LICENSE |
-| golang.org/x/net | BSD-3-Clause | https://cs.opensource.google/go/x/net/+/v0.53.0:LICENSE |
+| golang.org/x/net | BSD-3-Clause | https://cs.opensource.google/go/x/net/+/v0.54.0:LICENSE |
 | golang.org/x/sync/errgroup | BSD-3-Clause | https://cs.opensource.google/go/x/sync/+/v0.20.0:LICENSE |
-| golang.org/x/sys | BSD-3-Clause | https://cs.opensource.google/go/x/sys/+/v0.43.0:LICENSE |
-| golang.org/x/text | BSD-3-Clause | https://cs.opensource.google/go/x/text/+/v0.36.0:LICENSE |
+| golang.org/x/sys | BSD-3-Clause | https://cs.opensource.google/go/x/sys/+/v0.44.0:LICENSE |
+| golang.org/x/text | BSD-3-Clause | https://cs.opensource.google/go/x/text/+/v0.37.0:LICENSE |
 | golang.org/x/xerrors | BSD-3-Clause | https://cs.opensource.google/go/x/xerrors/+/104605ab:LICENSE |
 | gonum.org/v1/gonum | BSD-3-Clause | https://github.com/gonum/gonum/blob/v0.8.2/LICENSE |
 | gopkg.in/neurosnap/sentences.v1 | MIT | https://github.com/neurosnap/sentences/blob/v1.0.7/LICENSE.md |
 | gopkg.in/warnings.v0 | BSD-2-Clause | https://github.com/go-warnings/warnings/blob/v0.1.2/LICENSE |
 | gopkg.in/yaml.v3 | MIT | https://github.com/go-yaml/yaml/blob/v3.0.1/LICENSE |
+| modernc.org/libc | MIT | https://gitlab.com/cznic/libc/blob/v1.73.4/LICENSE-3RD-PARTY.md |
+| modernc.org/mathutil | Unknown | Unknown |
+| modernc.org/memory | BSD-3-Clause | https://gitlab.com/cznic/memory/blob/v1.11.0/LICENSE-GO |
+| modernc.org/sqlite | BSD-3-Clause | https://gitlab.com/cznic/sqlite/blob/v1.53.0/LICENSE |
