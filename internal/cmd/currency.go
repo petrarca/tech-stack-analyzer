@@ -18,12 +18,13 @@ import (
 )
 
 var (
-	currencyOutput     string
-	currencyCachePath  string
-	currencyTTLHours   int
-	currencyDepsDevURL string
-	currencyForce      bool
-	currencyQuiet      bool
+	currencyOutput      string
+	currencyCachePath   string
+	currencyTTLHours    int
+	currencyDepsDevURL  string
+	currencyForce       bool
+	currencyQuiet       bool
+	currencyConcurrency int
 )
 
 // currencyCmd resolves dependency freshness from a previously written aggregate
@@ -58,6 +59,7 @@ func init() {
 	currencyCmd.Flags().IntVar(&currencyTTLHours, "currency-ttl", 24, "Per-entry cache TTL in hours")
 	currencyCmd.Flags().StringVar(&currencyDepsDevURL, "deps-dev-endpoint", "", "Base URL for deps.dev (default: public deps.dev). Override with an API-compatible mirror.")
 	currencyCmd.Flags().BoolVar(&currencyForce, "force", false, "Ignore the cache TTL and re-fetch every package")
+	currencyCmd.Flags().IntVar(&currencyConcurrency, "currency-concurrency", 10, "Parallel deps.dev lookups (higher is faster but riskier for rate limits)")
 	currencyCmd.Flags().BoolVarP(&currencyQuiet, "quiet", "q", false, "Suppress progress output")
 }
 
@@ -85,6 +87,7 @@ func runCurrency(aggPath string) error {
 		SourceEndpoint: depsDevEndpointOrDefault(currencyDepsDevURL),
 		TTLHours:       currencyTTLHours,
 		DirectOnly:     true,
+		Concurrency:    currencyConcurrency,
 	})
 	stop()
 	if err != nil {

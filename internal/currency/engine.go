@@ -8,6 +8,7 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/resolver"
@@ -26,6 +27,7 @@ type Options struct {
 	SourceEndpoint string // --deps-dev-endpoint (empty = public deps.dev)
 	TTLHours       int    // per-entry TTL (for the artifact header)
 	DirectOnly     bool   // v1: true (resolve only direct dependencies)
+	Concurrency    int    // parallel lookups; <=0 uses resolveConcurrency default
 }
 
 // ResolveAggregateFile reads an aggregate JSON file, resolves currency for its
@@ -43,30 +45,59 @@ func ResolveAggregateFile(path string, r CurrencyResolver, opt Options) (*Artifa
 	return Resolve(doc.Dependencies, r, opt), nil
 }
 
+// resolveConcurrency bounds parallel deps.dev lookups. Lookups are independent,
+// latency-dominated network calls, so a moderate fan-out cuts wall-clock time.
+// Kept below the Maven graph crawl's 16 because deps.dev is a shared public
+// service that returns 429 under heavy load; the cache absorbs repeats.
+const resolveConcurrency = 10
+
 // Resolve classifies the currency of each dependency, building the artifact.
 // In v1 only direct dependencies are resolved (DirectOnly); transitive ones are
 // skipped entirely (not recorded), keeping the artifact focused on what a team
 // can act on. The design is transitive-ready: dropping the DirectOnly filter
 // would extend coverage with no other change.
+//
+// Lookups run concurrently (bounded), mirroring the Maven graph crawl: each
+// eligible dep is classified in its own goroutine into a pre-sized results slice
+// (no shared-state mutation), then merged in order. Concurrency is the speed
+// lever for large direct sets (thousands of network calls).
 func Resolve(deps []types.Dependency, r CurrencyResolver, opt Options) *Artifact {
 	art := newArtifact(opt.SourceEndpoint, opt.TTLHours)
 	now := time.Now().UTC().Format(time.RFC3339)
 
-	// Set the progress denominator: how many deps will actually be processed.
-	total := 0
+	// Eligible deps (filtered once); their count is the progress denominator.
+	var eligible []types.Dependency
 	for _, dep := range deps {
 		if opt.DirectOnly && !dep.Direct {
 			continue
 		}
-		total++
+		eligible = append(eligible, dep)
 	}
-	resolvestats.SetCurrencyTotal(total)
+	resolvestats.SetCurrencyTotal(len(eligible))
 
-	for _, dep := range deps {
-		if opt.DirectOnly && !dep.Direct {
-			continue
-		}
-		entry := classifyDep(dep, r, now)
+	conc := opt.Concurrency
+	if conc <= 0 {
+		conc = resolveConcurrency
+	}
+
+	// Classify each eligible dep concurrently into results[i] (index-keyed, so no
+	// lock is needed on the slice). The resolver/cache and resolvestats counters
+	// are all concurrency-safe.
+	results := make([]Dependency, len(eligible))
+	sem := make(chan struct{}, conc)
+	var wg sync.WaitGroup
+	for i := range eligible {
+		wg.Add(1)
+		sem <- struct{}{}
+		go func(i int) {
+			defer wg.Done()
+			defer func() { <-sem }()
+			results[i] = classifyDep(eligible[i], r, now)
+		}(i)
+	}
+	wg.Wait()
+
+	for _, entry := range results {
 		art.Dependencies = append(art.Dependencies, entry)
 		art.addToSummary(entry)
 	}
