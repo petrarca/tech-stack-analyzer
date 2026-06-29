@@ -176,9 +176,29 @@ func stripFields(p *types.Payload, fields map[string]bool) {
 	}
 }
 
+// normalizeTech ensures the tech field is always an empty array rather than
+// null. A nil []string slice marshals to JSON null; an empty (non-nil) slice
+// marshals to []. Components with no primary technology must emit "tech": []
+// so the field is uniformly an array across full and aggregated output.
+func normalizeTech(p *types.Payload) {
+	if p == nil {
+		return
+	}
+	if p.Tech == nil {
+		p.Tech = []string{}
+	}
+	for _, child := range p.Children {
+		normalizeTech(child)
+	}
+}
+
 // generateOutput marshals the payload to JSON, optionally aggregating first.
 func generateOutput(payload interface{}, aggregateFields string, prettyPrint bool, omitFields []string) ([]byte, error) {
 	var result interface{}
+
+	if p, ok := payload.(*types.Payload); ok {
+		normalizeTech(p)
+	}
 
 	if len(omitFields) > 0 {
 		if p, ok := payload.(*types.Payload); ok {

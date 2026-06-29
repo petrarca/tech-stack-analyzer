@@ -213,17 +213,11 @@
                     "description": "Type of component (e.g., 'maven', 'nodejs', 'python', 'dotnet')"
                 },
                 "tech": {
-                    "anyOf": [
-                        {
-                            "type": "null"
-                        },
-                        {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        }
-                    ]
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Primary technology identifiers. Always an array; [] when none."
                 },
                 "techs": {
                     "type": "array",

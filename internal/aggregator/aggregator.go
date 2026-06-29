@@ -15,7 +15,7 @@ type ComponentEntry struct {
 	ID        string      `json:"id"`
 	Name      string      `json:"name"`
 	Type      string      `json:"type,omitempty"`
-	Tech      []string    `json:"tech,omitempty"`
+	Tech      []string    `json:"tech"`
 	Techs     []string    `json:"techs,omitempty"`
 	Path      string      `json:"path,omitempty"`       // First path entry (primary location)
 	SourceDir string      `json:"source_dir,omitempty"` // Directory this component owns, relative to scan root
@@ -26,7 +26,7 @@ type ComponentEntry struct {
 type AggregateOutput struct {
 	Metadata           interface{}             `json:"metadata,omitempty"`            // Scan metadata (from root payload)
 	Git                []*git.GitInfo          `json:"git,omitempty"`                 // Git repositories (deduplicated)
-	Tech               []string                `json:"tech,omitempty"`                // All is_primary_tech technologies (from all components)
+	Tech               []string                `json:"tech"`                          // All is_primary_tech technologies (from all components)
 	Techs              []string                `json:"techs,omitempty"`               // All detected technologies
 	PrimaryTechs       []string                `json:"primary_techs,omitempty"`       // Weight-filtered primary technologies (adaptive threshold on component count)
 	Reason             map[string][]string     `json:"reason,omitempty"`              // Technology to detection reasons mapping, "_" for non-tech reasons
@@ -116,6 +116,12 @@ func (a *Aggregator) Aggregate(payload *types.Payload) *AggregateOutput {
 
 	// Derive ecosystems from components, techs, and primary languages
 	output.Ecosystems = computeEcosystems(output.Components, output.PrimaryLanguages)
+
+	// tech must always serialize as an array (never null), even when the tech
+	// field was not requested in the aggregate set.
+	if output.Tech == nil {
+		output.Tech = []string{}
+	}
 
 	return output
 }
