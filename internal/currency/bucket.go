@@ -64,6 +64,15 @@ func classify(depsDevSystem, installed, latest string) Bucket {
 	if installed == "" || latest == "" {
 		return Unknown
 	}
+	// The installed version must be a concrete, resolved pin to assess currency.
+	// Unresolved specifiers ("latest", "RELEASE", ranges like "^1.2.0") mean we
+	// do not know what is actually installed, so currency is Unknown -- using
+	// the same resolved-version definition as the PURL builder (single source of
+	// truth). This also keeps the verdict consistent across ecosystems, since
+	// lenient parsers (e.g. Maven) would otherwise treat "latest" as comparable.
+	if semver.ResolvedVersion(installed) == "" {
+		return Unknown
+	}
 	if installed == latest {
 		return UpToDate
 	}
