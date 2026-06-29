@@ -23,8 +23,10 @@ type SummaryHandler struct {
 	spinIdx     int
 	lastRender  time.Time
 	isTTY       bool
-	resolving   bool   // in the dependency-resolution phase
-	resolveInfo string // latest dependency-resolution status (e.g. POM fetch counts)
+	resolving   bool    // in the dependency-resolution phase
+	resolveInfo string  // latest dependency-resolution status (e.g. POM fetch counts)
+	phaseLabel  string  // noun for the resolution phase ("dependencies" by default; "currency" for currency runs)
+	resolveFrac float64 // 0..1 completion fraction for a progress bar; <0 means "unknown" (no bar)
 
 	// styles
 	spinnerStyle lipgloss.Style
@@ -37,11 +39,52 @@ type SummaryHandler struct {
 
 var spinFrames = []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
 
+// SetPhaseLabel overrides the noun used for the resolution phase (default
+// "dependencies"). Currency runs set "currency" so the spinner and completion
+// line read naturally ("resolving currency", "currency resolved").
+func (h *SummaryHandler) SetPhaseLabel(label string) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	if label != "" {
+		h.phaseLabel = label
+	}
+}
+
+// SetResolveFraction sets the completion fraction (0..1) for a progress bar on
+// the resolution line. Pass a negative value to disable the bar (the default;
+// dependency resolution has no known total). Callers that know a denominator
+// (e.g. currency, with N/total) set this each progress tick.
+func (h *SummaryHandler) SetResolveFraction(frac float64) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	h.resolveFrac = frac
+}
+
+// renderBar draws a fixed-width bar like "[████████░░░░] 62%" for frac in 0..1.
+func renderBar(frac float64, width int) string {
+	if frac < 0 {
+		frac = 0
+	}
+	if frac > 1 {
+		frac = 1
+	}
+	filled := int(frac*float64(width) + 0.5)
+	if filled > width {
+		filled = width
+	}
+	return fmt.Sprintf("[%s%s] %3.0f%%",
+		strings.Repeat("█", filled),
+		strings.Repeat("░", width-filled),
+		frac*100)
+}
+
 // NewSummaryHandler creates a handler that shows a single updating progress line.
 func NewSummaryHandler(writer io.Writer, isTTY bool) *SummaryHandler {
 	return &SummaryHandler{
-		writer: writer,
-		isTTY:  isTTY,
+		writer:      writer,
+		isTTY:       isTTY,
+		phaseLabel:  "dependencies",
+		resolveFrac: -1, // no bar unless a fraction is provided
 		spinnerStyle: lipgloss.NewStyle().
 			Foreground(lipgloss.Color("205")),
 		labelStyle: lipgloss.NewStyle().
@@ -87,15 +130,15 @@ func (h *SummaryHandler) Handle(event Event) {
 		h.render()
 
 	case EventResolveStart:
-		// Begin the dependency-resolution phase: the scan-walk completion line
-		// has already printed; switch the live line to resolution status.
+		// Begin the resolution phase: the scan-walk completion line has already
+		// printed; switch the live line to resolution status.
 		h.resolving = true
-		h.resolveInfo = "resolving dependencies"
+		h.resolveInfo = "resolving " + h.phaseLabel
 		h.render()
 
 	case EventResolveProgress:
 		h.resolving = true
-		h.resolveInfo = "resolving dependencies — " + event.Info
+		h.resolveInfo = "resolving " + h.phaseLabel + " — " + event.Info
 		h.render()
 
 	case EventResolveComplete:
@@ -123,25 +166,40 @@ func (h *SummaryHandler) render() {
 
 	h.spinIdx = (h.spinIdx + 1) % len(spinFrames)
 	spinner := h.spinnerStyle.Render(spinFrames[h.spinIdx])
+	if h.scanStart.IsZero() {
+		h.scanStart = time.Now() // resolution-only run (e.g. currency): seed the clock
+	}
 	elapsed := time.Since(h.scanStart).Truncate(time.Second)
 
-	// Always show the scan counts (dirs/files/components), then append the
-	// resolution status when resolution is in progress -- so the file-walk
-	// progress remains visible even while dependencies are being resolved.
+	// Show the scan counts (dirs/files/components) when a scan ran, then append
+	// the resolution status. For a resolution-only run (no scan walked), omit the
+	// zero scan counts entirely so the line reads "spinner  resolving ...".
 	var parts []string
-	parts = append(parts, h.countStyle.Render(fmt.Sprintf("%d", h.dirCount))+" "+h.labelStyle.Render("dirs"))
-	if h.fileCount > 0 {
-		parts = append(parts, h.countStyle.Render(fmt.Sprintf("%d", h.fileCount))+" "+h.labelStyle.Render("files"))
-	}
-	if h.compCount > 0 {
-		parts = append(parts, h.compStyle.Render(fmt.Sprintf("%d", h.compCount))+" "+h.labelStyle.Render("components"))
+	if h.dirCount > 0 || h.fileCount > 0 || h.compCount > 0 {
+		parts = append(parts, h.countStyle.Render(fmt.Sprintf("%d", h.dirCount))+" "+h.labelStyle.Render("dirs"))
+		if h.fileCount > 0 {
+			parts = append(parts, h.countStyle.Render(fmt.Sprintf("%d", h.fileCount))+" "+h.labelStyle.Render("files"))
+		}
+		if h.compCount > 0 {
+			parts = append(parts, h.compStyle.Render(fmt.Sprintf("%d", h.compCount))+" "+h.labelStyle.Render("components"))
+		}
 	}
 
-	line := fmt.Sprintf("  %s  %s  %s",
-		spinner,
-		strings.Join(parts, h.dimStyle.Render("  ·  ")),
-		h.dimStyle.Render(fmt.Sprintf("(%s)", elapsed)),
-	)
+	// Optional progress bar (only when a fraction was provided, e.g. currency).
+	bar := ""
+	if h.resolving && h.resolveFrac >= 0 {
+		bar = h.countStyle.Render(renderBar(h.resolveFrac, 20)) + "  "
+	}
+
+	var line string
+	if len(parts) > 0 {
+		line = fmt.Sprintf("  %s  %s%s  %s", spinner, bar,
+			strings.Join(parts, h.dimStyle.Render("  ·  ")),
+			h.dimStyle.Render(fmt.Sprintf("(%s)", elapsed)))
+	} else {
+		line = fmt.Sprintf("  %s  %s%s", spinner, bar,
+			h.dimStyle.Render(fmt.Sprintf("(%s)", elapsed)))
+	}
 	if h.resolving && h.resolveInfo != "" {
 		line += h.dimStyle.Render("  ·  ") + h.labelStyle.Render(h.resolveInfo)
 	}
@@ -155,7 +213,7 @@ func (h *SummaryHandler) render() {
 func (h *SummaryHandler) renderResolveComplete(event Event) {
 	h.resolving = false
 	check := h.doneStyle.Render("✓")
-	summary := h.labelStyle.Render("dependencies resolved") + "  " +
+	summary := h.labelStyle.Render(h.phaseLabel+" resolved") + "  " +
 		h.dimStyle.Render(event.Info) + "  " +
 		h.dimStyle.Render(fmt.Sprintf("(%s)", event.Duration.Truncate(100*time.Millisecond)))
 	if h.isTTY {

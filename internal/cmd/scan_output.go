@@ -43,45 +43,63 @@ func generateAndWriteOutput(payload interface{}, logger *slog.Logger) {
 
 	// Produce a CycloneDX SBOM companion file when --also-sbom is set.
 	if settings.AlsoSBOM {
-		sbomFile := sbomOutputFile(settings.OutputFile)
-		sbomData, err := generateSBOM(payload, settings.PrettyPrint)
-		if err != nil {
-			logger.Error("Failed to marshal SBOM", "error", err)
-			os.Exit(1)
-		}
-		if sbomFile != "" {
-			if err = os.WriteFile(sbomFile, sbomData, 0644); err != nil {
-				fmt.Fprintf(os.Stderr, "Failed to write SBOM output file: %v\n", err)
-				os.Exit(1)
-			}
-			if !settings.Quiet {
-				fmt.Fprintf(os.Stderr, "SBOM written to %s\n", sbomFile)
-			}
-		} else {
-			logger.Debug("Skipping SBOM output: primary output is stdout")
+		writeAlsoSBOM(payload, logger)
+	}
+
+	// Resolve dependency currency alongside the scan output when
+	// --resolve-currency is set. Network-gated and opt-in (like --deps-dev), not
+	// a pure companion-file emitter, so it lives in its own step. Non-fatal: the
+	// scan output is already written; a currency error is logged, not exited.
+	if settings.ResolveCurrency {
+		if err := writeCurrencyForPayload(payload, logger); err != nil {
+			fmt.Fprintf(os.Stderr, "Currency skipped: %v\n", err)
 		}
 	}
 
 	// Produce aggregate output alongside full output when --also-aggregate is set.
 	if settings.AlsoAggregate != "" && settings.Aggregate == "" {
-		aggFile := aggregateOutputFile(settings.OutputFile)
-		aggData, err := generateOutput(payload, settings.AlsoAggregate, settings.PrettyPrint, nil)
-		if err != nil {
-			logger.Error("Failed to marshal aggregate JSON", "error", err)
-			os.Exit(1)
-		}
-		if aggFile != "" {
-			if err = os.WriteFile(aggFile, aggData, 0644); err != nil {
-				fmt.Fprintf(os.Stderr, "Failed to write aggregate output file: %v\n", err)
-				os.Exit(1)
-			}
-			if !settings.Quiet {
-				fmt.Fprintf(os.Stderr, "Aggregate results written to %s\n", aggFile)
-			}
-		} else {
-			// stdout mode — two JSON blobs cannot be written to stdout.
-			logger.Debug("Skipping aggregate output: primary output is stdout")
-		}
+		writeAlsoAggregate(payload, logger)
+	}
+}
+
+func writeAlsoSBOM(payload interface{}, logger *slog.Logger) {
+	sbomFile := sbomOutputFile(settings.OutputFile)
+	sbomData, err := generateSBOM(payload, settings.PrettyPrint)
+	if err != nil {
+		logger.Error("Failed to marshal SBOM", "error", err)
+		os.Exit(1)
+	}
+	if sbomFile == "" {
+		logger.Debug("Skipping SBOM output: primary output is stdout")
+		return
+	}
+	if err = os.WriteFile(sbomFile, sbomData, 0644); err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to write SBOM output file: %v\n", err)
+		os.Exit(1)
+	}
+	if !settings.Quiet {
+		fmt.Fprintf(os.Stderr, "SBOM written to %s\n", sbomFile)
+	}
+}
+
+func writeAlsoAggregate(payload interface{}, logger *slog.Logger) {
+	aggFile := aggregateOutputFile(settings.OutputFile)
+	aggData, err := generateOutput(payload, settings.AlsoAggregate, settings.PrettyPrint, nil)
+	if err != nil {
+		logger.Error("Failed to marshal aggregate JSON", "error", err)
+		os.Exit(1)
+	}
+	if aggFile == "" {
+		// stdout mode — two JSON blobs cannot be written to stdout.
+		logger.Debug("Skipping aggregate output: primary output is stdout")
+		return
+	}
+	if err = os.WriteFile(aggFile, aggData, 0644); err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to write aggregate output file: %v\n", err)
+		os.Exit(1)
+	}
+	if !settings.Quiet {
+		fmt.Fprintf(os.Stderr, "Aggregate results written to %s\n", aggFile)
 	}
 }
 
@@ -95,6 +113,44 @@ func aggregateOutputFile(outputFile string) string {
 	ext := filepath.Ext(outputFile)
 	base := strings.TrimSuffix(outputFile, ext)
 	return base + "-agg" + ext
+}
+
+// currencyOutputFile derives the currency companion filename from the primary
+// output filename. Returns empty string when primary output is stdout.
+// Example: "output.json" -> "output.currency.json".
+func currencyOutputFile(outputFile string) string {
+	if outputFile == "" {
+		return ""
+	}
+	ext := filepath.Ext(outputFile)
+	base := strings.TrimSuffix(outputFile, ext)
+	return base + ".currency.json"
+}
+
+// writeCurrencyForPayload resolves dependency currency for the scanned payload
+// and writes the {out}.currency.json companion. Returns an error so callers can
+// decide whether to report it; the scan output is already written before this is
+// called, so the caller treats a currency error as non-fatal (log and continue).
+func writeCurrencyForPayload(payload interface{}, logger *slog.Logger) error {
+	p, ok := payload.(*types.Payload)
+	if !ok {
+		logger.Debug("Skipping currency: payload is not a scan tree")
+		return nil
+	}
+	outFile := currencyOutputFile(settings.OutputFile)
+	if outFile == "" {
+		logger.Debug("Skipping currency output: primary output is stdout")
+		return nil
+	}
+	deps := aggregator.NewAggregator([]string{"dependencies"}).Aggregate(p).Dependencies
+	return runCurrencyEngine(deps, outFile, currencyRunOpts{
+		CachePath:   settings.CurrencyCache,
+		TTLHours:    settings.CurrencyTTLHours,
+		Endpoint:    settings.DepsDevEndpoint,
+		Concurrency: 0, // engine default
+		Force:       false,
+		Quiet:       settings.Quiet,
+	})
 }
 
 // sbomOutputFile derives the SBOM companion filename from the primary output

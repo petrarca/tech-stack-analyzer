@@ -20,6 +20,18 @@ var (
 	cacheHits    atomic.Int64 // POM/response cache hits (fetch avoided)
 	depsDevCalls atomic.Int64 // deps.dev graph requests
 	authFailures atomic.Int64 // 401/403 responses from a Maven repository
+
+	// Currency counters: a separate group from the dependency-resolution
+	// counters above. They are NOT mixed into Format()/Active(); currency
+	// progress uses FormatCurrency()/CurrencyActive(). The currency cache
+	// decorator increments currencyCacheHits (never the dependency cacheHits).
+	currencyResolved    atomic.Int64 // packages resolved to a latest version
+	currencyCacheHits   atomic.Int64 // currency cache hits (lookup avoided)
+	currencyUnsupported atomic.Int64 // no deps.dev system for the ecosystem
+	currencyUnpinned    atomic.Int64 // installed version not pinned (latest/RELEASE/range/property)
+	currencyUnknown     atomic.Int64 // queried, not found (incl. internal/yanked)
+	currencyErrors      atomic.Int64 // transient lookup failures
+	currencyTotal       atomic.Int64 // total dependencies to process (denominator), set once by the engine
 )
 
 // AddPOMFetched records a network POM fetch.
@@ -35,37 +47,90 @@ func AddDepsDevCall() { depsDevCalls.Add(1) }
 // credentials), so the scanner can warn that private artifacts went unresolved.
 func AddAuthFailure() { authFailures.Add(1) }
 
+// AddCurrencyResolved records a package resolved to a latest version.
+func AddCurrencyResolved() { currencyResolved.Add(1) }
+
+// AddCurrencyCacheHit records a currency cache hit (a lookup avoided). Distinct
+// from AddCacheHit (the dependency-resolution POM/graph cache).
+func AddCurrencyCacheHit() { currencyCacheHits.Add(1) }
+
+// AddCurrencyUnsupported records an ecosystem with no deps.dev coverage.
+func AddCurrencyUnsupported() { currencyUnsupported.Add(1) }
+
+// AddCurrencyUnpinned records a dependency whose installed version is not pinned.
+func AddCurrencyUnpinned() { currencyUnpinned.Add(1) }
+
+// AddCurrencyUnknown records a package queried but not found in any source.
+func AddCurrencyUnknown() { currencyUnknown.Add(1) }
+
+// AddCurrencyError records a transient currency lookup failure.
+func AddCurrencyError() { currencyErrors.Add(1) }
+
+// SetCurrencyTotal records the total number of dependencies the currency engine
+// will process (the progress denominator). Set once before the loop.
+func SetCurrencyTotal(n int) { currencyTotal.Store(int64(n)) }
+
 // Snapshot is a point-in-time copy of the counters.
 type Snapshot struct {
 	POMFetched   int64
 	CacheHits    int64
 	DepsDevCalls int64
 	AuthFailures int64
+
+	// Currency counters (separate group).
+	CurrencyResolved    int64
+	CurrencyCacheHits   int64
+	CurrencyUnsupported int64
+	CurrencyUnpinned    int64
+	CurrencyUnknown     int64
+	CurrencyErrors      int64
+	CurrencyTotal       int64 // denominator (fixed; not deltaed by Sub)
 }
 
 // Get returns the current counter values.
 func Get() Snapshot {
 	return Snapshot{
-		POMFetched:   pomFetched.Load(),
-		CacheHits:    cacheHits.Load(),
-		DepsDevCalls: depsDevCalls.Load(),
-		AuthFailures: authFailures.Load(),
+		POMFetched:          pomFetched.Load(),
+		CacheHits:           cacheHits.Load(),
+		DepsDevCalls:        depsDevCalls.Load(),
+		AuthFailures:        authFailures.Load(),
+		CurrencyResolved:    currencyResolved.Load(),
+		CurrencyCacheHits:   currencyCacheHits.Load(),
+		CurrencyUnsupported: currencyUnsupported.Load(),
+		CurrencyUnpinned:    currencyUnpinned.Load(),
+		CurrencyUnknown:     currencyUnknown.Load(),
+		CurrencyErrors:      currencyErrors.Load(),
+		CurrencyTotal:       currencyTotal.Load(),
 	}
 }
 
 // Sub returns the delta s - base (per field), for per-scan reporting.
 func (s Snapshot) Sub(base Snapshot) Snapshot {
 	return Snapshot{
-		POMFetched:   s.POMFetched - base.POMFetched,
-		CacheHits:    s.CacheHits - base.CacheHits,
-		DepsDevCalls: s.DepsDevCalls - base.DepsDevCalls,
-		AuthFailures: s.AuthFailures - base.AuthFailures,
+		POMFetched:          s.POMFetched - base.POMFetched,
+		CacheHits:           s.CacheHits - base.CacheHits,
+		DepsDevCalls:        s.DepsDevCalls - base.DepsDevCalls,
+		AuthFailures:        s.AuthFailures - base.AuthFailures,
+		CurrencyResolved:    s.CurrencyResolved - base.CurrencyResolved,
+		CurrencyCacheHits:   s.CurrencyCacheHits - base.CurrencyCacheHits,
+		CurrencyUnsupported: s.CurrencyUnsupported - base.CurrencyUnsupported,
+		CurrencyUnpinned:    s.CurrencyUnpinned - base.CurrencyUnpinned,
+		CurrencyUnknown:     s.CurrencyUnknown - base.CurrencyUnknown,
+		CurrencyErrors:      s.CurrencyErrors - base.CurrencyErrors,
+		CurrencyTotal:       s.CurrencyTotal, // denominator: carried through, not deltaed
 	}
 }
 
-// Active reports whether any resolution activity has been recorded in the delta.
+// Active reports whether any dependency-resolution activity has been recorded in
+// the delta. Currency activity is reported separately via CurrencyActive.
 func (s Snapshot) Active() bool {
 	return s.POMFetched > 0 || s.CacheHits > 0 || s.DepsDevCalls > 0 || s.AuthFailures > 0
+}
+
+// CurrencyActive reports whether any currency activity is in the delta.
+func (s Snapshot) CurrencyActive() bool {
+	return s.CurrencyResolved > 0 || s.CurrencyCacheHits > 0 ||
+		s.CurrencyUnsupported > 0 || s.CurrencyUnpinned > 0 || s.CurrencyUnknown > 0 || s.CurrencyErrors > 0
 }
 
 // Format renders a human-readable, source-broken-down summary of the counters
@@ -86,4 +151,45 @@ func (s Snapshot) Format() string {
 		return "no fetches"
 	}
 	return strings.Join(parts, ", ")
+}
+
+// FormatCurrency renders the currency-resolution progress line from the currency
+// counters only (e.g. "312 resolved, 21 cached, 540 unsupported, 3 unknown"). It
+// is separate from Format so the two phases never conflate.
+func (s Snapshot) FormatCurrency() string {
+	// processed = everything classified so far (resolved incl. cached, plus the
+	// non-resolved outcomes). Cache hits are a subset of resolved, so they are
+	// not double-counted in the processed total.
+	processed := s.CurrencyResolved + s.CurrencyUnsupported + s.CurrencyUnpinned + s.CurrencyUnknown + s.CurrencyErrors
+
+	var head string
+	if s.CurrencyTotal > 0 {
+		head = fmt.Sprintf("%d/%d", processed, s.CurrencyTotal)
+	} else {
+		head = fmt.Sprintf("%d", processed)
+	}
+
+	var parts []string
+	if s.CurrencyCacheHits > 0 {
+		parts = append(parts, fmt.Sprintf("%d cached", s.CurrencyCacheHits))
+	}
+	if s.CurrencyUnsupported > 0 {
+		parts = append(parts, fmt.Sprintf("%d unsupported", s.CurrencyUnsupported))
+	}
+	if s.CurrencyUnpinned > 0 {
+		parts = append(parts, fmt.Sprintf("%d unpinned", s.CurrencyUnpinned))
+	}
+	if s.CurrencyUnknown > 0 {
+		parts = append(parts, fmt.Sprintf("%d unknown", s.CurrencyUnknown))
+	}
+	if s.CurrencyErrors > 0 {
+		parts = append(parts, fmt.Sprintf("%d errors", s.CurrencyErrors))
+	}
+	if processed == 0 && len(parts) == 0 {
+		return "no lookups"
+	}
+	if len(parts) == 0 {
+		return head
+	}
+	return head + " (" + strings.Join(parts, ", ") + ")"
 }

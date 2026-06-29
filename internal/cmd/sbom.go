@@ -162,49 +162,19 @@ func resolveTransitiveFromCoordinates(payload *types.Payload) {
 }
 
 // startSBOMResolveReporter reports dependency-resolution progress for the sbom
-// command's transitive resolution, mirroring the scan's resolution phase: it
-// samples the shared resolvestats counters and emits ResolveStart/Progress/
-// Complete events. Returns a stop function that ends the phase. A no-op
-// reporter is used when --quiet.
+// command's transitive resolution. Uses the shared startResolveReporter
+// goroutine helper.
 func startSBOMResolveReporter() func() {
 	if sbomQuiet {
 		return func() {}
 	}
 	prog := progress.New(true, progress.NewSimpleHandler(os.Stderr))
-	base := resolvestats.Get()
-	start := time.Now()
-	done := make(chan struct{})
-	stopped := make(chan struct{})
-	go func() {
-		defer close(stopped)
-		ticker := time.NewTicker(2 * time.Second)
-		defer ticker.Stop()
-		started := false
-		for {
-			select {
-			case <-done:
-				return
-			case <-ticker.C:
-				delta := resolvestats.Get().Sub(base)
-				if !delta.Active() {
-					continue
-				}
-				if !started {
-					started = true
-					prog.ResolveStart()
-				}
-				prog.ResolveProgress(delta.Format())
-			}
-		}
-	}()
-	return func() {
-		close(done)
-		<-stopped
-		delta := resolvestats.Get().Sub(base)
-		if delta.Active() {
-			prog.ResolveComplete(delta.Format(), time.Since(start))
-		}
-	}
+	return startResolveReporter(resolveReporterOpts{
+		prog:     prog,
+		tick:     2 * time.Second,
+		isActive: func(s resolvestats.Snapshot) bool { return s.Active() },
+		format:   func(s resolvestats.Snapshot) string { return s.Format() },
+	})
 }
 
 // marshalSBOM builds and marshals an SBOM in the requested format from a

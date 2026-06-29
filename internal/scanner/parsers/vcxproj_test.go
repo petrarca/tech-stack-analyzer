@@ -202,3 +202,45 @@ func TestPlatformToolsetToVSVersion(t *testing.T) {
 		})
 	}
 }
+
+func TestVcxprojParser_FiltersNonNamedLibs(t *testing.T) {
+	// AdditionalDependencies mixes a named lib with MSBuild property refs and
+	// absolute machine-specific paths (the real-world wiaguid.lib case). Only
+	// the named lib should survive.
+	content := `<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <ItemDefinitionGroup>
+    <Link>
+      <AdditionalDependencies>wiaguid.lib;$(MSSdk)\Lib\wiaguid.lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.22621.0\um\x64\wiaguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+</Project>`
+	p := &VcxprojParser{}
+	project := p.ParseVcxproj(content, "wiassamp.vcxproj")
+
+	assert.Contains(t, project.AdditionalDependencies, "wiaguid.lib")
+	assert.Len(t, project.AdditionalDependencies, 1, "only the named lib should remain")
+	assert.NotContains(t, project.AdditionalDependencies, `$(MSSdk)\Lib\wiaguid.lib`)
+	assert.NotContains(t, project.AdditionalDependencies, `C:\Program Files (x86)\Windows Kits\10\Lib\10.0.22621.0\um\x64\wiaguid.lib`)
+}
+
+func TestIsNamedLib(t *testing.T) {
+	cases := []struct {
+		in   string
+		want bool
+	}{
+		{"kernel32.lib", true},
+		{"libfoo.lib", true},
+		{"", false},
+		{"%(AdditionalDependencies)", false},
+		{`$(MSSdk)\Lib\wiaguid.lib`, false},
+		{`C:\Program Files (x86)\Windows Kits\10\Lib\wiaguid.lib`, false},
+		{`\\server\share\foo.lib`, false},
+		{"/usr/lib/libfoo.a", false},
+	}
+	for _, c := range cases {
+		if got := isNamedLib(c.in); got != c.want {
+			t.Errorf("isNamedLib(%q) = %v, want %v", c.in, got, c.want)
+		}
+	}
+}
