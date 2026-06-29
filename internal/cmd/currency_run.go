@@ -122,8 +122,8 @@ func runCurrencyEngine(deps []types.Dependency, outFile string, opt currencyRunO
 	if !opt.Quiet {
 		s := art.Summary
 		fmt.Fprintf(os.Stderr,
-			"Currency written to %s (%d direct: %d up-to-date, %d patch, %d minor, %d major, %d unsupported, %d unknown)\n",
-			outFile, s.Total, s.UpToDate, s.Patch, s.Minor, s.Major, s.Unsupported, s.Unknown)
+			"Currency written to %s (%d direct: %d up-to-date, %d patch, %d minor, %d major, %d unsupported, %d unpinned, %d unknown)\n",
+			outFile, s.Total, s.UpToDate, s.Patch, s.Minor, s.Major, s.Unsupported, s.Unpinned, s.Unknown)
 	}
 	return nil
 }

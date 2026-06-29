@@ -28,6 +28,7 @@ var (
 	currencyResolved    atomic.Int64 // packages resolved to a latest version
 	currencyCacheHits   atomic.Int64 // currency cache hits (lookup avoided)
 	currencyUnsupported atomic.Int64 // no deps.dev system for the ecosystem
+	currencyUnpinned    atomic.Int64 // installed version not pinned (latest/RELEASE/range/property)
 	currencyUnknown     atomic.Int64 // queried, not found (incl. internal/yanked)
 	currencyErrors      atomic.Int64 // transient lookup failures
 	currencyTotal       atomic.Int64 // total dependencies to process (denominator), set once by the engine
@@ -56,6 +57,9 @@ func AddCurrencyCacheHit() { currencyCacheHits.Add(1) }
 // AddCurrencyUnsupported records an ecosystem with no deps.dev coverage.
 func AddCurrencyUnsupported() { currencyUnsupported.Add(1) }
 
+// AddCurrencyUnpinned records a dependency whose installed version is not pinned.
+func AddCurrencyUnpinned() { currencyUnpinned.Add(1) }
+
 // AddCurrencyUnknown records a package queried but not found in any source.
 func AddCurrencyUnknown() { currencyUnknown.Add(1) }
 
@@ -77,6 +81,7 @@ type Snapshot struct {
 	CurrencyResolved    int64
 	CurrencyCacheHits   int64
 	CurrencyUnsupported int64
+	CurrencyUnpinned    int64
 	CurrencyUnknown     int64
 	CurrencyErrors      int64
 	CurrencyTotal       int64 // denominator (fixed; not deltaed by Sub)
@@ -92,6 +97,7 @@ func Get() Snapshot {
 		CurrencyResolved:    currencyResolved.Load(),
 		CurrencyCacheHits:   currencyCacheHits.Load(),
 		CurrencyUnsupported: currencyUnsupported.Load(),
+		CurrencyUnpinned:    currencyUnpinned.Load(),
 		CurrencyUnknown:     currencyUnknown.Load(),
 		CurrencyErrors:      currencyErrors.Load(),
 		CurrencyTotal:       currencyTotal.Load(),
@@ -108,6 +114,7 @@ func (s Snapshot) Sub(base Snapshot) Snapshot {
 		CurrencyResolved:    s.CurrencyResolved - base.CurrencyResolved,
 		CurrencyCacheHits:   s.CurrencyCacheHits - base.CurrencyCacheHits,
 		CurrencyUnsupported: s.CurrencyUnsupported - base.CurrencyUnsupported,
+		CurrencyUnpinned:    s.CurrencyUnpinned - base.CurrencyUnpinned,
 		CurrencyUnknown:     s.CurrencyUnknown - base.CurrencyUnknown,
 		CurrencyErrors:      s.CurrencyErrors - base.CurrencyErrors,
 		CurrencyTotal:       s.CurrencyTotal, // denominator: carried through, not deltaed
@@ -123,7 +130,7 @@ func (s Snapshot) Active() bool {
 // CurrencyActive reports whether any currency activity is in the delta.
 func (s Snapshot) CurrencyActive() bool {
 	return s.CurrencyResolved > 0 || s.CurrencyCacheHits > 0 ||
-		s.CurrencyUnsupported > 0 || s.CurrencyUnknown > 0 || s.CurrencyErrors > 0
+		s.CurrencyUnsupported > 0 || s.CurrencyUnpinned > 0 || s.CurrencyUnknown > 0 || s.CurrencyErrors > 0
 }
 
 // Format renders a human-readable, source-broken-down summary of the counters
@@ -153,7 +160,7 @@ func (s Snapshot) FormatCurrency() string {
 	// processed = everything classified so far (resolved incl. cached, plus the
 	// non-resolved outcomes). Cache hits are a subset of resolved, so they are
 	// not double-counted in the processed total.
-	processed := s.CurrencyResolved + s.CurrencyUnsupported + s.CurrencyUnknown + s.CurrencyErrors
+	processed := s.CurrencyResolved + s.CurrencyUnsupported + s.CurrencyUnpinned + s.CurrencyUnknown + s.CurrencyErrors
 
 	var head string
 	if s.CurrencyTotal > 0 {
@@ -168,6 +175,9 @@ func (s Snapshot) FormatCurrency() string {
 	}
 	if s.CurrencyUnsupported > 0 {
 		parts = append(parts, fmt.Sprintf("%d unsupported", s.CurrencyUnsupported))
+	}
+	if s.CurrencyUnpinned > 0 {
+		parts = append(parts, fmt.Sprintf("%d unpinned", s.CurrencyUnpinned))
 	}
 	if s.CurrencyUnknown > 0 {
 		parts = append(parts, fmt.Sprintf("%d unknown", s.CurrencyUnknown))

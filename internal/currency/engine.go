@@ -12,6 +12,7 @@ import (
 	"github.com/petrarca/tech-stack-analyzer/internal/purl"
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/resolver"
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/resolvestats"
+	"github.com/petrarca/tech-stack-analyzer/internal/scanner/semver"
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
 
@@ -141,6 +142,16 @@ func classifyDep(dep types.Dependency, r CurrencyResolver, now string) Dependenc
 		return entry
 	}
 	entry.System = system
+
+	// An unpinned installed version (latest/RELEASE/range/property) cannot be
+	// assessed for currency regardless of what deps.dev returns, so classify it
+	// up front and skip the lookup entirely -- this is both correct (consistent
+	// for internal unpinned deps that would 404) and cheaper (no network call).
+	if semver.ResolvedVersion(dep.Version) == "" {
+		entry.Currency = Unpinned
+		resolvestats.AddCurrencyUnpinned()
+		return entry
+	}
 
 	info, err := r.LatestVersion(system, dep.Name)
 	switch {

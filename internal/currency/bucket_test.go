@@ -37,13 +37,13 @@ func TestClassify(t *testing.T) {
 		// pre-release / build suffix stripped before numeric compare
 		{"suffix stripped", "npm", "1.2.3", "2.0.0-rc1", Major},
 
-		// unresolved installed specifier -> Unknown, consistently across
+		// unresolved installed specifier -> Unpinned, consistently across
 		// ecosystems (Maven's lenient parser must not report "latest" as a
 		// comparable version).
-		{"installed latest npm", "npm", "latest", "19.2.7", Unknown},
-		{"installed latest maven", "maven", "latest", "7.0.8", Unknown},
-		{"installed range", "npm", "^6.24.1", "6.24.1", Unknown},
-		{"installed RELEASE maven", "maven", "RELEASE", "7.0.8", Unknown},
+		{"installed latest npm", "npm", "latest", "19.2.7", Unpinned},
+		{"installed latest maven", "maven", "latest", "7.0.8", Unpinned},
+		{"installed range", "npm", "^6.24.1", "6.24.1", Unpinned},
+		{"installed RELEASE maven", "maven", "RELEASE", "7.0.8", Unpinned},
 
 		// unparseable -> Unknown
 		{"unparseable latest", "nuget", "1.0.0", "weird", Unknown},

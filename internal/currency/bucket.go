@@ -18,7 +18,8 @@ const (
 	Minor           Bucket = "minor"
 	Major           Bucket = "major"
 	Unsupported     Bucket = "unsupported_ecosystem" // no public registry exists
-	Unknown         Bucket = "unknown"               // queried, not found (incl. internal/yanked)
+	Unpinned        Bucket = "unpinned"              // installed version not pinned (latest/RELEASE/range/property) — currency unassessable
+	Unknown         Bucket = "unknown"               // queried with a concrete version, not found (likely internal/private/yanked)
 	ResolutionError Bucket = "error"                 // transient lookup failure
 )
 
@@ -65,13 +66,15 @@ func classify(depsDevSystem, installed, latest string) Bucket {
 		return Unknown
 	}
 	// The installed version must be a concrete, resolved pin to assess currency.
-	// Unresolved specifiers ("latest", "RELEASE", ranges like "^1.2.0") mean we
-	// do not know what is actually installed, so currency is Unknown -- using
-	// the same resolved-version definition as the PURL builder (single source of
-	// truth). This also keeps the verdict consistent across ecosystems, since
+	// Unresolved specifiers ("latest", "RELEASE", ranges like "^1.2.0", property
+	// placeholders like "${spring.version}") mean we do not know what is actually
+	// installed, so currency is Unpinned -- a distinct, actionable state from
+	// Unknown (a concrete version deps.dev did not know, i.e. likely internal).
+	// Uses the same resolved-version definition as the PURL builder (single
+	// source of truth) and keeps the verdict consistent across ecosystems, since
 	// lenient parsers (e.g. Maven) would otherwise treat "latest" as comparable.
 	if semver.ResolvedVersion(installed) == "" {
-		return Unknown
+		return Unpinned
 	}
 	if installed == latest {
 		return UpToDate

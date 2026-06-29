@@ -33,6 +33,7 @@ type Summary struct {
 	Minor       int `json:"minor"`
 	Major       int `json:"major"`
 	Unsupported int `json:"unsupported_ecosystem"`
+	Unpinned    int `json:"unpinned"`
 	Unknown     int `json:"unknown"`
 	Errors      int `json:"error"`
 	Deprecated  int `json:"deprecated"`
@@ -84,6 +85,8 @@ func (a *Artifact) addToSummary(d Dependency) {
 		a.Summary.Resolved++
 	case Unsupported:
 		a.Summary.Unsupported++
+	case Unpinned:
+		a.Summary.Unpinned++
 	case Unknown:
 		a.Summary.Unknown++
 	case ResolutionError:

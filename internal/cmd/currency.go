@@ -128,7 +128,7 @@ func startCurrencyReporter(quiet bool) func() {
 		onTick = func(delta resolvestats.Snapshot) {
 			if delta.CurrencyTotal > 0 {
 				processed := delta.CurrencyResolved + delta.CurrencyUnsupported +
-					delta.CurrencyUnknown + delta.CurrencyErrors
+					delta.CurrencyUnpinned + delta.CurrencyUnknown + delta.CurrencyErrors
 				summary.SetResolveFraction(float64(processed) / float64(delta.CurrencyTotal))
 			}
 		}
