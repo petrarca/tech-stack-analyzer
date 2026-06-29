@@ -137,3 +137,33 @@ func nullStr(s string) interface{} {
 	}
 	return s
 }
+
+// ClearAll removes every currency entry from the store. Returns the number of
+// rows deleted. The currency table is created first if absent (so callers get a
+// clean 0 rather than an error on a fresh store).
+func ClearAll(s *store.Store) (int64, error) {
+	if _, err := s.DB().Exec(createTable); err != nil {
+		return 0, err
+	}
+	res, err := s.DB().Exec(`DELETE FROM currency`)
+	if err != nil {
+		return 0, fmt.Errorf("currency cache: clear: %w", err)
+	}
+	n, _ := res.RowsAffected()
+	return n, nil
+}
+
+// ClearExpired removes only currency entries whose TTL has elapsed. Returns the
+// number of rows deleted.
+func ClearExpired(s *store.Store) (int64, error) {
+	if _, err := s.DB().Exec(createTable); err != nil {
+		return 0, err
+	}
+	res, err := s.DB().Exec(
+		`DELETE FROM currency WHERE (fetched_at + ttl_seconds) <= ?`, time.Now().Unix())
+	if err != nil {
+		return 0, fmt.Errorf("currency cache: clear expired: %w", err)
+	}
+	n, _ := res.RowsAffected()
+	return n, nil
+}
