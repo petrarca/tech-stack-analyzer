@@ -23,7 +23,10 @@ stack-analyzer scan [path] [flags]
 - `--exclude` - Additional patterns to exclude (combined with `.gitignore`; full gitignore semantics including `**` globs, `!` negation, trailing `/` for dir-only; can be specified multiple times)
 - `--dependency-graph` - Emit package-to-package dependency edges read from lockfiles: `off` (default), `direct` (root-to-direct edges only), or `full` (the full transitive graph). The full graph can be very large in big projects, so it is off by default. Produced directly from lockfiles for: JS (`package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`, `bun.lock`), Python (`uv.lock`, `poetry.lock`), Rust (`Cargo.lock`), Go (`go.mod` for direct; full graph from a pre-generated `go.mod.graph`), Ruby (`Gemfile.lock`), PHP (`composer.lock`), .NET (`packages.lock.json`), C/C++ (`conan.lock`), Swift/iOS (`Podfile.lock`, `Package.resolved`), Dart (`pubspec.lock`), Elixir (`mix.lock`), Perl (`cpanfile.snapshot`), and R (`renv.lock`). For Maven and Gradle the scanner ingests a pre-generated resolved tree it never produces -- `dependency-tree.json` (`mvn dependency:tree -DoutputType=json`) or `gradle-dependencies.txt` (`gradle dependencies`) -- or a CycloneDX `bom.json` dependency-graph section. Each edge carries `source` (provenance: `lockfile` or `deps.dev`) and, on direct edges, `scope` (`prod`/`dev`/`build`/`optional`/`peer`). Edges appear per component in the full tree and as a single deduplicated, sorted top-level `dependency_edges` array in the aggregate output.
 - `--deps-dev` - Allow online dependency-graph resolution via deps.dev as a fallback for ecosystems without a committed resolved tree (all ecosystems; default off). When enabled the scanner fans out over each component's declared dependencies, queries deps.dev for each, and unions the results. Private or unknown deps are silently skipped (404). Edges are tagged `source: deps.dev`. A present local lockfile/tree always wins (local-first). Per deps.dev API docs, graph data is available for **npm, Cargo, Maven, and PyPI** only; others fall through gracefully.
-- `--deps-dev-endpoint` - Base URL for deps.dev (default: public `https://api.deps.dev`). Override with a deps.dev-API-compatible facade or mirror.
+- `--deps-dev-endpoint` - Base URL for deps.dev (default: public `https://api.deps.dev`). Override with a deps.dev-API-compatible facade or mirror. Also used by `--resolve-currency` and the `currency` command.
+- `--resolve-currency` - Resolve dependency currency (how far each direct dependency is behind its latest release) via deps.dev and write a `{out}.currency.json` companion. Opt-in; sends public package coordinates over the network. Results are cached across runs in a shared SQLite store with a per-entry TTL. For force-refresh or concurrency tuning, use the standalone `currency` command. See the [`currency` command](#currency---resolve-dependency-currency-freshness).
+- `--currency-cache` - Override the currency cache DB path (default: `STACK_ANALYZER_CURRENCY_CACHE` env var, else the OS cache dir).
+- `--currency-ttl` - Per-entry currency cache TTL in hours (default: 24).
 - `--maven-central` - Enable the public Maven Central fallback for resolving Maven/Gradle BOM/parent POM versions (default off). May be combined with `--maven-repo-url` (consulted last, after the private repo) so public BOMs resolve when the private repo does not proxy Central.
 - `--maven-repo-url`, `--maven-graph-source`, `--maven-local-repo`, `--maven-settings` - Maven/Gradle resolution against an internal/JFrog repository, including transitive resolution and Gradle `platform`/`enforcedPlatform` and Spring Boot plugin BOMs. See the [Maven guide](maven.md).
 - `--no-code-stats` - Disable code statistics collection (enabled by default)
@@ -133,6 +136,74 @@ stack-analyzer sbom results.json --resolve-transitive \
   --maven-repo-url https://artifactory.example.com/artifactory/my-virtual-repo \
   -o results-full.cdx.json
 ```
+
+### `currency` - Resolve dependency currency (freshness)
+
+Resolves how far each **direct** dependency is behind its latest available
+release from a previously written **aggregate** (`-agg.json`) file, and writes a
+`{stem}.currency.json` artifact. Latest versions come from
+[Google deps.dev](https://deps.dev) (opt-in network access). This is **freshness**,
+not vulnerability — "is this dependency outdated?" is a maintenance question,
+separate from the CVE/security concern.
+
+```bash
+stack-analyzer currency <agg.json> [flags]
+```
+
+Re-running the command **is** the refresh: results are cached across runs and
+products in a shared SQLite store with a per-entry TTL, so only stale (or new)
+entries are re-fetched. The same package is looked up once and reused everywhere.
+
+**Flags:**
+
+- `-o, --output` - Output file (default: `<agg-stem>.currency.json`).
+- `--currency-cache` - Override the cache DB path (default: `STACK_ANALYZER_CURRENCY_CACHE` env var, else the OS cache dir).
+- `--currency-ttl` - Per-entry cache TTL in hours (default: 24).
+- `--currency-concurrency` - Parallel deps.dev lookups (default: 10).
+- `--force` - Ignore the cache TTL and re-fetch every package.
+- `--deps-dev-endpoint` - Base URL for deps.dev (default: public; override for a mirror).
+- `-q, --quiet` - Suppress progress output.
+
+**The `{out}.currency.json` artifact** is a dedicated, time-varying view joined
+to dependencies by PURL (the scan output and SBOM are never modified). Each entry
+carries the installed and latest versions and a `currency` classification:
+
+| `currency` | Meaning |
+|------------|---------|
+| `up_to_date` | installed is the latest stable |
+| `patch` / `minor` / `major` | behind by that semver level |
+| `unsupported` | no public registry exists for the ecosystem (e.g. native libs, project references) |
+| `unpinned` | the installed version is not pinned (`latest`, `RELEASE`, a range, or a property) — currency cannot be assessed |
+| `unknown` | a concrete version was queried but deps.dev did not know it (likely an internal/private package) |
+| `error` | a transient lookup failure |
+
+The `summary` block totals each classification, plus `deprecated` (packages whose
+latest version is marked deprecated upstream).
+
+```bash
+# Resolve currency from an aggregate (writes app-agg.currency.json)
+stack-analyzer currency app-agg.json
+
+# Force a full refresh, ignoring the cache TTL
+stack-analyzer currency app-agg.json --force
+
+# Point at a deps.dev-compatible mirror
+stack-analyzer currency app-agg.json --deps-dev-endpoint https://deps.example.com
+```
+
+### `cache` - Inspect and manage the shared currency cache
+
+Manages the shared SQLite cache used by currency resolution. These commands
+**never create** the cache file: if it does not exist, they report "no cache yet".
+
+```bash
+stack-analyzer cache info     # location, size, schema version, record counts
+stack-analyzer cache clear    # remove cached entries (all, or --expired-only)
+stack-analyzer cache vacuum   # reclaim space after deletions (SQLite VACUUM)
+```
+
+All three honor `--currency-cache` (and `STACK_ANALYZER_CURRENCY_CACHE`) to target
+a specific cache file.
 
 ### `summary` - Human-readable codebase summary
 

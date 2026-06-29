@@ -23,6 +23,7 @@ Detection is powered by **800+ technology rules** across 48 categories, using fi
 - **Dependency Graph** - Emits the package-to-package dependency graph (edges) across 19 ecosystems, off by default via `--dependency-graph`; optional online resolution (deps.dev) fills gaps for manifest-only ecosystems
 - **Maven Version Resolution** - Resolves versionless Maven dependencies (BOM-managed, parent-inherited, property references) offline from the repo's own POMs, plus optional local `~/.m2`, an internal Artifactory/JFrog repo (incl. private artifacts), or Maven Central. Optional Trivy-style transitive resolution by crawling the configured Maven repo. See the [Maven guide](docs/maven.md)
 - **CycloneDX SBOM** - Emits a PURL-based SBOM consumable directly by vulnerability scanners such as Trivy
+- **Dependency Currency** - Reports how far each direct dependency is behind its latest release (patch/minor/major) via [Google deps.dev](https://deps.dev), as a separate `{out}.currency.json` artifact. Opt-in (`--resolve-currency` or the `currency` command); results are cached across runs in a shared SQLite store with a per-entry TTL. Unresolvable cases are recorded honestly (`unsupported`, `unpinned`, `unknown`)
 - **Code Statistics** - Lines of code, complexity metrics, and language breakdown via SCC
 - **Automatic .gitignore** - Respects `.gitignore` files with full gitignore semantics (negation `!`, dir-only `/`, last-match-wins)
 - **Hierarchical Output** - Component-based analysis with parent-child relationships
@@ -75,6 +76,19 @@ go install github.com/petrarca/tech-stack-analyzer/cmd/scanner@latest
 
 # Full scan output + SBOM companion in one pass (out.json -> out.cdx.json)
 ./bin/stack-analyzer scan /path/to/project -o out.json --also-sbom
+
+# Resolve dependency currency (latest versions via deps.dev) alongside the scan
+# (out.json -> out.currency.json). Opt-in; sends public package coordinates over
+# the network. Results are cached in a shared SQLite store (per-entry TTL).
+./bin/stack-analyzer scan /path/to/project -o out.json --resolve-currency
+
+# Or resolve currency from an existing aggregate, without re-scanning (re-run
+# refreshes; only stale entries are re-fetched):
+./bin/stack-analyzer currency out-agg.json -o out.currency.json
+
+# Inspect / manage the shared currency cache:
+./bin/stack-analyzer cache info
+./bin/stack-analyzer cache clear --expired-only
 
 # Emit the package-to-package dependency graph (off by default)
 ./bin/stack-analyzer scan /path/to/project --dependency-graph full -o out.json
