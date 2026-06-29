@@ -160,8 +160,7 @@ func (p *VcxprojParser) collectAdditionalDependencies(idgs []vcxprojItemDefiniti
 		}
 		for _, part := range strings.Split(raw, ";") {
 			part = strings.TrimSpace(part)
-			// Skip empty strings and MSBuild variable references like %(AdditionalDependencies)
-			if part == "" || strings.Contains(part, "%(") {
+			if !isNamedLib(part) {
 				continue
 			}
 			if !seen[part] {
@@ -172,6 +171,34 @@ func (p *VcxprojParser) collectAdditionalDependencies(idgs []vcxprojItemDefiniti
 	}
 
 	return libs
+}
+
+// isNamedLib reports whether a vcxproj AdditionalDependencies entry is a
+// reusable, named library (e.g. "kernel32.lib", "libfoo.lib") rather than
+// build-system noise. It rejects:
+//   - empty entries
+//   - MSBuild item-metadata references, e.g. "%(AdditionalDependencies)"
+//   - MSBuild property references, e.g. "$(MSSdk)\Lib\wiaguid.lib"
+//   - absolute machine-specific paths, e.g.
+//     "C:\Program Files (x86)\Windows Kits\10\Lib\...\wiaguid.lib"
+//
+// These path/variable forms are local linker inputs, not named dependencies,
+// and have no registry identity; emitting them as dependencies adds noise.
+func isNamedLib(part string) bool {
+	if part == "" {
+		return false
+	}
+	if strings.Contains(part, "%(") || strings.Contains(part, "$(") {
+		return false
+	}
+	// Absolute Windows ("C:\...", "\\server\...") or POSIX ("/usr/...") paths.
+	if filepath.IsAbs(part) || strings.HasPrefix(part, `\\`) {
+		return false
+	}
+	if len(part) >= 2 && part[1] == ':' { // drive-letter path, e.g. "C:\..."
+		return false
+	}
+	return true
 }
 
 // nameFromPath extracts a project name from the .vcxproj file path,
