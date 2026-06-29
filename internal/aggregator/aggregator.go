@@ -323,13 +323,71 @@ func (a *Aggregator) collectDependencyEdges(payload *types.Payload) []types.Depe
 	return edges
 }
 
-// collectDependenciesRecursive helper function
+// scopePriority ranks dependency scopes by exposure. When the same package
+// (type|name|version) appears under different scopes across modules, the
+// most-exposed scope wins (a prod dependency is prod even if it is also a dev
+// dependency elsewhere). Higher number wins. Unknown scopes rank above the
+// empty scope but below known ones, so a named scope always beats "unknown".
+var scopePriority = map[string]int{
+	"prod":     100,
+	"import":   90,
+	"system":   80,
+	"peer":     70,
+	"optional": 60,
+	"build":    50,
+	"dev":      40,
+	"test":     30,
+	"":         0,
+}
+
+// mergeScope returns the more-exposed of two scopes per scopePriority.
+// An unrecognized (but non-empty) scope outranks the empty scope only.
+func mergeScope(a, b string) string {
+	pa, oka := scopePriority[a]
+	pb, okb := scopePriority[b]
+	if !oka && a != "" {
+		pa = 10
+	}
+	if !okb && b != "" {
+		pb = 10
+	}
+	if pa >= pb {
+		return a
+	}
+	return b
+}
+
+// collectDependenciesRecursive helper function.
+//
+// The same package (keyed type|name|version) may appear in multiple modules
+// with different scope/direct flags. We MERGE conflicting occurrences instead
+// of letting the last-walked one overwrite the rest:
+//   - Direct: OR — if the package is a direct dependency anywhere, it is direct.
+//   - Scope:  precedence — the most-exposed scope wins (see mergeScope).
+//
+// This makes aggregation order-independent and prevents a transitive/dev
+// occurrence from masking a direct/prod one.
 func (a *Aggregator) collectDependenciesRecursive(payload *types.Payload, depMap map[string]types.Dependency) {
 	// Add dependencies from current payload
 	for _, dep := range payload.Dependencies {
 		// Create unique key from type|name|version
 		key := dep.Type + "|" + dep.Name + "|" + dep.Version
-		depMap[key] = dep
+		if existing, ok := depMap[key]; ok {
+			// Merge conflicting occurrences (order-independent).
+			merged := existing
+			merged.Direct = existing.Direct || dep.Direct
+			merged.Scope = mergeScope(existing.Scope, dep.Scope)
+			// Keep the richer metadata/source if the existing one lacked it.
+			if len(merged.Metadata) == 0 && len(dep.Metadata) > 0 {
+				merged.Metadata = dep.Metadata
+			}
+			if merged.SourceFile == "" && dep.SourceFile != "" {
+				merged.SourceFile = dep.SourceFile
+			}
+			depMap[key] = merged
+		} else {
+			depMap[key] = dep
+		}
 	}
 
 	// Recursively process children
