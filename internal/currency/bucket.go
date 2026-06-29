@@ -13,13 +13,13 @@ import (
 type Bucket string
 
 const (
-	UpToDate    Bucket = "up_to_date"
-	Patch       Bucket = "patch"
-	Minor       Bucket = "minor"
-	Major       Bucket = "major"
-	Unsupported Bucket = "unsupported_ecosystem" // no public registry exists
-	Unknown     Bucket = "unknown"               // queried, not found (incl. internal/yanked)
-	BucketError Bucket = "error"                 // transient lookup failure
+	UpToDate        Bucket = "up_to_date"
+	Patch           Bucket = "patch"
+	Minor           Bucket = "minor"
+	Major           Bucket = "major"
+	Unsupported     Bucket = "unsupported_ecosystem" // no public registry exists
+	Unknown         Bucket = "unknown"               // queried, not found (incl. internal/yanked)
+	ResolutionError Bucket = "error"                 // transient lookup failure
 )
 
 // semverSystemFor maps a deps.dev system identifier to a semver.System parser
@@ -32,6 +32,11 @@ func semverSystemFor(depsDevSystem string) semver.System {
 	case "pypi":
 		return semver.PyPI
 	case "cargo":
+		// semver.Cargo.Parse always returns "not yet implemented", so this
+		// silently falls through to the numeric-component comparison in classify.
+		// When semver.Cargo is implemented the behavior will change; the test
+		// case "cargo numeric fallback" in bucket_test.go locks in current
+		// behavior so that change is visible.
 		return semver.Cargo
 	case "maven":
 		return semver.Maven

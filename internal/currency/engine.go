@@ -4,13 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/url"
 	"os"
 	"sort"
-	"strings"
 	"sync"
 	"time"
 
+	"github.com/petrarca/tech-stack-analyzer/internal/purl"
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/resolver"
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/resolvestats"
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
@@ -30,10 +29,12 @@ type Options struct {
 	Concurrency    int    // parallel lookups; <=0 uses resolveConcurrency default
 }
 
-// ResolveAggregateFile reads an aggregate JSON file, resolves currency for its
-// (direct) dependencies via resolver, and returns the artifact. resolver is
-// normally the cache-decorated chain; the engine does not know or care.
-func ResolveAggregateFile(path string, r CurrencyResolver, opt Options) (*Artifact, error) {
+// LoadAggregateDeps reads a stack-analyzer aggregate file and returns its
+// dependency list. This is the reading half of ResolveAggregateFile, split so
+// callers that load deps from a file (the 'currency' subcommand) and callers
+// that already have deps in memory (the in-scan path) can both feed into the
+// same runCurrencyEngine pipeline.
+func LoadAggregateDeps(path string) ([]types.Dependency, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("currency: read aggregate %s: %w", path, err)
@@ -42,7 +43,18 @@ func ResolveAggregateFile(path string, r CurrencyResolver, opt Options) (*Artifa
 	if err := json.Unmarshal(data, &doc); err != nil {
 		return nil, fmt.Errorf("currency: parse aggregate (expected a stack-analyzer -agg.json): %w", err)
 	}
-	return Resolve(doc.Dependencies, r, opt), nil
+	return doc.Dependencies, nil
+}
+
+// ResolveAggregateFile reads an aggregate JSON file, resolves currency for its
+// (direct) dependencies via resolver, and returns the artifact. resolver is
+// normally the cache-decorated chain; the engine does not know or care.
+func ResolveAggregateFile(path string, r CurrencyResolver, opt Options) (*Artifact, error) {
+	deps, err := LoadAggregateDeps(path)
+	if err != nil {
+		return nil, err
+	}
+	return Resolve(deps, r, opt), nil
 }
 
 // resolveConcurrency bounds parallel deps.dev lookups. Lookups are independent,
@@ -115,7 +127,7 @@ func Resolve(deps []types.Dependency, r CurrencyResolver, opt Options) *Artifact
 // artifact entry. The caller appends it and updates the summary.
 func classifyDep(dep types.Dependency, r CurrencyResolver, now string) Dependency {
 	entry := Dependency{
-		PURL:      purl(dep),
+		PURL:      purl.Build(dep),
 		Name:      dep.Name,
 		Installed: dep.Version,
 		Direct:    dep.Direct,
@@ -138,42 +150,15 @@ func classifyDep(dep types.Dependency, r CurrencyResolver, now string) Dependenc
 		entry.LatestPublishedAt = info.PublishedAt
 		entry.Currency = classify(system, dep.Version, info.Latest)
 		entry.CheckedAt = now
-		entry.Source = "deps.dev"
+		entry.Source = info.Source
 		resolvestats.AddCurrencyResolved()
 	case errors.Is(err, ErrNotFound):
 		entry.Currency = Unknown
 		entry.CheckedAt = now
 		resolvestats.AddCurrencyUnknown()
 	default:
-		entry.Currency = BucketError
+		entry.Currency = ResolutionError
 		resolvestats.AddCurrencyError()
 	}
 	return entry
-}
-
-// purl builds a Package URL for a dependency: pkg:{type}/{name}@{version}.
-// Maven names are "group:artifact"; the group becomes the PURL namespace.
-func purl(dep types.Dependency) string {
-	ptype := strings.ToLower(dep.Type)
-	if ptype == "gradle" {
-		ptype = "maven"
-	}
-	name := dep.Name
-	var b strings.Builder
-	b.WriteString("pkg:")
-	b.WriteString(ptype)
-	b.WriteString("/")
-	if (ptype == "maven") && strings.Contains(name, ":") {
-		parts := strings.SplitN(name, ":", 2)
-		b.WriteString(url.PathEscape(parts[0]))
-		b.WriteString("/")
-		b.WriteString(url.PathEscape(parts[1]))
-	} else {
-		b.WriteString(url.PathEscape(name))
-	}
-	if dep.Version != "" {
-		b.WriteString("@")
-		b.WriteString(url.PathEscape(dep.Version))
-	}
-	return b.String()
 }

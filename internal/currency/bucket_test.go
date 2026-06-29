@@ -28,6 +28,12 @@ func TestClassify(t *testing.T) {
 		{"rubygems patch", "rubygems", "2.5.0", "2.5.3", Patch},
 		{"nuget installed newer", "nuget", "14.0.0", "13.0.4", UpToDate},
 
+		// cargo: semver.Cargo.Parse is not yet implemented; silently falls
+		// through to numeric comparison. This case locks in that behavior so
+		// any future implementation of semver.Cargo is caught by a test change.
+		{"cargo numeric fallback", "cargo", "1.2.3", "2.0.0", Major},
+		{"cargo minor fallback", "cargo", "1.2.3", "1.3.0", Minor},
+
 		// pre-release / build suffix stripped before numeric compare
 		{"suffix stripped", "npm", "1.2.3", "2.0.0-rc1", Major},
 

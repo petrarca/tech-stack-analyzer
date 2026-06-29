@@ -107,7 +107,7 @@ func (s *Store) initMeta() error {
 	// Record the schema version if not already present.
 	const ins = `INSERT INTO store_meta(key, value) VALUES('schema_version', ?)
 		ON CONFLICT(key) DO NOTHING;`
-	if _, err := s.db.Exec(ins, fmt.Sprintf("%d", SchemaVersion)); err != nil {
+	if _, err := s.db.Exec(ins, SchemaVersion); err != nil {
 		return fmt.Errorf("store: record schema version: %w", err)
 	}
 	return nil

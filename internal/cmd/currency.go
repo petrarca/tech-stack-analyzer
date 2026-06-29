@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -11,10 +10,9 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/petrarca/tech-stack-analyzer/internal/currency"
-	currencycache "github.com/petrarca/tech-stack-analyzer/internal/currency/cache"
 	"github.com/petrarca/tech-stack-analyzer/internal/progress"
+	"github.com/petrarca/tech-stack-analyzer/internal/scanner/resolver"
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/resolvestats"
-	"github.com/petrarca/tech-stack-analyzer/internal/store"
 )
 
 var (
@@ -64,50 +62,22 @@ func init() {
 }
 
 func runCurrency(aggPath string) error {
-	// Resolve and open the shared store (lazy: this is the consumer that needs it).
-	cachePath, _, err := store.ResolvePath(currencyCachePath)
+	deps, err := currency.LoadAggregateDeps(aggPath)
 	if err != nil {
 		return err
 	}
-	st, err := store.Open(cachePath, 5000)
-	if err != nil {
-		return fmt.Errorf("open currency cache: %w", err)
-	}
-	defer func() { _ = st.Close() }()
-
-	ttl := time.Duration(currencyTTLHours) * time.Hour
-	chain := currency.NewChainResolver(currency.NewDepsDevResolver(currencyDepsDevURL))
-	resolver, err := currencycache.New(st, chain, ttl, currencyForce)
-	if err != nil {
-		return err
-	}
-
-	stop := startCurrencyReporter(currencyQuiet)
-	art, err := currency.ResolveAggregateFile(aggPath, resolver, currency.Options{
-		SourceEndpoint: depsDevEndpointOrDefault(currencyDepsDevURL),
-		TTLHours:       currencyTTLHours,
-		DirectOnly:     true,
-		Concurrency:    currencyConcurrency,
-	})
-	stop()
-	if err != nil {
-		return err
-	}
-
 	out := currencyOutput
 	if out == "" {
 		out = currencyOutputFileFor(aggPath)
 	}
-	if err := art.WriteFile(out); err != nil {
-		return err
-	}
-	if !currencyQuiet {
-		s := art.Summary
-		fmt.Fprintf(os.Stderr,
-			"Currency written to %s (%d direct: %d up-to-date, %d patch, %d minor, %d major, %d unsupported, %d unknown)\n",
-			out, s.Total, s.UpToDate, s.Patch, s.Minor, s.Major, s.Unsupported, s.Unknown)
-	}
-	return nil
+	return runCurrencyEngine(deps, out, currencyRunOpts{
+		CachePath:   currencyCachePath,
+		TTLHours:    currencyTTLHours,
+		Endpoint:    currencyDepsDevURL,
+		Concurrency: currencyConcurrency,
+		Force:       currencyForce,
+		Quiet:       currencyQuiet,
+	})
 }
 
 // currencyOutputFileFor derives {stem}.currency.json from an input path,
@@ -119,18 +89,18 @@ func currencyOutputFileFor(input string) string {
 	return base + ".currency.json"
 }
 
-func depsDevEndpointOrDefault(url string) string {
-	if url == "" {
-		return "https://api.deps.dev"
+func depsDevEndpointOrDefault(endpoint string) string {
+	if endpoint == "" {
+		return resolver.DefaultDepsDevBaseURL
 	}
-	return url
+	return endpoint
 }
 
 // startCurrencyReporter shows live currency-resolution progress using the same
 // animated spinner as dependency resolution (the SummaryHandler) on a TTY, and
-// a plain line otherwise (piped/CI). It samples the currency counter group and
-// renders with FormatCurrency. The spinner advances on each ResolveProgress
-// event, so it ticks frequently (not every 2s) to animate smoothly.
+// a plain line otherwise (piped/CI). Uses the shared startResolveReporter
+// goroutine helper; currency-specific parts are the counter group, format
+// function, tick rate, and optional bar-fraction update.
 func startCurrencyReporter(quiet bool) func() {
 	if quiet {
 		return func() {}
@@ -146,11 +116,6 @@ func startCurrencyReporter(quiet bool) func() {
 		prog = progress.New(true, progress.NewSimpleHandler(os.Stderr))
 	}
 
-	base := resolvestats.Get()
-	start := time.Now()
-	done := make(chan struct{})
-	stopped := make(chan struct{})
-
 	// Fast tick on a TTY so the spinner animates; slower when piped (each tick
 	// is a printed line there, so 2s avoids log spam).
 	tick := 150 * time.Millisecond
@@ -158,39 +123,22 @@ func startCurrencyReporter(quiet bool) func() {
 		tick = 2 * time.Second
 	}
 
-	go func() {
-		defer close(stopped)
-		ticker := time.NewTicker(tick)
-		defer ticker.Stop()
-		started := false
-		for {
-			select {
-			case <-done:
-				return
-			case <-ticker.C:
-				delta := resolvestats.Get().Sub(base)
-				if !delta.CurrencyActive() {
-					continue
-				}
-				if !started {
-					started = true
-					prog.ResolveStart()
-				}
-				if summary != nil && delta.CurrencyTotal > 0 {
-					processed := delta.CurrencyResolved + delta.CurrencyUnsupported +
-						delta.CurrencyUnknown + delta.CurrencyErrors
-					summary.SetResolveFraction(float64(processed) / float64(delta.CurrencyTotal))
-				}
-				prog.ResolveProgress(delta.FormatCurrency())
+	var onTick func(resolvestats.Snapshot)
+	if summary != nil {
+		onTick = func(delta resolvestats.Snapshot) {
+			if delta.CurrencyTotal > 0 {
+				processed := delta.CurrencyResolved + delta.CurrencyUnsupported +
+					delta.CurrencyUnknown + delta.CurrencyErrors
+				summary.SetResolveFraction(float64(processed) / float64(delta.CurrencyTotal))
 			}
 		}
-	}()
-	return func() {
-		close(done)
-		<-stopped
-		delta := resolvestats.Get().Sub(base)
-		if delta.CurrencyActive() {
-			prog.ResolveComplete(delta.FormatCurrency(), time.Since(start))
-		}
 	}
+
+	return startResolveReporter(resolveReporterOpts{
+		prog:     prog,
+		tick:     tick,
+		isActive: func(s resolvestats.Snapshot) bool { return s.CurrencyActive() },
+		format:   func(s resolvestats.Snapshot) string { return s.FormatCurrency() },
+		onTick:   onTick,
+	})
 }

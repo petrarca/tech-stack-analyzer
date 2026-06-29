@@ -119,6 +119,10 @@ func (r *Resolver) write(system, name string, info currency.LatestInfo, notFound
 	if info.IsDeprecated {
 		dep = 1
 	}
+	// A cache write failure degrades to a miss on the next lookup but is not
+	// fatal (the cache is a best-effort performance layer; the caller already
+	// received the resolved value). Assign to _ to satisfy static analysis;
+	// when a logger is threaded into the cache, replace with a debug log.
 	_, _ = r.db.Exec(
 		`INSERT INTO currency(system,name,latest,is_deprecated,published_at,not_found,fetched_at,ttl_seconds)
 		 VALUES(?,?,?,?,?,?,?,?)

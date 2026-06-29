@@ -5,15 +5,11 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"log/slog"
 
 	"github.com/petrarca/tech-stack-analyzer/internal/aggregator"
-	"github.com/petrarca/tech-stack-analyzer/internal/currency"
-	currencycache "github.com/petrarca/tech-stack-analyzer/internal/currency/cache"
 	"github.com/petrarca/tech-stack-analyzer/internal/sbom"
-	"github.com/petrarca/tech-stack-analyzer/internal/store"
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
 
@@ -47,52 +43,63 @@ func generateAndWriteOutput(payload interface{}, logger *slog.Logger) {
 
 	// Produce a CycloneDX SBOM companion file when --also-sbom is set.
 	if settings.AlsoSBOM {
-		sbomFile := sbomOutputFile(settings.OutputFile)
-		sbomData, err := generateSBOM(payload, settings.PrettyPrint)
-		if err != nil {
-			logger.Error("Failed to marshal SBOM", "error", err)
-			os.Exit(1)
-		}
-		if sbomFile != "" {
-			if err = os.WriteFile(sbomFile, sbomData, 0644); err != nil {
-				fmt.Fprintf(os.Stderr, "Failed to write SBOM output file: %v\n", err)
-				os.Exit(1)
-			}
-			if !settings.Quiet {
-				fmt.Fprintf(os.Stderr, "SBOM written to %s\n", sbomFile)
-			}
-		} else {
-			logger.Debug("Skipping SBOM output: primary output is stdout")
-		}
+		writeAlsoSBOM(payload, logger)
 	}
 
 	// Resolve dependency currency alongside the scan output when
 	// --resolve-currency is set. Network-gated and opt-in (like --deps-dev), not
-	// a pure companion-file emitter, so it lives in its own step.
+	// a pure companion-file emitter, so it lives in its own step. Non-fatal: the
+	// scan output is already written; a currency error is logged, not exited.
 	if settings.ResolveCurrency {
-		writeCurrencyForPayload(payload, logger)
+		if err := writeCurrencyForPayload(payload, logger); err != nil {
+			fmt.Fprintf(os.Stderr, "Currency skipped: %v\n", err)
+		}
 	}
 
 	// Produce aggregate output alongside full output when --also-aggregate is set.
 	if settings.AlsoAggregate != "" && settings.Aggregate == "" {
-		aggFile := aggregateOutputFile(settings.OutputFile)
-		aggData, err := generateOutput(payload, settings.AlsoAggregate, settings.PrettyPrint, nil)
-		if err != nil {
-			logger.Error("Failed to marshal aggregate JSON", "error", err)
-			os.Exit(1)
-		}
-		if aggFile != "" {
-			if err = os.WriteFile(aggFile, aggData, 0644); err != nil {
-				fmt.Fprintf(os.Stderr, "Failed to write aggregate output file: %v\n", err)
-				os.Exit(1)
-			}
-			if !settings.Quiet {
-				fmt.Fprintf(os.Stderr, "Aggregate results written to %s\n", aggFile)
-			}
-		} else {
-			// stdout mode — two JSON blobs cannot be written to stdout.
-			logger.Debug("Skipping aggregate output: primary output is stdout")
-		}
+		writeAlsoAggregate(payload, logger)
+	}
+}
+
+func writeAlsoSBOM(payload interface{}, logger *slog.Logger) {
+	sbomFile := sbomOutputFile(settings.OutputFile)
+	sbomData, err := generateSBOM(payload, settings.PrettyPrint)
+	if err != nil {
+		logger.Error("Failed to marshal SBOM", "error", err)
+		os.Exit(1)
+	}
+	if sbomFile == "" {
+		logger.Debug("Skipping SBOM output: primary output is stdout")
+		return
+	}
+	if err = os.WriteFile(sbomFile, sbomData, 0644); err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to write SBOM output file: %v\n", err)
+		os.Exit(1)
+	}
+	if !settings.Quiet {
+		fmt.Fprintf(os.Stderr, "SBOM written to %s\n", sbomFile)
+	}
+}
+
+func writeAlsoAggregate(payload interface{}, logger *slog.Logger) {
+	aggFile := aggregateOutputFile(settings.OutputFile)
+	aggData, err := generateOutput(payload, settings.AlsoAggregate, settings.PrettyPrint, nil)
+	if err != nil {
+		logger.Error("Failed to marshal aggregate JSON", "error", err)
+		os.Exit(1)
+	}
+	if aggFile == "" {
+		// stdout mode — two JSON blobs cannot be written to stdout.
+		logger.Debug("Skipping aggregate output: primary output is stdout")
+		return
+	}
+	if err = os.WriteFile(aggFile, aggData, 0644); err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to write aggregate output file: %v\n", err)
+		os.Exit(1)
+	}
+	if !settings.Quiet {
+		fmt.Fprintf(os.Stderr, "Aggregate results written to %s\n", aggFile)
 	}
 }
 
@@ -121,62 +128,29 @@ func currencyOutputFile(outputFile string) string {
 }
 
 // writeCurrencyForPayload resolves dependency currency for the scanned payload
-// and writes the {out}.currency.json companion. It aggregates the payload's
-// dependencies (reusing the aggregator's dedup + direct/transitive merge) and
-// runs the currency engine over the direct set. Failures here are non-fatal:
-// the scan output is already written; a currency error is reported, not exited.
-func writeCurrencyForPayload(payload interface{}, logger *slog.Logger) {
+// and writes the {out}.currency.json companion. Returns an error so callers can
+// decide whether to report it; the scan output is already written before this is
+// called, so the caller treats a currency error as non-fatal (log and continue).
+func writeCurrencyForPayload(payload interface{}, logger *slog.Logger) error {
 	p, ok := payload.(*types.Payload)
 	if !ok {
 		logger.Debug("Skipping currency: payload is not a scan tree")
-		return
+		return nil
 	}
 	outFile := currencyOutputFile(settings.OutputFile)
 	if outFile == "" {
 		logger.Debug("Skipping currency output: primary output is stdout")
-		return
+		return nil
 	}
-
 	deps := aggregator.NewAggregator([]string{"dependencies"}).Aggregate(p).Dependencies
-
-	cachePath, _, err := store.ResolvePath(settings.CurrencyCache)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Currency skipped: %v\n", err)
-		return
-	}
-	st, err := store.Open(cachePath, 5000)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Currency skipped: open cache: %v\n", err)
-		return
-	}
-	defer func() { _ = st.Close() }()
-
-	ttl := time.Duration(settings.CurrencyTTLHours) * time.Hour
-	chain := currency.NewChainResolver(currency.NewDepsDevResolver(settings.DepsDevEndpoint))
-	resolver, err := currencycache.New(st, chain, ttl, false)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Currency skipped: %v\n", err)
-		return
-	}
-
-	stop := startCurrencyReporter(settings.Quiet)
-	art := currency.Resolve(deps, resolver, currency.Options{
-		SourceEndpoint: depsDevEndpointOrDefault(settings.DepsDevEndpoint),
-		TTLHours:       settings.CurrencyTTLHours,
-		DirectOnly:     true,
+	return runCurrencyEngine(deps, outFile, currencyRunOpts{
+		CachePath:   settings.CurrencyCache,
+		TTLHours:    settings.CurrencyTTLHours,
+		Endpoint:    settings.DepsDevEndpoint,
+		Concurrency: 0, // engine default
+		Force:       false,
+		Quiet:       settings.Quiet,
 	})
-	stop()
-
-	if err := art.WriteFile(outFile); err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to write currency output file: %v\n", err)
-		return
-	}
-	if !settings.Quiet {
-		s := art.Summary
-		fmt.Fprintf(os.Stderr,
-			"Currency written to %s (%d direct: %d up-to-date, %d behind, %d unsupported, %d unknown)\n",
-			outFile, s.Total, s.UpToDate, s.Patch+s.Minor+s.Major, s.Unsupported, s.Unknown)
-	}
 }
 
 // sbomOutputFile derives the SBOM companion filename from the primary output

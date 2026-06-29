@@ -22,6 +22,7 @@ type LatestInfo struct {
 	Latest       string
 	IsDeprecated bool
 	PublishedAt  string
+	Source       string // which resolver answered (e.g. "deps.dev")
 }
 
 // CurrencyResolver resolves the latest stable version of a package. system is a
@@ -89,5 +90,6 @@ func (d *depsDevResolver) LatestVersion(system, name string) (LatestInfo, error)
 		Latest:       info.LatestVersion,
 		IsDeprecated: info.IsDeprecated,
 		PublishedAt:  info.PublishedAt,
+		Source:       "deps.dev",
 	}, nil
 }

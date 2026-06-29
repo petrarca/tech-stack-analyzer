@@ -3,6 +3,7 @@ package store
 import (
 	"os"
 	"path/filepath"
+	"strconv"
 	"sync"
 	"testing"
 )
@@ -124,7 +125,7 @@ func TestConcurrentWritesNoCorruption(t *testing.T) {
 		for i := 0; i < 500; i++ {
 			_, err := s.DB().Exec(
 				`INSERT INTO c(k,v) VALUES(?,?) ON CONFLICT(k) DO UPDATE SET v=excluded.v`,
-				prefix+string(rune('0'+i%10))+itoa(i), "x")
+				prefix+string(rune('0'+i%10))+strconv.Itoa(i), "x")
 			if err != nil {
 				t.Errorf("concurrent write: %v", err)
 				return
@@ -143,17 +144,4 @@ func TestConcurrentWritesNoCorruption(t *testing.T) {
 	if ok != "ok" {
 		t.Errorf("integrity_check = %q, want ok", ok)
 	}
-}
-
-// itoa avoids strconv import noise in the test fixture.
-func itoa(i int) string {
-	if i == 0 {
-		return "0"
-	}
-	var b []byte
-	for i > 0 {
-		b = append([]byte{byte('0' + i%10)}, b...)
-		i /= 10
-	}
-	return string(b)
 }

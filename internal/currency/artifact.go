@@ -86,7 +86,7 @@ func (a *Artifact) addToSummary(d Dependency) {
 		a.Summary.Unsupported++
 	case Unknown:
 		a.Summary.Unknown++
-	case BucketError:
+	case ResolutionError:
 		a.Summary.Errors++
 	}
 	if d.IsDeprecated {

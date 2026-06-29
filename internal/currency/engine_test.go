@@ -3,6 +3,7 @@ package currency
 import (
 	"testing"
 
+	"github.com/petrarca/tech-stack-analyzer/internal/purl"
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
 
@@ -92,13 +93,15 @@ func TestPurl(t *testing.T) {
 		want string
 	}{
 		{dep("npm", "react", "17.0.2", "", true), "pkg:npm/react@17.0.2"},
+		{dep("npm", "@types/node", "24.0.0", "", true), "pkg:npm/%40types/node@24.0.0"},             // scoped npm: @ must be encoded
+		{dep("npm", "@ai-sdk/anthropic", "3.0.81", "", true), "pkg:npm/%40ai-sdk/anthropic@3.0.81"}, // scoped npm
 		{dep("maven", "org.springframework:spring-core", "6.0.0", "", true), "pkg:maven/org.springframework/spring-core@6.0.0"},
 		{dep("gradle", "com.x:y", "1.0", "", true), "pkg:maven/com.x/y@1.0"},
 		{dep("pypi", "requests", "2.0", "", true), "pkg:pypi/requests@2.0"},
 	}
 	for _, c := range cases {
-		if got := purl(c.d); got != c.want {
-			t.Errorf("purl(%s) = %q, want %q", c.d.Name, got, c.want)
+		if got := purl.Build(c.d); got != c.want {
+			t.Errorf("purl.Build(%s) = %q, want %q", c.d.Name, got, c.want)
 		}
 	}
 }

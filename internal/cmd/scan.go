@@ -94,7 +94,7 @@ func init() {
 	scanCmd.Flags().BoolVar(&settings.SBOM, "sbom", false, "Emit an SBOM (with PURLs, for vulnerability scanning) as the primary output instead of the scan tree.")
 	scanCmd.Flags().BoolVar(&settings.AlsoSBOM, "also-sbom", false, "Also write an SBOM alongside the scan output. A format-specific suffix is added to the output filename (e.g. out.json -> out.cdx.json or out.spdx.json).")
 	scanCmd.Flags().StringVar(&settings.SBOMFormat, "sbom-format", "", "SBOM format for --sbom/--also-sbom: 'cyclonedx' (CycloneDX 1.7 JSON, default) or 'spdx' (SPDX 2.3 JSON). Empty default lets the scan-config sbom_format apply.")
-	scanCmd.Flags().BoolVar(&settings.ResolveCurrency, "resolve-currency", false, "Resolve dependency currency (latest versions via deps.dev) and write a {out}.currency.json alongside the scan output. Opt-in; sends public package coordinates over the network.")
+	scanCmd.Flags().BoolVar(&settings.ResolveCurrency, "resolve-currency", false, "Resolve dependency currency (latest versions via deps.dev) and write a {out}.currency.json alongside the scan output. Opt-in; sends public package coordinates over the network. For --force or --currency-concurrency tuning, use the standalone 'currency' command.")
 	scanCmd.Flags().StringVar(&settings.CurrencyCache, "currency-cache", "", "Override the currency cache DB path (default: STACK_ANALYZER_CURRENCY_CACHE or the OS cache dir).")
 	scanCmd.Flags().IntVar(&settings.CurrencyTTLHours, "currency-ttl", 24, "Per-entry currency cache TTL in hours.")
 }

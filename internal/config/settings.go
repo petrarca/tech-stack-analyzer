@@ -9,6 +9,8 @@ import (
 	"strings"
 
 	"log/slog"
+
+	"github.com/petrarca/tech-stack-analyzer/internal/store"
 )
 
 // Settings holds all scanner configuration
@@ -106,7 +108,7 @@ func LoadSettingsFromEnvironment() *Settings {
 
 	// The only new env var the currency feature introduces. The cache path is
 	// also overridable via --currency-cache (flag wins over env).
-	if cache := os.Getenv("STACK_ANALYZER_CURRENCY_CACHE"); cache != "" {
+	if cache := os.Getenv(store.EnvCachePath); cache != "" {
 		settings.CurrencyCache = cache
 	}
 

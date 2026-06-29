@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sort"
 
+	humanize "github.com/dustin/go-humanize"
 	"github.com/spf13/cobra"
 
 	"github.com/petrarca/tech-stack-analyzer/internal/store"
@@ -33,7 +34,7 @@ func runCacheInfo() error {
 		fmt.Println("Status:   no cache yet")
 		return nil
 	}
-	fmt.Printf("Size:     %s\n", humanBytes(info.SizeBytes))
+	fmt.Printf("Size:     %s\n", humanize.Bytes(uint64(info.SizeBytes)))
 	if info.SchemaVersion != "" {
 		fmt.Printf("Schema:   v%s\n", info.SchemaVersion)
 	}
@@ -52,17 +53,4 @@ func runCacheInfo() error {
 		fmt.Printf("  %-12s %d\n", t, info.TableRows[t])
 	}
 	return nil
-}
-
-func humanBytes(n int64) string {
-	const unit = 1024
-	if n < unit {
-		return fmt.Sprintf("%d B", n)
-	}
-	div, exp := int64(unit), 0
-	for x := n / unit; x >= unit; x /= unit {
-		div *= unit
-		exp++
-	}
-	return fmt.Sprintf("%.1f %ciB", float64(n)/float64(div), "KMGT"[exp])
 }

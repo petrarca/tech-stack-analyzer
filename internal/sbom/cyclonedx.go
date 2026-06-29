@@ -12,7 +12,6 @@ package sbom
 import (
 	"crypto/rand"
 	"fmt"
-	"net/url"
 	"sort"
 	"strconv"
 	"strings"
@@ -20,7 +19,7 @@ import (
 
 	"github.com/petrarca/tech-stack-analyzer/internal/aggregator"
 	"github.com/petrarca/tech-stack-analyzer/internal/metadata"
-	"github.com/petrarca/tech-stack-analyzer/internal/scanner/semver"
+	"github.com/petrarca/tech-stack-analyzer/internal/purl"
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
 
@@ -379,91 +378,10 @@ func toComponent(dep types.Dependency) Component {
 	return c
 }
 
-// buildPURL assembles a Package URL for a dependency. Returns an empty string
-// when no usable PURL can be formed.
+// buildPURL assembles a Package URL for a dependency.
+// Delegates to internal/purl, the single source of truth for PURL encoding.
 func buildPURL(dep types.Dependency) string {
-	ptype := purlType(dep.Type)
-	if ptype == "" {
-		return ""
-	}
-
-	namespace, name := splitNamespace(ptype, dep.Name)
-	if name == "" {
-		return ""
-	}
-
-	var b strings.Builder
-	b.WriteString("pkg:")
-	b.WriteString(ptype)
-	b.WriteString("/")
-	if namespace != "" {
-		b.WriteString(encodeSegment(namespace))
-		b.WriteString("/")
-	}
-	b.WriteString(encodeSegment(name))
-
-	// Only resolved (concrete) versions belong in a PURL. Unresolved ranges
-	// such as "^1.2.0" or ">=1" do not uniquely identify a release and break
-	// advisory matching, so they are omitted here (the component version
-	// field still carries the original value for human inspection). The
-	// classification lives in semver.ResolvedVersion (single source of truth).
-	if v := semver.ResolvedVersion(dep.Version); v != "" {
-		b.WriteString("@")
-		b.WriteString(url.PathEscape(v))
-	}
-	return b.String()
-}
-
-// purlType maps a dependency type to its PURL type. Gradle collapses to maven
-// because Gradle artifacts share Maven coordinates.
-func purlType(depType string) string {
-	if depType == "gradle" {
-		return "maven"
-	}
-	if purlTypes[depType] {
-		return depType
-	}
-	return ""
-}
-
-// splitNamespace separates a dependency name into PURL namespace and name.
-// Maven names use "group:artifact"; npm scoped packages use "@scope/name";
-// Go module paths keep all but the last segment as the namespace.
-func splitNamespace(ptype, rawName string) (namespace, name string) {
-	switch ptype {
-	case "maven":
-		if i := strings.Index(rawName, ":"); i >= 0 {
-			return rawName[:i], rawName[i+1:]
-		}
-		return "", rawName
-	case "npm":
-		if strings.HasPrefix(rawName, "@") {
-			if i := strings.Index(rawName, "/"); i >= 0 {
-				return rawName[:i], rawName[i+1:]
-			}
-		}
-		return "", rawName
-	case "golang":
-		if i := strings.LastIndex(rawName, "/"); i >= 0 {
-			return rawName[:i], rawName[i+1:]
-		}
-		return "", rawName
-	default:
-		return "", rawName
-	}
-}
-
-// encodeSegment percent-encodes a PURL path segment while preserving the
-// path separators meaningful within namespaces (e.g. Go module paths).
-// The "@" is encoded explicitly (url.PathEscape leaves it intact) so that
-// npm scopes like "@scope" become "%40scope" and do not collide with the
-// PURL version delimiter.
-func encodeSegment(seg string) string {
-	parts := strings.Split(seg, "/")
-	for i, p := range parts {
-		parts[i] = strings.ReplaceAll(url.PathEscape(p), "@", "%40")
-	}
-	return strings.Join(parts, "/")
+	return purl.Build(dep)
 }
 
 // cleanVersion trims whitespace and leading version-range operators that are
