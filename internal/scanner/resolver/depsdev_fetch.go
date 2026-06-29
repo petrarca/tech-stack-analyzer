@@ -124,40 +124,59 @@ func (c *depsDevClient) fetch(system, name, version string, mode types.Dependenc
 // sentinel and returns ErrCoordinateNotFound so the chain falls through (F-09).
 func (c *depsDevClient) request(system, name, version string) (depsDevResponse, bool, error) {
 	var out depsDevResponse
-	endpoint := fmt.Sprintf("%s/v3/systems/%s/packages/%s/versions/%s:dependencies",
-		c.baseURL, url.PathEscape(strings.ToLower(system)), url.PathEscape(name), url.PathEscape(version))
+	path := fmt.Sprintf("/v3/systems/%s/packages/%s/versions/%s:dependencies",
+		url.PathEscape(strings.ToLower(system)), url.PathEscape(name), url.PathEscape(version))
+	label := fmt.Sprintf("%s/%s@%s", system, name, version)
 
-	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
-	if err != nil {
-		return out, false, err
-	}
-	req.Header.Set("Accept", "application/json")
-
-	res, err := c.http.Do(req)
-	if err != nil {
-		return out, false, fmt.Errorf("deps.dev request failed: %w", err)
-	}
-	defer func() { _ = res.Body.Close() }()
-
-	switch res.StatusCode {
-	case http.StatusOK:
-		// proceed to decode
-	case http.StatusNotFound:
-		return out, true, nil // unknown coordinate: chain should fall through
-	case http.StatusTooManyRequests:
-		return out, false, fmt.Errorf("deps.dev rate limited (429) for %s/%s@%s", system, name, version)
-	default:
-		return out, false, fmt.Errorf("deps.dev returned %d for %s/%s@%s", res.StatusCode, system, name, version)
-	}
-
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		return out, false, err
+	body, notFound, err := c.getJSON(path, label)
+	if err != nil || notFound {
+		return out, notFound, err
 	}
 	if err := json.Unmarshal(body, &out); err != nil {
 		return out, false, fmt.Errorf("deps.dev decode error: %w", err)
 	}
 	return out, false, nil
+}
+
+// getJSON performs a GET against the deps.dev API at the given absolute path
+// (e.g. "/v3/systems/npm/packages/react") and returns the raw response body.
+// It centralizes the shared transport concerns -- endpoint composition, the
+// Accept header, and HTTP status handling -- so multiple callers (the graph
+// fetch and the currency GetPackage call) reuse one implementation. label is a
+// human-readable coordinate used only in error messages.
+//
+// Returns (body, notFound, err): notFound=true for HTTP 404 (the caller maps it
+// to ErrCoordinateNotFound and lets the chain fall through). A 429 or other
+// non-200 is returned as an error.
+func (c *depsDevClient) getJSON(path, label string) ([]byte, bool, error) {
+	req, err := http.NewRequest(http.MethodGet, c.baseURL+path, nil)
+	if err != nil {
+		return nil, false, err
+	}
+	req.Header.Set("Accept", "application/json")
+
+	res, err := c.http.Do(req)
+	if err != nil {
+		return nil, false, fmt.Errorf("deps.dev request failed: %w", err)
+	}
+	defer func() { _ = res.Body.Close() }()
+
+	switch res.StatusCode {
+	case http.StatusOK:
+		// proceed
+	case http.StatusNotFound:
+		return nil, true, nil // unknown coordinate: chain should fall through
+	case http.StatusTooManyRequests:
+		return nil, false, fmt.Errorf("deps.dev rate limited (429) for %s", label)
+	default:
+		return nil, false, fmt.Errorf("deps.dev returned %d for %s", res.StatusCode, label)
+	}
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, false, err
+	}
+	return body, false, nil
 }
 
 // mapDepsDevGraph projects the deps.dev DAG onto our {from,to} edges. The SELF
