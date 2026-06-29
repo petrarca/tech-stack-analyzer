@@ -48,7 +48,7 @@ never part of tree-walking.
 scan            -> {out}.json / {out}-agg.json   (scan facts; untouched)
 scan --also-sbom-> {out}.cdx.json                (SBOM projection; untouched)
 scan:security   -> {out}.cve.cdx.json            (CVE over SBOM; separate pipeline)
-enrich-currency -> {out}.currency.json           (currency over deps.dev)   <- THIS
+currency        -> {out}.currency.json           (currency over deps.dev)   <- THIS
 ```
 
 It runs over the **aggregate** dependency list (deduped, with reliable
@@ -104,11 +104,16 @@ processes writing the same DB concurrently passed with `integrity_check = ok`.
 Runtime is negligible (microsecond lookups). The cost amortizes across both
 consumers (currency now, transitive resolution later), not currency alone.
 
+> These figures were measured in an isolated Go module outside this repo, not
+> against this repo's full goreleaser pipeline. They must be re-verified once
+> `modernc.org/sqlite` is added to `go.mod` (implementation step 7), including a
+> `CGO_ENABLED=0 task build:all` smoke test across all targets.
+
 ### Constraints
 
 - **Lazy / on-demand creation.** The DB file is created and opened **only when a
   feature actually needs it** -- in v1, only during currency resolution
-  (`--resolve-currency` or `enrich-currency`). A normal scan, an SBOM run, or any
+  (`--resolve-currency` or `currency`). A normal scan, an SBOM run, or any
   command without currency MUST NOT create, open, or touch the cache file. The
   facade is opened by its consumer at first use, not at process start; importing
   the store package has no side effects. (`cache info` on a non-existent DB
@@ -138,6 +143,12 @@ Resolution order (first match wins), consistent with the existing
    - macOS: `~/Library/Caches/stack-analyzer/currency.db`
    - Linux: `~/.cache/stack-analyzer/currency.db`
    - Windows: `%LocalAppData%\stack-analyzer\currency.db`
+
+`STACK_ANALYZER_CURRENCY_CACHE` follows the established env convention
+(`STACK_ANALYZER_OUTPUT`, `STACK_ANALYZER_AGGREGATE`, ...) and is the **only new
+env var** this feature introduces. Note that `--deps-dev-endpoint` itself has no
+`STACK_ANALYZER_*` variable today (it is flag/scan-config only); currency does
+not add one for it.
 
 The default is **shared across all products and runs on the machine** -- this is
 deliberate. A package's latest version is the same answer for every product on a
@@ -213,6 +224,43 @@ Internal packages fall under `unknown` in v1 -- see "Internal dependencies".
 as the greatest version ignoring pre-releases. Pre-release filtering is handled
 by deps.dev; the scanner does not re-implement it.
 
+### Semver-distance bucketing
+
+The `patch` / `minor` / `major` / `up_to_date` bucket is derived from the
+installed and latest version strings. Two facts from the codebase shape the
+algorithm:
+
+- The existing `internal/scanner/semver` package provides per-ecosystem
+  `System` parsers (`semver.NPM`, `semver.PyPI`, `semver.Cargo`, `semver.Maven`)
+  and a `Version.Compare(other) int`. It is used to decide **ordering**
+  (is latest newer than installed) so we never report a "behind" bucket for an
+  equal-or-newer installed version.
+- That `Version` interface exposes only `Compare` / `Canon` / `String` -- **not**
+  major/minor/patch components. So the *bucket level* (which component first
+  differs) cannot be read from it and needs a small dedicated helper.
+
+Algorithm:
+
+1. Map the dependency's ecosystem to a semver `System` via the **existing**
+   `depsDevSystems` map (`resolver/depsdev.go`) -- the same map used to pick the
+   deps.dev system. Reuse it; do not introduce a second mapping.
+2. Parse both `installed` and `latest` with that `System`. If either fails to
+   parse, bucket = `unknown` (recorded, not guessed).
+3. Use `Version.Compare`: if `installed >= latest`, bucket = `up_to_date`
+   (covers equal, and the case where the installed pin is ahead of `isDefault`,
+   e.g. a pre-release).
+4. Otherwise determine the level with a small numeric-component helper that
+   splits each canonical version on `.` into `[major, minor, patch, ...]`
+   integer components (missing trailing components = 0): compare component 0 --
+   if different, bucket = `major`; else component 1 -- if different, `minor`;
+   else `patch`.
+
+The component helper is ecosystem-agnostic (operates on the canonical numeric
+prefix) and lives in the currency package, not in `semver` (whose `Version` is
+intentionally opaque). Maven's non-semver ordering is still handled correctly
+for *ordering* by `semver.Maven.Compare`; the numeric-prefix split is only used
+to choose the label once we know latest is strictly newer.
+
 ### Why a separate artifact (not in the SBOM)
 
 There is **no industry-standard schema** for dependency freshness (confirmed
@@ -261,26 +309,39 @@ The existing pattern (to reuse, not reinvent):
 
 Currency adopts this directly:
 
-- **Extend `resolvestats`** with currency counters in the same style:
+- **Extend `resolvestats` with currency counters in their own group.** Add
   `currencyResolved`, `currencyCacheHits`, `currencyUnknown`,
-  `currencyUnsupported`, `currencyErrors` (atomic, with `Add*` helpers, included
-  in `Snapshot`/`Sub`/`Format`/`Active`). The deps.dev currency resolver calls
-  `AddDepsDevCall` (network) and the new counters; the cache layer calls
-  `AddCacheHit`.
+  `currencyUnsupported`, `currencyErrors` (atomic, each with its own `Add*`
+  helper, included in `Snapshot`/`Sub`/`Active`). These are **separate from the
+  existing counters**: the currency cache decorator calls a **new
+  `AddCurrencyCacheHit()`**, NOT the existing `AddCacheHit()` (which is the
+  Maven-POM/graph cache-hit counter used by `mavenresolve`). Conflating the two
+  would mix dependency-resolution cache hits with currency cache hits in the same
+  bucket. The deps.dev currency resolver still calls `AddDepsDevCall()` for the
+  network counter (shared, since it is genuinely a deps.dev call).
+- **Do not change the existing `Snapshot.Format()` output.** `Format()` renders
+  the dependency-resolution line (e.g. `"12 POMs, 393 deps.dev, 40 cached"`) and
+  must stay as-is. Add a **separate `Snapshot.FormatCurrency()`** that renders the
+  currency line (e.g. `"312/835 resolved, 540 unsupported, 21 cached, 3 unknown"`)
+  from the currency counters only. The currency progress path passes
+  `FormatCurrency()` output to `ResolveProgress`; the existing dependency-
+  resolution path keeps passing `Format()`.
 - **Reuse the same `Resolve*` progress events.** Currency resolution is a
   resolution phase; it emits `ResolveStart` on first lookup, periodic
-  `ResolveProgress` (e.g. `"312/835 resolved, 540 unsupported, 21 cached,
-  3 unknown"`), and `ResolveComplete` with totals + duration -- identical
-  surface and handlers to dependency resolution.
-- **Reuse the sampling-goroutine helper.** The `enrich-currency` command and the
+  `ResolveProgress(snapshot.FormatCurrency())`, and `ResolveComplete` with totals
+  + duration -- identical events and handlers to dependency resolution, only the
+  status-string source differs.
+- **Reuse the sampling-goroutine helper.** The `currency` command and the
   in-scan `--resolve-currency` path both wrap the resolution loop with the same
-  ticker/baseline/diff helper used by `sbom.go`, so behavior (quiet/verbose/tree
-  rendering, timing) is consistent for free.
+  ticker/baseline/diff helper used by `sbom.go` (`startSBOMResolveReporter`),
+  parameterized to sample the currency counters and format with `FormatCurrency`,
+  so behavior (quiet/verbose/tree rendering, timing) is consistent for free.
 
 The result: no new progress UI is written. Currency plugs into the existing
-counters + events + handlers, and the user sees the same familiar live progress
-for currency lookups as for dependency resolution -- including cache-hit rates,
-which makes the shared-cache benefit visible.
+events + handlers and the sampling helper, with its own counter group and format
+method so the two phases never conflate. The user sees the same familiar live
+progress for currency lookups -- including cache-hit rates, which makes the
+shared-cache benefit visible.
 ## Opt-in surface (during scan)
 
 Currency is network-bound and therefore **off by default**, consistent with the
@@ -298,7 +359,19 @@ than inventing a new consent concept.
 `--resolve-currency` is **self-sufficient**: setting it enables the network
 lookup without also requiring `--deps-dev`. It honors `--deps-dev-endpoint` when
 set. In-scan, the artifact is named from `--output` using the same suffix rule
-as the SBOM/aggregate (`{out}.currency.json`).
+as the SBOM (`{out}.currency.json`, via a `currencyOutputFile()` helper modeled
+on `sbomOutputFile()`).
+
+**On the flag name (deliberate departure from `--also-*`).** The scanner's
+companion-file outputs use an `--also-*` pattern (`--also-sbom` -> `AlsoSBOM`,
+`--also-aggregate` -> `AlsoAggregate` in `scan_output.go`). Currency intentionally
+does **not** follow it. The primary action here is a **network resolution**
+(like `--deps-dev`), and the JSON file is a side effect of that resolution -- so
+the flag reads `--resolve-currency` and the `Settings` field is
+`ResolveCurrency bool` (analogous to `UseDepsDev bool`), not `AlsoCurrency`. This
+keeps the opt-in/network semantics explicit. Implementers extending
+`generateAndWriteOutput()` in `scan_output.go` should treat this as a
+network-gated step, not a pure companion-file emitter.
 
 ## Standalone command (refresh over an aggregate)
 
@@ -308,7 +381,7 @@ the existing `sbom` subcommand, which reads a saved scan JSON and emits a
 derived artifact.
 
 ```
-stack-analyzer enrich-currency <path-to-agg.json> [--output <file>]
+stack-analyzer currency <path-to-agg.json> [--output <file>]
 ```
 
 - **Input: the aggregate file only.** The aggregate is deduped and (after the
@@ -318,18 +391,39 @@ stack-analyzer enrich-currency <path-to-agg.json> [--output <file>]
 - **Output:** `{stem}.currency.json` (or `--output`).
 - **Refresh semantics:** re-running the command **is** the refresh. It always
   computes current values and overwrites the artifact; entries within TTL are
-  served from the shared cache, stale/missing ones are re-fetched. A
-  `--force` flag bypasses the TTL to re-fetch everything.
+  served from the shared cache, stale/missing ones are re-fetched.
+- **`--force` semantics (precise).** With `--force`, the `cachedResolver` skips
+  the cache-**read** for every key (so every key is re-fetched from the source
+  regardless of TTL), but still **writes** results back with a fresh `checked_at`
+  and TTL. It does **not** pre-delete entries; it overwrites on write. On a
+  transient fetch error, the existing (stale) cache entry is **left intact** --
+  never deleted -- so a forced refresh cannot lose data on a flaky network. In
+  short: force = ignore-on-read, overwrite-on-success, keep-on-error.
 - A pure refresh trusts the installed versions recorded in the aggregate. If the
   project's dependencies themselves changed, a fresh **scan** is needed (not a
   currency refresh) -- the two cadences are intentionally decoupled.
 
+**Scope vs the `sbom` command.** `currency` borrows only the *structural*
+pattern from `sbom` (a top-level cobra command reading a file via `RunE`,
+registered with `rootCmd.AddCommand` in `init()`). It is deliberately much
+simpler: unlike `sbom` it does **not** accept raw scan JSON (aggregate only), has
+**no `--format` flag** (output is always the currency JSON), and **no
+`--resolve-transitive` / `--direct-only` flags**. Its full flag set is: the input
+path (positional, `cobra.ExactArgs(1)`), `--output`, `--currency-cache`,
+`--currency-ttl`, `--deps-dev-endpoint`, and `--force`.
+
 ## Resolver abstraction (encapsulated; deps.dev is one implementation)
 
 Resolution is behind an interface so the source is swappable and the cache is
-independent of it. This mirrors the existing deps.dev integration, which is
-already encapsulated (`OnlineGraphResolver` / `DepsDevFetcher`, with an
-injectable HTTP client and a configurable base URL).
+independent of it. The existing deps.dev integration is already encapsulated
+behind its own interface (`OnlineGraphResolver` / `DepsDevFetcher`) -- but that
+interface is **graph-specific** (`ResolveGraph(system, name, version, mode) ->
+[]DependencyEdge`) and is **not** reused here. Currency defines its own,
+independent `CurrencyResolver` interface (below). The reuse is at the **transport
+layer only** -- the `depsDevClient` struct (its `baseURL`, `http` client, the
+`getJSON` helper extracted in step 2, and `ErrCoordinateNotFound`) -- not at the
+resolver-interface level. The two resolver interfaces are siblings, not related
+by type.
 
 ```go
 type CurrencyResolver interface {
@@ -354,6 +448,34 @@ artifact writer
             -> depsDevCurrencyResolver                        [v1: the only link]
                  -> HTTP (endpoint = --deps-dev-endpoint)
 ```
+
+### Package layout
+
+The feature introduces these packages (and reuses the existing deps.dev
+transport in `internal/scanner/resolver`):
+
+```
+internal/store/                -- unified SQLite facade (DB lifecycle, pragmas,
+                                  migrations, path resolution, lazy open).
+                                  Knows nothing about currency or blobs.
+internal/currency/             -- CurrencyResolver + LatestInfo, ChainResolver,
+                                  the semver-distance bucketing helper, the
+                                  artifact model + writer ({out}.currency.json).
+internal/currency/depsdev/     -- depsDevCurrencyResolver: calls the refactored
+                                  depsDevClient.getJSON for GetPackage. Thin.
+internal/currency/cache/       -- cachedResolver: the TTL decorator that owns the
+                                  currency table inside the internal/store DB.
+internal/scanner/resolvestats/ -- (existing) extended with the currency counters
+                                  + FormatCurrency().
+internal/cmd/                   -- (existing) `currency` command
+                                  (currency.go) and the cache command
+                                  (cache.go + cache_info.go / cache_clear.go /
+                                  cache_vacuum.go).
+```
+
+`internal/store` is consumer-agnostic: currency's `cache` package creates and
+owns its `currency` table within the store; the future blobcache consumer owns
+its own table in the same store. The store package never imports currency.
 
 - **`depsDevCurrencyResolver`** reuses the existing deps.dev client plumbing
   (HTTP client, endpoint override, 404 -> `ErrCoordinateNotFound`). It calls
@@ -461,11 +583,20 @@ interface.
 ## The `cache` command
 
 A top-level `cache` command manages the shared store, following the existing
-parent/subcommand pattern (like `info` with its subcommands; each subcommand in
-its own file under `internal/cmd`). It resolves the DB path with the same
+`info` parent/subcommand pattern. It resolves the DB path with the same
 precedence as resolution (`--currency-cache` / `STACK_ANALYZER_CURRENCY_CACHE` /
 default) and **never creates the file** -- if the cache does not exist, the
 commands report that rather than initializing it.
+
+**Registration pattern (match `info.go` exactly).** Child registration is
+**centralized in the parent file**, not in the child files. In `cache.go`'s
+`init()`: `rootCmd.AddCommand(cacheCmd)` AND
+`cacheCmd.AddCommand(cacheInfoCmd)` / `cacheCmd.AddCommand(cacheClearCmd)` /
+`cacheCmd.AddCommand(cacheVacuumCmd)`. Each child file (`cache_info.go`,
+`cache_clear.go`, `cache_vacuum.go`) defines its own command variable and
+registers its own flags in its own `init()`, but does **not** call
+`cacheCmd.AddCommand` -- exactly as `info.go` does all the `infoCmd.AddCommand`
+calls while `info_techs.go` et al. only define their command + flags.
 
 ```
 stack-analyzer cache info      # where it is, size, number of records
@@ -526,7 +657,7 @@ consumer and (later) the blobcache consumer.
   facade -- currency is consumer #1; the existing in-memory blobcache becomes
   consumer #2, fulfilling an intent already stated in the code. The cache file is
   created **lazily, only when a feature needs it** -- a plain scan never touches it.
-- **Opt-in, self-sufficient `--resolve-currency`**; standalone `enrich-currency`
+- **Opt-in, self-sufficient `--resolve-currency`**; standalone `currency`
   over the aggregate doubles as the refresh path.
 - **Consistent UX**: currency reuses the existing `resolvestats` counters and
   `Resolve*` progress events -- same live progress as dependency resolution.
@@ -544,11 +675,23 @@ consumer and (later) the blobcache consumer.
 3. `resolvestats` currency counters + wire the `Resolve*` progress sampling
    goroutine into the resolution loop.
 4. The `{out}.currency.json` writer + schema; semver-distance bucketing.
-5. `--resolve-currency` in-scan path and the `enrich-currency` subcommand
-   (aggregate-only input; `--force` refresh).
-6. The `cache` command (`info` / `clear` / `vacuum`), parent/subcommand pattern,
-   never creates the file.
+5. `--resolve-currency` in-scan path and the `currency` subcommand
+   (aggregate-only input; `--force` refresh). Settings/flag wiring:
+   - Add `Settings` fields: `ResolveCurrency bool`, `CurrencyCache string`,
+     `CurrencyTTL int` (`internal/config/settings.go`).
+   - Load `STACK_ANALYZER_CURRENCY_CACHE` in `LoadSettingsFromEnvironment()`
+     (the only new env var).
+   - Register `--resolve-currency`, `--currency-cache`, `--currency-ttl` in
+     `scan.go init()`; `--deps-dev-endpoint` is already present and reused.
+   - Extend `generateAndWriteOutput()` in `scan_output.go` to run the
+     network-gated currency step when `ResolveCurrency` is set, writing
+     `currencyOutputFile(OutputFile)` (a helper modeled on `sbomOutputFile`).
+6. The `cache` command (`info` / `clear` / `vacuum`), `info`-style
+   parent/subcommand registration, never creates the file.
 7. License compliance: re-run `task licenses` (adds modernc.org/sqlite's
-   BSD-3/MIT deps; keeps the tree clean).
+   BSD-3/MIT deps; keeps the tree clean). Also add `linux/arm64` to
+   `Taskfile.yml build:all` (currently missing) and run a
+   `CGO_ENABLED=0 task build:all` smoke test, so a stray cgo dependency is
+   caught locally rather than only by goreleaser.
 8. (Later) `blobcache.SQLite` as the second store consumer; migrate the
    `NewMemory()` injection points.
