@@ -69,3 +69,29 @@ func TestParsePackagesLockGraph_Modes(t *testing.T) {
 		t.Errorf("direct mode: expected [. -> Serilog.AspNetCore@8.0.0], got %v", gd.Edges)
 	}
 }
+
+// packagesLockGraphDriftFixture has an entry whose dependency target
+// ("Missing.Package") has no resolved entry in the framework -- lockfile drift.
+const packagesLockGraphDriftFixture = `{
+  "version": 1,
+  "dependencies": {
+    ".NETCoreApp,Version=v8.0": {
+      "Serilog.AspNetCore": {
+        "type": "Direct",
+        "resolved": "8.0.0",
+        "dependencies": { "Missing.Package": "1.0.0" }
+      }
+    }
+  }
+}`
+
+func TestParsePackagesLockGraph_Unresolved(t *testing.T) {
+	g := ParsePackagesLockGraph(GraphInput{Lockfile: []byte(packagesLockGraphDriftFixture), Mode: types.DependencyGraphFull})
+	if len(g.Edges) != 0 {
+		t.Errorf("drift fixture: expected 0 resolved edges, got %v", g.Edges)
+	}
+	want := "Serilog.AspNetCore@8.0.0 -> Missing.Package"
+	if len(g.Unresolved) != 1 || g.Unresolved[0] != want {
+		t.Errorf("expected unresolved [%q], got %v", want, g.Unresolved)
+	}
+}

@@ -30,9 +30,26 @@ func (d *Detector) Detect(files []types.File, currentPath, basePath string, prov
 		d.cocoapodsParser = parsers.NewCocoaPodsParser()
 	}
 
-	// Collect .podspec files for license extraction and dependency parsing
-	var podspecFiles []types.File
-	hasPodfile := false
+	podspecFiles, hasPodfile := classifyCocoaPodsFiles(files)
+
+	// Process Podfile files first (higher priority for project name), then
+	// Podfile.lock, then standalone .podspec files when no Podfile is present.
+	payloads = append(payloads, d.processPodfiles(files, podspecFiles, currentPath, basePath, provider, depDetector)...)
+	payloads = append(payloads, d.processPodfileLocks(files, podspecFiles, currentPath, basePath, provider, depDetector)...)
+	if !hasPodfile {
+		for _, file := range podspecFiles {
+			if payload := d.processPodspec(file, currentPath, basePath, provider, depDetector); payload != nil {
+				payloads = append(payloads, payload)
+			}
+		}
+	}
+
+	return payloads
+}
+
+// classifyCocoaPodsFiles collects the .podspec files and reports whether a
+// Podfile or Podfile.lock is present in the directory.
+func classifyCocoaPodsFiles(files []types.File) (podspecFiles []types.File, hasPodfile bool) {
 	for i, file := range files {
 		if strings.HasSuffix(file.Name, ".podspec") {
 			podspecFiles = append(podspecFiles, files[i])
@@ -41,47 +58,46 @@ func (d *Detector) Detect(files []types.File, currentPath, basePath string, prov
 			hasPodfile = true
 		}
 	}
+	return podspecFiles, hasPodfile
+}
 
-	// Process Podfile files first (higher priority for project name)
+// processPodfiles builds a payload for each Podfile, attaching the podspec
+// license when one is available.
+func (d *Detector) processPodfiles(files, podspecFiles []types.File, currentPath, basePath string, provider types.Provider, depDetector components.DependencyDetector) []*types.Payload {
+	var payloads []*types.Payload
 	for _, file := range files {
 		if file.Name != "Podfile" {
 			continue
 		}
-
 		payload := d.processPodfile(file, currentPath, basePath, provider, depDetector)
-		if payload != nil {
-			if len(podspecFiles) > 0 {
-				d.addPodspecLicense(payload, podspecFiles[0], currentPath, provider)
-			}
-			payloads = append(payloads, payload)
+		if payload == nil {
+			continue
 		}
+		if len(podspecFiles) > 0 {
+			d.addPodspecLicense(payload, podspecFiles[0], currentPath, provider)
+		}
+		payloads = append(payloads, payload)
 	}
+	return payloads
+}
 
-	// Process Podfile.lock files
+// processPodfileLocks builds a payload for each Podfile.lock, attaching the
+// podspec license as a fallback when the lock yielded none.
+func (d *Detector) processPodfileLocks(files, podspecFiles []types.File, currentPath, basePath string, provider types.Provider, depDetector components.DependencyDetector) []*types.Payload {
+	var payloads []*types.Payload
 	for _, file := range files {
 		if file.Name != "Podfile.lock" {
 			continue
 		}
-
 		payload := d.processPodfileLock(file, currentPath, basePath, provider, depDetector)
-		if payload != nil {
-			if len(podspecFiles) > 0 && len(payload.Licenses) == 0 {
-				d.addPodspecLicense(payload, podspecFiles[0], currentPath, provider)
-			}
-			payloads = append(payloads, payload)
+		if payload == nil {
+			continue
 		}
-	}
-
-	// Process .podspec files for dependencies (only when no Podfile/Podfile.lock present)
-	if !hasPodfile {
-		for _, file := range podspecFiles {
-			payload := d.processPodspec(file, currentPath, basePath, provider, depDetector)
-			if payload != nil {
-				payloads = append(payloads, payload)
-			}
+		if len(podspecFiles) > 0 && len(payload.Licenses) == 0 {
+			d.addPodspecLicense(payload, podspecFiles[0], currentPath, provider)
 		}
+		payloads = append(payloads, payload)
 	}
-
 	return payloads
 }
 

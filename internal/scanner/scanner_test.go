@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/petrarca/tech-stack-analyzer/internal/git"
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -474,6 +475,29 @@ func TestScanner_GetGitInfo_NonGitDirectory(t *testing.T) {
 	cachedRoot, exists := scanner.gitRootCache[tempDir]
 	assert.True(t, exists, "Path should be cached")
 	assert.Empty(t, cachedRoot, "Cached root should be empty for non-git dir")
+}
+
+func TestShouldAttributeGit(t *testing.T) {
+	repoA := &git.GitInfo{RemoteURL: "https://example.com/a.git"}
+	repoB := &git.GitInfo{RemoteURL: "https://example.com/b.git"}
+
+	tests := []struct {
+		name      string
+		parentGit *git.GitInfo
+		gitInfo   *git.GitInfo
+		want      bool
+	}{
+		{"no git info -> not attributed", repoA, nil, false},
+		{"no parent, has git -> attributed", nil, repoA, true},
+		{"different repo than parent -> attributed", repoA, repoB, true},
+		{"same repo as parent -> not attributed", repoA, repoA, false},
+		{"same remote url as parent -> not attributed", repoA, &git.GitInfo{RemoteURL: repoA.RemoteURL}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, shouldAttributeGit(tt.parentGit, tt.gitInfo))
+		})
+	}
 }
 
 func TestScanner_IsIncludedPath(t *testing.T) {
