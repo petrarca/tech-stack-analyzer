@@ -502,3 +502,67 @@ func TestParseCsproj_VersionForms(t *testing.T) {
 		t.Errorf("child <Version> element should be read, got %q", ver["AutoMapper"])
 	}
 }
+
+func TestParseCsproj_PropertyResolution(t *testing.T) {
+	content := `<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>MyApp</AssemblyName>
+    <JsonVersion>13.0.3</JsonVersion>
+    <BaseVer>2.1</BaseVer>
+    <FullVer>$(BaseVer).72</FullVer>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="$(JsonVersion)" />
+    <PackageReference Include="Dapper" Version="$(FullVer)" />
+    <PackageReference Include="Serilog" Version="3.1.1" />
+    <PackageReference Include="Unknown" Version="$(NotDefined)" />
+  </ItemGroup>
+</Project>`
+	proj := NewDotNetParser().ParseCsproj(content, "MyApp.csproj")
+	ver := map[string]string{}
+	for _, p := range proj.Packages {
+		ver[p.Name] = p.Version
+	}
+	if ver["Newtonsoft.Json"] != "13.0.3" {
+		t.Errorf("$(JsonVersion) should resolve to 13.0.3, got %q", ver["Newtonsoft.Json"])
+	}
+	if ver["Dapper"] != "2.1.72" {
+		t.Errorf("nested $(FullVer)=$(BaseVer).72 should resolve to 2.1.72, got %q", ver["Dapper"])
+	}
+	if ver["Serilog"] != "3.1.1" {
+		t.Errorf("literal version should be untouched, got %q", ver["Serilog"])
+	}
+	if ver["Unknown"] != "$(NotDefined)" {
+		t.Errorf("unknown property should be left intact (detectably unresolved), got %q", ver["Unknown"])
+	}
+}
+
+func TestParseCsproj_PropertyResolutionCaseInsensitive(t *testing.T) {
+	content := `<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <JsonVersion>13.0.3</JsonVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="$(jsonversion)" />
+  </ItemGroup>
+</Project>`
+	proj := NewDotNetParser().ParseCsproj(content, "MyApp.csproj")
+	for _, p := range proj.Packages {
+		if p.Name == "Newtonsoft.Json" && p.Version != "13.0.3" {
+			t.Errorf("MSBuild property names are case-insensitive; $(jsonversion) should resolve, got %q", p.Version)
+		}
+	}
+}
+
+func TestParseCsproj_TargetFrameworks(t *testing.T) {
+	content := `<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>MyApp</AssemblyName>
+    <TargetFrameworks>net8.0;net48</TargetFrameworks>
+  </PropertyGroup>
+</Project>`
+	proj := NewDotNetParser().ParseCsproj(content, "MyApp.csproj")
+	if proj.Framework != "net8.0;net48" {
+		t.Errorf("multi-targeting TargetFrameworks should be captured, got %q", proj.Framework)
+	}
+}

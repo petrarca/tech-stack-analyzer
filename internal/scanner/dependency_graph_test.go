@@ -92,3 +92,53 @@ func TestScanner_DependencyGraph_OffByDefault(t *testing.T) {
 
 	require.Empty(t, collectEdges(result), "off mode must emit no dependency edges")
 }
+
+// TestScanner_DependencyGraph_DotNetDepsJSON verifies the full .deps.json wiring:
+// a .csproj plus an <App>.deps.json (the .NET SDK's resolved build output) flows
+// through the detector -> graph producer discovery -> resolver chain -> payload,
+// emitting the transitive graph with the runtimepack prefix stripped.
+func TestScanner_DependencyGraph_DotNetDepsJSON(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "scanner-depgraph-dotnet")
+	require.NoError(t, err)
+	defer os.RemoveAll(tempDir)
+
+	csproj := `<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><AssemblyName>MyApp</AssemblyName><TargetFramework>net8.0</TargetFramework></PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Serilog.AspNetCore" Version="8.0.0" />
+  </ItemGroup>
+</Project>`
+	depsJSON := `{
+  "runtimeTarget": { "name": ".NETCoreApp,Version=v8.0" },
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "MyApp/1.0.0": { "dependencies": { "Serilog.AspNetCore": "8.0.0" } },
+      "Serilog.AspNetCore/8.0.0": { "dependencies": { "Serilog": "3.1.1" } },
+      "Serilog/3.1.1": {}
+    }
+  },
+  "libraries": {
+    "MyApp/1.0.0": { "type": "project" },
+    "Serilog.AspNetCore/8.0.0": { "type": "package" },
+    "Serilog/3.1.1": { "type": "package" }
+  }
+}`
+	require.NoError(t, os.WriteFile(filepath.Join(tempDir, "MyApp.csproj"), []byte(csproj), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(tempDir, "MyApp.deps.json"), []byte(depsJSON), 0o644))
+
+	prev := components.DependencyGraphMode()
+	components.SetDependencyGraphMode(types.DependencyGraphFull)
+	defer components.SetDependencyGraphMode(prev)
+
+	scanner, err := NewScanner(tempDir)
+	require.NoError(t, err)
+	result, err := scanner.Scan()
+	require.NoError(t, err)
+
+	got := map[string]string{}
+	for _, e := range collectEdges(result) {
+		got[e.From+"->"+e.To] = e.Source
+	}
+	require.Equal(t, "lockfile", got["Serilog.AspNetCore@8.0.0->Serilog@3.1.1"],
+		"transitive edge from .deps.json should flow through, source lockfile; got %v", got)
+}

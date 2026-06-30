@@ -42,11 +42,23 @@ type Project struct {
 
 type PropertyGroup struct {
 	TargetFramework          string `xml:"TargetFramework"`
+	TargetFrameworks         string `xml:"TargetFrameworks"` // multi-targeting: semicolon-separated list
 	AssemblyName             string `xml:"AssemblyName"`
 	PackageId                string `xml:"PackageId"`
 	PackageLicenseExpression string `xml:"PackageLicenseExpression"`
 	PackageLicenseUrl        string `xml:"PackageLicenseUrl"`
 	PackageLicenseFile       string `xml:"PackageLicenseFile"`
+	// Properties captures every child element of the PropertyGroup as a
+	// name -> value map, so arbitrary MSBuild properties (e.g.
+	// <NewtonsoftVersion>13.0.3</NewtonsoftVersion>) can resolve $(name)
+	// references in package versions.
+	Properties []msbuildProperty `xml:",any"`
+}
+
+// msbuildProperty is a single child element of a PropertyGroup captured by name.
+type msbuildProperty struct {
+	XMLName xml.Name
+	Value   string `xml:",chardata"`
 }
 
 type ItemGroup struct {
@@ -149,6 +161,9 @@ func (p *DotNetParser) parseModernProject(project Project, content, filePath str
 		}
 		if pg.TargetFramework != "" {
 			result.Framework = pg.TargetFramework
+		} else if pg.TargetFrameworks != "" && result.Framework == "" {
+			// Multi-targeting project: record the framework list as-is.
+			result.Framework = pg.TargetFrameworks
 		}
 		if pg.PackageLicenseExpression != "" {
 			result.License = pg.PackageLicenseExpression
@@ -179,6 +194,10 @@ func (p *DotNetParser) parseModernProject(project Project, content, filePath str
 			}
 		}
 	}
+
+	// Resolve $(property) references in package versions using the project's
+	// MSBuild properties (e.g. <PackageReference Version="$(JsonVersion)" />).
+	applyPropertyResolution(result.Packages, collectMSBuildProperties(project.PropertyGroups))
 
 	// If no AssemblyName found, try to extract from filename using regex
 	if result.Name == "" {
@@ -228,6 +247,10 @@ func (p *DotNetParser) parseLegacyProject(project LegacyProject, content, filePa
 			}
 		}
 	}
+
+	// Resolve $(property) references in package versions using the project's
+	// MSBuild properties.
+	applyPropertyResolution(result.Packages, collectMSBuildProperties(project.PropertyGroups))
 
 	// If no AssemblyName found, try to extract from filename using regex
 	if result.Name == "" {
@@ -404,5 +427,69 @@ func packageRefVersion(pr PackageReference) string {
 		return pr.Version
 	default:
 		return strings.TrimSpace(pr.VersionElement)
+	}
+}
+
+// msbuildPropertyRef matches an MSBuild property reference such as $(MyVersion).
+var msbuildPropertyRef = regexp.MustCompile(`\$\(([^)]+)\)`)
+
+// collectMSBuildProperties builds a property name -> value map from all
+// PropertyGroups. MSBuild property names are case-insensitive, so keys are
+// lowercased. Later definitions win (MSBuild evaluates top to bottom).
+func collectMSBuildProperties(groups []PropertyGroup) map[string]string {
+	props := make(map[string]string)
+	for _, pg := range groups {
+		for _, p := range pg.Properties {
+			name := strings.ToLower(strings.TrimSpace(p.XMLName.Local))
+			if name == "" {
+				continue
+			}
+			props[name] = strings.TrimSpace(p.Value)
+		}
+	}
+	return props
+}
+
+// resolveMSBuildProperties substitutes $(Name) references in value using the
+// property map (built by collectMSBuildProperties). It resolves transitively
+// (a property whose value references another property) with a bounded depth to
+// avoid cycles. An unresolved reference is left as-is so the version stays
+// detectably unresolved.
+func resolveMSBuildProperties(value string, props map[string]string) string {
+	if !strings.Contains(value, "$(") {
+		return value
+	}
+	const maxDepth = 10
+	for i := 0; i < maxDepth && strings.Contains(value, "$("); i++ {
+		replaced := msbuildPropertyRef.ReplaceAllStringFunc(value, func(ref string) string {
+			m := msbuildPropertyRef.FindStringSubmatch(ref)
+			if len(m) < 2 {
+				return ref
+			}
+			if v, ok := props[strings.ToLower(strings.TrimSpace(m[1]))]; ok {
+				return v
+			}
+			return ref // unknown property: leave the reference intact
+		})
+		if replaced == value {
+			break // no further substitution possible
+		}
+		value = replaced
+	}
+	return value
+}
+
+// applyPropertyResolution resolves $(property) references in every package
+// version using the project's MSBuild properties. Called for both modern and
+// legacy projects after packages are collected.
+func applyPropertyResolution(packages []DotNetPackage, props map[string]string) {
+	if len(props) == 0 {
+		return
+	}
+	for i := range packages {
+		if packages[i].Version == "" {
+			continue
+		}
+		packages[i].Version = resolveMSBuildProperties(packages[i].Version, props)
 	}
 }
