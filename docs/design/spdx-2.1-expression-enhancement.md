@@ -133,11 +133,18 @@ type License struct {
 
 ## License Detection Enhancements (2025)
 
-A second wave of improvements brings the license layer to parity with the
-strongest SBOM tooling, **without changing the classifier engine**. The four
-enhancements below are independent of each other and of the file-text
-classifier; they operate on license name/expression *strings* that come from
-both the classifier output and manifest-declared fields.
+**Status: all four implemented** (`internal/license/`), without changing the
+classifier engine. They operate on license name/expression *strings* from both
+the classifier output and manifest-declared fields.
+
+- #1 Expanded normalizer: `aliases.go` (declaredLicenseAliases, merged in `NewNormalizer`).
+- #2 Per-dependency harvesting: `harvest*.go` (npm + NuGet), gated by
+  `--harvest-licenses` for out-of-tree caches; in-tree `node_modules` always.
+  Surfaced on dependency metadata and CycloneDX `licenses[]`.
+- #3 SPDX expression parser: `expression.go` (AND/OR/WITH, parentheses);
+  `ParseLicenseExpression` now uses it.
+- #4 Risk categorization: `category.go` (6 categories + AND=max/OR=min fold);
+  surfaced as the `category` field on detected licenses.
 
 ### 1. Expanded normalizer alias table
 
