@@ -757,43 +757,48 @@ func (s *Scanner) collectCodeStats(filePath, language, typeOverride string, cont
 // slash for matching against subsystemPathMap entries.
 func (s *Scanner) resolveSubsystemKey(compPath, filePath string) string {
 	if len(s.subsystemPathMap) > 0 {
-		// Group mode: try component path first, then fall back to file path.
-		path := compPath
-		if path == "" && filePath != "" {
-			// No component path (no build manifest). Derive a scan-root-relative path from
-			// the absolute file path so it can be matched against subsystemPathMap entries.
-			// cachedBasePath is set once at Scan() start — no repeated provider calls.
-			if rel, err := filepath.Rel(s.cachedBasePath, filePath); err == nil && rel != "." {
-				path = "/" + filepath.ToSlash(rel)
-			}
-		}
-		if path == "" {
-			return ""
-		}
-		// Try progressively deeper prefixes (longest match wins).
-		// Cap at subsystemMaxDepth — the deepest group path in the map — to avoid
-		// iterating over every segment of a deep file path unnecessarily.
-		// e.g. if all group paths are at depth 1, we only ever try one prefix per file.
-		startDepth := s.subsystemMaxDepth
-		if pathDepth := strings.Count(path, "/"); pathDepth < startDepth {
-			startDepth = pathDepth
-		}
-		for depth := startDepth; depth >= 1; depth-- {
-			prefix := types.DepthPrefix(path, depth)
-			if prefix == "" {
-				continue
-			}
-			if name, ok := s.subsystemPathMap[prefix]; ok {
-				return name
-			}
-		}
-		return "" // path not mapped to any group
+		return s.resolveGroupSubsystemKey(compPath, filePath)
 	}
-	// Depth mode: extract depth-N prefix directly (requires component path)
+	// Depth mode: extract depth-N prefix directly (requires component path).
 	if compPath == "" {
 		return ""
 	}
 	return subsystemKey(compPath, s.subsystemDepth)
+}
+
+// resolveGroupSubsystemKey resolves the subsystem group for a path in group
+// mode: it prefers the component path, falls back to a scan-root-relative file
+// path, and returns the longest matching group prefix (or "" if unmapped).
+func (s *Scanner) resolveGroupSubsystemKey(compPath, filePath string) string {
+	path := compPath
+	if path == "" && filePath != "" {
+		// No component path (no build manifest). Derive a scan-root-relative
+		// path from the absolute file path so it can match subsystemPathMap.
+		// cachedBasePath is set once at Scan() start — no repeated provider calls.
+		if rel, err := filepath.Rel(s.cachedBasePath, filePath); err == nil && rel != "." {
+			path = "/" + filepath.ToSlash(rel)
+		}
+	}
+	if path == "" {
+		return ""
+	}
+	// Try progressively shallower prefixes (longest match wins), capped at
+	// subsystemMaxDepth — the deepest group path — to avoid scanning every
+	// segment of a deep path unnecessarily.
+	startDepth := s.subsystemMaxDepth
+	if pathDepth := strings.Count(path, "/"); pathDepth < startDepth {
+		startDepth = pathDepth
+	}
+	for depth := startDepth; depth >= 1; depth-- {
+		prefix := types.DepthPrefix(path, depth)
+		if prefix == "" {
+			continue
+		}
+		if name, ok := s.subsystemPathMap[prefix]; ok {
+			return name
+		}
+	}
+	return "" // path not mapped to any group
 }
 
 // subsystemKey extracts the depth-N path prefix from a component path for subsystem rollup.

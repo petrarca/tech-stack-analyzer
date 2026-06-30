@@ -194,21 +194,35 @@ func ParseUvLock(content []byte, projectName string) []types.Dependency {
 		packageVersions[pkg.Name] = pkg.Version
 	}
 
-	var directDepNames []string
-	for _, pkg := range lockfile.Packages {
-		if pkg.Source.Editable == "." || pkg.Name == projectName {
-			for _, dep := range pkg.Dependencies {
-				directDepNames = append(directDepNames, dep.Name)
-			}
-			for _, deps := range pkg.OptionalDependencies {
-				for _, dep := range deps {
-					directDepNames = append(directDepNames, dep.Name)
-				}
-			}
-			break
-		}
-	}
+	directDepNames := uvRootDependencyNames(lockfile.Packages, projectName)
+	return uvDirectDependencies(directDepNames, packageVersions)
+}
 
+// uvRootDependencyNames returns the dependency names (regular + optional) of the
+// root project package, identified by the editable "." source or the project
+// name.
+func uvRootDependencyNames(packages []UvPackage, projectName string) []string {
+	var names []string
+	for _, pkg := range packages {
+		if pkg.Source.Editable != "." && pkg.Name != projectName {
+			continue
+		}
+		for _, dep := range pkg.Dependencies {
+			names = append(names, dep.Name)
+		}
+		for _, deps := range pkg.OptionalDependencies {
+			for _, dep := range deps {
+				names = append(names, dep.Name)
+			}
+		}
+		break
+	}
+	return names
+}
+
+// uvDirectDependencies builds the deduplicated, versioned direct dependencies
+// from the root dependency names.
+func uvDirectDependencies(directDepNames []string, packageVersions map[string]string) []types.Dependency {
 	var dependencies []types.Dependency
 	seen := make(map[string]bool)
 	for _, name := range directDepNames {
