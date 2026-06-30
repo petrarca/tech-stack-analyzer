@@ -38,20 +38,12 @@ func (p *RubyParser) ParseGemfile(content string) []types.Dependency {
 	for _, line := range lines {
 		trimmedLine := strings.TrimSpace(line)
 
-		// Track group blocks
+		// Track group blocks (group :x do ... end), which set dependency scope.
 		if groupMatch := rubyGroupRegex.FindStringSubmatch(trimmedLine); groupMatch != nil {
-			currentGroups = []string{}
-			// Extract all groups from the match
-			for i := 1; i < len(groupMatch); i++ {
-				if groupMatch[i] != "" {
-					currentGroups = append(currentGroups, groupMatch[i])
-				}
-			}
+			currentGroups = extractRubyGroups(groupMatch)
 			groupDepth++
 			continue
 		}
-
-		// Track end of group blocks
 		if trimmedLine == "end" && groupDepth > 0 {
 			groupDepth--
 			if groupDepth == 0 {
@@ -59,49 +51,51 @@ func (p *RubyParser) ParseGemfile(content string) []types.Dependency {
 			}
 			continue
 		}
-
-		// Skip comments and empty lines
 		if trimmedLine == "" || strings.HasPrefix(trimmedLine, "#") {
 			continue
 		}
 
-		// Parse gem dependencies
-		var gemName, version string
-
-		// First try to match with version
-		if match := rubyDepRegexWithVersion.FindStringSubmatch(trimmedLine); match != nil {
-			gemName = match[1]
-			version = match[2]
-		} else if match := rubyDepRegexNoVersion.FindStringSubmatch(trimmedLine); match != nil {
-			// Then try to match without version
-			gemName = match[1]
-			version = "latest"
-		} else {
-			continue
+		if dep := p.parseGemLine(trimmedLine, currentGroups); dep != nil {
+			dependencies = append(dependencies, *dep)
 		}
-
-		// Skip empty gem names
-		if gemName == "" {
-			continue
-		}
-
-		// Determine scope based on groups
-		scope := p.mapGemfileGroupToScope(currentGroups)
-
-		// Build metadata
-		metadata := p.buildRubyMetadata(trimmedLine, currentGroups)
-
-		dependencies = append(dependencies, types.Dependency{
-			Type:     DependencyTypeRuby,
-			Name:     gemName,
-			Version:  version,
-			Scope:    scope,
-			Direct:   true,
-			Metadata: metadata,
-		})
 	}
 
 	return dependencies
+}
+
+// extractRubyGroups collects the non-empty capture groups from a `group` match.
+func extractRubyGroups(groupMatch []string) []string {
+	groups := []string{}
+	for i := 1; i < len(groupMatch); i++ {
+		if groupMatch[i] != "" {
+			groups = append(groups, groupMatch[i])
+		}
+	}
+	return groups
+}
+
+// parseGemLine parses a single `gem` line into a dependency, or returns nil
+// when the line is not a gem declaration.
+func (p *RubyParser) parseGemLine(trimmedLine string, currentGroups []string) *types.Dependency {
+	var gemName, version string
+	if match := rubyDepRegexWithVersion.FindStringSubmatch(trimmedLine); match != nil {
+		gemName, version = match[1], match[2]
+	} else if match := rubyDepRegexNoVersion.FindStringSubmatch(trimmedLine); match != nil {
+		gemName, version = match[1], "latest"
+	} else {
+		return nil
+	}
+	if gemName == "" {
+		return nil
+	}
+	return &types.Dependency{
+		Type:     DependencyTypeRuby,
+		Name:     gemName,
+		Version:  version,
+		Scope:    p.mapGemfileGroupToScope(currentGroups),
+		Direct:   true,
+		Metadata: p.buildRubyMetadata(trimmedLine, currentGroups),
+	}
 }
 
 // mapGemfileGroupToScope maps Gemfile groups to dependency scopes

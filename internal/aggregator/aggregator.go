@@ -695,27 +695,29 @@ func computeEcosystems(components []ComponentEntry, primaryLangs []types.Primary
 
 	typeMap, techMap, langMap := buildEcosystemLookups(ecosystemsCfg.Ecosystems)
 
-	type ecosystemMatch struct {
-		name       string
-		components int
-	}
-	results := make(map[string]*ecosystemMatch)
+	results := make(map[string]int)
+	matchEcosystemTypes(results, components, typeMap)
+	matchEcosystemTechs(results, components, techMap)
+	matchEcosystemLanguages(results, primaryLangs, langMap)
 
-	incr := func(ecoName string) {
-		if results[ecoName] == nil {
-			results[ecoName] = &ecosystemMatch{name: ecoName}
-		}
-		results[ecoName].components++
+	if len(results) == 0 {
+		return nil
 	}
+	return sortedEcosystemEntries(results)
+}
 
-	// Signal 1: Match component types (strongest signal)
+// matchEcosystemTypes applies signal 1: component types (the strongest signal).
+func matchEcosystemTypes(results map[string]int, components []ComponentEntry, typeMap map[string]string) {
 	for _, comp := range components {
 		if ecoName, ok := typeMap[comp.Type]; ok && comp.Type != "" {
-			incr(ecoName)
+			results[ecoName]++
 		}
 	}
+}
 
-	// Signal 2: Match component tech[] entries (untyped components only)
+// matchEcosystemTechs applies signal 2: tech[] entries of untyped components.
+// Each ecosystem is counted at most once per component.
+func matchEcosystemTechs(results map[string]int, components []ComponentEntry, techMap map[string]string) {
 	for _, comp := range components {
 		if comp.Type != "" {
 			continue
@@ -723,26 +725,31 @@ func computeEcosystems(components []ComponentEntry, primaryLangs []types.Primary
 		matched := make(map[string]bool)
 		for _, t := range comp.Tech {
 			if ecoName, ok := techMap[t]; ok && !matched[ecoName] {
-				incr(ecoName)
+				results[ecoName]++
 				matched[ecoName] = true
 			}
 		}
 	}
+}
 
-	// Signal 3: Language fallback — for ecosystems not yet detected
+// matchEcosystemLanguages applies signal 3: a language fallback, used only for
+// ecosystems not already detected by a stronger signal.
+func matchEcosystemLanguages(results map[string]int, primaryLangs []types.PrimaryLanguage, langMap map[string]string) {
 	for _, pl := range primaryLangs {
-		if ecoName, ok := langMap[pl.Language]; ok && results[ecoName] == nil {
-			results[ecoName] = &ecosystemMatch{name: ecoName, components: 1}
+		if ecoName, ok := langMap[pl.Language]; ok {
+			if _, exists := results[ecoName]; !exists {
+				results[ecoName] = 1
+			}
 		}
 	}
+}
 
-	if len(results) == 0 {
-		return nil
-	}
-
+// sortedEcosystemEntries converts the match counts into entries sorted by
+// component count (desc) then ecosystem name (asc).
+func sortedEcosystemEntries(results map[string]int) []types.EcosystemEntry {
 	entries := make([]types.EcosystemEntry, 0, len(results))
-	for _, m := range results {
-		entries = append(entries, types.EcosystemEntry{Ecosystem: m.name, Components: m.components})
+	for name, count := range results {
+		entries = append(entries, types.EcosystemEntry{Ecosystem: name, Components: count})
 	}
 	sort.Slice(entries, func(i, j int) bool {
 		if entries[i].Components != entries[j].Components {

@@ -211,45 +211,49 @@ func (n *Normalizer) ParseTOMLLicense(licenseStr string) string {
 
 	// Handle simple string format: license = "MIT"
 	if strings.HasPrefix(licenseStr, `"`) && strings.HasSuffix(licenseStr, `"`) {
-		license := strings.Trim(licenseStr, `"`)
-		return n.Normalize(license)
+		return n.Normalize(strings.Trim(licenseStr, `"`))
 	}
 
 	// Handle single quotes: license = 'MIT'
 	if strings.HasPrefix(licenseStr, `'`) && strings.HasSuffix(licenseStr, `'`) {
-		license := strings.Trim(licenseStr, `'`)
-		return n.Normalize(license)
+		return n.Normalize(strings.Trim(licenseStr, `'`))
 	}
 
 	// Handle TOML object format: license = {text = "MIT"}
 	if strings.Contains(licenseStr, "{") && strings.Contains(licenseStr, "}") {
-		// Try to parse as JSON-like structure
-		var licenseObj map[string]interface{}
-		if err := json.Unmarshal([]byte(strings.ReplaceAll(licenseStr, "=", ":")), &licenseObj); err == nil {
-			if text, exists := licenseObj["text"]; exists {
-				if textStr, ok := text.(string); ok {
-					return n.Normalize(textStr)
-				}
-			}
+		if text, ok := extractTOMLLicenseText(licenseStr); ok {
+			return n.Normalize(text)
 		}
+	}
 
-		// Fallback: extract text from pattern
-		if strings.Contains(licenseStr, "text") {
-			parts := strings.Split(licenseStr, "text")
-			if len(parts) > 1 {
-				textPart := strings.Split(parts[1], "=")
-				if len(textPart) > 1 {
-					license := strings.TrimSpace(textPart[1])
-					license = strings.Trim(license, `"',}`)
-					return n.Normalize(license)
-				}
+	// Handle any remaining quotes and normalize.
+	return n.Normalize(strings.Trim(licenseStr, `"'`))
+}
+
+// extractTOMLLicenseText pulls the `text` field from a TOML inline-table
+// license value (e.g. {text = "MIT"}), first via a JSON parse and then via a
+// string-split fallback. ok is false when no text field could be extracted.
+func extractTOMLLicenseText(licenseStr string) (string, bool) {
+	var licenseObj map[string]interface{}
+	if err := json.Unmarshal([]byte(strings.ReplaceAll(licenseStr, "=", ":")), &licenseObj); err == nil {
+		if text, exists := licenseObj["text"]; exists {
+			if textStr, ok := text.(string); ok {
+				return textStr, true
 			}
 		}
 	}
 
-	// Handle any remaining quotes and normalize
-	license := strings.Trim(licenseStr, `"'`)
-	return n.Normalize(license)
+	// Fallback: extract the text value from the raw pattern.
+	if strings.Contains(licenseStr, "text") {
+		parts := strings.Split(licenseStr, "text")
+		if len(parts) > 1 {
+			textPart := strings.Split(parts[1], "=")
+			if len(textPart) > 1 {
+				return strings.Trim(strings.TrimSpace(textPart[1]), `"',}`), true
+			}
+		}
+	}
+	return "", false
 }
 
 // ParseLicenseExpression parses license expressions like "MIT OR Apache-2.0"
