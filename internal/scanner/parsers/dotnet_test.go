@@ -554,6 +554,34 @@ func TestParseCsproj_PropertyResolutionCaseInsensitive(t *testing.T) {
 	}
 }
 
+func TestParseCsproj_PropertyResolutionNamedFields(t *testing.T) {
+	// Named PropertyGroup fields (AssemblyName, TargetFramework, etc.) are
+	// consumed by the XML decoder before the catch-all ",any" slice, so they
+	// are not visible to collectMSBuildProperties via pg.Properties. The fix
+	// adds them explicitly so $(AssemblyName) and similar refs resolve.
+	content := `<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>MyLib</AssemblyName>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Foo" Version="$(AssemblyName)-suffix" />
+    <PackageReference Include="Bar" Version="$(TargetFramework)" />
+  </ItemGroup>
+</Project>`
+	proj := NewDotNetParser().ParseCsproj(content, "MyLib.csproj")
+	ver := map[string]string{}
+	for _, p := range proj.Packages {
+		ver[p.Name] = p.Version
+	}
+	if ver["Foo"] != "MyLib-suffix" {
+		t.Errorf("$(AssemblyName) should resolve from named field, got %q", ver["Foo"])
+	}
+	if ver["Bar"] != "net8.0" {
+		t.Errorf("$(TargetFramework) should resolve from named field, got %q", ver["Bar"])
+	}
+}
+
 func TestParseCsproj_TargetFrameworks(t *testing.T) {
 	content := `<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>

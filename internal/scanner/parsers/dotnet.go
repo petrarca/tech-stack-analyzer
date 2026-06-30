@@ -151,20 +151,9 @@ func (p *DotNetParser) ParseCsproj(content, filePath string) DotNetProject {
 func (p *DotNetParser) parseModernProject(project Project, content, filePath string) DotNetProject {
 	var result DotNetProject
 
-	// Extract project name, package ID, framework, and license from PropertyGroups
 	for _, pg := range project.PropertyGroups {
-		if pg.AssemblyName != "" {
-			result.Name = pg.AssemblyName
-		}
-		if pg.PackageId != "" {
-			result.PackageId = pg.PackageId
-		}
-		if pg.TargetFramework != "" {
-			result.Framework = pg.TargetFramework
-		} else if pg.TargetFrameworks != "" && result.Framework == "" {
-			// Multi-targeting project: record the framework list as-is.
-			result.Framework = pg.TargetFrameworks
-		}
+		applyProjectProperties(&result, pg)
+		// License metadata is modern SDK-style only.
 		if pg.PackageLicenseExpression != "" {
 			result.License = pg.PackageLicenseExpression
 		}
@@ -176,39 +165,8 @@ func (p *DotNetParser) parseModernProject(project Project, content, filePath str
 		}
 	}
 
-	// Extract packages and project references from ItemGroups
-	for _, ig := range project.ItemGroups {
-		for _, pr := range ig.PackageReferences {
-			if pr.Include != "" {
-				result.Packages = append(result.Packages, DotNetPackage{
-					Name:     pr.Include,
-					Version:  packageRefVersion(pr),
-					Scope:    p.determineNuGetScope(pr),
-					Metadata: p.buildNuGetMetadata(pr),
-				})
-			}
-		}
-		for _, projRef := range ig.ProjectReferences {
-			if projRef.Include != "" {
-				result.ProjectReferences = append(result.ProjectReferences, projRef.Include)
-			}
-		}
-	}
-
-	// Resolve $(property) references in package versions using the project's
-	// MSBuild properties (e.g. <PackageReference Version="$(JsonVersion)" />).
-	applyPropertyResolution(result.Packages, collectMSBuildProperties(project.PropertyGroups))
-
-	// If no AssemblyName found, try to extract from filename using regex
-	if result.Name == "" {
-		result.Name = p.extractProjectNameFromContent(content, filePath)
-	}
-
-	// If PackageId not specified, default to Name/AssemblyName
-	if result.PackageId == "" {
-		result.PackageId = result.Name
-	}
-
+	p.extractItemGroups(&result, project.ItemGroups)
+	p.finalizeProject(&result, project.PropertyGroups, content, filePath)
 	return result
 }
 
@@ -216,21 +174,36 @@ func (p *DotNetParser) parseModernProject(project Project, content, filePath str
 func (p *DotNetParser) parseLegacyProject(project LegacyProject, content, filePath string) DotNetProject {
 	var result DotNetProject
 
-	// Extract project name, package ID, and framework from PropertyGroups
 	for _, pg := range project.PropertyGroups {
-		if pg.AssemblyName != "" {
-			result.Name = pg.AssemblyName
-		}
-		if pg.PackageId != "" {
-			result.PackageId = pg.PackageId
-		}
-		if pg.TargetFramework != "" {
-			result.Framework = pg.TargetFramework
-		}
+		applyProjectProperties(&result, pg)
 	}
 
-	// Extract packages and project references from ItemGroups
-	for _, ig := range project.ItemGroups {
+	p.extractItemGroups(&result, project.ItemGroups)
+	p.finalizeProject(&result, project.PropertyGroups, content, filePath)
+	return result
+}
+
+// applyProjectProperties copies the project identity/framework fields shared by
+// modern and legacy projects from a PropertyGroup onto the result.
+func applyProjectProperties(result *DotNetProject, pg PropertyGroup) {
+	if pg.AssemblyName != "" {
+		result.Name = pg.AssemblyName
+	}
+	if pg.PackageId != "" {
+		result.PackageId = pg.PackageId
+	}
+	if pg.TargetFramework != "" {
+		result.Framework = pg.TargetFramework
+	} else if pg.TargetFrameworks != "" && result.Framework == "" {
+		// Multi-targeting project: record the framework list as-is.
+		result.Framework = pg.TargetFrameworks
+	}
+}
+
+// extractItemGroups collects PackageReferences and ProjectReferences from the
+// project's ItemGroups onto the result. Shared by modern and legacy parsing.
+func (p *DotNetParser) extractItemGroups(result *DotNetProject, itemGroups []ItemGroup) {
+	for _, ig := range itemGroups {
 		for _, pr := range ig.PackageReferences {
 			if pr.Include != "" {
 				result.Packages = append(result.Packages, DotNetPackage{
@@ -247,22 +220,21 @@ func (p *DotNetParser) parseLegacyProject(project LegacyProject, content, filePa
 			}
 		}
 	}
+}
 
+// finalizeProject resolves $(property) references in package versions and
+// applies the name/PackageId fallbacks shared by modern and legacy parsing.
+func (p *DotNetParser) finalizeProject(result *DotNetProject, propertyGroups []PropertyGroup, content, filePath string) {
 	// Resolve $(property) references in package versions using the project's
-	// MSBuild properties.
-	applyPropertyResolution(result.Packages, collectMSBuildProperties(project.PropertyGroups))
+	// MSBuild properties (e.g. <PackageReference Version="$(JsonVersion)" />).
+	applyPropertyResolution(result.Packages, collectMSBuildProperties(propertyGroups))
 
-	// If no AssemblyName found, try to extract from filename using regex
 	if result.Name == "" {
 		result.Name = p.extractProjectNameFromContent(content, filePath)
 	}
-
-	// If PackageId not specified, default to Name/AssemblyName
 	if result.PackageId == "" {
 		result.PackageId = result.Name
 	}
-
-	return result
 }
 
 // extractProjectNameFromContent attempts to extract project name from XML content
@@ -436,9 +408,20 @@ var msbuildPropertyRef = regexp.MustCompile(`\$\(([^)]+)\)`)
 // collectMSBuildProperties builds a property name -> value map from all
 // PropertyGroups. MSBuild property names are case-insensitive, so keys are
 // lowercased. Later definitions win (MSBuild evaluates top to bottom).
+//
+// Note: Go's encoding/xml routes elements that match a named struct field to
+// that field, not to the catch-all ",any" slice. The named fields on
+// PropertyGroup (AssemblyName, TargetFramework, etc.) are therefore absent
+// from pg.Properties. To make them available for $(name) substitution they
+// are added explicitly below, using the same lowercased key convention.
+// Explicit user-defined properties in pg.Properties always win over the named
+// fields (the loop over pg.Properties runs first), so there is no risk of a
+// built-in field silently overriding a developer-defined property of the same
+// name.
 func collectMSBuildProperties(groups []PropertyGroup) map[string]string {
 	props := make(map[string]string)
 	for _, pg := range groups {
+		// Catch-all properties (arbitrary developer-defined elements).
 		for _, p := range pg.Properties {
 			name := strings.ToLower(strings.TrimSpace(p.XMLName.Local))
 			if name == "" {
@@ -446,8 +429,33 @@ func collectMSBuildProperties(groups []PropertyGroup) map[string]string {
 			}
 			props[name] = strings.TrimSpace(p.Value)
 		}
+		// Named struct fields that the XML decoder consumed before the catch-all
+		// had a chance to see them. Only non-empty values are added, and they
+		// must not overwrite an already-set property (developer definitions win).
+		for key, val := range namedPropertyGroupFields(pg) {
+			if val != "" {
+				if _, exists := props[key]; !exists {
+					props[key] = val
+				}
+			}
+		}
 	}
 	return props
+}
+
+// namedPropertyGroupFields returns the lowercased MSBuild property name ->
+// value pairs for the fields that are explicitly modelled on PropertyGroup.
+// These are not reachable via the ",any" catch-all in encoding/xml.
+func namedPropertyGroupFields(pg PropertyGroup) map[string]string {
+	return map[string]string{
+		"targetframework":          pg.TargetFramework,
+		"targetframeworks":         pg.TargetFrameworks,
+		"assemblyname":             pg.AssemblyName,
+		"packageid":                pg.PackageId, //nolint:misspell // "packageid" is the lowercased MSBuild property name PackageId, not a misspelling
+		"packagelicenseexpression": pg.PackageLicenseExpression,
+		"packagelicenseurl":        pg.PackageLicenseUrl,
+		"packagelicensefile":       pg.PackageLicenseFile,
+	}
 }
 
 // resolveMSBuildProperties substitutes $(Name) references in value using the

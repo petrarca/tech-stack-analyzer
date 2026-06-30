@@ -206,34 +206,25 @@ func (p *MavenParser) addManagedEntries(deps []MavenDependency, properties map[s
 }
 
 // applyManagedVersions backfills versionless (or otherwise unresolved)
-// dependencies from the managed-version table. A dependency that already has a
+// dependencies from a pre-built lookup table. A dependency that already has a
 // concrete version is never overwritten. The declared form is preserved in
 // metadata.declared, and metadata.source records the resolution origin.
 //
-// When caseInsensitive is true the managed table is matched ignoring case,
-// which is required for ecosystems with case-insensitive package identifiers
-// (e.g. NuGet). Maven coordinates are case-sensitive and must use exact match.
-func (p *MavenParser) applyManagedVersions(deps []types.Dependency, managed map[string]string, caseInsensitive bool) {
-	if len(managed) == 0 {
+// normalise is applied to both the lookup-table keys and each dependency name
+// before the map lookup, allowing callers to control case sensitivity:
+// strings.ToLower for NuGet (case-insensitive ids), identity for Maven
+// (case-sensitive coordinates). The lookup table must already have its keys
+// normalised by the same function.
+func (p *MavenParser) applyManagedVersions(deps []types.Dependency, lookup map[string]string, normalise func(string) string) {
+	if len(lookup) == 0 {
 		return
-	}
-	lookup := managed
-	if caseInsensitive {
-		lookup = make(map[string]string, len(managed))
-		for k, v := range managed {
-			lookup[strings.ToLower(k)] = v
-		}
 	}
 	for i := range deps {
 		dep := &deps[i]
 		if semver.IsResolved(dep.Version) {
 			continue
 		}
-		key := dep.Name
-		if caseInsensitive {
-			key = strings.ToLower(key)
-		}
-		resolved, ok := lookup[key]
+		resolved, ok := lookup[normalise(dep.Name)]
 		if !ok {
 			continue
 		}
@@ -247,13 +238,27 @@ func (p *MavenParser) applyManagedVersions(deps []types.Dependency, managed map[
 	}
 }
 
+// normalisedLookup builds a lookup map whose keys have been transformed by
+// normalise, ready for use with applyManagedVersions.
+func normalisedLookup(managed map[string]string, normalise func(string) string) map[string]string {
+	out := make(map[string]string, len(managed))
+	for k, v := range managed {
+		out[normalise(k)] = v
+	}
+	return out
+}
+
+// identity returns s unchanged. Used as the normalise function for
+// case-sensitive ecosystems (Maven).
+func identity(s string) string { return s }
+
 // ApplyManagedVersions backfills any unresolved dependency version (empty,
 // "latest", "${prop}", range) from a "groupId:artifactId" -> version table,
 // leaving already-resolved versions untouched. Keys are matched case-sensitively
 // (Maven coordinates are case-sensitive). Exported for the Gradle detector to
 // apply versions managed by a platform()/enforcedPlatform() BOM.
 func ApplyManagedVersions(deps []types.Dependency, managed map[string]string) {
-	(&MavenParser{}).applyManagedVersions(deps, managed, false)
+	(&MavenParser{}).applyManagedVersions(deps, managed, identity)
 }
 
 // ApplyManagedVersionsCaseInsensitive is ApplyManagedVersions for ecosystems
@@ -261,5 +266,5 @@ func ApplyManagedVersions(deps []types.Dependency, managed map[string]string) {
 // PackageReference and a Directory.Packages.props PackageVersion may differ in
 // casing). The managed table is matched ignoring case.
 func ApplyManagedVersionsCaseInsensitive(deps []types.Dependency, managed map[string]string) {
-	(&MavenParser{}).applyManagedVersions(deps, managed, true)
+	(&MavenParser{}).applyManagedVersions(deps, normalisedLookup(managed, strings.ToLower), strings.ToLower)
 }

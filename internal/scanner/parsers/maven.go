@@ -287,7 +287,7 @@ func (p *MavenParser) ParsePomXMLWithBomResolver(content string, pomDir string, 
 	// the common case of a child <dependency> whose version lives in a parent
 	// or imported BOM POM committed to the same repository.
 	managed := p.collectManagedVersions(content, pomDir, provider, properties, bomResolver)
-	p.applyManagedVersions(dependencies, managed, false)
+	p.applyManagedVersions(dependencies, managed, identity)
 
 	return dependencies
 }

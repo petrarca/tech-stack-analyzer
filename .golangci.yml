@@ -16,10 +16,13 @@ linters:
     - errcheck       # Disabled: only affects tool code, exclude-rules don't work
   settings:
     gocyclo:
-      # Maximum cyclomatic complexity
+      # Maximum cyclomatic complexity.
+      # TODO: ratchet down toward 15. 30 is the current codebase maximum;
+      # lowering requires refactoring a backlog of complex functions
+      # (tracked in a dedicated branch).
       min-complexity: 30
     gocognit:
-      # Maximum cognitive complexity
+      # Maximum cognitive complexity. See the gocyclo TODO above.
       min-complexity: 30
 
 issues:

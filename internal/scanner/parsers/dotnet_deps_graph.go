@@ -56,20 +56,46 @@ func ParseDotNetDepsGraph(input GraphInput) LockGraph {
 		return result
 	}
 
-	// The targets section keyed by the runtime target name carries the edges.
-	// Normalize its keys (name/version) to the stripped "name@version" node id.
-	targetLibs := deps.Targets[deps.RuntimeTarget.Name]
+	normalized := normalizeTargets(deps.Targets[deps.RuntimeTarget.Name])
+	nodes, rootID := collectDepsNodes(deps.Libraries)
+	if len(nodes) == 0 {
+		return result
+	}
+
+	seen := make(map[string]bool)
+
+	// Direct dependencies: the root project's entry in the targets section.
+	if rootID != "" {
+		for depName, depVer := range normalized[rootID].Dependencies {
+			if to := nodeID(depName, depVer); nodes[to] {
+				addNugetEdge(&result.Edges, seen, ".", to, "")
+			}
+		}
+	}
+	if input.Mode == types.DependencyGraphDirect {
+		return result
+	}
+
+	result.Unresolved = appendTransitiveEdges(&result.Edges, seen, nodes, rootID, normalized)
+	return result
+}
+
+// normalizeTargets maps a .deps.json targets section (keyed by "name/version")
+// to "name@version" node ids, so its dependency entries align with the node set.
+func normalizeTargets(targetLibs map[string]dotnetTargetLib) map[string]dotnetTargetLib {
 	normalized := make(map[string]dotnetTargetLib, len(targetLibs))
 	for key, lib := range targetLibs {
 		name, version := cutNameVersion(key)
 		normalized[nodeID(name, version)] = lib
 	}
+	return normalized
+}
 
-	// Build the set of valid package nodes from the libraries section, and find
-	// the root project.
-	nodes := make(map[string]bool, len(deps.Libraries))
-	rootID := ""
-	for nameVer, lib := range deps.Libraries {
+// collectDepsNodes builds the set of valid graph nodes from the libraries
+// section and returns the root project's node id (empty if none).
+func collectDepsNodes(libraries map[string]dotnetDepsLibrary) (nodes map[string]bool, rootID string) {
+	nodes = make(map[string]bool, len(libraries))
+	for nameVer, lib := range libraries {
 		if !isGraphableLibrary(lib.Type) {
 			continue
 		}
@@ -83,47 +109,27 @@ func ParseDotNetDepsGraph(input GraphInput) LockGraph {
 			rootID = id
 		}
 	}
-	if len(nodes) == 0 {
-		return result
-	}
+	return nodes, rootID
+}
 
-	seen := make(map[string]bool)
+// appendTransitiveEdges emits every non-root node's edges from the targets
+// section and returns the list of references that could not be resolved to a
+// known node.
+func appendTransitiveEdges(edges *[]types.DependencyEdge, seen map[string]bool, nodes map[string]bool, rootID string, normalized map[string]dotnetTargetLib) []string {
 	var unresolved []string
-
-	// Direct dependencies: the root project's entry in the targets section.
-	directOf := map[string]bool{}
-	if rootID != "" {
-		for depName, depVer := range normalized[rootID].Dependencies {
-			to := nodeID(depName, depVer)
-			if nodes[to] {
-				directOf[to] = true
-				addNugetEdge(&result.Edges, seen, ".", to, "")
-			}
-		}
-	}
-
-	if input.Mode == types.DependencyGraphDirect {
-		result.Unresolved = unresolved
-		return result
-	}
-
-	// Full transitive graph: every node's edges from the targets section.
 	for id := range nodes {
 		if id == rootID {
 			continue // root edges already emitted from "."
 		}
 		for depName, depVer := range normalized[id].Dependencies {
-			to := nodeID(depName, depVer)
-			if nodes[to] {
-				addNugetEdge(&result.Edges, seen, id, to, "")
+			if to := nodeID(depName, depVer); nodes[to] {
+				addNugetEdge(edges, seen, id, to, "")
 			} else {
 				unresolved = append(unresolved, id+" -> "+depName)
 			}
 		}
 	}
-
-	result.Unresolved = unresolved
-	return result
+	return unresolved
 }
 
 // isGraphableLibrary reports whether a .deps.json library type contributes a
@@ -138,16 +144,19 @@ func isGraphableLibrary(libType string) bool {
 	}
 }
 
-// cutNameVersion splits a ".deps.json" "name/version" key and strips the
-// synthetic runtimepack prefix from the name.
+// cutNameVersion splits a ".deps.json" "name/version" key into its components.
+// It is a pure splitter; stripping of the runtimepack prefix is the caller's
+// responsibility (nodeID does it).
 func cutNameVersion(key string) (name, version string) {
 	name, version, _ = strings.Cut(key, "/")
-	name = strings.TrimPrefix(name, runtimePackPrefix)
 	return name, version
 }
 
 // nodeID builds the "name@version" node identifier used across all graph
-// producers. A missing version yields just the name (kept detectable).
+// producers. It is the single place that strips the synthetic "runtimepack."
+// prefix the .NET SDK adds to bundled runtime entries, so all callers -- both
+// those coming via cutNameVersion (libraries/targets keys) and those using raw
+// dependency-map names -- normalise to the same node identity.
 func nodeID(name, version string) string {
 	name = strings.TrimPrefix(name, runtimePackPrefix)
 	if version == "" {
