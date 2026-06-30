@@ -105,6 +105,11 @@
                 "original_license": {
                     "type": "string",
                     "description": "Original license before normalization (optional)"
+                },
+                "category": {
+                    "type": "string",
+                    "enum": ["forbidden", "restricted", "reciprocal", "notice", "permissive", "unencumbered", "unknown"],
+                    "description": "License risk category, derived from the SPDX license. AND expressions take the more restrictive branch, OR the less restrictive. Compliance signal only (optional)."
                 }
             },
             "required": [

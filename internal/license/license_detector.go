@@ -74,15 +74,14 @@ func (d *LicenseDetector) AddLicensesToPayload(payload *types.Payload, dirPath s
 		}
 
 		if !exists {
-			// Create structured License object
-			license := types.License{
+			// Create structured License object (AddLicenseToPayload fills the
+			// risk category).
+			AddLicenseToPayload(payload, types.License{
 				LicenseName:   match.License,
 				DetectionType: "file_based",
 				SourceFile:    match.File,
 				Confidence:    math.Round(float64(match.Confidence)*100) / 100,
-			}
-
-			payload.Licenses = append(payload.Licenses, license)
+			})
 			// Add reason to _license category
 			payload.AddLicenseReason(fmt.Sprintf("license detected: %s (confidence: %.2f, file: %s)",
 				match.License, match.Confidence, match.File))

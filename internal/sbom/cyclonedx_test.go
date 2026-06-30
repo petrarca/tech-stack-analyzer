@@ -265,6 +265,27 @@ func TestFromDependencies_ComponentFields(t *testing.T) {
 	}
 }
 
+func TestFromDependencies_HarvestedLicense(t *testing.T) {
+	deps := []types.Dependency{
+		{Type: "npm", Name: "mylib", Version: "1.2.3",
+			Metadata: map[string]interface{}{"license": "MIT"}},
+		{Type: "npm", Name: "nolic", Version: "1.0.0"},
+	}
+	bom := FromDependencies(deps, "myapp")
+
+	byName := map[string]Component{}
+	for _, c := range bom.Components {
+		byName[c.Name] = c
+	}
+	mylib := byName["mylib"]
+	if len(mylib.Licenses) != 1 || mylib.Licenses[0].License.ID != "MIT" {
+		t.Errorf("expected mylib license MIT, got %+v", mylib.Licenses)
+	}
+	if len(byName["nolic"].Licenses) != 0 {
+		t.Errorf("nolic should have no licenses, got %+v", byName["nolic"].Licenses)
+	}
+}
+
 // Note: the resolved-version classification is tested in
 // internal/scanner/semver (TestResolvedVersion), where the logic now lives.
 
