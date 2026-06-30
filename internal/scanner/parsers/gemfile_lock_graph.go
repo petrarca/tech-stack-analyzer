@@ -38,23 +38,28 @@ func ParseGemfileLockGraph(input GraphInput) LockGraph {
 			}
 		}
 	case types.DependencyGraphFull:
-		var unresolved []string
-		for name, deps := range depsByName {
-			from := node(name)
-			if from == "" {
-				continue
-			}
-			for _, dep := range deps {
-				if to := node(dep); to != "" {
-					result.Edges = append(result.Edges, types.DependencyEdge{From: from, To: to})
-				} else {
-					unresolved = append(unresolved, from+" -> "+dep)
-				}
-			}
-		}
-		result.Unresolved = unresolved
+		result.Edges, result.Unresolved = gemfileLockFullEdges(depsByName, node)
 	}
 	return result
+}
+
+// gemfileLockFullEdges builds the transitive gem-to-gem edges, reporting
+// dependencies that resolve to no known node.
+func gemfileLockFullEdges(depsByName map[string][]string, node func(string) string) (edges []types.DependencyEdge, unresolved []string) {
+	for name, deps := range depsByName {
+		from := node(name)
+		if from == "" {
+			continue
+		}
+		for _, dep := range deps {
+			if to := node(dep); to != "" {
+				edges = append(edges, types.DependencyEdge{From: from, To: to})
+			} else {
+				unresolved = append(unresolved, from+" -> "+dep)
+			}
+		}
+	}
+	return edges, unresolved
 }
 
 // parseGemfileLockGraph extracts the gem -> version map, the per-gem dependency
