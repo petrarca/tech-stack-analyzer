@@ -31,119 +31,110 @@ func (h *TreeHandler) Handle(event Event) {
 
 	switch event.Type {
 	case EventScanStart:
-		h.scanStart = time.Now()
-		fmt.Fprintf(h.writer, "Scanning %s...\n", event.Path)
-		if event.Info != "" {
-			fmt.Fprintf(h.writer, "Excluding: %s\n", event.Info)
-		}
-		fmt.Fprintln(h.writer)
-
+		h.handleScanStart(event)
 	case EventScanComplete:
-		msPerKFiles := 0.0
-		if event.FileCount > 0 {
-			msPerKFiles = (event.Duration.Seconds() * 1000) / (float64(event.FileCount) / 1000)
-		}
-		fmt.Fprintf(h.writer, "└─ Completed: %d files, %d directories in %.1fs (%.1fms per 1000 files)\n",
-			event.FileCount, event.DirCount, event.Duration.Seconds(), msPerKFiles)
-
-		// Print machine-readable CSV data for debug mode
-		h.printMachineReadableTimingData()
-		h.printMachineReadableRuleData()
-
+		h.handleScanComplete(event)
 	case EventEnterDirectory:
 		fmt.Fprintf(h.writer, "%s%s%s\n", indent, prefix, event.Path)
 		h.depth++
-
 	case EventComponentDetected:
 		fmt.Fprintf(h.writer, "%s%sDetected: %s (%s)\n", indent, prefix, event.Name, event.Tech)
-
 	case EventLeaveDirectory:
-		h.depth--
-		if h.depth < 0 {
-			h.depth = 0
-		}
-		// Show timing if duration is set and track it
-		if event.Duration > 0 {
-			indent := strings.Repeat("│  ", h.depth)
-
-			// Track timing for summary - use cumulative time if available
-			duration := event.Duration
-			// For now, use the event duration since cumulative timing needs progress system access
-			h.timings = append(h.timings, TimingEntry{
-				Path:     event.Path,
-				Duration: duration,
-				Depth:    h.depth,
-			})
-
-			seconds := duration.Seconds()
-			fmt.Fprintf(h.writer, "%s└─ %s ⏱  %.2fs\n", indent, getTimingIcon(seconds), seconds)
-		}
-
+		h.handleLeaveDirectory(event)
 	case EventProgress:
-		fmt.Fprintf(h.writer, "%s%sProgress: %d files, %d directories\n",
-			indent, prefix, event.FileCount, event.DirCount)
-
+		fmt.Fprintf(h.writer, "%s%sProgress: %d files, %d directories\n", indent, prefix, event.FileCount, event.DirCount)
 	case EventFolderFileProcessingStart:
-		// Start timing for folder file processing (TreeHandler)
 		fmt.Fprintf(h.writer, "%s%sProcessing files in: %s\n", indent, prefix, event.Path)
-
 	case EventFolderFileProcessingEnd:
-		// Track timing for individual folder file processing (TreeHandler)
-		if event.Duration > 0 {
-			h.timings = append(h.timings, TimingEntry{
-				Path:     event.Path,
-				Duration: event.Duration,
-				Depth:    h.depth,
-			})
-			seconds := event.Duration.Seconds()
-			fmt.Fprintf(h.writer, "%s└─ %s 📁 %.2fs\n", indent, getTimingIcon(seconds), seconds)
-		}
-
+		h.handleFolderFileProcessingEnd(event, indent)
 	case EventScanInitializing:
-		fmt.Fprintf(h.writer, "%s%sInitializing: %s\n", indent, prefix, event.Path)
-		if event.Info != "" {
-			fmt.Fprintf(h.writer, "%s%sExcluding: %s\n", indent, prefix, event.Info)
-		}
-
+		h.handleScanInitializing(event, indent, prefix)
 	case EventFileWriting:
 		fmt.Fprintf(h.writer, "%s%sWriting results to: %s\n", indent, prefix, event.Path)
-
 	case EventFileWritten:
 		fmt.Fprintf(h.writer, "%s%sResults written: %s\n", indent, prefix, event.Path)
-
-	case EventInfo:
+	case EventInfo, EventGitIgnoreEnter, EventGitIgnoreLeave:
 		fmt.Fprintf(h.writer, "%s%s%s\n", indent, prefix, event.Info)
-
-	case EventGitIgnoreEnter:
-		fmt.Fprintf(h.writer, "%s%s%s\n", indent, prefix, event.Info)
-
-	case EventGitIgnoreLeave:
-		fmt.Fprintf(h.writer, "%s%s%s\n", indent, prefix, event.Info)
-
 	case EventRuleCheck:
-		fmt.Fprintf(h.writer, "%s%sChecking rule: %s\n", indent, prefix, event.Tech)
-		for _, detail := range event.Details {
-			fmt.Fprintf(h.writer, "%s│  %s\n", indent, detail)
-		}
-
+		h.handleRuleCheck(event, indent, prefix)
 	case EventRuleResult:
-		// Track rule matches for CSV output
-		h.rules = append(h.rules, RuleEntry{
-			Tech:    event.Tech,
-			Reason:  event.Reason,
-			Path:    event.Path,
-			Matched: event.Matched,
-		})
+		h.handleRuleResult(event, indent)
+	}
+}
 
-		if event.Matched {
-			if event.Path != "" {
-				fmt.Fprintf(h.writer, "%s└─ ✓ MATCHED: %s - %s (in %s)\n", indent, event.Tech, event.Reason, event.Path)
-			} else {
-				fmt.Fprintf(h.writer, "%s└─ ✓ MATCHED: %s - %s\n", indent, event.Tech, event.Reason)
-			}
-		} else {
-			fmt.Fprintf(h.writer, "%s└─ ✗ NOT MATCHED: %s - %s\n", indent, event.Tech, event.Reason)
-		}
+func (h *TreeHandler) handleScanStart(event Event) {
+	h.scanStart = time.Now()
+	fmt.Fprintf(h.writer, "Scanning %s...\n", event.Path)
+	if event.Info != "" {
+		fmt.Fprintf(h.writer, "Excluding: %s\n", event.Info)
+	}
+	fmt.Fprintln(h.writer)
+}
+
+func (h *TreeHandler) handleScanComplete(event Event) {
+	msPerKFiles := 0.0
+	if event.FileCount > 0 {
+		msPerKFiles = (event.Duration.Seconds() * 1000) / (float64(event.FileCount) / 1000)
+	}
+	fmt.Fprintf(h.writer, "└─ Completed: %d files, %d directories in %.1fs (%.1fms per 1000 files)\n",
+		event.FileCount, event.DirCount, event.Duration.Seconds(), msPerKFiles)
+	// Print machine-readable CSV data for debug mode.
+	h.printMachineReadableTimingData()
+	h.printMachineReadableRuleData()
+}
+
+func (h *TreeHandler) handleLeaveDirectory(event Event) {
+	h.depth--
+	if h.depth < 0 {
+		h.depth = 0
+	}
+	if event.Duration <= 0 {
+		return
+	}
+	indent := strings.Repeat("│  ", h.depth)
+	h.timings = append(h.timings, TimingEntry{Path: event.Path, Duration: event.Duration, Depth: h.depth})
+	seconds := event.Duration.Seconds()
+	fmt.Fprintf(h.writer, "%s└─ %s ⏱  %.2fs\n", indent, getTimingIcon(seconds), seconds)
+}
+
+func (h *TreeHandler) handleFolderFileProcessingEnd(event Event, indent string) {
+	if event.Duration <= 0 {
+		return
+	}
+	h.timings = append(h.timings, TimingEntry{Path: event.Path, Duration: event.Duration, Depth: h.depth})
+	seconds := event.Duration.Seconds()
+	fmt.Fprintf(h.writer, "%s└─ %s 📁 %.2fs\n", indent, getTimingIcon(seconds), seconds)
+}
+
+func (h *TreeHandler) handleScanInitializing(event Event, indent, prefix string) {
+	fmt.Fprintf(h.writer, "%s%sInitializing: %s\n", indent, prefix, event.Path)
+	if event.Info != "" {
+		fmt.Fprintf(h.writer, "%s%sExcluding: %s\n", indent, prefix, event.Info)
+	}
+}
+
+func (h *TreeHandler) handleRuleCheck(event Event, indent, prefix string) {
+	fmt.Fprintf(h.writer, "%s%sChecking rule: %s\n", indent, prefix, event.Tech)
+	for _, detail := range event.Details {
+		fmt.Fprintf(h.writer, "%s│  %s\n", indent, detail)
+	}
+}
+
+func (h *TreeHandler) handleRuleResult(event Event, indent string) {
+	h.rules = append(h.rules, RuleEntry{
+		Tech:    event.Tech,
+		Reason:  event.Reason,
+		Path:    event.Path,
+		Matched: event.Matched,
+	})
+	if !event.Matched {
+		fmt.Fprintf(h.writer, "%s└─ ✗ NOT MATCHED: %s - %s\n", indent, event.Tech, event.Reason)
+		return
+	}
+	if event.Path != "" {
+		fmt.Fprintf(h.writer, "%s└─ ✓ MATCHED: %s - %s (in %s)\n", indent, event.Tech, event.Reason, event.Path)
+	} else {
+		fmt.Fprintf(h.writer, "%s└─ ✓ MATCHED: %s - %s\n", indent, event.Tech, event.Reason)
 	}
 }
 

@@ -109,30 +109,35 @@ func (d *Detector) addGradleInfoToMaven(payload *types.Payload, files []types.Fi
 	gradleRegex := regexp.MustCompile(`^build\.gradle(\.kts)?$`)
 
 	for _, file := range files {
-		if gradleRegex.MatchString(file.Name) {
-			relativeFilePath, _ := filepath.Rel(basePath, filepath.Join(currentPath, file.Name))
-			if relativeFilePath != "." {
-				relativeFilePath = "/" + relativeFilePath
-				payload.AddPath(relativeFilePath)
-			}
-			// Add gradle tech
-			payload.AddTech("gradle", "matched file: "+file.Name)
+		if !gradleRegex.MatchString(file.Name) {
+			continue
+		}
+		relativeFilePath, _ := filepath.Rel(basePath, filepath.Join(currentPath, file.Name))
+		if relativeFilePath != "." {
+			payload.AddPath("/" + relativeFilePath)
+		}
+		payload.AddTech("gradle", "matched file: "+file.Name)
 
-			// Parse and merge gradle dependencies
-			if gradlePayload := d.detectGradle(file, currentPath, basePath, provider, depDetector); gradlePayload != nil {
-				for _, dep := range gradlePayload.Dependencies {
-					payload.AddDependency(dep)
-				}
-				// Merge gradle properties if they exist
-				if gradleProps, exists := gradlePayload.Properties["gradle"]; exists {
-					if payload.Properties == nil {
-						payload.Properties = make(map[string]interface{})
-					}
-					payload.Properties["gradle"] = gradleProps
-				}
-			}
+		if gradlePayload := d.detectGradle(file, currentPath, basePath, provider, depDetector); gradlePayload != nil {
+			mergeGradleIntoPayload(payload, gradlePayload)
 		}
 	}
+}
+
+// mergeGradleIntoPayload folds a detected Gradle payload's dependencies and
+// gradle properties into the Maven payload.
+func mergeGradleIntoPayload(payload, gradlePayload *types.Payload) {
+	for _, dep := range gradlePayload.Dependencies {
+		payload.AddDependency(dep)
+	}
+	gradleProps, exists := gradlePayload.Properties["gradle"]
+	if !exists {
+		return
+	}
+	if payload.Properties == nil {
+		payload.Properties = make(map[string]interface{})
+	}
+	payload.Properties["gradle"] = gradleProps
 }
 
 // mergeDependencyList merges dependency list data into the payload

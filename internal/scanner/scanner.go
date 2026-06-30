@@ -757,43 +757,48 @@ func (s *Scanner) collectCodeStats(filePath, language, typeOverride string, cont
 // slash for matching against subsystemPathMap entries.
 func (s *Scanner) resolveSubsystemKey(compPath, filePath string) string {
 	if len(s.subsystemPathMap) > 0 {
-		// Group mode: try component path first, then fall back to file path.
-		path := compPath
-		if path == "" && filePath != "" {
-			// No component path (no build manifest). Derive a scan-root-relative path from
-			// the absolute file path so it can be matched against subsystemPathMap entries.
-			// cachedBasePath is set once at Scan() start — no repeated provider calls.
-			if rel, err := filepath.Rel(s.cachedBasePath, filePath); err == nil && rel != "." {
-				path = "/" + filepath.ToSlash(rel)
-			}
-		}
-		if path == "" {
-			return ""
-		}
-		// Try progressively deeper prefixes (longest match wins).
-		// Cap at subsystemMaxDepth — the deepest group path in the map — to avoid
-		// iterating over every segment of a deep file path unnecessarily.
-		// e.g. if all group paths are at depth 1, we only ever try one prefix per file.
-		startDepth := s.subsystemMaxDepth
-		if pathDepth := strings.Count(path, "/"); pathDepth < startDepth {
-			startDepth = pathDepth
-		}
-		for depth := startDepth; depth >= 1; depth-- {
-			prefix := types.DepthPrefix(path, depth)
-			if prefix == "" {
-				continue
-			}
-			if name, ok := s.subsystemPathMap[prefix]; ok {
-				return name
-			}
-		}
-		return "" // path not mapped to any group
+		return s.resolveGroupSubsystemKey(compPath, filePath)
 	}
-	// Depth mode: extract depth-N prefix directly (requires component path)
+	// Depth mode: extract depth-N prefix directly (requires component path).
 	if compPath == "" {
 		return ""
 	}
 	return subsystemKey(compPath, s.subsystemDepth)
+}
+
+// resolveGroupSubsystemKey resolves the subsystem group for a path in group
+// mode: it prefers the component path, falls back to a scan-root-relative file
+// path, and returns the longest matching group prefix (or "" if unmapped).
+func (s *Scanner) resolveGroupSubsystemKey(compPath, filePath string) string {
+	path := compPath
+	if path == "" && filePath != "" {
+		// No component path (no build manifest). Derive a scan-root-relative
+		// path from the absolute file path so it can match subsystemPathMap.
+		// cachedBasePath is set once at Scan() start — no repeated provider calls.
+		if rel, err := filepath.Rel(s.cachedBasePath, filePath); err == nil && rel != "." {
+			path = "/" + filepath.ToSlash(rel)
+		}
+	}
+	if path == "" {
+		return ""
+	}
+	// Try progressively shallower prefixes (longest match wins), capped at
+	// subsystemMaxDepth — the deepest group path — to avoid scanning every
+	// segment of a deep path unnecessarily.
+	startDepth := s.subsystemMaxDepth
+	if pathDepth := strings.Count(path, "/"); pathDepth < startDepth {
+		startDepth = pathDepth
+	}
+	for depth := startDepth; depth >= 1; depth-- {
+		prefix := types.DepthPrefix(path, depth)
+		if prefix == "" {
+			continue
+		}
+		if name, ok := s.subsystemPathMap[prefix]; ok {
+			return name
+		}
+	}
+	return "" // path not mapped to any group
 }
 
 // subsystemKey extracts the depth-N path prefix from a component path for subsystem rollup.
@@ -804,124 +809,108 @@ func subsystemKey(compPath string, depth int) string {
 // recurse scans a directory recursively, detecting technologies and components
 func (s *Scanner) recurse(payload *types.Payload, filePath string) error {
 	tEnter := time.Now()
-	// Report entering directory
 	s.progress.EnterDirectory(filePath)
 	defer s.progress.LeaveDirectory(filePath)
 
-	// Load .gitignore patterns for this directory and push to stack
-	// This implements proper gitignore hierarchy: patterns only apply to current dir and subdirs
-	tGitignore := time.Now()
-	hasGitignore := s.gitignoreStack.LoadAndPushGitignore(filePath)
-	if time.Since(tGitignore) > 100*time.Millisecond {
-		slog.Debug("Gitignore loading slow", "path", filePath, "duration", time.Since(tGitignore))
-	}
-
-	// Report gitignore context for debugging
-	if hasGitignore {
+	if s.gitignoreStack.LoadAndPushGitignore(filePath) {
 		s.progress.GitIgnoreEnter(filePath)
-	}
-
-	// Pop patterns when leaving this directory (only if we had a .gitignore)
-	if hasGitignore {
 		defer func() {
 			s.progress.GitIgnoreLeave(filePath)
 			s.gitignoreStack.PopGitignore()
 		}()
 	}
 
-	// Get files in current directory
-	t1 := time.Now()
 	files, err := s.provider.ListDir(filePath)
 	if err != nil {
 		return err
 	}
-	slog.Debug("Listed directory", "path", filePath, "file_count", len(files), "duration", time.Since(t1))
+	filteredFiles := s.filterIgnoredFiles(files, filePath)
 
-	// Filter files to exclude those matching ignore patterns
-	// This ensures rule matching doesn't see excluded files
-	t2 := time.Now()
-	filteredFiles := make([]types.File, 0, len(files))
-	for _, file := range files {
-		if file.Type == "file" && s.shouldExcludeFileStackBased(file.Name, filePath) {
-			continue
-		}
-		filteredFiles = append(filteredFiles, file)
-	}
-	if len(files) != len(filteredFiles) {
-		slog.Debug("Filtered files", "path", filePath, "before", len(files), "after", len(filteredFiles), "duration", time.Since(t2))
-	}
-
-	// Start timing for folder file processing
 	s.progress.FolderFileProcessingStart(filePath)
 
-	// Apply rules to detect technologies
-	// This might return a different context if a component was detected
+	// Apply rules to detect technologies. This might return a different context
+	// if a component was detected.
 	t3 := time.Now()
 	ctx := s.applyRules(payload, filteredFiles, filePath)
 	if time.Since(t3) > 100*time.Millisecond {
 		slog.Debug("Applied rules (slow)", "path", filePath, "duration", time.Since(t3))
 	}
 
-	// Check if this directory is a git repository and set git info
-	// Only set git info if it's in a different repository than the parent context
-	tGit := time.Now()
-	if ctx.Git == nil {
-		if gitInfo := s.getGitInfo(filePath); gitInfo != nil {
-			// Only add git info if this directory is in a different repository than the parent context
-			// For root level, parent is the same as payload, so we check payload.Git
-			var parentGit *git.GitInfo
-			if payload != nil {
-				parentGit = payload.Git
-			}
-			if parentGit == nil || parentGit.RemoteURL != gitInfo.RemoteURL {
-				ctx.Git = gitInfo
-			}
-		}
-	}
-	if time.Since(tGit) > 100*time.Millisecond {
-		slog.Debug("Git info retrieval slow", "path", filePath, "duration", time.Since(tGit))
-	}
+	s.enrichGitInfo(payload, ctx, filePath)
 
-	// Detect licenses from LICENSE files in this directory
-	// This adds file-based license detection (MIT, Apache-2.0, etc.) from LICENSE files
-	tLicense := time.Now()
+	// Detect licenses from LICENSE files in this directory (MIT, Apache-2.0, etc.).
 	s.licenseDetector.AddLicensesToPayload(ctx, filePath)
-	if time.Since(tLicense) > 100*time.Millisecond {
-		slog.Debug("License detection slow", "path", filePath, "duration", time.Since(tLicense))
-	}
 
-	// End timing for folder file processing
 	s.progress.FolderFileProcessingEnd(filePath)
-
 	if time.Since(tEnter) > 500*time.Millisecond {
 		slog.Debug("Directory processing slow", "path", filePath, "total_duration", time.Since(tEnter))
 	}
 
-	// Process each file/directory
-	for _, file := range filteredFiles {
+	s.processDirectoryEntries(ctx, filePath, filteredFiles)
+
+	// Note: Do NOT combine ctx back to payload. Components remain separate with
+	// their own dependencies; extension reasons are handled by the AddTech fix.
+	return nil
+}
+
+// filterIgnoredFiles drops files that match active ignore patterns so rule
+// matching never sees excluded files. Directories are always kept (their own
+// exclusion is decided during recursion).
+func (s *Scanner) filterIgnoredFiles(files []types.File, filePath string) []types.File {
+	filtered := make([]types.File, 0, len(files))
+	for _, file := range files {
+		if file.Type == "file" && s.shouldExcludeFileStackBased(file.Name, filePath) {
+			continue
+		}
+		filtered = append(filtered, file)
+	}
+	return filtered
+}
+
+// enrichGitInfo sets ctx.Git when this directory is in a different git
+// repository than its parent context (so nested repos are attributed correctly).
+func (s *Scanner) enrichGitInfo(payload, ctx *types.Payload, filePath string) {
+	if ctx.Git != nil {
+		return
+	}
+	gitInfo := s.getGitInfo(filePath)
+	var parentGit *git.GitInfo
+	if payload != nil {
+		parentGit = payload.Git
+	}
+	if shouldAttributeGit(parentGit, gitInfo) {
+		ctx.Git = gitInfo
+	}
+}
+
+// shouldAttributeGit reports whether a directory's gitInfo should be attached to
+// its context: only when git info exists and it differs from the parent
+// repository (by remote URL), so a nested repo is attributed to itself and a
+// subdirectory of the same repo is not redundantly tagged.
+func shouldAttributeGit(parentGit, gitInfo *git.GitInfo) bool {
+	if gitInfo == nil {
+		return false
+	}
+	return parentGit == nil || parentGit.RemoteURL != gitInfo.RemoteURL
+}
+
+// processDirectoryEntries processes each file in the directory and recurses
+// into non-excluded subdirectories.
+func (s *Scanner) processDirectoryEntries(ctx *types.Payload, filePath string, files []types.File) {
+	for _, file := range files {
 		if file.Type == "file" {
 			s.processFile(ctx, filePath, file.Name)
 			continue
 		}
-
-		// Skip ignored or non-included directories
 		subPath := filepath.Join(filePath, file.Name)
 		if s.shouldSkipDirectory(file.Name, filePath, subPath) {
 			continue
 		}
-
-		// Recurse into subdirectories
 		if err := s.recurse(ctx, subPath); err != nil {
-			// Continue processing other directories even if one fails
+			// Continue processing other directories even if one fails.
 			continue
 		}
 	}
-
-	// Note: Do NOT combine ctx back to payload
-	// Components should remain separate with their own dependencies
-	// Extension reasons are handled separately by the AddTech fix
-
-	return nil
 }
 
 // applyRules applies all detection rules to the current directory's files

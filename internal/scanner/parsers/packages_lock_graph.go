@@ -45,36 +45,49 @@ func ParsePackagesLockGraph(input GraphInput) LockGraph {
 	var unresolved []string
 
 	for _, framework := range lock.Dependencies {
-		// Resolve names to versions within this framework.
-		versionOf := func(name string) string {
-			if e, ok := framework[name]; ok && e.Resolved != "" {
-				return name + "@" + e.Resolved
-			}
-			return ""
-		}
-		for name, entry := range framework {
-			if entry.Resolved == "" {
-				continue // Project entries have no resolved version
-			}
-			switch input.Mode {
-			case types.DependencyGraphDirect:
-				if entry.Type == "Direct" {
-					addNugetEdge(&result.Edges, seen, ".", name+"@"+entry.Resolved, "")
-				}
-			case types.DependencyGraphFull:
-				from := name + "@" + entry.Resolved
-				for depName := range entry.Dependencies {
-					if to := versionOf(depName); to != "" {
-						addNugetEdge(&result.Edges, seen, from, to, "")
-					} else {
-						unresolved = append(unresolved, from+" -> "+depName)
-					}
-				}
-			}
-		}
+		unresolved = appendFrameworkEdges(&result.Edges, seen, unresolved, framework, input.Mode)
 	}
 	result.Unresolved = unresolved
 	return result
+}
+
+// appendFrameworkEdges emits the edges for a single target framework's package
+// set and returns the (possibly extended) unresolved list. Versions are
+// resolved within the framework; edges are deduped across frameworks via seen.
+func appendFrameworkEdges(edges *[]types.DependencyEdge, seen map[string]bool, unresolved []string, framework map[string]nugetLockEntry, mode types.DependencyGraphMode) []string {
+	versionOf := func(name string) string {
+		if e, ok := framework[name]; ok && e.Resolved != "" {
+			return name + "@" + e.Resolved
+		}
+		return ""
+	}
+	for name, entry := range framework {
+		if entry.Resolved == "" {
+			continue // Project entries have no resolved version
+		}
+		switch mode {
+		case types.DependencyGraphDirect:
+			if entry.Type == "Direct" {
+				addNugetEdge(edges, seen, ".", name+"@"+entry.Resolved, "")
+			}
+		case types.DependencyGraphFull:
+			unresolved = appendEntryEdges(edges, seen, unresolved, name+"@"+entry.Resolved, entry.Dependencies, versionOf)
+		}
+	}
+	return unresolved
+}
+
+// appendEntryEdges emits the edges from a single resolved package (from) to
+// each of its dependencies, recording any that cannot be resolved to a node.
+func appendEntryEdges(edges *[]types.DependencyEdge, seen map[string]bool, unresolved []string, from string, deps map[string]string, versionOf func(string) string) []string {
+	for depName := range deps {
+		if to := versionOf(depName); to != "" {
+			addNugetEdge(edges, seen, from, to, "")
+		} else {
+			unresolved = append(unresolved, from+" -> "+depName)
+		}
+	}
+	return unresolved
 }
 
 // addNugetEdge appends an edge once (deduped across target frameworks).

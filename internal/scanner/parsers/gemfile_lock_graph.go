@@ -38,83 +38,102 @@ func ParseGemfileLockGraph(input GraphInput) LockGraph {
 			}
 		}
 	case types.DependencyGraphFull:
-		var unresolved []string
-		for name, deps := range depsByName {
-			from := node(name)
-			if from == "" {
-				continue
-			}
-			for _, dep := range deps {
-				if to := node(dep); to != "" {
-					result.Edges = append(result.Edges, types.DependencyEdge{From: from, To: to})
-				} else {
-					unresolved = append(unresolved, from+" -> "+dep)
-				}
-			}
-		}
-		result.Unresolved = unresolved
+		result.Edges, result.Unresolved = gemfileLockFullEdges(depsByName, node)
 	}
 	return result
 }
 
+// gemfileLockFullEdges builds the transitive gem-to-gem edges, reporting
+// dependencies that resolve to no known node.
+func gemfileLockFullEdges(depsByName map[string][]string, node func(string) string) (edges []types.DependencyEdge, unresolved []string) {
+	for name, deps := range depsByName {
+		from := node(name)
+		if from == "" {
+			continue
+		}
+		for _, dep := range deps {
+			if to := node(dep); to != "" {
+				edges = append(edges, types.DependencyEdge{From: from, To: to})
+			} else {
+				unresolved = append(unresolved, from+" -> "+dep)
+			}
+		}
+	}
+	return edges, unresolved
+}
+
 // parseGemfileLockGraph extracts the gem -> version map, the per-gem dependency
 // names, and the direct dependency names from Gemfile.lock.
+// gemLockGraphState holds the mutable parse state for a Gemfile.lock graph scan.
+type gemLockGraphState struct {
+	versionByName  map[string]string
+	depsByName     map[string][]string
+	direct         []string
+	current        string
+	inDependencies bool
+}
+
 func parseGemfileLockGraph(content []byte) (versionByName map[string]string, depsByName map[string][]string, direct []string) {
-	versionByName = make(map[string]string)
-	depsByName = make(map[string][]string)
-
+	st := &gemLockGraphState{
+		versionByName: make(map[string]string),
+		depsByName:    make(map[string][]string),
+	}
 	scanner := bufio.NewScanner(strings.NewReader(string(content)))
-	var current string
-	inDependencies := false
-
 	for scanner.Scan() {
 		line := scanner.Text()
 		trimmed := strings.TrimSpace(line)
 
-		// The DEPENDENCIES section lists direct deps (2-space indent).
 		if trimmed == "DEPENDENCIES" {
-			inDependencies = true
-			current = ""
+			st.inDependencies = true
+			st.current = ""
 			continue
 		}
-		if inDependencies {
-			// A new top-level section header ends DEPENDENCIES.
-			if line != "" && !strings.HasPrefix(line, " ") {
-				inDependencies = false
-			} else if trimmed != "" {
-				name := strings.Fields(trimmed)[0]
-				name = strings.TrimSuffix(name, "!") // bang = pinned source
-				direct = append(direct, name)
-				continue
-			}
+		if st.inDependencies && st.consumeDependencyLine(line, trimmed) {
+			continue
 		}
+		st.consumeSpecLine(line, trimmed)
+	}
+	return st.versionByName, st.depsByName, st.direct
+}
 
-		switch countLeadingSpaces(line) {
-		case 4:
-			// "name (version)"
-			fields := strings.Fields(trimmed)
-			if len(fields) < 2 {
-				current = ""
-				continue
-			}
-			name := fields[0]
-			version := strings.Trim(fields[1], "()")
-			version = strings.SplitN(version, "-", 2)[0] // drop platform suffix
-			versionByName[name] = version
-			current = name
-		case 6:
-			// "depname (constraint)" under the current gem
-			if current == "" {
-				continue
-			}
-			fields := strings.Fields(trimmed)
-			if len(fields) == 0 {
-				continue
-			}
-			depsByName[current] = append(depsByName[current], fields[0])
+// consumeDependencyLine handles a line while in the DEPENDENCIES section. It
+// returns true when the line was consumed (a direct dep). A top-level header
+// ends the section and is left for the spec parser.
+func (st *gemLockGraphState) consumeDependencyLine(line, trimmed string) bool {
+	if line != "" && !strings.HasPrefix(line, " ") {
+		st.inDependencies = false
+		return false
+	}
+	if trimmed == "" {
+		return false
+	}
+	name := strings.TrimSuffix(strings.Fields(trimmed)[0], "!") // bang = pinned source
+	st.direct = append(st.direct, name)
+	return true
+}
+
+// consumeSpecLine handles the GEM specs: a 4-space "name (version)" line sets
+// the current gem and its version; a 6-space line adds a dependency edge.
+func (st *gemLockGraphState) consumeSpecLine(line, trimmed string) {
+	switch countLeadingSpaces(line) {
+	case 4:
+		fields := strings.Fields(trimmed)
+		if len(fields) < 2 {
+			st.current = ""
+			return
+		}
+		version := strings.Trim(fields[1], "()")
+		version = strings.SplitN(version, "-", 2)[0] // drop platform suffix
+		st.versionByName[fields[0]] = version
+		st.current = fields[0]
+	case 6:
+		if st.current == "" {
+			return
+		}
+		if fields := strings.Fields(trimmed); len(fields) > 0 {
+			st.depsByName[st.current] = append(st.depsByName[st.current], fields[0])
 		}
 	}
-	return versionByName, depsByName, direct
 }
 
 // countLeadingSpaces returns the number of leading space characters.

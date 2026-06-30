@@ -205,41 +205,62 @@ func enhanceSinglePayload(payload interface{}, mergedConfig *config.ScanConfig) 
 	if mergedConfig == nil {
 		return
 	}
+	p, ok := payload.(*types.Payload)
+	if !ok {
+		return
+	}
+	applyConfigProperties(p, mergedConfig.Properties)
+	applyConfigTechs(p, mergedConfig.Techs)
+}
 
-	if p, ok := payload.(*types.Payload); ok && len(mergedConfig.Properties) > 0 {
-		if p.Properties == nil {
-			p.Properties = make(map[string]interface{})
-		}
-		for k, v := range mergedConfig.Properties {
-			p.Properties[k] = v
-		}
+// applyConfigProperties merges custom properties from the scan config onto the
+// payload.
+func applyConfigProperties(p *types.Payload, properties map[string]interface{}) {
+	if len(properties) == 0 {
+		return
+	}
+	if p.Properties == nil {
+		p.Properties = make(map[string]interface{})
+	}
+	for k, v := range properties {
+		p.Properties[k] = v
+	}
+}
+
+// applyConfigTechs adds configured techs to the payload, mapping techs with no
+// matching rule to "unmapped_unknown" with a descriptive reason.
+func applyConfigTechs(p *types.Payload, techs []config.ConfigTech) {
+	if len(techs) == 0 {
+		return
+	}
+	allRules, _ := LoadRulesAndCategories()
+	ruleMap := make(map[string]*types.Rule)
+	for i := range allRules {
+		ruleMap[allRules[i].Tech] = &allRules[i]
 	}
 
-	if p, ok := payload.(*types.Payload); ok && len(mergedConfig.Techs) > 0 {
-		allRules, _ := LoadRulesAndCategories()
-		ruleMap := make(map[string]*types.Rule)
-		for i := range allRules {
-			ruleMap[allRules[i].Tech] = &allRules[i]
-		}
-
-		for _, configTech := range mergedConfig.Techs {
-			techKey := configTech.Tech
-			reason := configTech.Reason
-
-			if _, exists := ruleMap[techKey]; !exists {
-				techKey = "unmapped_unknown"
-				if reason == "" {
-					reason = fmt.Sprintf("configured tech: %s (source: config)", configTech.Tech)
-				} else {
-					reason = fmt.Sprintf("configured tech: %s (source: config) - %s", configTech.Tech, reason)
-				}
-			} else if reason == "" {
-				reason = "configured tech (source: config)"
-			}
-
-			p.AddTech(techKey, reason)
-		}
+	for _, configTech := range techs {
+		techKey, reason := resolveConfigTech(configTech, ruleMap)
+		p.AddTech(techKey, reason)
 	}
+}
+
+// resolveConfigTech determines the tech key and reason for a configured tech,
+// falling back to "unmapped_unknown" when no rule matches.
+func resolveConfigTech(configTech config.ConfigTech, ruleMap map[string]*types.Rule) (techKey, reason string) {
+	techKey, reason = configTech.Tech, configTech.Reason
+	if _, exists := ruleMap[techKey]; exists {
+		if reason == "" {
+			reason = "configured tech (source: config)"
+		}
+		return techKey, reason
+	}
+	if reason == "" {
+		reason = fmt.Sprintf("configured tech: %s (source: config)", configTech.Tech)
+	} else {
+		reason = fmt.Sprintf("configured tech: %s (source: config) - %s", configTech.Tech, reason)
+	}
+	return "unmapped_unknown", reason
 }
 
 // computePrimaryTechsFromPayload computes primary_techs via a temporary aggregation

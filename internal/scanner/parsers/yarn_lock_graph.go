@@ -193,36 +193,40 @@ func parseYarnEntries(content []byte) []yarnEntry {
 			continue
 		}
 
-		trimmed := strings.TrimSpace(raw)
-
-		// Edge-bearing sub-blocks. optionalDependencies are real graph edges
-		// (e.g. platform-specific native binaries like @esbuild/linux-x64 that
-		// a package pulls in via "os"/"cpu" gating) and must be traversed, not
-		// just "dependencies". SBOM consumers expect them since the install
-		// target is unknown at scan time.
-		if trimmed == "dependencies:" || trimmed == "optionalDependencies:" {
-			inDeps = true
-			continue
-		}
-		// Any other sub-block header (peerDependencies, peerDependenciesMeta,
-		// etc.) ends the edge block.
-		if strings.HasSuffix(trimmed, ":") && !strings.Contains(trimmed, " ") {
-			inDeps = false
-		}
-
-		if strings.HasPrefix(trimmed, "version ") || strings.HasPrefix(trimmed, `version:`) {
-			current.version = parseYarnVersionField(trimmed)
-			continue
-		}
-
-		if inDeps {
-			if name, rng := parseYarnDepLine(trimmed); name != "" {
-				current.deps[name] = rng
-			}
-		}
+		inDeps = applyYarnEntryLine(current, strings.TrimSpace(raw), inDeps)
 	}
 	flush()
 	return entries
+}
+
+// applyYarnEntryLine processes one indented line within a yarn entry, updating
+// the entry's version/deps, and returns the new inDeps state.
+func applyYarnEntryLine(current *yarnEntry, trimmed string, inDeps bool) bool {
+	// Edge-bearing sub-blocks. optionalDependencies are real graph edges (e.g.
+	// platform-specific native binaries like @esbuild/linux-x64 that a package
+	// pulls in via "os"/"cpu" gating) and must be traversed, not just
+	// "dependencies". SBOM consumers expect them since the install target is
+	// unknown at scan time.
+	if trimmed == "dependencies:" || trimmed == "optionalDependencies:" {
+		return true
+	}
+	// Any other sub-block header (peerDependencies, peerDependenciesMeta, etc.)
+	// ends the edge block.
+	if strings.HasSuffix(trimmed, ":") && !strings.Contains(trimmed, " ") {
+		inDeps = false
+	}
+
+	if strings.HasPrefix(trimmed, "version ") || strings.HasPrefix(trimmed, `version:`) {
+		current.version = parseYarnVersionField(trimmed)
+		return inDeps
+	}
+
+	if inDeps {
+		if name, rng := parseYarnDepLine(trimmed); name != "" {
+			current.deps[name] = rng
+		}
+	}
+	return inDeps
 }
 
 // parseYarnHeaderSpecifiers splits an entry header into its name@range

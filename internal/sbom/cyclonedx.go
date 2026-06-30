@@ -239,21 +239,7 @@ func addTransitiveComponents(bom *BOM, payload *types.Payload) {
 	var added []Component
 	var walk func(p *types.Payload)
 	walk = func(p *types.Payload) {
-		depType := componentTypeToDepType(p.ComponentType)
-		if depType != "" {
-			for _, node := range graphNodes(p.DependencyEdges) {
-				name, version := splitNodeVersion(node)
-				if name == "" {
-					continue
-				}
-				c := toComponent(types.Dependency{Type: depType, Name: name, Version: version})
-				if c.PURL == "" || existing[c.PURL] {
-					continue
-				}
-				existing[c.PURL] = true
-				added = append(added, c)
-			}
-		}
+		added = append(added, transitiveComponentsOf(p, existing)...)
 		for _, child := range p.Children {
 			walk(child)
 		}
@@ -270,6 +256,30 @@ func addTransitiveComponents(bom *BOM, payload *types.Payload) {
 		}
 		return bom.Components[i].Name < bom.Components[j].Name
 	})
+}
+
+// transitiveComponentsOf builds the not-yet-seen SBOM components from a single
+// payload's dependency-graph nodes, recording each new PURL in existing to
+// dedupe across the whole tree.
+func transitiveComponentsOf(p *types.Payload, existing map[string]bool) []Component {
+	depType := componentTypeToDepType(p.ComponentType)
+	if depType == "" {
+		return nil
+	}
+	var components []Component
+	for _, node := range graphNodes(p.DependencyEdges) {
+		name, version := splitNodeVersion(node)
+		if name == "" {
+			continue
+		}
+		c := toComponent(types.Dependency{Type: depType, Name: name, Version: version})
+		if c.PURL == "" || existing[c.PURL] {
+			continue
+		}
+		existing[c.PURL] = true
+		components = append(components, c)
+	}
+	return components
 }
 
 // graphNodes returns the unique node identities appearing in edges (both

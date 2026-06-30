@@ -93,90 +93,106 @@ func DefaultSettings() *Settings {
 func LoadSettingsFromEnvironment() *Settings {
 	settings := DefaultSettings()
 
-	// Override with environment variables if set
-	if outputFile := os.Getenv("STACK_ANALYZER_OUTPUT"); outputFile != "" {
-		settings.OutputFile = outputFile
-	}
+	applyStringEnv(settings)
+	applyBoolEnv(settings)
+	applyIntEnv(settings)
+	applyListEnv(settings)
 
-	if pretty := os.Getenv("STACK_ANALYZER_PRETTY"); pretty != "" {
-		settings.PrettyPrint = strings.ToLower(pretty) == "true"
-	}
-
-	if aggregate := os.Getenv("STACK_ANALYZER_AGGREGATE"); aggregate != "" {
-		settings.Aggregate = aggregate
-	}
-
-	// The only new env var the currency feature introduces. The cache path is
-	// also overridable via --currency-cache (flag wins over env).
-	if cache := os.Getenv(store.EnvCachePath); cache != "" {
-		settings.CurrencyCache = cache
-	}
-
-	if verbose := os.Getenv("STACK_ANALYZER_VERBOSE"); verbose != "" {
-		settings.Verbose = strings.ToLower(verbose) == "true"
-	}
-
-	if debug := os.Getenv("STACK_ANALYZER_DEBUG"); debug != "" {
-		settings.Debug = strings.ToLower(debug) == "true"
-	}
-
-	if noCodeStats := os.Getenv("STACK_ANALYZER_NO_CODE_STATS"); noCodeStats != "" {
-		settings.NoCodeStats = strings.ToLower(noCodeStats) == "true"
-	}
-
-	if statsDepth := os.Getenv("STACK_ANALYZER_COMPONENT_STATS_DEPTH"); statsDepth != "" {
-		if depth, err := strconv.Atoi(statsDepth); err == nil {
-			settings.ComponentStatsDepth = depth
-		}
-	}
-
-	if subsysDepth := os.Getenv("STACK_ANALYZER_SUBSYSTEM_DEPTH"); subsysDepth != "" {
-		if depth, err := strconv.Atoi(subsysDepth); err == nil {
-			settings.SubsystemDepth = depth
-		}
-	}
-
-	if traceTimings := os.Getenv("STACK_ANALYZER_TRACE_TIMINGS"); traceTimings != "" {
-		settings.TraceTimings = strings.ToLower(traceTimings) == "true"
-	}
-
-	if traceRules := os.Getenv("STACK_ANALYZER_TRACE_RULES"); traceRules != "" {
-		settings.TraceRules = strings.ToLower(traceRules) == "true"
-	}
-
-	if filterRules := os.Getenv("STACK_ANALYZER_FILTER_RULES"); filterRules != "" {
-		settings.FilterRules = strings.Split(filterRules, ",")
-		for i, rule := range settings.FilterRules {
-			settings.FilterRules[i] = strings.TrimSpace(rule)
-		}
-	}
-
-	if excludes := os.Getenv("STACK_ANALYZER_EXCLUDE"); excludes != "" {
-		settings.ExcludePatterns = strings.Split(excludes, ",")
-		for i, exclude := range settings.ExcludePatterns {
-			settings.ExcludePatterns[i] = strings.TrimSpace(exclude)
-		}
-	}
-
+	// Log level needs parsing/validation (invalid values keep the default).
 	if logLevel := os.Getenv("STACK_ANALYZER_LOG_LEVEL"); logLevel != "" {
 		if level, err := parseLogLevel(logLevel); err == nil {
 			settings.LogLevel = level
 		}
 	}
 
-	if logFormat := os.Getenv("STACK_ANALYZER_LOG_FORMAT"); logFormat != "" {
-		settings.LogFormat = logFormat
-	}
-
-	if logFile := os.Getenv("STACK_ANALYZER_LOG_FILE"); logFile != "" {
-		settings.LogFile = logFile
-	}
-
-	if useLockFiles := os.Getenv("STACK_ANALYZER_USE_LOCK_FILES"); useLockFiles != "" {
-		settings.UseLockFiles = strings.ToLower(useLockFiles) != "false"
-	}
-
 	return settings
+}
+
+// applyStringEnv overrides plain string settings from their env vars.
+func applyStringEnv(s *Settings) {
+	strs := []struct {
+		env   string
+		field *string
+	}{
+		{"STACK_ANALYZER_OUTPUT", &s.OutputFile},
+		{"STACK_ANALYZER_AGGREGATE", &s.Aggregate},
+		// Currency cache is also overridable via --currency-cache (flag wins).
+		{store.EnvCachePath, &s.CurrencyCache},
+		{"STACK_ANALYZER_LOG_FORMAT", &s.LogFormat},
+		{"STACK_ANALYZER_LOG_FILE", &s.LogFile},
+	}
+	for _, e := range strs {
+		if v := os.Getenv(e.env); v != "" {
+			*e.field = v
+		}
+	}
+}
+
+// applyBoolEnv overrides boolean settings. UseLockFiles is opt-out ("false"
+// disables); every other flag is opt-in ("true" enables).
+func applyBoolEnv(s *Settings) {
+	bools := []struct {
+		env   string
+		field *bool
+	}{
+		{"STACK_ANALYZER_PRETTY", &s.PrettyPrint},
+		{"STACK_ANALYZER_VERBOSE", &s.Verbose},
+		{"STACK_ANALYZER_DEBUG", &s.Debug},
+		{"STACK_ANALYZER_NO_CODE_STATS", &s.NoCodeStats},
+		{"STACK_ANALYZER_TRACE_TIMINGS", &s.TraceTimings},
+		{"STACK_ANALYZER_TRACE_RULES", &s.TraceRules},
+	}
+	for _, e := range bools {
+		if v := os.Getenv(e.env); v != "" {
+			*e.field = strings.ToLower(v) == "true"
+		}
+	}
+	if v := os.Getenv("STACK_ANALYZER_USE_LOCK_FILES"); v != "" {
+		s.UseLockFiles = strings.ToLower(v) != "false"
+	}
+}
+
+// applyIntEnv overrides integer settings, ignoring unparseable values.
+func applyIntEnv(s *Settings) {
+	ints := []struct {
+		env   string
+		field *int
+	}{
+		{"STACK_ANALYZER_COMPONENT_STATS_DEPTH", &s.ComponentStatsDepth},
+		{"STACK_ANALYZER_SUBSYSTEM_DEPTH", &s.SubsystemDepth},
+	}
+	for _, e := range ints {
+		if v := os.Getenv(e.env); v != "" {
+			if n, err := strconv.Atoi(v); err == nil {
+				*e.field = n
+			}
+		}
+	}
+}
+
+// applyListEnv overrides comma-separated list settings, trimming each element.
+func applyListEnv(s *Settings) {
+	lists := []struct {
+		env   string
+		field *[]string
+	}{
+		{"STACK_ANALYZER_FILTER_RULES", &s.FilterRules},
+		{"STACK_ANALYZER_EXCLUDE", &s.ExcludePatterns},
+	}
+	for _, e := range lists {
+		if v := os.Getenv(e.env); v != "" {
+			*e.field = splitTrim(v)
+		}
+	}
+}
+
+// splitTrim splits a comma-separated env value and trims whitespace.
+func splitTrim(value string) []string {
+	parts := strings.Split(value, ",")
+	for i := range parts {
+		parts[i] = strings.TrimSpace(parts[i])
+	}
+	return parts
 }
 
 // parseLogLevel converts string log level to slog.Level
@@ -233,12 +249,24 @@ func (s *Settings) ConfigureLogger() *slog.Logger {
 
 // Validate checks if the settings are valid
 func (s *Settings) Validate() error {
-	// Check for mutually exclusive flags
 	if s.Verbose && s.Debug {
 		return fmt.Errorf("cannot use both --verbose and --debug flags")
 	}
+	if err := s.validateEnums(); err != nil {
+		return err
+	}
+	if err := s.validateURLs(); err != nil {
+		return err
+	}
+	if s.ResolveCurrency && s.CurrencyTTLHours <= 0 {
+		return fmt.Errorf("invalid currency-ttl %d: must be a positive number of hours", s.CurrencyTTLHours)
+	}
+	return s.validateAggregate()
+}
 
-	// Validate dependency-graph mode if specified
+// validateEnums checks the fixed-vocabulary options (dependency-graph mode and
+// SBOM format).
+func (s *Settings) validateEnums() error {
 	if s.DependencyGraph != "" {
 		switch s.DependencyGraph {
 		case "off", "direct", "full":
@@ -246,8 +274,6 @@ func (s *Settings) Validate() error {
 			return fmt.Errorf("invalid dependency-graph mode '%s'. Valid values: off, direct, full", s.DependencyGraph)
 		}
 	}
-
-	// Validate SBOM format if specified
 	if s.SBOMFormat != "" {
 		switch strings.ToLower(s.SBOMFormat) {
 		case "cyclonedx", "spdx":
@@ -255,43 +281,44 @@ func (s *Settings) Validate() error {
 			return fmt.Errorf("invalid sbom-format '%s'. Valid values: cyclonedx, spdx", s.SBOMFormat)
 		}
 	}
+	return nil
+}
 
-	// Validate the deps.dev endpoint if specified (must be an http(s) URL).
-	if s.DepsDevEndpoint != "" {
-		if u, err := url.Parse(s.DepsDevEndpoint); err != nil || (u.Scheme != "http" && u.Scheme != "https") {
-			return fmt.Errorf("invalid deps-dev-endpoint '%s': must be an http(s) URL", s.DepsDevEndpoint)
+// validateURLs checks that optional URL settings are well-formed http(s) URLs.
+func (s *Settings) validateURLs() error {
+	urls := []struct {
+		flag  string
+		value string
+	}{
+		{"deps-dev-endpoint", s.DepsDevEndpoint},
+		{"maven-repo-url", s.MavenRepoURL},
+	}
+	for _, u := range urls {
+		if u.value == "" {
+			continue
+		}
+		if parsed, err := url.Parse(u.value); err != nil || (parsed.Scheme != "http" && parsed.Scheme != "https") {
+			return fmt.Errorf("invalid %s '%s': must be an http(s) URL", u.flag, u.value)
 		}
 	}
+	return nil
+}
 
-	// Currency TTL must be positive when currency resolution is enabled.
-	if s.ResolveCurrency && s.CurrencyTTLHours <= 0 {
-		return fmt.Errorf("invalid currency-ttl %d: must be a positive number of hours", s.CurrencyTTLHours)
+// validateAggregate checks that each comma-separated aggregate field is known.
+func (s *Settings) validateAggregate() error {
+	if s.Aggregate == "" {
+		return nil
 	}
-
-	// Validate the Maven repository URL if specified (must be an http(s) URL).
-	if s.MavenRepoURL != "" {
-		if u, err := url.Parse(s.MavenRepoURL); err != nil || (u.Scheme != "http" && u.Scheme != "https") {
-			return fmt.Errorf("invalid maven-repo-url '%s': must be an http(s) URL", s.MavenRepoURL)
+	validFields := map[string]bool{
+		"tech": true, "techs": true, "reason": true,
+		"languages": true, "licenses": true,
+		"dependencies": true, "git": true,
+		"components": true, "all": true,
+	}
+	for _, field := range strings.Split(s.Aggregate, ",") {
+		if !validFields[strings.TrimSpace(field)] {
+			return fmt.Errorf("invalid aggregate field '%s'. Valid fields: tech, techs, reason, languages, licenses, dependencies, git, all", strings.TrimSpace(field))
 		}
 	}
-
-	// Validate aggregate fields if specified
-	if s.Aggregate != "" {
-		validFields := map[string]bool{
-			"tech": true, "techs": true, "reason": true,
-			"languages": true, "licenses": true,
-			"dependencies": true, "git": true,
-			"components": true, "all": true,
-		}
-
-		fields := strings.Split(s.Aggregate, ",")
-		for _, field := range fields {
-			field = strings.TrimSpace(field)
-			if !validFields[field] {
-				return fmt.Errorf("invalid aggregate field '%s'. Valid fields: tech, techs, reason, languages, licenses, dependencies, git, all", field)
-			}
-		}
-	}
-
 	return nil
 }

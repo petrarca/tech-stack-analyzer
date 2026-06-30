@@ -58,70 +58,82 @@ func (p *CpanfileSnapshotParser) ParseCpanfileSnapshot(content string) []types.D
 
 // parseCpanDistributions extracts every distribution block with its provides
 // and requires module lists.
-func parseCpanDistributions(content string) []cpanDist {
-	var dists []cpanDist
-	var cur *cpanDist
-	section := "" // "provides" | "requires" | ""
+// cpanParseState holds the mutable state while scanning the DISTRIBUTIONS block.
+type cpanParseState struct {
+	dists           []cpanDist
+	cur             *cpanDist
+	section         string // "provides" | "requires" | ""
+	inDistributions bool
+}
 
-	flush := func() {
-		if cur != nil && cur.Name != "" {
-			dists = append(dists, *cur)
-		}
-		cur = nil
+func (st *cpanParseState) flush() {
+	if st.cur != nil && st.cur.Name != "" {
+		st.dists = append(st.dists, *st.cur)
 	}
+	st.cur = nil
+}
 
+func parseCpanDistributions(content string) []cpanDist {
+	st := &cpanParseState{}
 	scanner := bufio.NewScanner(strings.NewReader(content))
 	scanner.Buffer(make([]byte, 0, 64*1024), 4*1024*1024)
-	inDistributions := false
 	for scanner.Scan() {
 		raw := scanner.Text()
 		trimmed := strings.TrimSpace(raw)
 		if trimmed == "" || strings.HasPrefix(trimmed, "#") {
 			continue
 		}
-
 		// Top-level section headers (not indented).
 		if !strings.HasPrefix(raw, " ") {
-			flush()
-			inDistributions = trimmed == "DISTRIBUTIONS"
-			section = ""
+			st.flush()
+			st.inDistributions = trimmed == "DISTRIBUTIONS"
+			st.section = ""
 			continue
 		}
-		if !inDistributions {
-			continue
-		}
-
-		indent := countLeadingSpaces(raw)
-		switch {
-		case indent == 2:
-			// Distribution header (2-space indent), e.g. "Dist-Name-1.23".
-			if m := cpanDistHeaderRe.FindStringSubmatch(trimmed); m != nil {
-				flush()
-				cur = &cpanDist{Name: m[1], Version: m[2]}
-				section = ""
-			}
-		case cur != nil && indent == 4:
-			switch {
-			case trimmed == "provides:":
-				section = "provides"
-			case trimmed == "requires:":
-				section = "requires"
-			case strings.HasPrefix(trimmed, "pathname:"):
-				section = ""
-			default:
-				section = ""
-			}
-		case cur != nil && indent >= 6:
-			// "Module::Name  version" under provides/requires.
-			name := strings.Fields(trimmed)[0]
-			switch section {
-			case "provides":
-				cur.Provides = append(cur.Provides, name)
-			case "requires":
-				cur.Requires = append(cur.Requires, name)
-			}
+		if st.inDistributions {
+			st.applyDistributionLine(raw, trimmed)
 		}
 	}
-	flush()
-	return dists
+	st.flush()
+	return st.dists
+}
+
+// applyDistributionLine dispatches one indented line within the DISTRIBUTIONS
+// block to the distribution header, sub-section header, or module entry.
+func (st *cpanParseState) applyDistributionLine(raw, trimmed string) {
+	switch indent := countLeadingSpaces(raw); {
+	case indent == 2:
+		// Distribution header (2-space indent), e.g. "Dist-Name-1.23".
+		if m := cpanDistHeaderRe.FindStringSubmatch(trimmed); m != nil {
+			st.flush()
+			st.cur = &cpanDist{Name: m[1], Version: m[2]}
+			st.section = ""
+		}
+	case st.cur != nil && indent == 4:
+		st.section = cpanSubSection(trimmed)
+	case st.cur != nil && indent >= 6:
+		st.addModule(strings.Fields(trimmed)[0])
+	}
+}
+
+// cpanSubSection maps a 4-space sub-block header to the active section.
+func cpanSubSection(trimmed string) string {
+	switch trimmed {
+	case "provides:":
+		return "provides"
+	case "requires:":
+		return "requires"
+	default:
+		return ""
+	}
+}
+
+// addModule records a module name under the current provides/requires section.
+func (st *cpanParseState) addModule(name string) {
+	switch st.section {
+	case "provides":
+		st.cur.Provides = append(st.cur.Provides, name)
+	case "requires":
+		st.cur.Requires = append(st.cur.Requires, name)
+	}
 }

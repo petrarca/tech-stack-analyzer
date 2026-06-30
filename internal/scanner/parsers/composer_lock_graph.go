@@ -57,26 +57,32 @@ func ParseComposerLockGraph(input GraphInput) LockGraph {
 	case types.DependencyGraphDirect:
 		result.Edges = composerDirectEdges(input.Manifest, node)
 	case types.DependencyGraphFull:
-		var unresolved []string
-		for _, p := range all {
-			from := node(p.Name)
-			if from == "" {
-				continue
-			}
-			for depName := range p.Require {
-				if isComposerPlatformReq(depName) {
-					continue
-				}
-				if to := node(depName); to != "" {
-					result.Edges = append(result.Edges, types.DependencyEdge{From: from, To: to})
-				} else {
-					unresolved = append(unresolved, from+" -> "+depName)
-				}
-			}
-		}
-		result.Unresolved = unresolved
+		result.Edges, result.Unresolved = composerFullEdges(all, node)
 	}
 	return result
+}
+
+// composerFullEdges builds the transitive package-to-package edges from the
+// locked packages' require maps, skipping platform requirements (php, ext-*)
+// and reporting dependencies that resolve to no locked node.
+func composerFullEdges(all []composerLockPackage, node func(string) string) (edges []types.DependencyEdge, unresolved []string) {
+	for _, p := range all {
+		from := node(p.Name)
+		if from == "" {
+			continue
+		}
+		for depName := range p.Require {
+			if isComposerPlatformReq(depName) {
+				continue
+			}
+			if to := node(depName); to != "" {
+				edges = append(edges, types.DependencyEdge{From: from, To: to})
+			} else {
+				unresolved = append(unresolved, from+" -> "+depName)
+			}
+		}
+	}
+	return edges, unresolved
 }
 
 // composerDirectEdges derives root -> direct edges from composer.json's require

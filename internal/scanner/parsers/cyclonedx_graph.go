@@ -17,21 +17,25 @@ const CycloneDXFileName = "bom.json"
 // cyclonedxBOM is the minimal CycloneDX view for graph ingest: components (to
 // map bom-refs to name@version) and the dependencies edge section.
 type cyclonedxBOM struct {
-	Components []struct {
-		BOMRef  string `json:"bom-ref"`
-		Name    string `json:"name"`
-		Version string `json:"version"`
-		PURL    string `json:"purl"`
-	} `json:"components"`
-	Dependencies []struct {
-		Ref       string   `json:"ref"`
-		DependsOn []string `json:"dependsOn"`
-	} `json:"dependencies"`
-	Metadata struct {
+	Components   []cyclonedxComponent  `json:"components"`
+	Dependencies []cyclonedxDependency `json:"dependencies"`
+	Metadata     struct {
 		Component struct {
 			BOMRef string `json:"bom-ref"`
 		} `json:"component"`
 	} `json:"metadata"`
+}
+
+type cyclonedxComponent struct {
+	BOMRef  string `json:"bom-ref"`
+	Name    string `json:"name"`
+	Version string `json:"version"`
+	PURL    string `json:"purl"`
+}
+
+type cyclonedxDependency struct {
+	Ref       string   `json:"ref"`
+	DependsOn []string `json:"dependsOn"`
 }
 
 // ParseCycloneDXGraph parses a CycloneDX SBOM's dependencies section into
@@ -52,45 +56,55 @@ func ParseCycloneDXGraph(input GraphInput) LockGraph {
 		return result
 	}
 
-	// Map bom-ref -> "name@version". Fall back to PURL-derived name@version.
-	nodeByRef := make(map[string]string, len(bom.Components))
-	for _, c := range bom.Components {
-		node := cyclonedxNode(c.Name, c.Version, c.PURL)
-		if node == "" {
-			continue
-		}
-		if c.BOMRef != "" {
-			nodeByRef[c.BOMRef] = node
-		}
-	}
+	nodeByRef := cyclonedxNodesByRef(bom.Components)
 	rootRef := bom.Metadata.Component.BOMRef
 
 	var unresolved []string
 	for _, d := range bom.Dependencies {
 		from := nodeByRef[d.Ref]
 		isRoot := d.Ref == rootRef || from == ""
-		for _, depRef := range d.DependsOn {
-			to := nodeByRef[depRef]
-			if to == "" {
-				unresolved = append(unresolved, d.Ref+" -> "+depRef)
-				continue
-			}
-			switch input.Mode {
-			case types.DependencyGraphDirect:
-				if isRoot {
-					result.Edges = append(result.Edges, types.DependencyEdge{From: ".", To: to})
-				}
-			case types.DependencyGraphFull:
-				edgeFrom := from
-				if isRoot {
-					edgeFrom = "."
-				}
-				result.Edges = append(result.Edges, types.DependencyEdge{From: edgeFrom, To: to})
-			}
-		}
+		unresolved = appendCycloneDXEdges(&result.Edges, unresolved, d, nodeByRef, from, isRoot, input.Mode)
 	}
 	result.Unresolved = unresolved
 	return result
+}
+
+// cyclonedxNodesByRef maps each component's bom-ref to its "name@version" node,
+// falling back to a PURL-derived identity.
+func cyclonedxNodesByRef(components []cyclonedxComponent) map[string]string {
+	nodeByRef := make(map[string]string, len(components))
+	for _, c := range components {
+		node := cyclonedxNode(c.Name, c.Version, c.PURL)
+		if node != "" && c.BOMRef != "" {
+			nodeByRef[c.BOMRef] = node
+		}
+	}
+	return nodeByRef
+}
+
+// appendCycloneDXEdges emits the edges declared by a single dependency entry,
+// honoring the graph mode, and returns the (possibly extended) unresolved list.
+func appendCycloneDXEdges(edges *[]types.DependencyEdge, unresolved []string, d cyclonedxDependency, nodeByRef map[string]string, from string, isRoot bool, mode types.DependencyGraphMode) []string {
+	edgeFrom := from
+	if isRoot {
+		edgeFrom = "."
+	}
+	for _, depRef := range d.DependsOn {
+		to := nodeByRef[depRef]
+		if to == "" {
+			unresolved = append(unresolved, d.Ref+" -> "+depRef)
+			continue
+		}
+		switch mode {
+		case types.DependencyGraphDirect:
+			if isRoot {
+				*edges = append(*edges, types.DependencyEdge{From: ".", To: to})
+			}
+		case types.DependencyGraphFull:
+			*edges = append(*edges, types.DependencyEdge{From: edgeFrom, To: to})
+		}
+	}
+	return unresolved
 }
 
 // cyclonedxNode builds a "name@version" node from a component, preferring the

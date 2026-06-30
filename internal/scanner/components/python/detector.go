@@ -391,55 +391,82 @@ func extractVersion(valueStr string) string {
 	valueStr = strings.TrimSpace(valueStr)
 	valueStr = strings.Trim(valueStr, `"`)
 
-	// Handle simple version strings with operators
-	if strings.HasPrefix(valueStr, "^") || strings.HasPrefix(valueStr, "~") ||
-		strings.HasPrefix(valueStr, ">=") || strings.HasPrefix(valueStr, "<=") ||
-		strings.HasPrefix(valueStr, "==") || strings.HasPrefix(valueStr, "!=") ||
-		strings.HasPrefix(valueStr, ">") || strings.HasPrefix(valueStr, "<") {
-		// Strip the operator for clean version - check 2-char operators first.
-		// "~=" (compatible release) must be handled here too; otherwise the
-		// single-char "~" branch leaves a stray leading "=".
-		if len(valueStr) > 2 && (strings.HasPrefix(valueStr, ">=") || strings.HasPrefix(valueStr, "<=") || strings.HasPrefix(valueStr, "==") || strings.HasPrefix(valueStr, "!=") || strings.HasPrefix(valueStr, "~=")) {
-			return valueStr[2:]
-		}
-		if len(valueStr) > 1 && (strings.HasPrefix(valueStr, "^") || strings.HasPrefix(valueStr, "~") || strings.HasPrefix(valueStr, ">") || strings.HasPrefix(valueStr, "<")) {
-			return valueStr[1:]
-		}
-		return valueStr
+	if v, ok := stripVersionOperator(valueStr); ok {
+		return v
 	}
-
-	// Handle complex format with version field
-	if strings.Contains(valueStr, "version") {
-		versionReg := regexp.MustCompile(`version\s*=\s*["']([^"']+)["']`)
-		if match := versionReg.FindStringSubmatch(valueStr); len(match) > 1 {
-			return match[1]
-		}
+	if v, ok := extractVersionField(valueStr); ok {
+		return v
 	}
-
-	// Handle Git URLs
 	if strings.Contains(valueStr, "git") {
-		gitReg := regexp.MustCompile(`git\+https?://[^@]+@([^#]+)#?([^"]*)?`)
-		if match := gitReg.FindStringSubmatch(valueStr); len(match) > 1 {
-			version := "git: " + match[1]
-			if len(match) > 2 && match[2] != "" {
-				version += "@" + match[2]
-			}
-			return version
-		}
-		return "git"
+		return extractGitVersion(valueStr)
 	}
-
-	// Handle local paths
 	if strings.Contains(valueStr, "path") {
 		return "local"
 	}
-
-	// Handle simple quoted version
+	// Simple quoted version (no object/array syntax) is returned as-is.
 	if !strings.Contains(valueStr, "{") && !strings.Contains(valueStr, "[") {
 		return valueStr
 	}
-
 	return "latest"
+}
+
+// twoCharVersionOps are the PEP 440 / Poetry comparison operators whose prefix
+// is two characters. "~=" (compatible release) is included here so the
+// single-char "~" rule does not leave a stray leading "=".
+var twoCharVersionOps = []string{">=", "<=", "==", "!=", "~="}
+
+// oneCharVersionOps are the single-character version operators.
+var oneCharVersionOps = []string{"^", "~", ">", "<"}
+
+// stripVersionOperator removes a leading version operator and returns the clean
+// version. ok is false when valueStr does not start with any known operator.
+// A bare operator with no version after it (e.g. ">", "~=") is malformed input
+// and resolves to "latest" -- the parser's marker for no concrete version --
+// rather than returning the operator fragment as if it were a version.
+func stripVersionOperator(valueStr string) (string, bool) {
+	for _, op := range twoCharVersionOps {
+		if strings.HasPrefix(valueStr, op) {
+			if len(valueStr) > 2 {
+				return valueStr[2:], true
+			}
+			return "latest", true
+		}
+	}
+	for _, op := range oneCharVersionOps {
+		if strings.HasPrefix(valueStr, op) {
+			if len(valueStr) > 1 {
+				return valueStr[1:], true
+			}
+			return "latest", true
+		}
+	}
+	return "", false
+}
+
+// extractVersionField pulls the version from a `version = "x"` object form.
+func extractVersionField(valueStr string) (string, bool) {
+	if !strings.Contains(valueStr, "version") {
+		return "", false
+	}
+	versionReg := regexp.MustCompile(`version\s*=\s*["']([^"']+)["']`)
+	if match := versionReg.FindStringSubmatch(valueStr); len(match) > 1 {
+		return match[1], true
+	}
+	return "", false
+}
+
+// extractGitVersion parses a git dependency reference, returning a "git: ..."
+// descriptor when a git+URL is present, or the bare "git" marker otherwise.
+func extractGitVersion(valueStr string) string {
+	gitReg := regexp.MustCompile(`git\+https?://[^@]+@([^#]+)#?([^"]*)?`)
+	if match := gitReg.FindStringSubmatch(valueStr); len(match) > 1 {
+		version := "git: " + match[1]
+		if len(match) > 2 && match[2] != "" {
+			version += "@" + match[2]
+		}
+		return version
+	}
+	return "git"
 }
 
 // detectLicense detects license from pyproject.toml using SPDX-compliant normalization.

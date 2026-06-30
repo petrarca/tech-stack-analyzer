@@ -60,6 +60,65 @@ func TestLoadSettings_WithEnvironmentVariables(t *testing.T) {
 	assert.Equal(t, "json", settings.LogFormat)
 }
 
+// TestLoadSettings_AllEnvironmentVariables characterizes every env var handled
+// by LoadSettingsFromEnvironment, including the less-common ones, before the
+// function is refactored to a data-driven form. t.Setenv auto-restores.
+func TestLoadSettings_AllEnvironmentVariables(t *testing.T) {
+	clearEnvVars()
+	defer clearEnvVars()
+
+	t.Setenv("STACK_ANALYZER_OUTPUT", "/tmp/out.json")
+	t.Setenv("STACK_ANALYZER_PRETTY", "true")
+	t.Setenv("STACK_ANALYZER_AGGREGATE", "tech")
+	t.Setenv("STACK_ANALYZER_VERBOSE", "true")
+	t.Setenv("STACK_ANALYZER_DEBUG", "true")
+	t.Setenv("STACK_ANALYZER_NO_CODE_STATS", "true")
+	t.Setenv("STACK_ANALYZER_COMPONENT_STATS_DEPTH", "5")
+	t.Setenv("STACK_ANALYZER_SUBSYSTEM_DEPTH", "3")
+	t.Setenv("STACK_ANALYZER_TRACE_TIMINGS", "true")
+	t.Setenv("STACK_ANALYZER_TRACE_RULES", "true")
+	t.Setenv("STACK_ANALYZER_FILTER_RULES", "nodejs, rust , go")
+	t.Setenv("STACK_ANALYZER_EXCLUDE", "vendor, build")
+	t.Setenv("STACK_ANALYZER_LOG_LEVEL", "warn")
+	t.Setenv("STACK_ANALYZER_LOG_FORMAT", "json")
+	t.Setenv("STACK_ANALYZER_LOG_FILE", "/tmp/scan.log")
+	t.Setenv("STACK_ANALYZER_USE_LOCK_FILES", "false")
+
+	s := LoadSettingsFromEnvironment()
+
+	assert.Equal(t, "/tmp/out.json", s.OutputFile)
+	assert.True(t, s.PrettyPrint)
+	assert.Equal(t, "tech", s.Aggregate)
+	assert.True(t, s.Verbose)
+	assert.True(t, s.Debug)
+	assert.True(t, s.NoCodeStats)
+	assert.Equal(t, 5, s.ComponentStatsDepth)
+	assert.Equal(t, 3, s.SubsystemDepth)
+	assert.True(t, s.TraceTimings)
+	assert.True(t, s.TraceRules)
+	assert.Equal(t, []string{"nodejs", "rust", "go"}, s.FilterRules)
+	assert.Equal(t, []string{"vendor", "build"}, s.ExcludePatterns)
+	assert.Equal(t, slog.LevelWarn, s.LogLevel)
+	assert.Equal(t, "json", s.LogFormat)
+	assert.Equal(t, "/tmp/scan.log", s.LogFile)
+	assert.False(t, s.UseLockFiles)
+}
+
+// TestLoadSettings_InvalidNumericEnvIgnored verifies that an unparseable
+// integer env var leaves the default in place (no panic, no override).
+func TestLoadSettings_InvalidNumericEnvIgnored(t *testing.T) {
+	clearEnvVars()
+	defer clearEnvVars()
+	defaults := DefaultSettings()
+
+	t.Setenv("STACK_ANALYZER_COMPONENT_STATS_DEPTH", "notanumber")
+	t.Setenv("STACK_ANALYZER_SUBSYSTEM_DEPTH", "x")
+
+	s := LoadSettingsFromEnvironment()
+	assert.Equal(t, defaults.ComponentStatsDepth, s.ComponentStatsDepth)
+	assert.Equal(t, defaults.SubsystemDepth, s.SubsystemDepth)
+}
+
 func TestLoadSettings_WithPartialEnvironmentVariables(t *testing.T) {
 	// Clear any existing environment variables
 	clearEnvVars()
@@ -162,6 +221,42 @@ func TestValidate_AlwaysReturnsNil(t *testing.T) {
 
 	err := settings.Validate()
 	assert.NoError(t, err, "Validate should always return nil for now")
+}
+
+// TestValidate_Cases characterizes each validation branch before Validate is
+// refactored into per-concern validators.
+func TestValidate_Cases(t *testing.T) {
+	tests := []struct {
+		name    string
+		mutate  func(*Settings)
+		wantErr bool
+	}{
+		{"verbose and debug mutually exclusive", func(s *Settings) { s.Verbose = true; s.Debug = true }, true},
+		{"valid dependency-graph mode", func(s *Settings) { s.DependencyGraph = "full" }, false},
+		{"invalid dependency-graph mode", func(s *Settings) { s.DependencyGraph = "bogus" }, true},
+		{"valid sbom format", func(s *Settings) { s.SBOMFormat = "CycloneDX" }, false},
+		{"invalid sbom format", func(s *Settings) { s.SBOMFormat = "xml" }, true},
+		{"valid deps-dev endpoint", func(s *Settings) { s.DepsDevEndpoint = "https://api.deps.dev" }, false},
+		{"invalid deps-dev endpoint", func(s *Settings) { s.DepsDevEndpoint = "ftp://x" }, true},
+		{"currency ttl must be positive", func(s *Settings) { s.ResolveCurrency = true; s.CurrencyTTLHours = 0 }, true},
+		{"currency ttl positive ok", func(s *Settings) { s.ResolveCurrency = true; s.CurrencyTTLHours = 24 }, false},
+		{"valid maven repo url", func(s *Settings) { s.MavenRepoURL = "https://repo.example.com" }, false},
+		{"invalid maven repo url", func(s *Settings) { s.MavenRepoURL = "not a url" }, true},
+		{"valid aggregate fields", func(s *Settings) { s.Aggregate = "tech, techs, all" }, false},
+		{"invalid aggregate field", func(s *Settings) { s.Aggregate = "tech, bogus" }, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := DefaultSettings()
+			tt.mutate(s)
+			err := s.Validate()
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
 }
 
 // Helper function to clear environment variables

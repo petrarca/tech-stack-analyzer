@@ -17,13 +17,20 @@ linters:
   settings:
     gocyclo:
       # Maximum cyclomatic complexity.
-      # TODO: ratchet down toward 15. 30 is the current codebase maximum;
-      # lowering requires refactoring a backlog of complex functions
-      # (tracked in a dedicated branch).
-      min-complexity: 30
+      # Being ratcheted down toward 15, one step at a time, refactoring the
+      # offenders at each step.
+      min-complexity: 20
     gocognit:
-      # Maximum cognitive complexity. See the gocyclo TODO above.
-      min-complexity: 30
+      # Maximum cognitive complexity. See the gocyclo note above.
+      min-complexity: 20
+  exclusions:
+    rules:
+      # Table-driven tests are "complex" by volume of test cases, not by logic.
+      # Exempt test files from the complexity linters.
+      - path: _test\.go
+        linters:
+          - gocyclo
+          - gocognit
 
 issues:
   max-issues-per-linter: 0

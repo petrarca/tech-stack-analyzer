@@ -46,68 +46,59 @@ func (p *GemfileLockParser) ParseGemfileLockWithOptions(content string, options 
 	for _, line := range lines {
 		trimmedLine := strings.TrimSpace(line)
 
-		// Detect GEM section
+		// Detect GEM section.
 		if trimmedLine == "GEM" {
 			inGemSection = true
 			continue
 		}
-
-		// Exit GEM section when we hit PLATFORMS or DEPENDENCIES
+		// Exit GEM section when we hit PLATFORMS or DEPENDENCIES.
 		if trimmedLine == "PLATFORMS" || trimmedLine == "DEPENDENCIES" {
 			inGemSection = false
 			continue
 		}
-
 		if !inGemSection {
 			continue
 		}
-
-		// Skip remote: line and empty lines
+		// Skip remote: line and empty/header lines.
 		if strings.HasPrefix(line, "  remote:") || trimmedLine == "" || trimmedLine == "specs:" {
 			continue
 		}
 
-		// Parse gem spec line: "    rails (7.1.0)"
-		if match := gemLockSpecRegex.FindStringSubmatch(line); match != nil {
-			gemName := match[1]
-			version := match[2]
-
-			// Determine if this is a direct dependency
-			isDirect := directDeps[gemName]
-
-			// Skip transitive dependencies if not requested
-			if !options.IncludeTransitive && !isDirect {
-				continue
-			}
-
-			// Determine scope based on whether it's direct and from dev groups
-			scope := types.ScopeProd
-			if isDirect {
-				// Check if it was in development/test groups from Gemfile
-				// For now, we default to prod for lockfile deps
-				// The Gemfile parser will handle dev/test classification
-				scope = types.ScopeProd
-			}
-
-			metadata := types.NewMetadata(MetadataSourceGemfileLock)
-			if isDirect {
-				metadata["direct"] = true
-			} else {
-				metadata["direct"] = false
-			}
-
-			dependencies = append(dependencies, types.Dependency{
-				Type:     DependencyTypeRuby,
-				Name:     gemName,
-				Version:  version,
-				Scope:    scope,
-				Direct:   isDirect,
-				Metadata: metadata,
-			})
+		if dep := buildGemLockDependency(line, directDeps, options.IncludeTransitive); dep != nil {
+			dependencies = append(dependencies, *dep)
 		}
 	}
 
 	return dependencies
+}
+
+// buildGemLockDependency parses a GEM spec line (e.g. "    rails (7.1.0)") into
+// a dependency, or returns nil when the line is not a spec or is a transitive
+// dependency that the options exclude.
+func buildGemLockDependency(line string, directDeps map[string]bool, includeTransitive bool) *types.Dependency {
+	match := gemLockSpecRegex.FindStringSubmatch(line)
+	if match == nil {
+		return nil
+	}
+	gemName, version := match[1], match[2]
+	isDirect := directDeps[gemName]
+	if !includeTransitive && !isDirect {
+		return nil
+	}
+
+	metadata := types.NewMetadata(MetadataSourceGemfileLock)
+	metadata["direct"] = isDirect
+
+	// Lockfile specs default to prod scope; the Gemfile parser handles dev/test
+	// group classification.
+	return &types.Dependency{
+		Type:     DependencyTypeRuby,
+		Name:     gemName,
+		Version:  version,
+		Scope:    types.ScopeProd,
+		Direct:   isDirect,
+		Metadata: metadata,
+	}
 }
 
 // parseDirectDependencies extracts the list of direct dependencies from DEPENDENCIES section

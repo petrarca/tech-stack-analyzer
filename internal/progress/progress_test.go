@@ -77,6 +77,56 @@ func TestSimpleHandler(t *testing.T) {
 			},
 			expected: "[SCAN] Completed: 3247 files, 412 directories in 2.3s (722.2ms per 1000 files)\n",
 		},
+		{
+			name:     "folder file processing start",
+			event:    Event{Type: EventFolderFileProcessingStart, Path: "/svc"},
+			expected: "[FOLDER] Starting file processing: /svc\n",
+		},
+		{
+			name:     "scan initializing",
+			event:    Event{Type: EventScanInitializing, Path: "/p", Info: "vendor"},
+			expected: "[INIT] Initializing scanner: /p\n[INIT] Excluding: vendor\n",
+		},
+		{
+			name:     "file writing",
+			event:    Event{Type: EventFileWriting, Path: "/out.json"},
+			expected: "[OUT]  Writing results to: /out.json\n",
+		},
+		{
+			name:     "file written",
+			event:    Event{Type: EventFileWritten, Path: "/out.json"},
+			expected: "[OUT]  Results written: /out.json\n",
+		},
+		{
+			name:     "info",
+			event:    Event{Type: EventInfo, Info: "hello"},
+			expected: "[INFO] hello\n",
+		},
+		{
+			name:     "gitignore enter",
+			event:    Event{Type: EventGitIgnoreEnter, Info: "loaded .gitignore"},
+			expected: "[GIT]  loaded .gitignore\n",
+		},
+		{
+			name:     "rule result matched with path",
+			event:    Event{Type: EventRuleResult, Tech: "nodejs", Reason: "package.json", Path: "/app", Matched: true},
+			expected: "[RULE] ✓ MATCHED: nodejs - package.json (in /app)\n",
+		},
+		{
+			name:     "rule result matched without path",
+			event:    Event{Type: EventRuleResult, Tech: "nodejs", Reason: "package.json", Matched: true},
+			expected: "[RULE] ✓ MATCHED: nodejs - package.json\n",
+		},
+		{
+			name:     "rule result not matched",
+			event:    Event{Type: EventRuleResult, Tech: "rust", Reason: "Cargo.toml", Matched: false},
+			expected: "[RULE] ✗ NOT MATCHED: rust - Cargo.toml\n",
+		},
+		{
+			name:     "resolve start",
+			event:    Event{Type: EventResolveStart},
+			expected: "[RESOLVE] Resolving dependencies...\n",
+		},
 	}
 
 	for _, tt := range tests {
@@ -122,6 +172,37 @@ func TestTreeHandler(t *testing.T) {
 		if !strings.Contains(output, part) {
 			t.Errorf("Expected output to contain: %s\nGot:\n%s", part, output)
 		}
+	}
+}
+
+// TestTreeHandler_RemainingEvents exercises the event cases not covered by the
+// sequence test above, guarding the dispatch refactor.
+func TestTreeHandler_RemainingEvents(t *testing.T) {
+	tests := []struct {
+		name     string
+		event    Event
+		contains string
+	}{
+		{"progress", Event{Type: EventProgress, FileCount: 5, DirCount: 2}, "Progress: 5 files, 2 directories"},
+		{"folder processing start", Event{Type: EventFolderFileProcessingStart, Path: "/svc"}, "Processing files in: /svc"},
+		{"scan initializing", Event{Type: EventScanInitializing, Path: "/p"}, "Initializing: /p"},
+		{"file writing", Event{Type: EventFileWriting, Path: "/out.json"}, "Writing results to: /out.json"},
+		{"file written", Event{Type: EventFileWritten, Path: "/out.json"}, "Results written: /out.json"},
+		{"info", Event{Type: EventInfo, Info: "hello"}, "hello"},
+		{"gitignore enter", Event{Type: EventGitIgnoreEnter, Info: "loaded"}, "loaded"},
+		{"rule check", Event{Type: EventRuleCheck, Tech: "nodejs"}, "Checking rule: nodejs"},
+		{"rule matched with path", Event{Type: EventRuleResult, Tech: "nodejs", Reason: "package.json", Path: "/a", Matched: true}, "✓ MATCHED: nodejs - package.json (in /a)"},
+		{"rule matched no path", Event{Type: EventRuleResult, Tech: "nodejs", Reason: "package.json", Matched: true}, "✓ MATCHED: nodejs - package.json"},
+		{"rule not matched", Event{Type: EventRuleResult, Tech: "rust", Reason: "Cargo.toml", Matched: false}, "✗ NOT MATCHED: rust - Cargo.toml"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			buf := &bytes.Buffer{}
+			NewTreeHandler(buf).Handle(tt.event)
+			if !strings.Contains(buf.String(), tt.contains) {
+				t.Errorf("expected output to contain %q, got %q", tt.contains, buf.String())
+			}
+		})
 	}
 }
 

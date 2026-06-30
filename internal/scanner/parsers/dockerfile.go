@@ -57,7 +57,7 @@ func (p *DockerfileParser) ParseDockerfile(content string) *DockerfileInfo {
 	for _, line := range lines {
 		line = strings.TrimSpace(line)
 
-		// Skip empty lines and comments
+		// Skip empty lines and comments.
 		if line == "" || strings.HasPrefix(line, "#") {
 			continue
 		}
@@ -68,46 +68,52 @@ func (p *DockerfileParser) ParseDockerfile(content string) *DockerfileInfo {
 			continue
 		}
 
-		// Parse FROM statements
 		if matches := dockerfileFromRegex.FindStringSubmatch(line); matches != nil {
-			image := resolveDockerImageRef(matches[1], argDefaults, stageNames)
-
-			// Register the stage name regardless of whether the image resolved,
-			// so later "FROM <stage>" references are recognized.
-			if len(matches) > 2 && matches[2] != "" {
-				stageName := matches[2]
-				info.Stages = append(info.Stages, stageName)
-				info.MultiStage = true
-				stageNames[strings.ToLower(stageName)] = true
-			}
-
-			// Only record a real, resolvable registry image as a base image.
-			// A reference to a prior stage or an unresolvable variable is not a
-			// package and must not become an SBOM component.
-			if image != "" {
-				info.BaseImages = append(info.BaseImages, image)
-			}
+			parseDockerfileFrom(info, matches, argDefaults, stageNames)
 		}
-
-		// Parse EXPOSE statements
 		if matches := dockerfileExposeRegex.FindStringSubmatch(line); matches != nil {
-			portsStr := matches[1]
-			// Extract all port numbers from the line
-			portMatches := dockerfilePortRegex.FindAllString(portsStr, -1)
-			for _, portStr := range portMatches {
-				if port, err := strconv.Atoi(portStr); err == nil {
-					info.ExposedPorts = append(info.ExposedPorts, port)
-				}
-			}
+			info.ExposedPorts = append(info.ExposedPorts, parseDockerfileExpose(matches[1])...)
 		}
 	}
 
-	// Return nil if no useful information was found
+	// Return nil if no useful information was found.
 	if len(info.BaseImages) == 0 && len(info.ExposedPorts) == 0 {
 		return nil
 	}
-
 	return info
+}
+
+// parseDockerfileFrom records the stage name and resolvable base image from a
+// matched FROM statement onto info.
+func parseDockerfileFrom(info *DockerfileInfo, matches []string, argDefaults map[string]string, stageNames map[string]bool) {
+	image := resolveDockerImageRef(matches[1], argDefaults, stageNames)
+
+	// Register the stage name regardless of whether the image resolved, so
+	// later "FROM <stage>" references are recognized.
+	if len(matches) > 2 && matches[2] != "" {
+		stageName := matches[2]
+		info.Stages = append(info.Stages, stageName)
+		info.MultiStage = true
+		stageNames[strings.ToLower(stageName)] = true
+	}
+
+	// Only record a real, resolvable registry image as a base image. A
+	// reference to a prior stage or an unresolvable variable is not a package
+	// and must not become an SBOM component.
+	if image != "" {
+		info.BaseImages = append(info.BaseImages, image)
+	}
+}
+
+// parseDockerfileExpose extracts the port numbers from an EXPOSE argument.
+func parseDockerfileExpose(portsStr string) []int {
+	var ports []int
+	for _, portStr := range dockerfilePortRegex.FindAllString(portsStr, -1) {
+		if port, err := strconv.Atoi(portStr); err == nil {
+			ports = append(ports, port)
+		}
+	}
+	return ports
 }
 
 // resolveDockerImageRef normalizes a FROM image reference into a concrete
