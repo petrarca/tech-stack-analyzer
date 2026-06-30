@@ -226,6 +226,7 @@ func TestDetector(t *testing.T) {
 - Add package-level documentation comment to all Go packages (required for godoc and code clarity)
 - When technology rules or categories are added or modified, generate taxonomy files with `task build:taxonomies`
 - No emojis in code, comments, test output, or documentation
+- Keep new and modified functions at or below cyclomatic/cognitive complexity 10 (gocyclo/gocognit). The repo-wide linter limit (`.golangci.yml`) is a higher transitional ceiling being ratcheted down over the existing backlog; it is NOT the target for new code. Split complex functions with extract-method instead of raising the limit.
 
 ### Privacy
 - NEVER use proprietary, internal, or real-world identifying data in tests, code, examples, or documentation
