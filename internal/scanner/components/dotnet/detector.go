@@ -124,17 +124,37 @@ func (d *Detector) detectDotNetProject(file types.File, files []types.File, curr
 	// from the graph fan-out (which skips deps with no version).
 	d.applyCentralPackageVersions(payload, centralVersions)
 
-	// Attach the dependency graph (no-op unless the mode is on and
-	// packages.lock.json is present).
-	components.AttachLockfileGraph(payload, currentPath, provider, lockfileGraphProducers)
+	// Attach the dependency graph. A committed <App>.deps.json (the .NET SDK's
+	// fully-resolved build output) is the most authoritative source, so it is
+	// tried first when present; packages.lock.json follows.
+	components.AttachLockfileGraph(payload, currentPath, provider, graphProducers(files))
 
 	return payload
 }
 
-// lockfileGraphProducers lists this ecosystem's lockfile. packages.lock.json is
-// self-describing (type=Direct marks direct deps), so no manifest is needed.
-var lockfileGraphProducers = []components.LockfileGraphProducer{
-	{Lockfile: "packages.lock.json", Parse: parsers.ParsePackagesLockGraph},
+// packagesLockGraphProducer is this ecosystem's lockfile graph producer.
+// packages.lock.json is self-describing (type=Direct marks direct deps), so no
+// manifest is needed.
+var packagesLockGraphProducer = components.LockfileGraphProducer{
+	Lockfile: "packages.lock.json", Parse: parsers.ParsePackagesLockGraph,
+}
+
+// graphProducers builds the ordered graph-producer list for a project,
+// preferring a present <App>.deps.json (fully resolved by the .NET SDK,
+// including the bundled runtime) over packages.lock.json. The .deps.json
+// filename is project-specific (e.g. MyApp.deps.json) so it is discovered from
+// the directory's file list rather than a fixed name.
+func graphProducers(files []types.File) []components.LockfileGraphProducer {
+	var producers []components.LockfileGraphProducer
+	for _, f := range files {
+		if strings.HasSuffix(strings.ToLower(f.Name), ".deps.json") {
+			producers = append(producers, components.LockfileGraphProducer{
+				Lockfile: f.Name, Parse: parsers.ParseDotNetDepsGraph,
+			})
+			break
+		}
+	}
+	return append(producers, packagesLockGraphProducer)
 }
 
 func (d *Detector) parseDotNetProject(file types.File, files []types.File, currentPath string, provider types.Provider) *parsers.DotNetProject {
@@ -364,16 +384,19 @@ func (d *Detector) detectPackagesConfig(file types.File, currentPath, basePath s
 
 // applyCentralPackageVersions backfills versions from Central Package Management
 // (Directory.Packages.props) onto dependencies declared without a concrete one.
-// It reuses the shared backfill (parsers.ApplyManagedVersions): an unresolved
-// version (empty, "latest", a range, or a floating "6.0.*") is filled from the
-// central map keyed by package id, the declared form is recorded, and the
-// source is tagged. Already-resolved versions (e.g. a per-reference
-// VersionOverride) are left untouched.
+// It reuses the shared backfill (parsers.ApplyManagedVersionsCaseInsensitive):
+// an unresolved version (empty, "latest", a range, or a floating "6.0.*") is
+// filled from the central map keyed by package id, the declared form is
+// recorded, and the source is tagged. Already-resolved versions (e.g. a
+// per-reference VersionOverride) are left untouched. NuGet package ids are
+// case-insensitive, so the backfill matches ignoring case (a .csproj
+// PackageReference and a Directory.Packages.props PackageVersion may differ in
+// casing).
 func (d *Detector) applyCentralPackageVersions(payload *types.Payload, centralVersions map[string]string) {
 	if len(centralVersions) == 0 {
 		return
 	}
-	parsers.ApplyManagedVersions(payload.Dependencies, centralVersions)
+	parsers.ApplyManagedVersionsCaseInsensitive(payload.Dependencies, centralVersions)
 }
 
 func init() {

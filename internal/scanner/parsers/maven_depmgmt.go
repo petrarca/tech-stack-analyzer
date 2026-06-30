@@ -3,6 +3,7 @@ package parsers
 import (
 	"encoding/xml"
 	"path/filepath"
+	"strings"
 
 	"github.com/petrarca/tech-stack-analyzer/internal/scanner/semver"
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
@@ -208,16 +209,31 @@ func (p *MavenParser) addManagedEntries(deps []MavenDependency, properties map[s
 // dependencies from the managed-version table. A dependency that already has a
 // concrete version is never overwritten. The declared form is preserved in
 // metadata.declared, and metadata.source records the resolution origin.
-func (p *MavenParser) applyManagedVersions(deps []types.Dependency, managed map[string]string) {
+//
+// When caseInsensitive is true the managed table is matched ignoring case,
+// which is required for ecosystems with case-insensitive package identifiers
+// (e.g. NuGet). Maven coordinates are case-sensitive and must use exact match.
+func (p *MavenParser) applyManagedVersions(deps []types.Dependency, managed map[string]string, caseInsensitive bool) {
 	if len(managed) == 0 {
 		return
+	}
+	lookup := managed
+	if caseInsensitive {
+		lookup = make(map[string]string, len(managed))
+		for k, v := range managed {
+			lookup[strings.ToLower(k)] = v
+		}
 	}
 	for i := range deps {
 		dep := &deps[i]
 		if semver.IsResolved(dep.Version) {
 			continue
 		}
-		resolved, ok := managed[dep.Name]
+		key := dep.Name
+		if caseInsensitive {
+			key = strings.ToLower(key)
+		}
+		resolved, ok := lookup[key]
 		if !ok {
 			continue
 		}
@@ -233,8 +249,17 @@ func (p *MavenParser) applyManagedVersions(deps []types.Dependency, managed map[
 
 // ApplyManagedVersions backfills any unresolved dependency version (empty,
 // "latest", "${prop}", range) from a "groupId:artifactId" -> version table,
-// leaving already-resolved versions untouched. Exported for the Gradle detector
-// to apply versions managed by a platform()/enforcedPlatform() BOM.
+// leaving already-resolved versions untouched. Keys are matched case-sensitively
+// (Maven coordinates are case-sensitive). Exported for the Gradle detector to
+// apply versions managed by a platform()/enforcedPlatform() BOM.
 func ApplyManagedVersions(deps []types.Dependency, managed map[string]string) {
-	(&MavenParser{}).applyManagedVersions(deps, managed)
+	(&MavenParser{}).applyManagedVersions(deps, managed, false)
+}
+
+// ApplyManagedVersionsCaseInsensitive is ApplyManagedVersions for ecosystems
+// whose package identifiers are case-insensitive (e.g. NuGet, where a .csproj
+// PackageReference and a Directory.Packages.props PackageVersion may differ in
+// casing). The managed table is matched ignoring case.
+func ApplyManagedVersionsCaseInsensitive(deps []types.Dependency, managed map[string]string) {
+	(&MavenParser{}).applyManagedVersions(deps, managed, true)
 }

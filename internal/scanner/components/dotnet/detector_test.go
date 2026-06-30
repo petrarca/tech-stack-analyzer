@@ -714,3 +714,49 @@ func TestDetector_CentralPackageManagement(t *testing.T) {
 		t.Errorf("explicit version should be preserved, got %q", ver["Newtonsoft.Json"])
 	}
 }
+
+// TestDetector_CentralPackageManagementCaseInsensitive verifies that CPM
+// backfill matches package ids case-insensitively. NuGet package ids are
+// case-insensitive, so a Directory.Packages.props PackageVersion that differs
+// in casing from the .csproj PackageReference must still backfill the version.
+func TestDetector_CentralPackageManagementCaseInsensitive(t *testing.T) {
+	detector := &Detector{}
+
+	dirProps := `<Project>
+  <ItemGroup>
+    <PackageVersion Include="newtonsoft.json" Version="13.0.3" />
+    <PackageVersion Include="SERILOG" Version="3.1.1" />
+  </ItemGroup>
+</Project>`
+
+	csproj := `<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><AssemblyName>MyApp</AssemblyName></PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="Serilog" />
+  </ItemGroup>
+</Project>`
+
+	provider := &MockProvider{
+		files: map[string]string{
+			"/repo/Directory.Packages.props": dirProps,
+			"/repo/src/MyApp/MyApp.csproj":   csproj,
+		},
+	}
+	depDetector := &MockDependencyDetector{matchedTechs: map[string][]string{}}
+	files := []types.File{{Name: "MyApp.csproj", Path: "/repo/src/MyApp/MyApp.csproj"}}
+
+	results := detector.Detect(files, "/repo/src/MyApp", "/repo", provider, depDetector)
+	require.Len(t, results, 1)
+
+	ver := map[string]string{}
+	for _, d := range results[0].Dependencies {
+		ver[d.Name] = d.Version
+	}
+	if ver["Newtonsoft.Json"] != "13.0.3" {
+		t.Errorf("Newtonsoft.Json should backfill from lowercase central key, got %q", ver["Newtonsoft.Json"])
+	}
+	if ver["Serilog"] != "3.1.1" {
+		t.Errorf("Serilog should backfill from uppercase central key, got %q", ver["Serilog"])
+	}
+}
