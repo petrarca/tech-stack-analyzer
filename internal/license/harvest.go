@@ -30,19 +30,26 @@ type HarvestRoots struct {
 	CacheRoots []string
 }
 
-// allRoots returns the combined, existence-filtered search roots.
+// allRoots returns the combined, existence-filtered search roots. InTree roots
+// are listed before CacheRoots so in-tree results take priority.
 func (r HarvestRoots) allRoots() []string {
 	var roots []string
-	for _, p := range append(append([]string{}, r.InTree...), r.CacheRoots...) {
-		if p == "" {
-			continue
-		}
-		if info, err := os.Stat(p); err == nil && info.IsDir() {
-			roots = append(roots, p)
+	for _, group := range [][]string{r.InTree, r.CacheRoots} {
+		for _, p := range group {
+			if p == "" {
+				continue
+			}
+			if info, err := os.Stat(p); err == nil && info.IsDir() {
+				roots = append(roots, p)
+			}
 		}
 	}
 	return roots
 }
+
+// defaultNormalizer is a package-level shared normalizer for harvesters.
+// Normalizer is stateless after construction (read-only map), so sharing is safe.
+var defaultNormalizer = NewNormalizer()
 
 // readFileLimited reads up to maxLicenseFileSize bytes from path, returning ""
 // on any error or when the file is empty. Used to read small manifest/license

@@ -49,18 +49,13 @@ func HarvestLicenses(payload *types.Payload, basePath string) int {
 }
 
 // npmHarvestRoots returns the npm search roots: a node_modules directory at the
-// scan root (in-tree) plus the global npm cache when cache harvesting is on.
+// scan root (in-tree). The npm v7+ global cache stores tarballs, not extracted
+// package.json trees, so there is no out-of-tree cache to read -- only the
+// in-tree node_modules is used for npm regardless of --harvest-licenses.
 func npmHarvestRoots(basePath string) license.HarvestRoots {
-	roots := license.HarvestRoots{
+	return license.HarvestRoots{
 		InTree: []string{filepath.Join(basePath, "node_modules")},
 	}
-	if HarvestLicenseCaches() {
-		// The npm v7+ cache stores tarballs, not extracted package.json trees,
-		// so there is no global directory analogous to node_modules to read
-		// declared licenses from. Only the in-tree node_modules is used for npm.
-		_ = roots
-	}
-	return roots
 }
 
 // nugetHarvestRoots returns the NuGet global-packages-folder roots. NuGet has no

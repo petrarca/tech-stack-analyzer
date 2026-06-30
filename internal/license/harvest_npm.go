@@ -15,7 +15,7 @@ type npmHarvester struct {
 // node_modules folder, or a package cache root).
 func NewNpmHarvester(roots HarvestRoots) Harvester {
 	return &harvesterWithRoots{
-		impl:  &npmHarvester{normalizer: NewNormalizer()},
+		impl:  &npmHarvester{normalizer: defaultNormalizer},
 		roots: roots,
 	}
 }

@@ -32,6 +32,11 @@ const (
 
 // categorySeverity orders categories from most to least restrictive. A higher
 // value is more restrictive. Used to fold AND (take max) and OR (take min).
+//
+// CategoryNotice and CategoryPermissive share severity 2 intentionally: both
+// impose only attribution-tier obligations in practice. If a future distinction
+// is needed (e.g. categorising BSD vs Beerware differently), give Permissive a
+// lower value and add more licenses to that bucket.
 var categorySeverity = map[Category]int{
 	CategoryForbidden:    6,
 	CategoryRestricted:   5,

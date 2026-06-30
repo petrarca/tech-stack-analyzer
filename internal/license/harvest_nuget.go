@@ -14,7 +14,7 @@ type nugetHarvester struct {
 // (typically the global packages folder, e.g. ~/.nuget/packages).
 func NewNugetHarvester(roots HarvestRoots) Harvester {
 	return &harvesterWithRoots{
-		impl:  &nugetHarvester{normalizer: NewNormalizer()},
+		impl:  &nugetHarvester{normalizer: defaultNormalizer},
 		roots: roots,
 	}
 }
