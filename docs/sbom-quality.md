@@ -25,6 +25,81 @@ what causes versionless components, and what to do about it.
 
 ---
 
+## Environment coverage
+
+Whether an environment produces SBOM components depends on two things: the
+scanner must extract dependencies from its manifests/lockfiles, **and** the
+ecosystem must have a [Package URL (PURL)](https://github.com/package-url/purl-spec)
+type. Components without a PURL type are not emitted into the SBOM (CycloneDX or
+SPDX), because they cannot be matched by downstream vulnerability or license
+tooling.
+
+### Fully supported (emitted as SBOM components)
+
+These 17 environments map to a PURL type and are emitted into both CycloneDX 1.7
+and SPDX 2.3 output. The quality tier indicates how likely components are to be
+concretely versioned out of the box.
+
+| Environment | PURL type | Quality tier | Notes |
+|-------------|-----------|--------------|-------|
+| Go | `golang` | Excellent | `go.mod` + `go.sum` always committed; 0% versionless expected |
+| Rust (Cargo) | `cargo` | Excellent | `Cargo.lock` fully resolves transitive deps |
+| C/C++ (Conan) | `conan` | Excellent | `conan.lock` resolves everything |
+| npm / yarn / pnpm / Bun | `npm` | Good (needs lockfile) | Lockfile = fully resolved; `package.json` alone = ranges |
+| Python | `pypi` | Good (needs lockfile or `==`) | `uv.lock`/`poetry.lock` best; ranges stay versionless |
+| Ruby (Bundler) | `gem` | Good (needs lockfile) | `Gemfile.lock` fully resolved |
+| PHP (Composer) | `composer` | Good (needs lockfile) | `composer.lock` fully resolved |
+| .NET (NuGet) | `nuget` | Good (needs lockfile/CPM) | `packages.lock.json` or pinned CPM |
+| CocoaPods | `cocoapods` | Good (needs lockfile) | `Podfile.lock` fully resolved |
+| Dart / Flutter (Pub) | `pub` | Good (needs lockfile) | `pubspec.lock` fully resolved |
+| Elixir / Erlang (Hex) | `hex` | Good (needs lockfile) | `mix.lock` fully resolved |
+| Swift (SPM) | `swift` | Good (needs lockfile) | `Package.resolved` fully resolved |
+| Perl (CPAN) | `cpan` | Good (needs snapshot) | `cpanfile.snapshot` fully resolved |
+| R (CRAN) | `cran` | Good (needs lockfile) | `renv.lock` fully resolved |
+| Maven (JVM) | `maven` | Deepest resolution | 6-tier version resolution + transitive graph; resolves private artifacts via internal repo or deps.dev. See [Maven](#maven) |
+| Gradle (JVM) | `maven` | Deepest resolution | Reuses the full Maven chain (a Gradle platform is a Maven BOM); `gradle.lockfile`, BOMs, plugins |
+| Docker | `docker` | Variable | Depends on explicit, pinned image tags |
+
+**Maven and Gradle are the most capable, not the weakest.** Unlike the
+lockfile-driven ecosystems (which only emit what a committed lockfile already
+contains), Maven/Gradle have an active 6-tier resolver: committed
+`dependency-tree.json`/`dependency-list.txt`, the repo's own POMs and
+`dependencyManagement`, cross-module propagation, the local `~/.m2` cache, an
+internal Artifactory/JFrog repo (`--maven-repo-url`, covers **private**
+artifacts), and Maven Central (`--maven-central`). Transitive dependencies are
+resolved from the same repo chain or via the deps.dev hybrid
+(`--dependency-graph full --maven-graph-source repo|deps-dev`). The trade-off is
+that out-of-the-box (offline, no flags) a Maven project with externally-managed
+BOM versions may show some versionless components until you point it at a repo or
+commit a resolved file -- hence "needs configuration for full fidelity" rather
+than "low quality." See the [Maven section](#maven) and
+[docs/maven.md](maven.md).
+
+### Detected but NOT in the SBOM
+
+These environments are detected by the scanner (and appear in the regular scan
+output), but have **no PURL type**, so they are deliberately excluded from the
+SBOM. They have no upstream package registry, or represent infrastructure /
+runtime rather than installable packages.
+
+| Environment | Why excluded |
+|-------------|--------------|
+| Deno | Parses `deno.lock`/`deno.json` for tech detection, but `deno` has no PURL type, so its dependencies are not emitted |
+| Terraform | Infrastructure-as-Code; no package PURL type |
+| GitHub Actions | CI/CD workflow references; no package PURL type |
+| Delphi | No public registry / PURL type (`.dproj`) |
+| Node (runtime) | A runtime marker, not a package |
+| Nx | Reads `project.json` for workspace structure only; extracts no dependencies |
+
+### Not detected for dependencies at all
+
+Any technology detected purely via file extension or config-file presence (most
+of the 700+ YAML rules) contributes to the technology inventory but carries no
+dependency data, and therefore never appears in the SBOM. Only the environments
+in the "Fully supported" table above produce SBOM components.
+
+---
+
 ## Maven
 
 ### What the scanner reads (in priority order)
@@ -124,22 +199,36 @@ See [docs/maven.md](maven.md) for the full Maven/Gradle guide.
 ## NuGet (.NET)
 
 ### What the scanner reads
-1. `packages.lock.json` -- fully resolved (requires `RestorePackagesWithLockFile=true`).
-2. `.csproj` / `.fsproj` `<PackageReference>` elements -- extracts the declared version.
-3. Central Package Management (CPM) via `Directory.Packages.props` -- version pinned in the central file.
+
+**For the dependency graph (transitive), in priority order:**
+1. `<App>.deps.json` -- the .NET SDK's build output, a fully-resolved closure of direct, transitive, and bundled-runtime packages. When present this is the highest-fidelity source: completely offline, no lockfile opt-in, no network. Its filename is project-specific (e.g. `MyApp.deps.json`) and it lives in build output (`bin/.../`).
+2. `packages.lock.json` -- fully resolved transitive graph (requires `RestorePackagesWithLockFile=true`).
+
+**For direct dependencies and versions:**
+3. `.csproj` / `.vbproj` / `.fsproj` `<PackageReference>` elements -- declared version, including the child `<Version>` element and a CPM per-reference `VersionOverride`.
+4. `packages.config` (legacy .NET Framework).
+
+**Version backfill applied to the above:**
+- **MSBuild properties.** A version expressed as a property reference -- `<PackageReference Include="Newtonsoft.Json" Version="$(JsonVersion)" />` -- is resolved from the project's `<PropertyGroup>` definitions, including chained properties (`$(FullVer)` -> `$(BaseVer).72`). An undefined property is left intact so it stays detectably unresolved.
+- **Central Package Management (CPM).** A versionless `<PackageReference>` is backfilled from the nearest `Directory.Packages.props` (searched up to the scan root). Matching is case-insensitive, since NuGet package ids are case-insensitive (a `.csproj` and `Directory.Packages.props` may differ in casing).
 
 ### What causes versionless
-- **No `packages.lock.json`** and CPM-managed versions (version lives in `Directory.Packages.props`, not the `.csproj`). The scanner reads the `.csproj` first; if the version is absent (delegated to CPM) and there is no lock, the dep is versionless.
-- **Floating versions** (`*`, `1.0.*`).
+- **No `.deps.json` and no `packages.lock.json`**, with a version that is neither declared in the `.csproj` nor resolvable from CPM/properties.
+- **Floating versions** (`*`, `1.0.*`) -- a floating range is not a concrete version (there is no resolution of a floating range to a published version offline).
+- **Undefined property reference** -- `$(SomeVersion)` with no matching `<PropertyGroup>` entry.
 
 ### Recommendations
-1. **Enable restore lock files:**
+1. **Scan the build output (best for transitive).** A built project emits `<App>.deps.json`; scanning it (or committing it from CI) yields the complete resolved graph -- direct, transitive, and runtime -- with no further configuration.
+2. **Or enable restore lock files:**
    ```xml
    <!-- Directory.Build.props -->
    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
    ```
    Commit the generated `packages.lock.json`.
-2. **If using CPM** (`Directory.Packages.props`), the scanner resolves the version from that file -- no extra steps needed as long as the file is committed.
+3. **CPM and property-based versions resolve automatically** as long as the `Directory.Packages.props` and the project's `<PropertyGroup>` definitions are present in the scanned tree -- no extra steps.
+
+### Note on transitive dependencies
+Without a `.deps.json` or a `packages.lock.json`, the scanner reports **direct dependencies only** (from `.csproj` / `packages.config`); NuGet transitive resolution is not performed over the network. The two files above are the way to get the transitive graph.
 
 ---
 
