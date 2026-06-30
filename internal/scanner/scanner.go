@@ -440,6 +440,10 @@ func (s *Scanner) Scan() (*types.Payload, error) {
 	// Resolve the deferred dependency graph now that the walk is done.
 	components.ResolveDeferredGraphs()
 
+	// Harvest per-dependency licenses from local sources (in-tree always;
+	// global caches when enabled), now that versions are resolved.
+	components.HarvestLicenses(payload, basePath)
+
 	stopResolveReporter()
 
 	// Set scan duration

@@ -4,6 +4,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/petrarca/tech-stack-analyzer/internal/types"
 )
 
 func writeFile(t *testing.T, path, content string) {
@@ -82,5 +84,51 @@ func TestHarvestRoots_AllRoots_FiltersMissing(t *testing.T) {
 	got := roots.allRoots()
 	if len(got) != 1 || got[0] != existing {
 		t.Errorf("allRoots() = %v, want [%q]", got, existing)
+	}
+}
+
+func TestApplyHarvesters(t *testing.T) {
+	root := t.TempDir()
+	writeFile(t, filepath.Join(root, "leftpad", "package.json"),
+		`{"name":"leftpad","version":"1.0.0","license":"MIT"}`)
+
+	p := &types.Payload{
+		Dependencies: []types.Dependency{
+			{Type: "npm", Name: "leftpad", Version: "1.0.0"},
+			{Type: "npm", Name: "unknownpkg", Version: "2.0.0"},
+			{Type: "pypi", Name: "requests", Version: "2.0.0"}, // no harvester -> skipped
+		},
+	}
+	h := NewNpmHarvester(HarvestRoots{InTree: []string{root}})
+	added := ApplyHarvesters(p, []Harvester{h})
+	if added != 1 {
+		t.Fatalf("added = %d, want 1", added)
+	}
+	if got := DependencyLicense(p.Dependencies[0]); got != "MIT" {
+		t.Errorf("leftpad license = %q, want MIT", got)
+	}
+	if got := DependencyLicense(p.Dependencies[1]); got != "" {
+		t.Errorf("unknownpkg should have no license, got %q", got)
+	}
+	if got := DependencyLicense(p.Dependencies[2]); got != "" {
+		t.Errorf("pypi dep should be skipped, got %q", got)
+	}
+}
+
+func TestApplyHarvesters_DoesNotOverwrite(t *testing.T) {
+	root := t.TempDir()
+	writeFile(t, filepath.Join(root, "leftpad", "package.json"),
+		`{"name":"leftpad","license":"MIT"}`)
+	p := &types.Payload{
+		Dependencies: []types.Dependency{
+			{Type: "npm", Name: "leftpad", Version: "1.0.0",
+				Metadata: map[string]interface{}{"license": "Apache-2.0"}},
+		},
+	}
+	if added := ApplyHarvesters(p, []Harvester{NewNpmHarvester(HarvestRoots{InTree: []string{root}})}); added != 0 {
+		t.Fatalf("added = %d, want 0 (existing license preserved)", added)
+	}
+	if got := DependencyLicense(p.Dependencies[0]); got != "Apache-2.0" {
+		t.Errorf("existing license overwritten: %q", got)
 	}
 }

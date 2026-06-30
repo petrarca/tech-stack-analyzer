@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/petrarca/tech-stack-analyzer/internal/aggregator"
+	"github.com/petrarca/tech-stack-analyzer/internal/license"
 	"github.com/petrarca/tech-stack-analyzer/internal/metadata"
 	"github.com/petrarca/tech-stack-analyzer/internal/purl"
 	"github.com/petrarca/tech-stack-analyzer/internal/types"
@@ -79,12 +80,24 @@ type Metadata struct {
 
 // Component is a single CycloneDX component entry.
 type Component struct {
-	Type       string     `json:"type"`
-	Name       string     `json:"name"`
-	Version    string     `json:"version,omitempty"`
-	PURL       string     `json:"purl,omitempty"`
-	Scope      string     `json:"scope,omitempty"`
-	Properties []Property `json:"properties,omitempty"`
+	Type       string         `json:"type"`
+	Name       string         `json:"name"`
+	Version    string         `json:"version,omitempty"`
+	PURL       string         `json:"purl,omitempty"`
+	Scope      string         `json:"scope,omitempty"`
+	Licenses   []LicenseEntry `json:"licenses,omitempty"`
+	Properties []Property     `json:"properties,omitempty"`
+}
+
+// LicenseEntry is a CycloneDX license choice. The nested License carries the
+// SPDX id (per the CycloneDX schema's licenses[].license.id form).
+type LicenseEntry struct {
+	License LicenseID `json:"license"`
+}
+
+// LicenseID holds a single SPDX license identifier.
+type LicenseID struct {
+	ID string `json:"id"`
 }
 
 // Property is a CycloneDX name/value property used for non-standard fields.
@@ -384,6 +397,9 @@ func toComponent(dep types.Dependency) Component {
 		Version: cleanVersion(dep.Version),
 		PURL:    buildPURL(dep),
 		Scope:   cyclonedxScope(dep.Scope),
+	}
+	if lic := license.DependencyLicense(dep); lic != "" {
+		c.Licenses = []LicenseEntry{{License: LicenseID{ID: lic}}}
 	}
 	return c
 }

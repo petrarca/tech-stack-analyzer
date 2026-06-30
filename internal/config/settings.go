@@ -47,6 +47,7 @@ type Settings struct {
 	MavenSettings            string                    // Path to a Maven settings.xml (repos+credentials); empty = ~/.m2/settings.xml. Per-scan override for projects with their own settings
 	MavenRepoToken           string                    // Token for an authenticated remote Maven repo; sourced from the environment, never persisted
 	MavenRepoUser            string                    // Username for Basic auth against the remote Maven repo; sourced from the environment
+	HarvestLicenseCaches     bool                      // Read out-of-tree global package caches (e.g. ~/.nuget/packages) for per-dependency license harvesting (in-tree sources are always read)
 	OmitFields               []string                  // Fields to omit from full output (e.g. "reason", "path", "edges")
 	AlsoAggregate            string                    // Also produce an aggregate output alongside the full output (e.g. "tech,techs,languages")
 	SBOM                     bool                      // Emit an SBOM as the primary output instead of the scan tree
