@@ -26,121 +26,114 @@ func NewSimpleHandler(writer io.Writer) *SimpleHandler {
 func (h *SimpleHandler) Handle(event Event) {
 	switch event.Type {
 	case EventScanStart:
-		h.scanStart = time.Now()
-		fmt.Fprintf(h.writer, "[SCAN] Starting: %s\n", event.Path)
-		if event.Info != "" {
-			fmt.Fprintf(h.writer, "[SCAN] Excluding: %s\n", event.Info)
-		}
-
+		h.handleScanStart(event)
 	case EventScanComplete:
-		totalScanTime := time.Since(h.scanStart)
-		msPerKFiles := 0.0
-		if event.FileCount > 0 {
-			msPerKFiles = (event.Duration.Seconds() * 1000) / (float64(event.FileCount) / 1000)
-		}
-		fmt.Fprintf(h.writer, "[SCAN] Completed: %d files, %d directories in %.1fs (%.1fms per 1000 files)\n",
-			event.FileCount, event.DirCount, event.Duration.Seconds(), msPerKFiles)
-
-		// Print concise summaries for verbose mode
-		h.printConciseTimingSummary(totalScanTime)
-		h.printConciseRuleSummary()
-
+		h.handleScanComplete(event)
+	case EventScanInitializing:
+		h.handleScanInitializing(event)
 	case EventEnterDirectory:
 		fmt.Fprintf(h.writer, "[DIR]  Entering: %s\n", event.Path)
-
 	case EventLeaveDirectory:
-		// Show timing if duration is set and track it
-		if event.Duration > 0 {
-			h.timings = append(h.timings, TimingEntry{
-				Path:     event.Path,
-				Duration: event.Duration,
-				Depth:    0,
-			})
-			seconds := event.Duration.Seconds()
-			fmt.Fprintf(h.writer, "[TIME] %s: %s %.2fs\n", event.Path, getTimingIcon(seconds), seconds)
-		}
-
+		h.handleLeaveDirectory(event)
 	case EventComponentDetected:
-		fmt.Fprintf(h.writer, "[COMP] Detected: %s (%s) at %s\n",
-			event.Name, event.Tech, event.Path)
-
+		fmt.Fprintf(h.writer, "[COMP] Detected: %s (%s) at %s\n", event.Name, event.Tech, event.Path)
 	case EventFileProcessingStart:
 		fmt.Fprintf(h.writer, "[FILE] Processing: %s (%s)\n", event.Path, event.Info)
-
-	case EventFileProcessingEnd:
-		// File processing completed - no output needed for timing
-
 	case EventFolderFileProcessingStart:
-		// Start timing for folder file processing
 		fmt.Fprintf(h.writer, "[FOLDER] Starting file processing: %s\n", event.Path)
-
 	case EventFolderFileProcessingEnd:
-		// Track timing for individual folder file processing
-		if event.Duration > 0 {
-			h.timings = append(h.timings, TimingEntry{
-				Path:     event.Path,
-				Duration: event.Duration,
-				Depth:    0,
-			})
-			seconds := event.Duration.Seconds()
-			fmt.Fprintf(h.writer, "[FOLDER] %s: %s %.2fs\n", event.Path, getTimingIcon(seconds), seconds)
-		}
-
+		h.handleFolderFileProcessingEnd(event)
 	case EventSkipped:
 		fmt.Fprintf(h.writer, "[SKIP] Excluding: %s (%s)\n", event.Path, event.Reason)
-
 	case EventProgress:
-		fmt.Fprintf(h.writer, "[PROG] Progress: %d files, %d directories\n",
-			event.FileCount, event.DirCount)
-
-	case EventScanInitializing:
-		fmt.Fprintf(h.writer, "[INIT] Initializing scanner: %s\n", event.Path)
-		if event.Info != "" {
-			fmt.Fprintf(h.writer, "[INIT] Excluding: %s\n", event.Info)
-		}
-
+		fmt.Fprintf(h.writer, "[PROG] Progress: %d files, %d directories\n", event.FileCount, event.DirCount)
 	case EventFileWriting:
 		fmt.Fprintf(h.writer, "[OUT]  Writing results to: %s\n", event.Path)
-
 	case EventFileWritten:
 		fmt.Fprintf(h.writer, "[OUT]  Results written: %s\n", event.Path)
-
 	case EventInfo:
 		fmt.Fprintf(h.writer, "[INFO] %s\n", event.Info)
-
 	case EventResolveStart, EventResolveProgress, EventResolveComplete:
 		h.handleResolveEvent(event)
-
-	case EventGitIgnoreEnter:
+	case EventGitIgnoreEnter, EventGitIgnoreLeave:
 		fmt.Fprintf(h.writer, "[GIT]  %s\n", event.Info)
-
-	case EventGitIgnoreLeave:
-		fmt.Fprintf(h.writer, "[GIT]  %s\n", event.Info)
-
 	case EventRuleCheck:
-		fmt.Fprintf(h.writer, "[RULE] Checking: %s\n", event.Tech)
-		for _, detail := range event.Details {
-			fmt.Fprintf(h.writer, "       %s\n", detail)
-		}
-
+		h.handleRuleCheck(event)
 	case EventRuleResult:
-		// Track rule matches for summary
-		h.rules = append(h.rules, RuleEntry{
-			Tech:    event.Tech,
-			Reason:  event.Reason,
-			Path:    event.Path,
-			Matched: event.Matched,
-		})
+		h.handleRuleResult(event)
+	case EventFileProcessingEnd:
+		// File processing completed - no output needed for timing.
+	}
+}
 
-		if event.Matched {
-			if event.Path != "" {
-				fmt.Fprintf(h.writer, "[RULE] ✓ MATCHED: %s - %s (in %s)\n", event.Tech, event.Reason, event.Path)
-			} else {
-				fmt.Fprintf(h.writer, "[RULE] ✓ MATCHED: %s - %s\n", event.Tech, event.Reason)
-			}
-		} else {
-			fmt.Fprintf(h.writer, "[RULE] ✗ NOT MATCHED: %s - %s\n", event.Tech, event.Reason)
-		}
+func (h *SimpleHandler) handleScanStart(event Event) {
+	h.scanStart = time.Now()
+	fmt.Fprintf(h.writer, "[SCAN] Starting: %s\n", event.Path)
+	if event.Info != "" {
+		fmt.Fprintf(h.writer, "[SCAN] Excluding: %s\n", event.Info)
+	}
+}
+
+func (h *SimpleHandler) handleScanComplete(event Event) {
+	totalScanTime := time.Since(h.scanStart)
+	msPerKFiles := 0.0
+	if event.FileCount > 0 {
+		msPerKFiles = (event.Duration.Seconds() * 1000) / (float64(event.FileCount) / 1000)
+	}
+	fmt.Fprintf(h.writer, "[SCAN] Completed: %d files, %d directories in %.1fs (%.1fms per 1000 files)\n",
+		event.FileCount, event.DirCount, event.Duration.Seconds(), msPerKFiles)
+	// Print concise summaries for verbose mode.
+	h.printConciseTimingSummary(totalScanTime)
+	h.printConciseRuleSummary()
+}
+
+func (h *SimpleHandler) handleScanInitializing(event Event) {
+	fmt.Fprintf(h.writer, "[INIT] Initializing scanner: %s\n", event.Path)
+	if event.Info != "" {
+		fmt.Fprintf(h.writer, "[INIT] Excluding: %s\n", event.Info)
+	}
+}
+
+func (h *SimpleHandler) handleLeaveDirectory(event Event) {
+	if event.Duration <= 0 {
+		return
+	}
+	h.timings = append(h.timings, TimingEntry{Path: event.Path, Duration: event.Duration, Depth: 0})
+	seconds := event.Duration.Seconds()
+	fmt.Fprintf(h.writer, "[TIME] %s: %s %.2fs\n", event.Path, getTimingIcon(seconds), seconds)
+}
+
+func (h *SimpleHandler) handleFolderFileProcessingEnd(event Event) {
+	if event.Duration <= 0 {
+		return
+	}
+	h.timings = append(h.timings, TimingEntry{Path: event.Path, Duration: event.Duration, Depth: 0})
+	seconds := event.Duration.Seconds()
+	fmt.Fprintf(h.writer, "[FOLDER] %s: %s %.2fs\n", event.Path, getTimingIcon(seconds), seconds)
+}
+
+func (h *SimpleHandler) handleRuleCheck(event Event) {
+	fmt.Fprintf(h.writer, "[RULE] Checking: %s\n", event.Tech)
+	for _, detail := range event.Details {
+		fmt.Fprintf(h.writer, "       %s\n", detail)
+	}
+}
+
+func (h *SimpleHandler) handleRuleResult(event Event) {
+	h.rules = append(h.rules, RuleEntry{
+		Tech:    event.Tech,
+		Reason:  event.Reason,
+		Path:    event.Path,
+		Matched: event.Matched,
+	})
+	if !event.Matched {
+		fmt.Fprintf(h.writer, "[RULE] ✗ NOT MATCHED: %s - %s\n", event.Tech, event.Reason)
+		return
+	}
+	if event.Path != "" {
+		fmt.Fprintf(h.writer, "[RULE] ✓ MATCHED: %s - %s (in %s)\n", event.Tech, event.Reason, event.Path)
+	} else {
+		fmt.Fprintf(h.writer, "[RULE] ✓ MATCHED: %s - %s\n", event.Tech, event.Reason)
 	}
 }
 

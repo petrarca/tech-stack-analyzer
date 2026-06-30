@@ -77,6 +77,56 @@ func TestSimpleHandler(t *testing.T) {
 			},
 			expected: "[SCAN] Completed: 3247 files, 412 directories in 2.3s (722.2ms per 1000 files)\n",
 		},
+		{
+			name:     "folder file processing start",
+			event:    Event{Type: EventFolderFileProcessingStart, Path: "/svc"},
+			expected: "[FOLDER] Starting file processing: /svc\n",
+		},
+		{
+			name:     "scan initializing",
+			event:    Event{Type: EventScanInitializing, Path: "/p", Info: "vendor"},
+			expected: "[INIT] Initializing scanner: /p\n[INIT] Excluding: vendor\n",
+		},
+		{
+			name:     "file writing",
+			event:    Event{Type: EventFileWriting, Path: "/out.json"},
+			expected: "[OUT]  Writing results to: /out.json\n",
+		},
+		{
+			name:     "file written",
+			event:    Event{Type: EventFileWritten, Path: "/out.json"},
+			expected: "[OUT]  Results written: /out.json\n",
+		},
+		{
+			name:     "info",
+			event:    Event{Type: EventInfo, Info: "hello"},
+			expected: "[INFO] hello\n",
+		},
+		{
+			name:     "gitignore enter",
+			event:    Event{Type: EventGitIgnoreEnter, Info: "loaded .gitignore"},
+			expected: "[GIT]  loaded .gitignore\n",
+		},
+		{
+			name:     "rule result matched with path",
+			event:    Event{Type: EventRuleResult, Tech: "nodejs", Reason: "package.json", Path: "/app", Matched: true},
+			expected: "[RULE] ✓ MATCHED: nodejs - package.json (in /app)\n",
+		},
+		{
+			name:     "rule result matched without path",
+			event:    Event{Type: EventRuleResult, Tech: "nodejs", Reason: "package.json", Matched: true},
+			expected: "[RULE] ✓ MATCHED: nodejs - package.json\n",
+		},
+		{
+			name:     "rule result not matched",
+			event:    Event{Type: EventRuleResult, Tech: "rust", Reason: "Cargo.toml", Matched: false},
+			expected: "[RULE] ✗ NOT MATCHED: rust - Cargo.toml\n",
+		},
+		{
+			name:     "resolve start",
+			event:    Event{Type: EventResolveStart},
+			expected: "[RESOLVE] Resolving dependencies...\n",
+		},
 	}
 
 	for _, tt := range tests {
