@@ -23,6 +23,7 @@ Detection is powered by **800+ technology rules** across 48 categories, using fi
 - **Dependency Graph** - Emits the package-to-package dependency graph (edges) across 19 ecosystems, off by default via `--dependency-graph`; optional online resolution (deps.dev) fills gaps for manifest-only ecosystems
 - **Maven Version Resolution** - Resolves versionless Maven dependencies (BOM-managed, parent-inherited, property references) offline from the repo's own POMs, plus optional local `~/.m2`, an internal Artifactory/JFrog repo (incl. private artifacts), or Maven Central. Optional Trivy-style transitive resolution by crawling the configured Maven repo. See the [Maven guide](docs/maven.md)
 - **CycloneDX SBOM** - Emits a PURL-based SBOM consumable directly by vulnerability scanners such as Trivy
+- **License Detection** - Detects licenses from LICENSE files (content-based, confidence-scored) and package manifests (SPDX expression parsing with AND/OR/WITH support). Normalizes declared strings to SPDX ids using a comprehensive alias table. Risk-categorizes each license (forbidden / restricted / reciprocal / notice / permissive / unencumbered) with correct compound-expression folding. Per-dependency license harvesting from local package sources (node_modules, NuGet packages folder) surfaces on SBOM components
 - **Dependency Currency** - Reports how far each direct dependency is behind its latest release (patch/minor/major) via [Google deps.dev](https://deps.dev), as a separate `{out}.currency.json` artifact. Opt-in (`--resolve-currency` or the `currency` command); results are cached across runs in a shared SQLite store with a per-entry TTL. Unresolvable cases are recorded honestly (`unsupported`, `unpinned`, `unknown`)
 - **Code Statistics** - Lines of code, complexity metrics, and language breakdown via SCC
 - **Automatic .gitignore** - Respects `.gitignore` files with full gitignore semantics (negation `!`, dir-only `/`, last-match-wins)
@@ -159,7 +160,7 @@ Useful for quick codebase introspection and onboarding.
 - **CI/CD Integration** - Fast dependency detection in build pipelines
 - **Portfolio Analysis** - Scan hundreds of repositories in minutes
 - **Migration Planning** - Understand technology landscape before cloud or framework migrations
-- **License Compliance** - Feed dependency output into specialized license tools
+- **License Compliance** - Native SPDX license detection, expression parsing, and risk categorization; per-dependency licenses surface on CycloneDX SBOM components
 - **Security Scanning** - Provide dependency lists to vulnerability scanners
 
 ## Documentation
