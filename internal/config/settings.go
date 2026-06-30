@@ -249,12 +249,24 @@ func (s *Settings) ConfigureLogger() *slog.Logger {
 
 // Validate checks if the settings are valid
 func (s *Settings) Validate() error {
-	// Check for mutually exclusive flags
 	if s.Verbose && s.Debug {
 		return fmt.Errorf("cannot use both --verbose and --debug flags")
 	}
+	if err := s.validateEnums(); err != nil {
+		return err
+	}
+	if err := s.validateURLs(); err != nil {
+		return err
+	}
+	if s.ResolveCurrency && s.CurrencyTTLHours <= 0 {
+		return fmt.Errorf("invalid currency-ttl %d: must be a positive number of hours", s.CurrencyTTLHours)
+	}
+	return s.validateAggregate()
+}
 
-	// Validate dependency-graph mode if specified
+// validateEnums checks the fixed-vocabulary options (dependency-graph mode and
+// SBOM format).
+func (s *Settings) validateEnums() error {
 	if s.DependencyGraph != "" {
 		switch s.DependencyGraph {
 		case "off", "direct", "full":
@@ -262,8 +274,6 @@ func (s *Settings) Validate() error {
 			return fmt.Errorf("invalid dependency-graph mode '%s'. Valid values: off, direct, full", s.DependencyGraph)
 		}
 	}
-
-	// Validate SBOM format if specified
 	if s.SBOMFormat != "" {
 		switch strings.ToLower(s.SBOMFormat) {
 		case "cyclonedx", "spdx":
@@ -271,43 +281,44 @@ func (s *Settings) Validate() error {
 			return fmt.Errorf("invalid sbom-format '%s'. Valid values: cyclonedx, spdx", s.SBOMFormat)
 		}
 	}
+	return nil
+}
 
-	// Validate the deps.dev endpoint if specified (must be an http(s) URL).
-	if s.DepsDevEndpoint != "" {
-		if u, err := url.Parse(s.DepsDevEndpoint); err != nil || (u.Scheme != "http" && u.Scheme != "https") {
-			return fmt.Errorf("invalid deps-dev-endpoint '%s': must be an http(s) URL", s.DepsDevEndpoint)
+// validateURLs checks that optional URL settings are well-formed http(s) URLs.
+func (s *Settings) validateURLs() error {
+	urls := []struct {
+		flag  string
+		value string
+	}{
+		{"deps-dev-endpoint", s.DepsDevEndpoint},
+		{"maven-repo-url", s.MavenRepoURL},
+	}
+	for _, u := range urls {
+		if u.value == "" {
+			continue
+		}
+		if parsed, err := url.Parse(u.value); err != nil || (parsed.Scheme != "http" && parsed.Scheme != "https") {
+			return fmt.Errorf("invalid %s '%s': must be an http(s) URL", u.flag, u.value)
 		}
 	}
+	return nil
+}
 
-	// Currency TTL must be positive when currency resolution is enabled.
-	if s.ResolveCurrency && s.CurrencyTTLHours <= 0 {
-		return fmt.Errorf("invalid currency-ttl %d: must be a positive number of hours", s.CurrencyTTLHours)
+// validateAggregate checks that each comma-separated aggregate field is known.
+func (s *Settings) validateAggregate() error {
+	if s.Aggregate == "" {
+		return nil
 	}
-
-	// Validate the Maven repository URL if specified (must be an http(s) URL).
-	if s.MavenRepoURL != "" {
-		if u, err := url.Parse(s.MavenRepoURL); err != nil || (u.Scheme != "http" && u.Scheme != "https") {
-			return fmt.Errorf("invalid maven-repo-url '%s': must be an http(s) URL", s.MavenRepoURL)
+	validFields := map[string]bool{
+		"tech": true, "techs": true, "reason": true,
+		"languages": true, "licenses": true,
+		"dependencies": true, "git": true,
+		"components": true, "all": true,
+	}
+	for _, field := range strings.Split(s.Aggregate, ",") {
+		if !validFields[strings.TrimSpace(field)] {
+			return fmt.Errorf("invalid aggregate field '%s'. Valid fields: tech, techs, reason, languages, licenses, dependencies, git, all", strings.TrimSpace(field))
 		}
 	}
-
-	// Validate aggregate fields if specified
-	if s.Aggregate != "" {
-		validFields := map[string]bool{
-			"tech": true, "techs": true, "reason": true,
-			"languages": true, "licenses": true,
-			"dependencies": true, "git": true,
-			"components": true, "all": true,
-		}
-
-		fields := strings.Split(s.Aggregate, ",")
-		for _, field := range fields {
-			field = strings.TrimSpace(field)
-			if !validFields[field] {
-				return fmt.Errorf("invalid aggregate field '%s'. Valid fields: tech, techs, reason, languages, licenses, dependencies, git, all", field)
-			}
-		}
-	}
-
 	return nil
 }

@@ -223,6 +223,42 @@ func TestValidate_AlwaysReturnsNil(t *testing.T) {
 	assert.NoError(t, err, "Validate should always return nil for now")
 }
 
+// TestValidate_Cases characterizes each validation branch before Validate is
+// refactored into per-concern validators.
+func TestValidate_Cases(t *testing.T) {
+	tests := []struct {
+		name    string
+		mutate  func(*Settings)
+		wantErr bool
+	}{
+		{"verbose and debug mutually exclusive", func(s *Settings) { s.Verbose = true; s.Debug = true }, true},
+		{"valid dependency-graph mode", func(s *Settings) { s.DependencyGraph = "full" }, false},
+		{"invalid dependency-graph mode", func(s *Settings) { s.DependencyGraph = "bogus" }, true},
+		{"valid sbom format", func(s *Settings) { s.SBOMFormat = "CycloneDX" }, false},
+		{"invalid sbom format", func(s *Settings) { s.SBOMFormat = "xml" }, true},
+		{"valid deps-dev endpoint", func(s *Settings) { s.DepsDevEndpoint = "https://api.deps.dev" }, false},
+		{"invalid deps-dev endpoint", func(s *Settings) { s.DepsDevEndpoint = "ftp://x" }, true},
+		{"currency ttl must be positive", func(s *Settings) { s.ResolveCurrency = true; s.CurrencyTTLHours = 0 }, true},
+		{"currency ttl positive ok", func(s *Settings) { s.ResolveCurrency = true; s.CurrencyTTLHours = 24 }, false},
+		{"valid maven repo url", func(s *Settings) { s.MavenRepoURL = "https://repo.example.com" }, false},
+		{"invalid maven repo url", func(s *Settings) { s.MavenRepoURL = "not a url" }, true},
+		{"valid aggregate fields", func(s *Settings) { s.Aggregate = "tech, techs, all" }, false},
+		{"invalid aggregate field", func(s *Settings) { s.Aggregate = "tech, bogus" }, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := DefaultSettings()
+			tt.mutate(s)
+			err := s.Validate()
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
 // Helper function to clear environment variables
 func clearEnvVars() {
 	envVars := []string{
