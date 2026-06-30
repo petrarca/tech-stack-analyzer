@@ -93,90 +93,106 @@ func DefaultSettings() *Settings {
 func LoadSettingsFromEnvironment() *Settings {
 	settings := DefaultSettings()
 
-	// Override with environment variables if set
-	if outputFile := os.Getenv("STACK_ANALYZER_OUTPUT"); outputFile != "" {
-		settings.OutputFile = outputFile
-	}
+	applyStringEnv(settings)
+	applyBoolEnv(settings)
+	applyIntEnv(settings)
+	applyListEnv(settings)
 
-	if pretty := os.Getenv("STACK_ANALYZER_PRETTY"); pretty != "" {
-		settings.PrettyPrint = strings.ToLower(pretty) == "true"
-	}
-
-	if aggregate := os.Getenv("STACK_ANALYZER_AGGREGATE"); aggregate != "" {
-		settings.Aggregate = aggregate
-	}
-
-	// The only new env var the currency feature introduces. The cache path is
-	// also overridable via --currency-cache (flag wins over env).
-	if cache := os.Getenv(store.EnvCachePath); cache != "" {
-		settings.CurrencyCache = cache
-	}
-
-	if verbose := os.Getenv("STACK_ANALYZER_VERBOSE"); verbose != "" {
-		settings.Verbose = strings.ToLower(verbose) == "true"
-	}
-
-	if debug := os.Getenv("STACK_ANALYZER_DEBUG"); debug != "" {
-		settings.Debug = strings.ToLower(debug) == "true"
-	}
-
-	if noCodeStats := os.Getenv("STACK_ANALYZER_NO_CODE_STATS"); noCodeStats != "" {
-		settings.NoCodeStats = strings.ToLower(noCodeStats) == "true"
-	}
-
-	if statsDepth := os.Getenv("STACK_ANALYZER_COMPONENT_STATS_DEPTH"); statsDepth != "" {
-		if depth, err := strconv.Atoi(statsDepth); err == nil {
-			settings.ComponentStatsDepth = depth
-		}
-	}
-
-	if subsysDepth := os.Getenv("STACK_ANALYZER_SUBSYSTEM_DEPTH"); subsysDepth != "" {
-		if depth, err := strconv.Atoi(subsysDepth); err == nil {
-			settings.SubsystemDepth = depth
-		}
-	}
-
-	if traceTimings := os.Getenv("STACK_ANALYZER_TRACE_TIMINGS"); traceTimings != "" {
-		settings.TraceTimings = strings.ToLower(traceTimings) == "true"
-	}
-
-	if traceRules := os.Getenv("STACK_ANALYZER_TRACE_RULES"); traceRules != "" {
-		settings.TraceRules = strings.ToLower(traceRules) == "true"
-	}
-
-	if filterRules := os.Getenv("STACK_ANALYZER_FILTER_RULES"); filterRules != "" {
-		settings.FilterRules = strings.Split(filterRules, ",")
-		for i, rule := range settings.FilterRules {
-			settings.FilterRules[i] = strings.TrimSpace(rule)
-		}
-	}
-
-	if excludes := os.Getenv("STACK_ANALYZER_EXCLUDE"); excludes != "" {
-		settings.ExcludePatterns = strings.Split(excludes, ",")
-		for i, exclude := range settings.ExcludePatterns {
-			settings.ExcludePatterns[i] = strings.TrimSpace(exclude)
-		}
-	}
-
+	// Log level needs parsing/validation (invalid values keep the default).
 	if logLevel := os.Getenv("STACK_ANALYZER_LOG_LEVEL"); logLevel != "" {
 		if level, err := parseLogLevel(logLevel); err == nil {
 			settings.LogLevel = level
 		}
 	}
 
-	if logFormat := os.Getenv("STACK_ANALYZER_LOG_FORMAT"); logFormat != "" {
-		settings.LogFormat = logFormat
-	}
-
-	if logFile := os.Getenv("STACK_ANALYZER_LOG_FILE"); logFile != "" {
-		settings.LogFile = logFile
-	}
-
-	if useLockFiles := os.Getenv("STACK_ANALYZER_USE_LOCK_FILES"); useLockFiles != "" {
-		settings.UseLockFiles = strings.ToLower(useLockFiles) != "false"
-	}
-
 	return settings
+}
+
+// applyStringEnv overrides plain string settings from their env vars.
+func applyStringEnv(s *Settings) {
+	strs := []struct {
+		env   string
+		field *string
+	}{
+		{"STACK_ANALYZER_OUTPUT", &s.OutputFile},
+		{"STACK_ANALYZER_AGGREGATE", &s.Aggregate},
+		// Currency cache is also overridable via --currency-cache (flag wins).
+		{store.EnvCachePath, &s.CurrencyCache},
+		{"STACK_ANALYZER_LOG_FORMAT", &s.LogFormat},
+		{"STACK_ANALYZER_LOG_FILE", &s.LogFile},
+	}
+	for _, e := range strs {
+		if v := os.Getenv(e.env); v != "" {
+			*e.field = v
+		}
+	}
+}
+
+// applyBoolEnv overrides boolean settings. UseLockFiles is opt-out ("false"
+// disables); every other flag is opt-in ("true" enables).
+func applyBoolEnv(s *Settings) {
+	bools := []struct {
+		env   string
+		field *bool
+	}{
+		{"STACK_ANALYZER_PRETTY", &s.PrettyPrint},
+		{"STACK_ANALYZER_VERBOSE", &s.Verbose},
+		{"STACK_ANALYZER_DEBUG", &s.Debug},
+		{"STACK_ANALYZER_NO_CODE_STATS", &s.NoCodeStats},
+		{"STACK_ANALYZER_TRACE_TIMINGS", &s.TraceTimings},
+		{"STACK_ANALYZER_TRACE_RULES", &s.TraceRules},
+	}
+	for _, e := range bools {
+		if v := os.Getenv(e.env); v != "" {
+			*e.field = strings.ToLower(v) == "true"
+		}
+	}
+	if v := os.Getenv("STACK_ANALYZER_USE_LOCK_FILES"); v != "" {
+		s.UseLockFiles = strings.ToLower(v) != "false"
+	}
+}
+
+// applyIntEnv overrides integer settings, ignoring unparseable values.
+func applyIntEnv(s *Settings) {
+	ints := []struct {
+		env   string
+		field *int
+	}{
+		{"STACK_ANALYZER_COMPONENT_STATS_DEPTH", &s.ComponentStatsDepth},
+		{"STACK_ANALYZER_SUBSYSTEM_DEPTH", &s.SubsystemDepth},
+	}
+	for _, e := range ints {
+		if v := os.Getenv(e.env); v != "" {
+			if n, err := strconv.Atoi(v); err == nil {
+				*e.field = n
+			}
+		}
+	}
+}
+
+// applyListEnv overrides comma-separated list settings, trimming each element.
+func applyListEnv(s *Settings) {
+	lists := []struct {
+		env   string
+		field *[]string
+	}{
+		{"STACK_ANALYZER_FILTER_RULES", &s.FilterRules},
+		{"STACK_ANALYZER_EXCLUDE", &s.ExcludePatterns},
+	}
+	for _, e := range lists {
+		if v := os.Getenv(e.env); v != "" {
+			*e.field = splitTrim(v)
+		}
+	}
+}
+
+// splitTrim splits a comma-separated env value and trims whitespace.
+func splitTrim(value string) []string {
+	parts := strings.Split(value, ",")
+	for i := range parts {
+		parts[i] = strings.TrimSpace(parts[i])
+	}
+	return parts
 }
 
 // parseLogLevel converts string log level to slog.Level

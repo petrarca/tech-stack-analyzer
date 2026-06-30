@@ -60,6 +60,65 @@ func TestLoadSettings_WithEnvironmentVariables(t *testing.T) {
 	assert.Equal(t, "json", settings.LogFormat)
 }
 
+// TestLoadSettings_AllEnvironmentVariables characterizes every env var handled
+// by LoadSettingsFromEnvironment, including the less-common ones, before the
+// function is refactored to a data-driven form. t.Setenv auto-restores.
+func TestLoadSettings_AllEnvironmentVariables(t *testing.T) {
+	clearEnvVars()
+	defer clearEnvVars()
+
+	t.Setenv("STACK_ANALYZER_OUTPUT", "/tmp/out.json")
+	t.Setenv("STACK_ANALYZER_PRETTY", "true")
+	t.Setenv("STACK_ANALYZER_AGGREGATE", "tech")
+	t.Setenv("STACK_ANALYZER_VERBOSE", "true")
+	t.Setenv("STACK_ANALYZER_DEBUG", "true")
+	t.Setenv("STACK_ANALYZER_NO_CODE_STATS", "true")
+	t.Setenv("STACK_ANALYZER_COMPONENT_STATS_DEPTH", "5")
+	t.Setenv("STACK_ANALYZER_SUBSYSTEM_DEPTH", "3")
+	t.Setenv("STACK_ANALYZER_TRACE_TIMINGS", "true")
+	t.Setenv("STACK_ANALYZER_TRACE_RULES", "true")
+	t.Setenv("STACK_ANALYZER_FILTER_RULES", "nodejs, rust , go")
+	t.Setenv("STACK_ANALYZER_EXCLUDE", "vendor, build")
+	t.Setenv("STACK_ANALYZER_LOG_LEVEL", "warn")
+	t.Setenv("STACK_ANALYZER_LOG_FORMAT", "json")
+	t.Setenv("STACK_ANALYZER_LOG_FILE", "/tmp/scan.log")
+	t.Setenv("STACK_ANALYZER_USE_LOCK_FILES", "false")
+
+	s := LoadSettingsFromEnvironment()
+
+	assert.Equal(t, "/tmp/out.json", s.OutputFile)
+	assert.True(t, s.PrettyPrint)
+	assert.Equal(t, "tech", s.Aggregate)
+	assert.True(t, s.Verbose)
+	assert.True(t, s.Debug)
+	assert.True(t, s.NoCodeStats)
+	assert.Equal(t, 5, s.ComponentStatsDepth)
+	assert.Equal(t, 3, s.SubsystemDepth)
+	assert.True(t, s.TraceTimings)
+	assert.True(t, s.TraceRules)
+	assert.Equal(t, []string{"nodejs", "rust", "go"}, s.FilterRules)
+	assert.Equal(t, []string{"vendor", "build"}, s.ExcludePatterns)
+	assert.Equal(t, slog.LevelWarn, s.LogLevel)
+	assert.Equal(t, "json", s.LogFormat)
+	assert.Equal(t, "/tmp/scan.log", s.LogFile)
+	assert.False(t, s.UseLockFiles)
+}
+
+// TestLoadSettings_InvalidNumericEnvIgnored verifies that an unparseable
+// integer env var leaves the default in place (no panic, no override).
+func TestLoadSettings_InvalidNumericEnvIgnored(t *testing.T) {
+	clearEnvVars()
+	defer clearEnvVars()
+	defaults := DefaultSettings()
+
+	t.Setenv("STACK_ANALYZER_COMPONENT_STATS_DEPTH", "notanumber")
+	t.Setenv("STACK_ANALYZER_SUBSYSTEM_DEPTH", "x")
+
+	s := LoadSettingsFromEnvironment()
+	assert.Equal(t, defaults.ComponentStatsDepth, s.ComponentStatsDepth)
+	assert.Equal(t, defaults.SubsystemDepth, s.SubsystemDepth)
+}
+
 func TestLoadSettings_WithPartialEnvironmentVariables(t *testing.T) {
 	// Clear any existing environment variables
 	clearEnvVars()
