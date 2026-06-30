@@ -620,59 +620,62 @@ func (p *MavenParser) getActiveProfiles(profiles []MavenProfile) []MavenProfile 
 func (p *MavenParser) isProfileActive(activation MavenActivation) bool {
 	activated := false
 
-	// JDK-based activation (Step 4: Enhanced Profile Activation)
 	if activation.JDK != "" {
-		// Simple version matching - check if default JDK matches
-		// In deps.dev, they use semver matching with constraints
-		// For static analysis, we use simple prefix matching
-		if strings.HasPrefix(DefaultJDKVersion, activation.JDK) {
-			activated = true
-		} else if activation.JDK == DefaultJDKVersion {
-			activated = true
-		} else {
-			// If JDK doesn't match, profile is not active
-			return false
-		}
-	}
-
-	// OS-based activation (Step 4: Enhanced Profile Activation)
-	if activation.OS.Name != "" || activation.OS.Family != "" || activation.OS.Arch != "" || activation.OS.Version != "" {
-		// Check OS conditions following deps.dev pattern
-		// All specified OS conditions must match
-		osMatch := true
-
-		if activation.OS.Name != "" {
-			osMatch = osMatch && matchOSCondition(activation.OS.Name, DefaultOSActivation.Name)
-		}
-		if activation.OS.Family != "" {
-			osMatch = osMatch && matchOSCondition(activation.OS.Family, DefaultOSActivation.Family)
-		}
-		if activation.OS.Arch != "" {
-			osMatch = osMatch && matchOSCondition(activation.OS.Arch, DefaultOSActivation.Arch)
-		}
-		if activation.OS.Version != "" {
-			osMatch = osMatch && matchOSCondition(activation.OS.Version, DefaultOSActivation.Version)
-		}
-
-		if !osMatch {
+		if !jdkActivationMatches(activation.JDK) {
 			return false
 		}
 		activated = true
 	}
 
-	// Property-based activation: conservative approach for static analysis
-	if activation.Property.Name != "" {
-		// Without runtime property values, we can't reliably activate
-		return false
+	if hasOSActivation(activation.OS) {
+		if !osActivationMatches(activation.OS) {
+			return false
+		}
+		activated = true
 	}
 
-	// File-based activation: conservative approach for static analysis
+	// Property- and file-based activation need runtime/filesystem state we do
+	// not have during static analysis, so they conservatively deactivate.
+	if activation.Property.Name != "" {
+		return false
+	}
 	if activation.File.Exists != "" || activation.File.Missing != "" {
-		// Without filesystem access, we can't reliably activate
 		return false
 	}
 
 	return activated
+}
+
+// jdkActivationMatches reports whether the configured default JDK satisfies a
+// profile's <jdk> activation. Static analysis uses simple prefix/exact matching
+// (deps.dev uses semver constraints at runtime).
+func jdkActivationMatches(jdk string) bool {
+	return strings.HasPrefix(DefaultJDKVersion, jdk) || jdk == DefaultJDKVersion
+}
+
+// hasOSActivation reports whether any OS activation field is set.
+func hasOSActivation(os MavenActivationOS) bool {
+	return os.Name != "" || os.Family != "" || os.Arch != "" || os.Version != ""
+}
+
+// osActivationMatches reports whether every specified OS condition matches the
+// configured default OS (all conditions must match, per the Maven spec).
+func osActivationMatches(os MavenActivationOS) bool {
+	checks := []struct {
+		condition string
+		expected  string
+	}{
+		{os.Name, DefaultOSActivation.Name},
+		{os.Family, DefaultOSActivation.Family},
+		{os.Arch, DefaultOSActivation.Arch},
+		{os.Version, DefaultOSActivation.Version},
+	}
+	for _, c := range checks {
+		if c.condition != "" && !matchOSCondition(c.condition, c.expected) {
+			return false
+		}
+	}
+	return true
 }
 
 // matchOSCondition checks if an OS condition matches the expected value

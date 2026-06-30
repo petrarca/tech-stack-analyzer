@@ -19,10 +19,10 @@ linters:
       # Maximum cyclomatic complexity.
       # Being ratcheted down toward 15, one step at a time, refactoring the
       # offenders at each step.
-      min-complexity: 24
+      min-complexity: 23
     gocognit:
       # Maximum cognitive complexity. See the gocyclo note above.
-      min-complexity: 24
+      min-complexity: 23
   exclusions:
     rules:
       # Table-driven tests are "complex" by volume of test cases, not by logic.
