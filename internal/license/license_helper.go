@@ -61,12 +61,17 @@ func ProcessLicenseExpression(rawLicense string, sourceFile string, payload *typ
 	}
 }
 
-// AddLicenseToPayload adds a license to the payload, avoiding duplicates by license name.
+// AddLicenseToPayload adds a license to the payload, avoiding duplicates by
+// license name. The risk Category is computed from the license name when not
+// already set.
 func AddLicenseToPayload(payload *types.Payload, license types.License) {
 	for _, existing := range payload.Licenses {
 		if existing.LicenseName == license.LicenseName {
 			return
 		}
+	}
+	if license.Category == "" {
+		license.Category = string(CategoryForExpressionString(license.LicenseName))
 	}
 	payload.Licenses = append(payload.Licenses, license)
 }

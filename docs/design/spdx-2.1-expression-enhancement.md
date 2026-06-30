@@ -128,3 +128,75 @@ type License struct {
 1. **Backward Compatibility**: Existing fields preserved, new fields use `omitempty`
 2. **Incremental Adoption**: Each phase delivers value independently
 3. **No output schema breaks**: New fields are additive only
+
+---
+
+## License Detection Enhancements (2025)
+
+**Status: all four implemented** (`internal/license/`), without changing the
+classifier engine. They operate on license name/expression *strings* from both
+the classifier output and manifest-declared fields.
+
+- #1 Expanded normalizer: `aliases.go` (declaredLicenseAliases, merged in `NewNormalizer`).
+- #2 Per-dependency harvesting: `harvest*.go` (npm + NuGet), gated by
+  `--harvest-licenses` for out-of-tree caches; in-tree `node_modules` always.
+  Surfaced on dependency metadata and CycloneDX `licenses[]`.
+- #3 SPDX expression parser: `expression.go` (AND/OR/WITH, parentheses);
+  `ParseLicenseExpression` now uses it.
+- #4 Risk categorization: `category.go` (6 categories + AND=max/OR=min fold);
+  surfaced as the `category` field on detected licenses.
+
+### 1. Expanded normalizer alias table
+
+Grow the `Normalizer` alias map from ~48 entries toward ~480, covering the
+non-SPDX declared strings real manifests contain (e.g. "Apache License 2.0",
+BSD variants, CDDL/EPL spellings). The alias data is adapted from the public
+SPDX declared/simple license mapping tables maintained by the OSS Review
+Toolkit (Apache-2.0). This is pure data: `string -> SPDX-ID` facts.
+
+### 2. Per-dependency license harvesting
+
+Today licenses attach to the *component*, not to each resolved dependency, so
+SBOM components are largely license-less. Read license metadata for resolved
+dependencies from the local package caches/manifests (e.g. a NuGet `.nuspec`
+in the global packages folder, an npm `node_modules/<pkg>/package.json` or
+`LICENSE`), so emitted SBOM components carry license data. Reuses the existing
+classifier for LICENSE-file text.
+
+### 3. Proper SPDX expression parser
+
+Replace the OR/AND string split with a real lexer + AST supporting `AND`, `OR`,
+`WITH`, and parenthesized/mixed expressions with correct precedence. This is
+"Phase 3" above, implemented as a standalone parser the normalizer and risk
+categorizer consume.
+
+### 4. License risk categorization
+
+Classify each normalized SPDX id into a risk category (forbidden / restricted /
+reciprocal / notice / permissive / unencumbered / unknown) and fold the
+category over an expression tree: `AND` takes the **maximum**-severity branch
+(you must satisfy both), `OR` takes the **minimum** (you may pick the looser
+one). Emitted as additive license fields. This is opt-in compliance signal, not
+vulnerability scanning.
+
+## Classifier engine: keep go-enry (decision deferred)
+
+The file-text classifier (`go-enry/go-license-detector`) is a **commodity**
+component and is intentionally **kept**, separate from the four enhancements
+above. Note this is distinct from `go-enry/go-enry` (language detection), which
+is core and unaffected by any of this.
+
+**Why not switch to `google/licenseclassifier` (used by Trivy/Syft) now:**
+- The only public head-to-head benchmark shows go-license-detector at ~99%
+  detection vs google v1 at ~76% on GitHub LICENSE files; there is **no public
+  benchmark proving google v2 is more accurate** than go-license-detector.
+- google's classifier bundles ~8.5 MB of license templates, which works against
+  this project's single-small-binary value proposition.
+- `google.Match` is not thread-safe (needs a mutex; we scan/resolve
+  concurrently) and the confidence threshold would need re-tuning.
+
+**When to revisit:** if `go-enry/go-license-detector` maintenance lapses, or a
+real accuracy gap to google v2 is demonstrated. The swap is isolated to two
+files (`license_detector.go`, `safe_filer.go`) and the four enhancements above
+do not depend on the engine, so they would carry over unchanged. Treat
+"is go-license-detector still maintained?" as a watch item.

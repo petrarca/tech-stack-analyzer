@@ -156,6 +156,7 @@ type License struct {
 	SourceFile      string  `json:"source_file"`                // Where detected (e.g., "package.json", "pyproject.toml")
 	Confidence      float64 `json:"confidence"`                 // Detection confidence (0.0-1.0)
 	OriginalLicense string  `json:"original_license,omitempty"` // Original license before normalization
+	Category        string  `json:"category,omitempty"`         // Risk category: forbidden|restricted|reciprocal|notice|permissive|unencumbered|unknown
 }
 
 // MarshalJSON customizes Edge JSON serialization (target as ID string)

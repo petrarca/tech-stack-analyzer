@@ -97,6 +97,7 @@ func init() {
 	scanCmd.Flags().BoolVar(&settings.ResolveCurrency, "resolve-currency", false, "Resolve dependency currency (latest versions via deps.dev) and write a {out}.currency.json alongside the scan output. Opt-in; sends public package coordinates over the network. For --force or --currency-concurrency tuning, use the standalone 'currency' command.")
 	scanCmd.Flags().StringVar(&settings.CurrencyCache, "currency-cache", "", "Override the currency cache DB path (default: STACK_ANALYZER_CURRENCY_CACHE or the OS cache dir).")
 	scanCmd.Flags().IntVar(&settings.CurrencyTTLHours, "currency-ttl", 24, "Per-entry currency cache TTL in hours.")
+	scanCmd.Flags().BoolVar(&settings.HarvestLicenseCaches, "harvest-licenses", false, "Also harvest per-dependency licenses from out-of-tree global package caches (e.g. ~/.nuget/packages, honoring NUGET_PACKAGES). In-tree sources (a node_modules under the scan root) are always harvested regardless of this flag. Reads outside the scanned tree, so it is opt-in.")
 }
 
 // configureLogging sets up logging based on command flags.
@@ -229,6 +230,7 @@ func runMultiPathScan(args []string, cmd *cobra.Command, logger *slog.Logger) {
 	components.SetDependencyGraphMode(types.ParseDependencyGraphMode(settings.DependencyGraph))
 	components.SetUseDepsDev(settings.UseDepsDev)
 	components.SetDepsDevEndpoint(settings.DepsDevEndpoint)
+	components.SetHarvestLicenseCaches(settings.HarvestLicenseCaches)
 	components.SetUseMavenCentral(settings.UseMavenCentral)
 	components.SetMavenGraphSource(settings.MavenGraphSource)
 	applyMavenSettings(logger)

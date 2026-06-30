@@ -12,7 +12,7 @@ type Normalizer struct {
 
 // NewNormalizer creates a new license normalizer with comprehensive SPDX mappings
 func NewNormalizer() *Normalizer {
-	return &Normalizer{
+	n := &Normalizer{
 		mappings: map[string]string{
 			// MIT variations
 			"mit":           "MIT",
@@ -171,6 +171,14 @@ func NewNormalizer() *Normalizer {
 			"closed source": "Proprietary",
 		},
 	}
+	// Merge the larger supplemental alias table (declaredLicenseAliases). The
+	// curated map above wins on conflict, so existing behavior is preserved.
+	for alias, spdx := range declaredLicenseAliases {
+		if _, exists := n.mappings[alias]; !exists {
+			n.mappings[alias] = spdx
+		}
+	}
+	return n
 }
 
 // Normalize normalizes a license string to SPDX standard format
@@ -256,55 +264,48 @@ func extractTOMLLicenseText(licenseStr string) (string, bool) {
 	return "", false
 }
 
-// ParseLicenseExpression parses license expressions like "MIT OR Apache-2.0"
-// Returns individual licenses as a slice
+// ParseLicenseExpression parses license expressions like
+// "(MIT OR Apache-2.0) AND BSD-3-Clause" and returns the individual normalized
+// SPDX licenses appearing in it (deduplicated, in order). It uses the SPDX
+// expression parser (AND/OR/WITH, parentheses); the legacy "||"/"&&" operators
+// are normalized to their SPDX spellings first for backward compatibility.
 func (n *Normalizer) ParseLicenseExpression(expr string) []string {
-	if expr == "" {
+	if strings.TrimSpace(expr) == "" {
 		return nil
 	}
+	expr = strings.ReplaceAll(expr, "||", " OR ")
+	expr = strings.ReplaceAll(expr, "&&", " AND ")
 
-	expr = strings.TrimSpace(expr)
-
-	// Split by common operators
-	operators := []string{" OR ", " AND ", " or ", " and ", "||", "&&"}
+	parsed := ParseExpression(expr)
+	if parsed == nil {
+		return nil
+	}
 
 	var licenses []string
-	current := expr
-
-	// Try each operator
-	for _, op := range operators {
-		if strings.Contains(current, op) {
-			parts := strings.Split(current, op)
-			for _, part := range parts {
-				normalized := n.Normalize(strings.TrimSpace(part))
-				if normalized != "" {
-					licenses = append(licenses, normalized)
-				}
-			}
-			return licenses
+	seen := make(map[string]bool)
+	for _, raw := range parsed.Licenses() {
+		raw = strings.TrimSpace(raw)
+		if isReservedOperatorWord(raw) {
+			continue // a bare operator token is not a license
+		}
+		normalized := n.Normalize(raw)
+		if normalized != "" && !seen[normalized] {
+			seen[normalized] = true
+			licenses = append(licenses, normalized)
 		}
 	}
-
-	// Check if it's just an operator without any license
-	isOperator := false
-	operatorTokens := []string{"OR", "AND", "||", "&&"}
-	for _, token := range operatorTokens {
-		if strings.ToUpper(expr) == token {
-			isOperator = true
-			break
-		}
-	}
-	if isOperator {
-		return nil
-	}
-
-	// Single license
-	normalized := n.Normalize(expr)
-	if normalized != "" {
-		licenses = append(licenses, normalized)
-	}
-
 	return licenses
+}
+
+// isReservedOperatorWord reports whether s is a bare SPDX operator keyword
+// (which is not a license identifier).
+func isReservedOperatorWord(s string) bool {
+	switch strings.ToUpper(s) {
+	case "OR", "AND", "WITH":
+		return true
+	default:
+		return false
+	}
 }
 
 // NormalizeMultiple normalizes multiple licenses and removes duplicates

@@ -40,7 +40,7 @@
                 },
                 {
                     "type": "object",
-                    "description": "Package-specific metadata (source file, type, classifier, exclusions, peer, optional, bundled, declared, etc.). The 'declared' key holds the originally declared version form (a range or property reference) when it differs from the resolved version.",
+                    "description": "Package-specific metadata (source file, type, classifier, exclusions, peer, optional, bundled, declared, license, etc.). The 'declared' key holds the originally declared version form (a range or property reference) when it differs from the resolved version. The 'license' key holds a per-dependency SPDX license harvested from a local package source (npm node_modules, NuGet packages folder), when available.",
                     "additionalProperties": true
                 }
             ],
@@ -105,6 +105,11 @@
                 "original_license": {
                     "type": "string",
                     "description": "Original license before normalization (optional)"
+                },
+                "category": {
+                    "type": "string",
+                    "enum": ["forbidden", "restricted", "reciprocal", "notice", "permissive", "unencumbered", "unknown"],
+                    "description": "License risk category, derived from the SPDX license. AND expressions take the more restrictive branch, OR the less restrictive. Compliance signal only (optional)."
                 }
             },
             "required": [

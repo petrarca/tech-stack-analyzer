@@ -69,3 +69,22 @@ func TestAddLicenseToPayload_NoDuplicates(t *testing.T) {
 
 	assert.Len(t, payload.Licenses, 1)
 }
+
+func TestAddLicenseToPayload_SetsCategory(t *testing.T) {
+	p := &types.Payload{}
+	AddLicenseToPayload(p, types.License{LicenseName: "GPL-3.0-only", DetectionType: "direct"})
+	AddLicenseToPayload(p, types.License{LicenseName: "MIT", DetectionType: "direct"})
+	if len(p.Licenses) != 2 {
+		t.Fatalf("expected 2 licenses, got %d", len(p.Licenses))
+	}
+	cat := map[string]string{}
+	for _, l := range p.Licenses {
+		cat[l.LicenseName] = l.Category
+	}
+	if cat["GPL-3.0-only"] != "restricted" {
+		t.Errorf("GPL category = %q, want restricted", cat["GPL-3.0-only"])
+	}
+	if cat["MIT"] != "notice" {
+		t.Errorf("MIT category = %q, want notice", cat["MIT"])
+	}
+}

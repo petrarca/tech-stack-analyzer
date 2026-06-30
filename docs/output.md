@@ -115,8 +115,14 @@ Use the `--aggregate` flag to get a simplified, rolled-up view of your entire co
 - **techs**: Array of all technologies detected in this component (components + tools/libraries)
 - **primary_techs**: Weight-filtered subset of `tech[]` identifying the dominant technologies. Uses code-line weighting (≥1% of total typed code) when per-component `code_stats` are available; falls back to component-count threshold otherwise. Present at root level in both full and aggregated formats.
 - **languages**: Object mapping programming languages to file counts
-- **licenses**: Array of detected licenses in this component
-- **dependencies**: Array of detected dependencies with format `[type, name, version, scope, direct, metadata]` (always 6 elements)
+- **licenses**: Array of detected licenses in this component. Each entry has:
+  - `license_name` — normalized SPDX identifier (e.g. `"MIT"`, `"Apache-2.0"`)
+  - `detection_type` — how it was found: `"file_based"` (LICENSE/COPYING file text), `"direct"` (manifest-declared exact id), `"normalized"` (alias mapped to SPDX), `"expression_parsed"` (compound expression split into components), `"toml_parsed"` (Python TOML object form)
+  - `source_file` — manifest or LICENSE file the license came from
+  - `confidence` — classifier confidence (0.0–1.0); always 1.0 for manifest-declared licenses
+  - `original_license` — the raw declared string before normalization (omitted when identical to `license_name`)
+  - `category` — risk category derived from the SPDX id: `forbidden` / `restricted` / `reciprocal` / `notice` / `permissive` / `unencumbered` / `unknown`. Compound SPDX expressions are folded: `AND` takes the more restrictive branch, `OR` the less restrictive (omitted when unknown)
+- **dependencies**: Array of detected dependencies with format `[type, name, version, scope, direct, metadata]` (always 6 elements). The `metadata` object may include a `license` key with a normalized SPDX id when a declared license was harvested from a local package source (`node_modules`, NuGet packages folder)
 - **component_dependencies**: Array of component-level dependencies (e.g., Docker base images, parent Maven modules) with format `[type, name, version, scope, metadata]` (always 5 elements)
 - **dependency_edges**: Package-to-package dependency edges for this component, present only when `--dependency-graph` is `direct` or `full`. Each edge is an object `{from, to, source?, scope?}` where `from`/`to` are `name@version` (Maven: `groupId:artifactId@version`), the synthetic root `.` is the source of direct edges, `source` is provenance (`lockfile` or `deps.dev`), and `scope` (on direct edges) is `prod`/`dev`/`build`/`optional`/`peer`. In aggregate output this is a single deduplicated, sorted top-level array instead of per-component. See [usage.md](usage.md) `--dependency-graph`.
 - **ecosystems**: (root/aggregate only) Detected technology ecosystems, derived from component types, techs, and primary languages, sorted by component count. Each entry is `{ecosystem, components}` (e.g., `{"ecosystem": "JVM", "components": 3}`).

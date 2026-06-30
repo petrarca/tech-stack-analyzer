@@ -220,3 +220,23 @@ func TestNormalizer_IsSPDXValid(t *testing.T) {
 		})
 	}
 }
+
+func TestNormalizer_ExpandedAliases(t *testing.T) {
+	n := NewNormalizer()
+	cases := map[string]string{
+		"Apache License, Version 2.0":                     "Apache-2.0",
+		"The MIT License":                                 "MIT",
+		"New BSD License":                                 "BSD-3-Clause",
+		"GNU General Public License v3":                   "GPL-3.0-only",
+		"Mozilla Public License 2.0":                      "MPL-2.0",
+		"Microsoft Public License":                        "MS-PL",
+		"Server Side Public License":                      "SSPL-1.0",
+		"The Unlicense":                                   "Unlicense",
+		"Common Development and Distribution License 1.1": "CDDL-1.1",
+	}
+	for in, want := range cases {
+		if got := n.Normalize(in); got != want {
+			t.Errorf("Normalize(%q) = %q, want %q", in, got, want)
+		}
+	}
+}
